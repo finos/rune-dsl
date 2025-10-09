@@ -40,6 +40,7 @@ import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*
 import com.regnosys.rosetta.rosetta.expression.WithMetaOperation
 import com.regnosys.rosetta.rosetta.expression.SwitchOperation
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableReference
 
 class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	
@@ -409,14 +410,14 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		
 	}
 	
-	private def dispatch void unsafeFormatExpression(RosettaSymbolReference expr, extension IFormattableDocument document, FormattingMode mode) {
+	private def dispatch void unsafeFormatExpression(RosettaCallableReference expr, extension IFormattableDocument document, FormattingMode mode) {
 		val extension referenceCallGrammarAccess = rosettaReferenceOrFunctionCallAccess
 		
 		if (expr.explicitArguments) {
 			expr.regionFor.keywords(',').forEach[
 				prepend[noSpace]
 			]
-			expr.regionFor.keyword(explicitArgumentsLeftParenthesisKeyword_0_2_0_0)
+			expr.regionFor.keyword(explicitArgumentsLeftParenthesisKeyword_0_1_0_0)
 				.prepend[noSpace]
 			
 			formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine),
@@ -428,7 +429,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					expr.regionFor.keywords(',').forEach[
 						append[oneSpace]
 					]
-					expr.args.forEach[formatExpression(doc, mode)]
+					expr.rawArgs.forEach[formatExpression(doc, mode)]
 				],
 				[extension doc | // case: long argument list
 					expr.indentInnerWithoutCurlyBracket(doc)
@@ -442,7 +443,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					expr.regionFor.keywords(',').forEach[
 						append[newLine]
 					]
-					expr.args.forEach[formatExpression(doc, mode.stopChain)]
+					expr.rawArgs.forEach[formatExpression(doc, mode.stopChain)]
 				]
 			)
 		}

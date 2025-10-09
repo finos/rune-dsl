@@ -115,61 +115,6 @@ public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerVa
         protected JavaStatementBuilder doSwitch(RosettaExpression expr, Context context) {
             throw new RuntimeException("Broken expression generator");
         }
-
-        @Override
-        protected JavaStatementBuilder doSwitch(RosettaLiteral expr, Context context) {
-            throw new RuntimeException("Broken expression generator");
-        }
-
-        @Override
-        protected JavaStatementBuilder doSwitch(RosettaReference expr, Context context) {
-            throw new RuntimeException("Broken expression generator");
-        }
-
-        @Override
-        protected JavaStatementBuilder doSwitch(RosettaOperation expr, Context context) {
-            throw new RuntimeException("Broken expression generator");
-        }
-
-        @Override
-        protected JavaStatementBuilder doSwitch(RosettaBinaryOperation expr, Context context) {
-            throw new RuntimeException("Broken expression generator");
-        }
-
-        @Override
-        protected JavaStatementBuilder doSwitch(ArithmeticOperation expr, Context context) {
-            throw new RuntimeException("Broken expression generator");
-        }
-
-        @Override
-        protected JavaStatementBuilder doSwitch(LogicalOperation expr, Context context) {
-            throw new RuntimeException("Broken expression generator");
-        }
-
-        @Override
-        protected JavaStatementBuilder doSwitch(ModifiableBinaryOperation expr, Context context) {
-            throw new RuntimeException("Broken expression generator");
-        }
-
-        @Override
-        protected JavaStatementBuilder doSwitch(ComparisonOperation expr, Context context) {
-            throw new RuntimeException("Broken expression generator");
-        }
-
-        @Override
-        protected JavaStatementBuilder doSwitch(EqualityOperation expr, Context context) {
-            throw new RuntimeException("Broken expression generator");
-        }
-
-        @Override
-        protected JavaStatementBuilder doSwitch(RosettaUnaryOperation expr, Context context) {
-            throw new RuntimeException("Broken expression generator");
-        }
-
-        @Override
-        protected JavaStatementBuilder doSwitch(RosettaFunctionalOperation expr, Context context) {
-            throw new RuntimeException("Broken expression generator");
-        }
     }
 
     static class BrokenEnumGenerator extends EnumGenerator {

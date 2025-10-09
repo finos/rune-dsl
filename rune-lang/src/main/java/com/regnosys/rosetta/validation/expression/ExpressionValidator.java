@@ -308,8 +308,8 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 						RosettaParameter param = f.getParameters().get(i);
 						RMetaAnnotatedType paramType = typeProvider.getRTypeOfSymbol(param, null);
 						RosettaExpression arg = expr.getArgs().get(i);
-						isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i, null);
-						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i, actual -> "Cannot assign `" + actual + "` to parameter `" + param.getName() + "`");
+						isSingleCheck(arg, expr, ROSETTA_CALLABLE_REFERENCE__RAW_ARGS, i, null);
+						subtypeCheck(paramType, arg, expr, ROSETTA_CALLABLE_REFERENCE__RAW_ARGS, i, actual -> "Cannot assign `" + actual + "` to parameter `" + param.getName() + "`");
 					}
 				} else if (callable instanceof Function) {
 					Function f = (Function) callable;
@@ -318,17 +318,17 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 						RMetaAnnotatedType paramType = typeProvider.getRTypeOfSymbol(param, null);
 						RosettaExpression arg = expr.getArgs().get(i);
 						if (!cardinalityProvider.isSymbolMulti(f.getInputs().get(i))) {
-							isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i, null);
+							isSingleCheck(arg, expr, ROSETTA_CALLABLE_REFERENCE__RAW_ARGS, i, null);
 						}
-						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i, actual -> "Cannot assign `" + actual + "` to input `" + param.getName() + "`");
+						subtypeCheck(paramType, arg, expr, ROSETTA_CALLABLE_REFERENCE__RAW_ARGS, i, actual -> "Cannot assign `" + actual + "` to input `" + param.getName() + "`");
 					}
 				} else if (callable instanceof RosettaRule) {
 					RosettaRule f = (RosettaRule) callable;
 					if (minCount >= 1) {
 						RMetaAnnotatedType paramType = withNoMeta(typeSystem.getRuleInputType(f));
 						RosettaExpression arg = expr.getArgs().get(0);
-						isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0, null);
-						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0, actual -> "Rule `" + f.getName() + "` cannot be called with type `" + actual + "`");
+						isSingleCheck(arg, expr, ROSETTA_CALLABLE_REFERENCE__RAW_ARGS, 0, null);
+						subtypeCheck(paramType, arg, expr, ROSETTA_CALLABLE_REFERENCE__RAW_ARGS, 0, actual -> "Rule `" + f.getName() + "` cannot be called with type `" + actual + "`");
 					}
 				}
 			} else {
@@ -357,7 +357,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 					error(
 						"A variable may not be called",
 						expr,
-						ROSETTA_SYMBOL_REFERENCE__EXPLICIT_ARGUMENTS
+						ROSETTA_CALLABLE_REFERENCE__EXPLICIT_ARGUMENTS
 					);
 				}
 			}

@@ -150,6 +150,8 @@ import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationS
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 import static com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperationType.*
 import com.rosetta.util.types.JavaClass
+import com.regnosys.rosetta.rosetta.expression.RosettaSuperCall
+import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.Context
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1482,4 +1484,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	private def boolean needsBuilder(JavaExpression expr) {
 		expr != JavaLiteral.NULL && expr.expressionType.hasBuilderType
 	}
+	
+	override protected caseSuperCall(RosettaSuperCall expr, Context context) {
+		throw new UnsupportedOperationException("TODO: auto-generated method stub")
+	}
+	
 }

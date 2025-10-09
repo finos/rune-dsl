@@ -206,7 +206,7 @@ public interface ExpectedTypeProvider {
 
             @Override
             protected RMetaAnnotatedType caseSymbolReference(RosettaSymbolReference expr, Context context) {
-                if (ROSETTA_SYMBOL_REFERENCE__RAW_ARGS.equals(context.reference)) {
+                if (ROSETTA_CALLABLE_REFERENCE__RAW_ARGS.equals(context.reference)) {
                     RosettaSymbol symbol = expr.getSymbol();
                     if (symbol instanceof Function fun) {
                         return typeProvider.getRTypeOfSymbol(fun.getInputs().get(context.index));
@@ -541,6 +541,12 @@ public interface ExpectedTypeProvider {
                 }
                 return null;
             }
+
+			@Override
+			protected RMetaAnnotatedType caseSuperCall(RosettaSuperCall expr, Context context) {
+				// TODO Auto-generated method stub
+				return null;
+			}
         }
     }
 }
