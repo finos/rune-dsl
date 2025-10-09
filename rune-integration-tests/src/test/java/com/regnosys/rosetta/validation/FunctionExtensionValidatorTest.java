@@ -137,4 +137,69 @@ public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
 				ERROR can only call `super` when extending
 				""");
     }
+
+    @Test
+    void testCanCallExtendedFunctionFromOutsideScope() {
+        assertNoIssues("""
+				namespace test
+				version "1"
+				
+				func Foo:
+				    output:
+						result int (1..1)
+					set result: 0
+				
+				func Qux:
+					output:
+						result int (1..1)
+					set result: Bar()
+				
+				""", List.of("""
+                    namespace test
+                    scope MyScope
+                    version "1"
+                    
+                    func Bar extends Foo:
+                        output:
+                            result int (1..1)
+                        set result: super()
+                    """
+        ));
+    }
+
+    @Test
+    void testCannotCallExtendedFunctionFromInsideScope() {
+        assertIssues("""
+				namespace test
+				version "1"
+				
+				func Foo1:
+				    output:
+						result int (1..1)
+					set result: 0
+				
+				func Foo2:
+				    output:
+						result int (1..1)
+					set result: 0
+				
+				""", List.of("""
+                    namespace test
+                    scope MyScope
+                    version "1"
+                    
+                    func Bar1 extends Foo1:
+                        output:
+                            result int (1..1)
+                        set result: super()
+                    
+                    func Bar2 extends Foo2:
+                        output:
+                            result int (1..1)
+                        set result: Bar1()
+                    """
+                ), """
+                ERROR cannot call extension Bar1 from within scope
+                """);
+    }
 }

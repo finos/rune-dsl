@@ -108,7 +108,8 @@ Function:
 		RosettaNamed
 		| ({FunctionDispatch} RosettaNamed '(' attribute=[Attribute|ValidID] ':' value=EnumValueReference')')
 	)
-	 ':' RosettaDefinable?
+	('extends' superFunction=[Function|ValidID])?
+	':' RosettaDefinable?
 	(References|Annotations)*
 	('inputs' ':' inputs += Attribute+)?
 	('output' ':' output = Attribute)?
