@@ -13,6 +13,7 @@ RosettaModel:
 	 (overridden?='override')? 'namespace' name=(QualifiedName | STRING) (':' RosettaDefinable)? // TODO do we need STRING here? It is not supported for highlighting.
 	// TODO colon is inconsistent with other documentation
 	
+	scope=Scope?
 	('version' version=STRING)? // TODO: could do better than STRING
 	
 	imports+=Import*
@@ -23,6 +24,10 @@ RosettaModel:
 
 QualifiedName:
 	ValidID ('.' ValidID)*
+;
+
+Scope:
+	'scope' name=ValidID RosettaDefinable?
 ;
 
 Import:
