@@ -118,7 +118,7 @@ public class DataTypeConditionTest extends AbstractConditionTest {
 	}
 	
 	@Test
-	void inapplicableConditionIsSuccess() {	
+	void inapplicableConditionIsSuccess() {
 		JavaTestModel model = testModelService.toJavaTestModel("""
 				type Foo:
 					a int (0..1)
