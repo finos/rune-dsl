@@ -6,9 +6,6 @@ import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
 import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
-import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
-import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
-import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
 import com.regnosys.rosetta.generator.java.types.JavaConditionInterface
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
@@ -17,16 +14,12 @@ import com.regnosys.rosetta.generator.java.util.RosettaGrammarUtil
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
-import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.simple.Condition
-import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.rosetta.model.lib.annotations.RosettaDataRule
 import com.rosetta.model.lib.expression.ComparisonResult
-import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.validation.ValidationResult
 import com.rosetta.model.lib.validation.ValidationResult.ValidationType
-import com.rosetta.util.types.JavaReferenceType
 import jakarta.inject.Inject
 import java.util.Arrays
 import java.util.Collections
@@ -41,7 +34,7 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 	@Inject extension JavaTypeTranslator
 	@Inject extension JavaTypeUtil
 	@Inject extension ModelGeneratorUtil
-	@Inject RosettaTypeProvider typeProvider
+	
 	
 	
 	override protected streamObjects(RosettaModel model) {
