@@ -108,7 +108,7 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 					@Override
 					public «List»<«ValidationResult»<?>> getValidationResults(«RosettaPath» «pathId», «conditionClass.instanceClass» «defaultClassInstanceId»«FOR param : params.keySet», «params.get(param)» «getValidationResultsScope.getIdentifierOrThrow(param)»«ENDFOR») {
 						«ComparisonResult» «defaultClassResultId» = executeDataRule(«defaultClassGetValidationResultsBodyScope.getIdentifierOrThrow(implicitVarRepr)»«FOR param: params.keySet», «defaultClassGetValidationResultsBodyScope.getIdentifierOrThrow(param)»«ENDFOR»);
-						if (result.get()) {
+						if (result.getOrDefault(true)) {
 							return «Arrays».asList(«ValidationResult».success(NAME, ValidationResult.ValidationType.DATA_RULE, "«conditionClass.instanceType.name»", «pathId», DEFINITION));
 						}
 						
@@ -120,7 +120,7 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 					}
 					
 					private «ComparisonResult» executeDataRule(«conditionClass.instanceClass» «defaultClassExecuteInstanceId»«FOR param : params.keySet», «params.get(param)» «defaultClassExecuteScope.getIdentifierOrThrow(param)»«ENDFOR») {
-						try «trueOnEmptyExpression(condition.expression, defaultClassExecuteBodyScope)
+						try «expressionHandler.javaCode(condition.expression, COMPARISON_RESULT, defaultClassExecuteBodyScope)
 								.completeAsReturn.toBlock»
 						catch («Exception» «defaultClassExecuteExceptionId») {
 							return «ComparisonResult».failure(«defaultClassExecuteExceptionId».getMessage());
@@ -138,14 +138,6 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 				}
 			}
 		'''
-	}
-	
-	private def JavaStatementBuilder trueOnEmptyExpression(RosettaExpression expr, JavaStatementScope defaultClassExecuteBodyScope) {
-		val javaType = typeProvider.getRMetaAnnotatedType(expr).toJavaType
-		if (javaType.itemType == JavaReferenceType.NULL_TYPE || javaType.itemType.isVoid) {
-			return JavaExpression.from('''«ComparisonResult».of(«MapperS».<«Boolean»>of(true))''', COMPARISON_RESULT)
-		}
-		return expressionHandler.javaCode(expr, COMPARISON_RESULT, defaultClassExecuteBodyScope)
 	}
 }
 

@@ -680,26 +680,12 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	override protected caseConditionalExpression(RosettaConditionalExpression expr, Context context) {
 		val condition = expr.^if.javaCode(JavaPrimitiveType.BOOLEAN, context.scope)
-		val containerIsConditionStatment = expr.eContainer instanceof Condition
-		val thenBranch = trueOnEmptyConditionExpression(expr.ifthen, context, containerIsConditionStatment)
-		val elseBranch = trueOnEmptyConditionExpression(expr.elsethen, context, containerIsConditionStatment)
+		val thenBranch = expr.ifthen.javaCode(context.expectedType, context.scope)
+		val elseBranch = expr.elsethen.javaCode(context.expectedType, context.scope)
 				
 		condition
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[new JavaIfThenElseBuilder(it, thenBranch, elseBranch, typeUtil)]
-	}
-	
-	private def JavaStatementBuilder trueOnEmptyConditionExpression(RosettaExpression expr, Context context, boolean containerIsConditionStatment) {
-		val statement = expr.javaCode(context.expectedType, context.scope)
-		if (!containerIsConditionStatment) {
-			return statement
-		}
-		
-		val javaType = typeProvider.getRMetaAnnotatedType(expr).toJavaType		
-		if (javaType.itemType == JavaReferenceType.NULL_TYPE || javaType.itemType.isVoid) {
-			return JavaExpression.from('''true''', JavaPrimitiveType.BOOLEAN)
-		}
-		return statement
 	}
 
 	override protected caseContainsOperation(RosettaContainsExpression expr, Context context) {

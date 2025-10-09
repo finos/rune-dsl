@@ -156,7 +156,7 @@ public class ExpressionGeneratorTest {
         import com.rosetta.model.lib.mapper.MapperS;
 
 
-        return ComparisonResult.of(MapperS.<Boolean>of(false)).or(ComparisonResult.of(MapperS.of(false))).get();
+        return ComparisonResult.ofEmpty().or(ComparisonResult.of(MapperS.of(false))).get();
         """;
 
         assertJavaCode(expected, expr, Boolean.class);

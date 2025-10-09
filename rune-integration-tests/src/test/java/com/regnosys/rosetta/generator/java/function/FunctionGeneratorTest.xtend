@@ -5758,7 +5758,7 @@ class FunctionGeneratorTest {
 						@Override
 						public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo foo) {
 							ComparisonResult result = executeDataRule(foo);
-							if (result.get()) {
+							if (result.getOrDefault(true)) {
 								return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION));
 							}
 							
