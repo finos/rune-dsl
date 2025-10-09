@@ -97,7 +97,6 @@ import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.ChoiceOption
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
-import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.types.CardinalityProvider
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RChoiceOption
@@ -128,7 +127,6 @@ import com.rosetta.model.metafields.MetaFields
 import com.rosetta.util.types.JavaClass
 import com.rosetta.util.types.JavaGenericTypeDeclaration
 import com.rosetta.util.types.JavaPrimitiveType
-import com.rosetta.util.types.JavaReferenceType
 import com.rosetta.util.types.JavaType
 import jakarta.inject.Inject
 import java.math.BigDecimal
@@ -682,7 +680,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val condition = expr.^if.javaCode(JavaPrimitiveType.BOOLEAN, context.scope)
 		val thenBranch = expr.ifthen.javaCode(context.expectedType, context.scope)
 		val elseBranch = expr.elsethen.javaCode(context.expectedType, context.scope)
-				
+		
 		condition
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[new JavaIfThenElseBuilder(it, thenBranch, elseBranch, typeUtil)]
