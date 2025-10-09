@@ -150,6 +150,9 @@ import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationS
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 import static com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperationType.*
 import com.rosetta.util.types.JavaClass
+import com.rosetta.model.lib.expression.ComparisonResult
+import com.rosetta.util.types.JavaReferenceType
+import com.regnosys.rosetta.generator.java.statement.JavaStatement
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -678,11 +681,24 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	override protected caseConditionalExpression(RosettaConditionalExpression expr, Context context) {
 		val condition = expr.^if.javaCode(JavaPrimitiveType.BOOLEAN, context.scope)
 		val thenBranch = expr.ifthen.javaCode(context.expectedType, context.scope)
-		val elseBranch = expr.elsethen.javaCode(context.expectedType, context.scope)
+		val elseBranch = trueOnEmptyExpression(expr.elsethen, context)
+		
 		
 		condition
 			.collapseToSingleExpression(context.scope)
 			.mapExpression[new JavaIfThenElseBuilder(it, thenBranch, elseBranch, typeUtil)]
+	}
+	
+	private def JavaStatementBuilder trueOnEmptyExpression(RosettaExpression expr, Context context) {
+		val rawResult = doSwitch(expr, new Context => [{
+			it.expectedType = expectedType
+			it.scope = scope
+		}])
+		val actual = rawResult.expressionType
+		if (actual.itemType == JavaReferenceType.NULL_TYPE || actual.itemType.isVoid) {
+			return JavaExpression.from('''true''', JavaPrimitiveType.BOOLEAN)
+		}
+		return expr.javaCode(context.expectedType, context.scope)
 	}
 
 	override protected caseContainsOperation(RosettaContainsExpression expr, Context context) {
