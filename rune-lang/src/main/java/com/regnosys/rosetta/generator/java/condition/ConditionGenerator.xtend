@@ -36,7 +36,6 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 	@Inject extension ModelGeneratorUtil
 	
 	
-	
 	override protected streamObjects(RosettaModel model) {
 		model.elements.stream
 			.filter[it instanceof RosettaTypeWithConditions]
