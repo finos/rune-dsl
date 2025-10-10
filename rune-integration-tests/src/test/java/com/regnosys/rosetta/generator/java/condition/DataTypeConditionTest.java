@@ -21,6 +21,43 @@ public class DataTypeConditionTest extends AbstractConditionTest {
 	private RosettaTestModelService testModelService;
 
     @Test
+    void explicitEmptyFromConditionFunctionIsSuccess() {
+        JavaTestModel model = testModelService.toJavaTestModel("""
+				func FooCondition:
+				    inputs:
+				        foo Foo (1..1)
+				
+				    output:
+				        valid boolean (0..1)
+				
+				    set valid:
+				        if foo -> a exists
+				        then empty
+				
+				type Foo:
+					a int (0..1)
+				
+					condition FooCheck:
+					    FooCondition
+				""").compile();
+
+        var condition = getCondition(model, "Foo", "FooCheck");
+
+        RosettaModelObject foo = model.evaluateExpression(RosettaModelObject.class, """
+                Foo {
+                    a: 10
+                }
+                """);
+
+        var fooResults = condition.invoke(RosettaPath.valueOf("foo"), foo);
+
+        assertResults(
+                fooResults,
+                (v1) -> assertSuccess(v1, "FooFooCheck", "foo")
+        );
+    }
+
+    @Test
     void implicitEmptyFromConditionFunctionIsSuccess() {
     	JavaTestModel model = testModelService.toJavaTestModel("""
 				func FooCondition:
