@@ -21,8 +21,10 @@ import com.rosetta.model.lib.mapper.MapperS;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
 
 public class ComparisonResult implements Mapper<Boolean> {
 	private final Boolean result;
@@ -58,7 +60,11 @@ public class ComparisonResult implements Mapper<Boolean> {
 	}
 
 	public static ComparisonResult of(Mapper<Boolean> result) {
-		return new ComparisonResult(!result.getMulti().isEmpty() && result.getMulti().stream().allMatch(r -> r == true), false, null);
+        if (result.getMulti().stream().allMatch(Objects::isNull)) {
+            return ofEmpty();
+        }
+        List<Boolean> filteredResults = result.getMulti().stream().filter(Objects::nonNull).collect(Collectors.toList());
+        return new ComparisonResult(!filteredResults.isEmpty() && filteredResults.stream().allMatch(r -> r == true), false, null);
 	}
 	
 	private ComparisonResult(Boolean result, Boolean emptyOperand, String error) {
