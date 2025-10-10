@@ -38,7 +38,7 @@ public class DataTypeConditionTest extends AbstractConditionTest {
 					a int (0..1)
 				
 					condition FooCheck:
-					    a exists
+					    FooCondition
 				""").compile();
 
     	var condition = getCondition(model, "Foo", "FooCheck");
