@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.function;
 
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.rosetta.model.lib.RosettaModelObject;
@@ -22,6 +21,31 @@ public class FunctionEmptyArgumentTest {
     FunctionGeneratorHelper functionGeneratorHelper;
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
+
+    @Test
+    void argumentWithEmptyAttributeShouldResolveToFalse() {
+        var model = """
+                 type Foo:
+                    someBoolean boolean (0..1)
+                    alwaysFalse boolean (1..1)
+        
+                func MyFunc:
+                    output:
+                        result boolean (1..1)
+        
+                    set result: Foo { alwaysFalse: False, ... } -> someBoolean or Foo { alwaysFalse: False, ... } -> alwaysFalse
+        """;
+
+        var code = generatorTestHelper.generateCode(model);
+
+        var classes = generatorTestHelper.compileToClasses(code);
+
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, Boolean.class);
+
+        assertEquals(false, result);
+    }
 
     @Test
     void canSetPropertyOnEmptyInputArgument() {

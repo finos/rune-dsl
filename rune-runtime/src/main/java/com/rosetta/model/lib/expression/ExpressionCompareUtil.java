@@ -68,11 +68,11 @@ class ExpressionCompareUtil {
 	
 	private static <T extends Comparable<? super T>, X extends Comparable<? super X>> ComparisonResult compare(Mapper<T> m1, Mapper<X> m2, CardinalityOperator o, BinaryOperator<X> reducer, BiPredicate<T, X> comparator, String comparatorString) {
 		if(m1 == null || m2 == null) {
-			return ComparisonResult.failureEmptyOperand("Null operand: [" + m1 + "] " + comparatorString + " [" + m2 + "]");
+			return ComparisonResult.notComparable("Null operand: [" + m1 + "] " + comparatorString + " [" + m2 + "]");
 		}
 		
 		if(m2.resultCount() == 0 || m1.resultCount() == 0) {
-			return ComparisonResult.failureEmptyOperand("Null operand: [" + m1.getPaths() + " : " + m1.get() + "] " + comparatorString + " [" + m2.getPaths() + " : " + m2.get() + "]");
+			return ComparisonResult.notComparable("Null operand: [" + m1.getPaths() + " : " + m1.get() + "] " + comparatorString + " [" + m2.getPaths() + " : " + m2.get() + "]");
 		}
 
 		Optional<X> compareValue = m2.getMulti().stream().reduce(reducer);

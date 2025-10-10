@@ -21,35 +21,53 @@ import com.rosetta.model.lib.mapper.MapperS;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
 
 public class ComparisonResult implements Mapper<Boolean> {
-	private final boolean result;
-	private final boolean emptyOperand;
+	private final Boolean result;
+	@Deprecated
+	private final Boolean emptyOperand;
 	private final String error;
 	
 	public static ComparisonResult success() {
 		return new ComparisonResult(true, false, null);
 	}
 	
+	@Deprecated
 	public static ComparisonResult successEmptyOperand(String error) {
 		return new ComparisonResult(true, true, error);
 	}
+	
 	
 	public static ComparisonResult failure(String error) {
 		return new ComparisonResult(false, false, error);
 	}
 	
+	@Deprecated
 	public static ComparisonResult failureEmptyOperand(String error) {
 		return new ComparisonResult(false, true, error);
 	}
 	
-	public static ComparisonResult of(Mapper<Boolean> result) {
-		return new ComparisonResult(result.getMulti().stream().allMatch(r -> r == true), false, null);
+	public static ComparisonResult ofEmpty() {
+		return new ComparisonResult(null, null, null);
 	}
 	
-	private ComparisonResult(boolean result, boolean emptyOperand, String error) {
+	public static ComparisonResult notComparable(String error) {
+		return new ComparisonResult(null, null, error);
+	}
+
+	public static ComparisonResult of(Mapper<Boolean> result) {
+        if (result.getMulti().stream().allMatch(Objects::isNull)) {
+            return ofEmpty();
+        }
+        List<Boolean> filteredResults = result.getMulti().stream().filter(Objects::nonNull).collect(Collectors.toList());
+        return new ComparisonResult(!filteredResults.isEmpty() && filteredResults.stream().allMatch(r -> r == true), false, null);
+	}
+	
+	private ComparisonResult(Boolean result, Boolean emptyOperand, String error) {
 		this.result = result;
 		this.emptyOperand = emptyOperand;
 		this.error = error;
@@ -57,12 +75,12 @@ public class ComparisonResult implements Mapper<Boolean> {
 	
 	@Override
 	public Boolean get() {
-		return result;
+		return getOrDefault(false);
 	}
 	
 	@Override
 	public Boolean getOrDefault(Boolean defaultValue) {
-		return result;
+		return result == null ? defaultValue : result;
 	}
 	
 	public String getError() {
@@ -70,6 +88,10 @@ public class ComparisonResult implements Mapper<Boolean> {
 	}
 	
 	// and
+	
+	public boolean isEmptyOperand() {
+		return result == null || (emptyOperand != null && emptyOperand == true);
+	}
 	
 	public ComparisonResult and(ComparisonResult other) {
 		return and(this, other);
@@ -80,13 +102,13 @@ public class ComparisonResult implements Mapper<Boolean> {
 	}
 	
 	private ComparisonResult and(ComparisonResult r1, ComparisonResult r2) {
-		boolean newResult = r1.result && r2.result;
+		boolean newResult = r1.get() && r2.get();
 		String newError = "";
-		if (!r1.result) {
+		if (!r1.get()) {
 			newError+=r1.error;
 		}
-		if (!r2.result) {
-			if (!r1.result) {
+		if (!r2.get()) {
+			if (!r1.get()) {
 				newError+=" and ";
 			}
 			newError+=r2.error;
@@ -105,7 +127,7 @@ public class ComparisonResult implements Mapper<Boolean> {
 	}
 	
 	private ComparisonResult or(ComparisonResult r1, ComparisonResult r2) {
-		boolean newResult = r1.result || r2.result;
+		boolean newResult = r1.get() || r2.get();
 		String newError = "";
 		newError+=r1.error;
 		newError+=" and ";
@@ -116,13 +138,13 @@ public class ComparisonResult implements Mapper<Boolean> {
 	// utils
 	
 	private ComparisonResult combineIgnoreEmptyOperand(ComparisonResult other, BinaryOperator<ComparisonResult> combineFunc) {
-		if(this.emptyOperand && other.emptyOperand) {
-			return ComparisonResult.failureEmptyOperand(this.error + " and " + other.error);
+		if(this.isEmptyOperand() && other.isEmptyOperand()) {
+			return ComparisonResult.ofEmpty();
 		}
-		if(this.emptyOperand) {
+		if(this.isEmptyOperand()) {
 			return other;
 		}
-		if(other.emptyOperand) {
+		if(other.isEmptyOperand()) {
 			return this;
 		}
 		return combineFunc.apply(this, other);
@@ -145,11 +167,11 @@ public class ComparisonResult implements Mapper<Boolean> {
 
 	@Override
 	public int resultCount() {
-		return emptyOperand ? 0 : 1;
+		return isEmptyOperand() ? 0 : 1;
 	}
 
 	public MapperS<Boolean> asMapper() {
-		return emptyOperand ? MapperS.ofNull() : MapperS.of(this.get());
+		return isEmptyOperand() ? MapperS.ofNull() : MapperS.of(this.get());
 	}
 	
 	@Override
