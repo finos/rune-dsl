@@ -91,7 +91,7 @@ public class MapperUtils {
 		if (mapper instanceof ComparisonResult) {
 			return (ComparisonResult) mapper;
 		} else if (mapper.getMulti().isEmpty()) {
-			return ComparisonResult.successEmptyOperand("");
+			return ComparisonResult.success();
 		} else {
 			return mapper.getMulti().stream().allMatch(Boolean::booleanValue) ? ComparisonResult.success() : ComparisonResult.failure("");
 		}

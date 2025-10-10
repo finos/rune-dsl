@@ -53,6 +53,10 @@ public class ComparisonResult implements Mapper<Boolean> {
 		return new ComparisonResult(null, null, null);
 	}
 	
+	public static ComparisonResult notComparable(String error) {
+		return new ComparisonResult(null, null, error);
+	}
+
 	public static ComparisonResult of(Mapper<Boolean> result) {
 		return new ComparisonResult(!result.getMulti().isEmpty() && result.getMulti().stream().allMatch(r -> r == true), false, null);
 	}
