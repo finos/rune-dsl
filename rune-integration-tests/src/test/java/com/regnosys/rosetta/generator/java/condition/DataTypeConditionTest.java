@@ -19,13 +19,15 @@ import com.rosetta.model.lib.path.RosettaPath;
 public class DataTypeConditionTest extends AbstractConditionTest {
 	@Inject
 	private RosettaTestModelService testModelService;
-	
+
+    //TODO: add test where condition is in a function and the function returns empty
+
 	@Test
 	void emptyConditionIsSuccess() {
 		JavaTestModel model = testModelService.toJavaTestModel("""
 				type Foo:
 					a int (0..1)
-					
+				
 					condition C:
 					    empty
 				""").compile();
@@ -51,7 +53,7 @@ public class DataTypeConditionTest extends AbstractConditionTest {
 		JavaTestModel model = testModelService.toJavaTestModel("""
 				type Foo:
 					a int (0..1)
-					
+				
 					condition C:
 					    if a exists
 					    then empty
@@ -122,7 +124,7 @@ public class DataTypeConditionTest extends AbstractConditionTest {
 		JavaTestModel model = testModelService.toJavaTestModel("""
 				type Foo:
 					a int (0..1)
-					
+				
 					condition C:
 					    if a exists
 					    then a = 42
@@ -151,7 +153,7 @@ public class DataTypeConditionTest extends AbstractConditionTest {
 					[metadata key]
 					a date (1..1)
 					b date (1..1)
-					
+				
 					condition DateCondition:
 						a <= b
 				""").compile();
@@ -184,7 +186,7 @@ public class DataTypeConditionTest extends AbstractConditionTest {
 		JavaTestModel model = testModelService.toJavaTestModel("""
 				type Foo:
 					a int (0..1)
-					
+				
 					condition C:
 					    FooIsValid
 				
@@ -223,7 +225,7 @@ public class DataTypeConditionTest extends AbstractConditionTest {
 		JavaTestModel model = testModelService.toJavaTestModel("""
 				type Foo:
 					a int (0..1)
-					
+				
 					condition C:
 					    item -> a exists and [item, item] any = item
 				""").compile();
@@ -257,13 +259,13 @@ public class DataTypeConditionTest extends AbstractConditionTest {
 				type Foo:
 					x string (0..1)
 					y string (0..1)
-					
+				
 					condition A:
 						x exists
 				
 				type Bar extends Foo:
 					z string (0..1)
-					
+				
 					condition B:
 						y exists
 				""").compile();
