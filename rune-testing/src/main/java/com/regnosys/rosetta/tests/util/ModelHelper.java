@@ -29,32 +29,7 @@ public class ModelHelper {
     private ResourceHelper resourceHelper;
 
     public static final String commonTestTypes = getVersionInfo() + """
-        
-        type ReportableEvent:
-        
         metaType scheme string
-        
-        body Authority ESMA
-        body Authority CFTC
-        
-        corpus Regulation MiFIR
-        corpus Regulation EMIR
-        
-        corpus CommissionDelegatedRegulation RTS_22
-        
-        segment article
-        segment whereas
-        segment annex
-        segment section
-        segment field
-        
-        synonym source FIX
-        synonym source FpML
-        synonym source DTCC
-        synonym source ISO
-        synonym source ISO_20022
-        synonym source Bank_A
-        synonym source Venue_B
         """;
 
     private static String getVersionInfo() {

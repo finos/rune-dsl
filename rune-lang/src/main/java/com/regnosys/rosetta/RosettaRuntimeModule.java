@@ -1,6 +1,7 @@
 package com.regnosys.rosetta;
 
 import com.regnosys.rosetta.scoping.RosettaLinkingService;
+import com.regnosys.rosetta.validation.uniquenames.RosettaNamesAreUniqueValidationHelper;
 import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.formatting2.FormatterRequest;
 import org.eclipse.xtext.generator.IOutputConfigurationProvider;
@@ -15,6 +16,8 @@ import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.service.DispatchingProvider;
+import org.eclipse.xtext.validation.DefaultUniqueNameContext;
+import org.eclipse.xtext.validation.INamesAreUniqueValidationHelper;
 import org.eclipse.xtext.validation.IResourceValidator;
 
 import com.google.inject.Binder;
@@ -127,4 +130,11 @@ public class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	public Class<? extends ILinkingService> bindILinkingService() {
 		return RosettaLinkingService.class;
 	}
+    
+    public Class<? extends INamesAreUniqueValidationHelper> bindINamesAreUniqueValidationHelper() {
+    	return RosettaNamesAreUniqueValidationHelper.class;
+    }
+    public Class<? extends RosettaNamesAreUniqueValidationHelper.ContextProvider> bindINamesAreUniqueValidationHelperContextProvider() {
+        return DefaultUniqueNameContext.Global.class;
+    }
 }

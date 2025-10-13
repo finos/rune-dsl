@@ -1,7 +1,9 @@
 package com.regnosys.rosetta.resource;
 
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.regnosys.rosetta.rosetta.ExternalAnnotationSource;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import org.apache.log4j.Logger;
 import org.eclipse.xtext.naming.QualifiedName;
@@ -38,6 +40,9 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
                 return createAttributeDescription((Attribute) eObject, acceptor);
             } else if (eObject instanceof RosettaRule) {
                 return createRosettaRuleDescription((RosettaRule) eObject, acceptor);
+            } else if (eObject instanceof ExternalAnnotationSource) {
+                super.createEObjectDescriptions(eObject, acceptor);
+                return false; // Do not traverse down annotation sources
             }
         } catch (Exception exc) {
             LOGGER.error(exc.getMessage(), exc);
@@ -78,7 +83,7 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
         }
         INode node = NodeModelUtils.getNode(eObject);
         if (node != null) {
-            return node.getText();
+            return NodeModelUtils.getTokenText(node);
         }
         return null;
     }
@@ -87,8 +92,8 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
     		return null;
     	}
         return list.stream()
-        		.map(e -> serialize(e))
-        		.filter(s -> s != null)
+        		.map(this::serialize)
+        		.filter(Objects::nonNull)
         		.collect(Collectors.joining(","));
     }
 }

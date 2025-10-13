@@ -28,7 +28,7 @@ public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
 						result int (1..1)
 					set result: 42
 				""", """
-				ERROR Func extension not allowed
+				ERROR (null) 'You can only extend a function in a file with a scope' at 9:18, length 3, on Function
 				""");
 	}
 
@@ -59,9 +59,9 @@ public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
                         set result: 0
                     """
                 ),"""
-				ERROR Cannot extend Foo more than once in scope
-				ERROR Cannot extend Foo more than once in scope
-				""");
+                ERROR (null) 'Function 'Foo' is extended multiple times in scope MyScope' at 5:18, length 3, on Function
+                ERROR (null) 'Function 'Foo' is extended multiple times in scope MyScope' at 10:18, length 3, on Function
+                """);
     }
 
     @Test
@@ -76,7 +76,7 @@ public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
                     version "1"
                     """
                 ), """
-				ERROR MyScope already defined
+				ERROR (null) 'Duplicate scope 'MyScope' in namespace 'test'' at 2:7, length 7, on RosettaScope
 				""");
     }
 	
@@ -114,13 +114,13 @@ public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
                             result number (1..1)
                         set result: 0
                     """
-                ),"""
-				ERROR ab is not the same
-				ERROR b is not the same
-				ERROR c is not the same
-				ERROR d is not the same
-				ERROR result is not the same
-				""");
+                ), """
+                ERROR (null) 'Input ab does not match the original input in Foo' at 7:9, length 13, on Function
+                ERROR (null) 'Input b does not match the original input in Foo' at 8:9, length 10, on Function
+                ERROR (null) 'Input c does not match the original input in Foo' at 9:9, length 15, on Function
+                ERROR (null) 'Too many inputs. The original function Foo only defines 3 inputs.' at 10:9, length 12, on Function
+                ERROR (null) 'Output result does not match the original output in Foo' at 12:3, length 17, on Function
+                """);
 	}
 
     @Test

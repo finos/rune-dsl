@@ -13,7 +13,7 @@ RosettaModel:
 	 (overridden?='override')? 'namespace' name=(QualifiedName | STRING) (':' RosettaDefinable)? // TODO do we need STRING here? It is not supported for highlighting.
 	// TODO colon is inconsistent with other documentation
 	
-	scope=Scope?
+	scope=RosettaScope?
 	('version' version=STRING)? // TODO: could do better than STRING
 	
 	imports+=Import*
@@ -26,7 +26,7 @@ QualifiedName:
 	ValidID ('.' ValidID)*
 ;
 
-Scope:
+RosettaScope:
 	'scope' name=ValidID RosettaDefinable?
 ;
 
@@ -108,7 +108,7 @@ Function:
 		RosettaNamed
 		| ({FunctionDispatch} RosettaNamed '(' attribute=[Attribute|ValidID] ':' value=EnumValueReference')')
 	)
-	('extends' superFunction=[Function|ValidID])?
+	('extends' superFunction=[Function|QualifiedName])?
 	':' RosettaDefinable?
 	(References|Annotations)*
 	('inputs' ':' inputs += Attribute+)?
