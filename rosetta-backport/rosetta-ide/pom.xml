@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.regnosys.rosetta</groupId>
         <artifactId>rosetta-backport-parent</artifactId>
-        <version>0.0.0.main-SNAPSHOT</version>
+        <version>9.67.9</version>
     </parent>
 
     <name>Rosetta Language Server</name>
