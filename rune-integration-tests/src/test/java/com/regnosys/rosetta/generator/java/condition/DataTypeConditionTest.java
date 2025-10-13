@@ -21,6 +21,66 @@ public class DataTypeConditionTest extends AbstractConditionTest {
 	private RosettaTestModelService testModelService;
 
     @Test
+    void thenExpressionWithAndThatResolvesFalseIsFailure() {
+        JavaTestModel model = testModelService.toJavaTestModel("""
+				type Bar:
+				    barValue int (1..1)
+				
+				type Foo:
+					fooValue int (0..1)
+					bar Bar (0..1)
+				
+					condition C:
+					    if fooValue exists
+					    then fooValue > 0 and if bar exists
+					        then bar -> barValue > 0
+				""").compile();
+
+        var condition = getCondition(model, "Foo", "C");
+
+        RosettaModelObject foo = model.evaluateExpression(RosettaModelObject.class, """
+				Foo {
+				    fooValue: 10,
+				    ...
+				}
+				""");
+
+        var fooResults = condition.invoke(RosettaPath.valueOf("foo"), foo);
+
+        assertResults(
+                fooResults,
+                (v1) -> assertFailure(v1, "FooC", "foo", "right of `and` operation is empty")
+        );
+    }
+
+    @Test
+    void emptyAndEmptyIsSuccess() {
+        JavaTestModel model = testModelService.toJavaTestModel("""
+				type Foo:
+					a int (0..1)
+				
+					condition C:
+					    if a exists
+					    then empty and empty
+				""").compile();
+
+        var condition = getCondition(model, "Foo", "C");
+
+        RosettaModelObject foo = model.evaluateExpression(RosettaModelObject.class, """
+				Foo {
+				    a: 10
+				}
+				""");
+
+        var fooResults = condition.invoke(RosettaPath.valueOf("foo"), foo);
+
+        assertResults(
+                fooResults,
+                (v1) -> assertSuccess(v1, "FooC", "foo")
+        );
+    }
+
+    @Test
     void explicitEmptyFromConditionFunctionIsSuccess() {
         JavaTestModel model = testModelService.toJavaTestModel("""
 				func FooCondition:

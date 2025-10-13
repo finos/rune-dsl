@@ -90,7 +90,7 @@ public class ComparisonResult implements Mapper<Boolean> {
 	// and
 	
 	public boolean isEmptyOperand() {
-		return result == null || (emptyOperand != null && emptyOperand == true);
+		return result == null || (emptyOperand != null && emptyOperand);
 	}
 	
 	public ComparisonResult and(ComparisonResult other) {
@@ -102,16 +102,20 @@ public class ComparisonResult implements Mapper<Boolean> {
 	}
 	
 	private ComparisonResult and(ComparisonResult r1, ComparisonResult r2) {
+        if (r1.isEmptyOperand() && r2.isEmptyOperand()) {
+            return ComparisonResult.ofEmpty();
+        }
+
 		boolean newResult = r1.get() && r2.get();
 		String newError = "";
 		if (!r1.get()) {
-			newError+=r1.error;
+			newError+=r1.error == null ? "left of `and` operation is empty" : r1.error;
 		}
 		if (!r2.get()) {
 			if (!r1.get()) {
 				newError+=" and ";
 			}
-			newError+=r2.error;
+			newError+=r2.error == null ? "right of `and` operation is empty" : r2.error;
 		}
 		return new ComparisonResult(newResult, false, newError);
 	}
