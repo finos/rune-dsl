@@ -591,7 +591,10 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 	
 	@Override
 	protected Boolean caseSuperCall(RosettaSuperCall expr, Map<RosettaSymbol, Boolean> context) {
-		// TODO Auto-generated method stub
-		return null;
+		Function superFunction = expr.getSuperFunction();
+        if (superFunction != null) {
+            return isSymbolMulti(superFunction);
+        }
+		return false;
 	}
 }

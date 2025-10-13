@@ -664,8 +664,7 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
     }
 
 	@Override
-	protected RMetaAnnotatedType caseSuperCall(RosettaSuperCall expr, Map<RosettaSymbol, RMetaAnnotatedType> context) {
-		// TODO Auto-generated method stub
-		return null;
+	protected RMetaAnnotatedType caseSuperCall(RosettaSuperCall expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
+        return safeRType(expr.getSuperFunction(), expr, cycleTracker);
 	}
 }

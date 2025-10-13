@@ -10,6 +10,7 @@ import com.regnosys.rosetta.rosetta.simple.Segment;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch;
 import jakarta.inject.Inject;
+import jakarta.inject.Provider;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.slf4j.Logger;
@@ -206,8 +207,17 @@ public interface ExpectedTypeProvider {
 
             @Override
             protected RMetaAnnotatedType caseSymbolReference(RosettaSymbolReference expr, Context context) {
+                return caseCallableReference(expr::getSymbol, context);
+            }
+
+            @Override
+            protected RMetaAnnotatedType caseSuperCall(RosettaSuperCall expr, Context context) {
+                return caseCallableReference(expr::getSuperFunction, context);
+            }
+            
+            private RMetaAnnotatedType caseCallableReference(Provider<RosettaSymbol> symbolProvider, Context context) {
                 if (ROSETTA_CALLABLE_REFERENCE__RAW_ARGS.equals(context.reference)) {
-                    RosettaSymbol symbol = expr.getSymbol();
+                    RosettaSymbol symbol = symbolProvider.get();
                     if (symbol instanceof Function fun) {
                         return typeProvider.getRTypeOfSymbol(fun.getInputs().get(context.index));
                     } else if (symbol instanceof RosettaRule rule) {
@@ -541,12 +551,6 @@ public interface ExpectedTypeProvider {
                 }
                 return null;
             }
-
-			@Override
-			protected RMetaAnnotatedType caseSuperCall(RosettaSuperCall expr, Context context) {
-				// TODO Auto-generated method stub
-				return null;
-			}
         }
     }
 }

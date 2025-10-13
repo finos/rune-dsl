@@ -148,12 +148,18 @@ class RosettaImplicitVariable extends RosettaExpression, RosettaNamed, Annotatio
 }
 
 class RosettaSuperCall extends RosettaCallableReference, RosettaNamed {
+    op Function getSuperFunction() {
+        val containingFunction = EcoreUtil2.getContainerOfType(this, Function)
+        if (containingFunction !== null) {
+            return containingFunction.superFunction
+        }
+        return null
+    }
+
 	op RosettaExpression[] getArgs() {
 		if (!explicitArguments && implicitVariableIsInContext) {
-			val enclosingFunction = EcoreUtil2.getContainerOfType(this, Function)
-			// Note: we assume the number of parameters of the enclosing function and its super function are equal.
-			// This means we don't need to resolve the reference to the super function to get the number of parameters.
-			if (enclosingFunction !== null && enclosingFunction.numberOfParameters == 1) {
+			val superFunction = this.getSuperFunction
+			if (superFunction !== null && superFunction.numberOfParameters == 1) {
 				if (implicitArgument === null) {
 					val def = ExpressionFactory.eINSTANCE.createRosettaImplicitVariable();
 					def.setName("item");
