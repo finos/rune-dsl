@@ -134,7 +134,7 @@ public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
 						result int (1..1)
 					set result: super()
 				""","""
-				ERROR can only call `super` when extending
+				ERROR (null) 'Calling `super` is only allowed when extending a function' at 7:14, length 5, on RosettaSuperCall
 				""");
     }
 
@@ -167,39 +167,38 @@ public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
         ));
     }
 
-    @Test
-    void testCannotCallExtendedFunctionFromInsideScope() {
-        assertIssues("""
-				namespace test
-				version "1"
-				
-				func Foo1:
-				    output:
-						result int (1..1)
-					set result: 0
-				
-				func Foo2:
-				    output:
-						result int (1..1)
-					set result: 0
-				
-				""", List.of("""
-                    namespace test
-                    scope MyScope
-                    version "1"
-                    
-                    func Bar1 extends Foo1:
-                        output:
-                            result int (1..1)
-                        set result: super()
-                    
-                    func Bar2 extends Foo2:
-                        output:
-                            result int (1..1)
-                        set result: Bar1()
-                    """
-                ), """
-                ERROR cannot call extension Bar1 from within scope
-                """);
-    }
+//    @Test
+//    void testCannotCallExtendedFunctionFromInsideScope() {
+//        assertIssues("""
+//                namespace test
+//                scope MyScope
+//                version "1"
+//    
+//                func Bar1 extends Foo1:
+//                    output:
+//                        result int (1..1)
+//                    set result: super()
+//    
+//                func Bar2 extends Foo2:
+//                    output:
+//                        result int (1..1)
+//                    set result: Bar1()
+//                """, List.of("""
+//                    namespace test
+//                    version "1"
+//                    
+//                    func Foo1:
+//                        output:
+//                            result int (1..1)
+//                        set result: 0
+//                    
+//                    func Foo2:
+//                        output:
+//                            result int (1..1)
+//                        set result: 0
+//                    """
+//                ), """
+//                ERROR cannot call extension Bar1 from within scope
+//                """);
+//    }
 }

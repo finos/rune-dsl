@@ -125,6 +125,10 @@ abstract class RosettaCallableReference extends RosettaExpression {
 	
 	boolean implicitVariableIsInContext
 	contains RosettaExpression implicitArgument
+	
+	op RosettaExpression[] getArgs() {
+	    rawArgs
+	}
 }
 
 class RosettaSymbolReference extends RosettaCallableReference {

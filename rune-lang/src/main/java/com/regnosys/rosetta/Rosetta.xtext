@@ -465,7 +465,7 @@ RosettaSegment:
  */ 
 
 RosettaReferenceOrFunctionCall returns RosettaExpression:
-	  ({RosettaSuperCall} 'super' | {RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName]) (explicitArguments?='(' (rawArgs+=Expression (',' rawArgs+=Expression)*)? ')')?
+	  ({RosettaSuperCall} name='super' | {RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName]) (explicitArguments?='(' (rawArgs+=Expression (',' rawArgs+=Expression)*)? ')')?
 	| RosettaImplicitVariable
 ;
 
