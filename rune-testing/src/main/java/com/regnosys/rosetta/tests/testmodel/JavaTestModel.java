@@ -21,6 +21,7 @@ import com.regnosys.rosetta.types.REnumType;
 import com.regnosys.rosetta.types.RFunction;
 import com.regnosys.rosetta.types.RObjectFactory;
 import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.context.RuneScope;
 import com.rosetta.model.lib.functions.LabelProvider;
 import com.rosetta.model.lib.functions.RosettaFunction;
 import com.rosetta.util.types.JavaType;
@@ -94,19 +95,34 @@ public class JavaTestModel {
 		return this;
 	}
 	
-	public <T> T evaluateExpression(Class<T> resultType, CharSequence expr) {		
+    public <T> T evaluateExpression(Class<T> resultType, CharSequence expr) {
+    	return evaluateExpression(resultType, expr, null);
+    }
+	public <T> T evaluateExpression(Class<T> resultType, CharSequence expr, RuneScope scope) {		
 		return resultType.cast(evaluateExpression(JavaType.from(resultType), expr));
 	}
-	public Object evaluateExpression(JavaType resultType, CharSequence expr) {
+    public Object evaluateExpression(JavaType resultType, CharSequence expr) {
+        return evaluateExpression(resultType, expr, null);
+    }
+	public Object evaluateExpression(JavaType resultType, CharSequence expr, RuneScope scope) {
 		assertCompiled();
 		
 		return evaluatorService.evaluate(expr, rosettaModel.getModel(), resultType, inMemoryCompiler.getClassloader());
 	}
 	
-	
 	public RosettaTestModel getRosettaModel() {
 		return rosettaModel;
 	}
+    
+    private JavaType getScopeJavaType(String name) {
+        return null;
+    }
+    public Class<? extends RuneScope> getScopeClass(String name) {
+    	return getClass(RuneScope.class, getScopeJavaType(name));
+    }
+    public RuneScope getScopeInstance(String name) {
+    	return injector.getInstance(getScopeClass(name));
+    }
 	
 	public JavaType getTypeJavaType(String name) {
 		Data type = rosettaModel.getType(name);

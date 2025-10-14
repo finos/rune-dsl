@@ -20,6 +20,7 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.xtext.EcoreUtil2;
+import org.eclipse.xtext.resource.IResourceDescriptionsProvider;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.testing.validation.ValidationTestHelper;
 
@@ -45,6 +46,8 @@ public class RosettaTestModelService {
 	private ModelHelper modelHelper;
 	@Inject 
     private ValidationTestHelper validationHelper;
+    @Inject
+    private IResourceDescriptionsProvider indexAccess;
 	@Inject
 	private ExpressionParser expressionParser;
 	@Inject
@@ -73,11 +76,11 @@ public class RosettaTestModelService {
 		sources[0] = source;
 		System.arraycopy(other, 0, sources, 1, other.length);
 		if (assertNoIssues) {
-			model = modelHelper.parseRosettaWithNoIssues(sources).get(0);
+			model = modelHelper.parseRosettaWithNoIssues(sources).getFirst();
 		} else {
-			model = modelHelper.parseRosetta(sources).get(0);
+			model = modelHelper.parseRosetta(sources).getFirst();
 		}
-		return new RosettaTestModel(source, model, expressionParser);
+		return new RosettaTestModel(source, model, indexAccess, expressionParser);
 	}
 	/**
 	 * Load a test model from a file or folder on the classpath. It will assert that there are no issues in the model.
@@ -109,11 +112,11 @@ public class RosettaTestModelService {
 	    if (resources.size() != 1) {
 	    	throw new IllegalArgumentException("Expecting 1 rosetta file at " + resourceFolderOrFile + ", but found " + resources.size());
 	    }
-	    XtextResource resource = (XtextResource) resources.get(0);
+	    XtextResource resource = (XtextResource) resources.getFirst();
 	    
 	    String source = CharStreams.toString(new InputStreamReader(resourceSet.getURIConverter().createInputStream(resource.getURI(), resourceSet.getLoadOptions()), StandardCharsets.UTF_8));
-	    RosettaModel model = (RosettaModel) resource.getContents().get(0);
-	    return new RosettaTestModel(source, model, expressionParser);
+	    RosettaModel model = (RosettaModel) resource.getContents().getFirst();
+	    return new RosettaTestModel(source, model, indexAccess, expressionParser);
 	}
 	
 	/**
