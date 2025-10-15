@@ -111,35 +111,35 @@
                 <artifactId>maven-clean-plugin</artifactId>
                 <configuration>
                     <filesets combine.children="append">
-                        <!-- rosetta-lang -->
+                        <!-- rune-lang -->
                         <fileset>
-                            <directory>${basedir}/../rosetta-lang/src-gen</directory>
+                            <directory>${basedir}/../rune-lang/src-gen</directory>
                             <includes>
                                 <include>**/*</include>
                             </includes>
                         </fileset>
                         <fileset>
-                            <directory>${basedir}/../rosetta-lang/emf-gen</directory>
+                            <directory>${basedir}/../rune-lang/emf-gen</directory>
                             <includes>
                                 <include>**/*</include>
                             </includes>
                         </fileset>
                         <fileset>
-                            <directory>${basedir}/../rosetta-lang/xtend-gen</directory>
+                            <directory>${basedir}/../rune-lang/xtend-gen</directory>
                             <includes>
                                 <include>**/*</include>
                             </includes>
                         </fileset>
-                        <!-- rosetta-testing -->
+                        <!-- rune-testing -->
                         <fileset>
-                            <directory>${basedir}/../rosetta-testing/src-gen/</directory>
+                            <directory>${basedir}/../rune-testing/src-gen/</directory>
                             <includes>
                                 <include>**/*</include>
                             </includes>
                         </fileset>
-                        <!-- rosetta-ide -->
+                        <!-- rune-ide -->
                         <fileset>
-                            <directory>${basedir}/../rosetta-ide/src-gen/</directory>
+                            <directory>${basedir}/../rune-ide/src-gen/</directory>
                             <includes>
                                 <include>**/*</include>
                             </includes>

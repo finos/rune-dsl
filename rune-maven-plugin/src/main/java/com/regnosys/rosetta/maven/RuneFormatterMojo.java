@@ -41,7 +41,7 @@ import com.regnosys.rosetta.formatting2.ResourceFormatterService;
  * <p>
  * To run the goal:
  * <ul>
- * <li>{@code mvn com.regnosys.rosetta:rosetta-maven-plugin:version:format -Dpath="path/to/directory"}</li>
+ * <li>{@code mvn org.finos.rune:rune-maven-plugin:version:format -Dpath="path/to/directory"}</li>
  * <li>Optionally, provide a custom formatting options file using
  * {@code -DformattingOptionsPath="path/to/formattingOptions.json"}</li>
  * </ul>
@@ -50,7 +50,7 @@ import com.regnosys.rosetta.formatting2.ResourceFormatterService;
  * <p>
  * Example with both parameters:
  * <ul>
- * <li>{@code mvn com.regnosys.rosetta:rosetta-maven-plugin:version:format -Dpath="path/to/directory" -DformattingOptionsPath="path/to/formattingOptions.json"}</li>
+ * <li>{@code mvn org.finos.rune:rune-maven-plugin:version:format -Dpath="path/to/directory" -DformattingOptionsPath="path/to/formattingOptions.json"}</li>
  * </ul>
  * </p>
  */
