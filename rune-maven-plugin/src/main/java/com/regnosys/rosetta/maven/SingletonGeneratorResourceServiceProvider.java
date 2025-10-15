@@ -34,7 +34,7 @@ import com.google.inject.ConfigurationException;
 /**
  * A resource service provider that will reuse generator instances.
  * 
- * Necessary for running stateful external code generators using the rosetta-maven-plugin.
+ * Necessary for running stateful external code generators using the rune-maven-plugin.
  *
  */
 public class SingletonGeneratorResourceServiceProvider implements IResourceServiceProvider {

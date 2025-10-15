@@ -9,13 +9,13 @@ PLAN_PATH = REPO_ROOT/".junie"/"xtend-migration-plan.md"
 # Top-level folders to scan per requirement (per top level folder)
 # We consider only source Xtend, not generated artifacts (.xtendbin, xtend-gen outputs).
 SCAN_DIRS = [
-    "rosetta-ide",
-    "rosetta-integration-tests",
-    "rosetta-lang",
-    "rosetta-runtime",
-    "rosetta-testing",
-    "rosetta-tools",
-    "rosetta-xcore-plugin-dependencies",
+    "rune-ide",
+    "rune-integration-tests",
+    "rune-lang",
+    "rune-runtime",
+    "rune-testing",
+    "rune-tools",
+    "rune-xcore-plugin-dependencies",
 ]
 
 EXCLUDE_DIR_NAMES = {"xtend-gen", "target", ".git", ".idea", ".junie"}
@@ -46,7 +46,7 @@ def list_xtend_basenames_by_top_folder():
 
 CHECKBOX_RE = re.compile(r"^(\s*- \[)( |x)(\] )([A-Za-z0-9_.$-]+)\s*$")
 SECTION_HEADER_RE = re.compile(r"^###\s+([a-zA-Z0-9.-]+)\s*\(")
-# Fallback header without count: e.g. "### rosetta-lang"
+# Fallback header without count: e.g. "### rune-lang"
 SECTION_HEADER_SIMPLE_RE = re.compile(r"^###\s+([a-zA-Z0-9.-]+)\s*$")
 
 
