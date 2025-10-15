@@ -1,0 +1,12 @@
+delimiters "<", ">"
+
+scopeClass(scopeName, overrides) ::= <<
+public class <scopeName> extends AbstractRuneScope {
+  @Override
+  protected void configure() {
+    <overrides:{o |
+      addOverride(<o.from>.class, <o.to>.class);
+    }>
+  }
+}
+>>
