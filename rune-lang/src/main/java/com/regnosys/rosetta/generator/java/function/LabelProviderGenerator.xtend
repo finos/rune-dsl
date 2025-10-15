@@ -55,7 +55,7 @@ class LabelProviderGenerator extends RObjectJavaClassGenerator<RFunction, RGener
 	override protected createTypeRepresentation(RFunction function) {
 		typeTranslator.toLabelProviderJavaClass(function)
 	}
-	override protected generate(RFunction function, RGeneratedJavaClass<?> labelClass, String version, JavaClassScope classScope) {
+	override protected generateClass(RFunction function, RGeneratedJavaClass<?> labelClass, String version, JavaClassScope classScope) {
 		val functionOrigin = function.EObject
 		val attributeToRuleMap = if (functionOrigin instanceof RosettaReport) {
 			ruleService.traverse(

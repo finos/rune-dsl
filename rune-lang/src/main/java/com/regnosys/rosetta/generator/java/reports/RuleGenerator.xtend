@@ -26,7 +26,7 @@ class RuleGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJavaC
 	override protected createTypeRepresentation(RFunction rFunction) {
 		rFunction.toFunctionJavaClass
 	}
-	override protected generate(RFunction rFunction, RGeneratedJavaClass<? extends RosettaFunction> clazz, String version, JavaClassScope scope) {
+	override protected generateClass(RFunction rFunction, RGeneratedJavaClass<? extends RosettaFunction> clazz, String version, JavaClassScope scope) {
 		val baseInterface = JavaParameterizedType.from(new TypeReference<ReportFunction<?, ?>>() {}, rFunction.inputs.head.toMetaJavaType, rFunction.output.toMetaJavaType)
 		return functionGenerator.rBuildClass(rFunction, clazz, false, #[baseInterface], emptyMap, true, scope)
 	}

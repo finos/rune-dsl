@@ -19,7 +19,7 @@ public class ScopeTemplate extends STTemplate {
 
     @Override
     protected void applyArguments(ST st) {
-        st.add("name", name);
+        st.add("scopeName", name);
         st.add("overrides", overrides);
     }
     

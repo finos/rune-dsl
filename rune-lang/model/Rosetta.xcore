@@ -19,7 +19,7 @@ import com.regnosys.rosetta.rosetta.simple.Condition
 
 class RosettaModel extends RosettaDefinable {
 	String name
-	contains RosettaScope scope
+	contains RosettaScope scope opposite model
 	String version = "0.0.0"
 	boolean overridden
 	contains Import[] imports
@@ -27,7 +27,8 @@ class RosettaModel extends RosettaDefinable {
 	contains RosettaRootElement[] elements opposite model
 }
 
-class RosettaScope extends RosettaRootElement, RosettaNamed, RosettaDefinable {
+class RosettaScope extends RosettaNamed, RosettaDefinable {
+    container RosettaModel model opposite scope
 }
 
 class Import {

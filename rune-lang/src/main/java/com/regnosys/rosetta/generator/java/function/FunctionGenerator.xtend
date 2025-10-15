@@ -107,7 +107,7 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 	override protected createTypeRepresentation(RFunction rFunction) {
 		rFunction.toFunctionJavaClass
 	}
-	override protected generate(RFunction rFunction, RGeneratedJavaClass<? extends RosettaFunction> javaFunctionClass, String version, JavaClassScope scope) {
+	override protected generateClass(RFunction rFunction, RGeneratedJavaClass<? extends RosettaFunction> javaFunctionClass, String version, JavaClassScope scope) {
 		val origin = rFunction.EObject
 		if (origin instanceof Function && (origin as Function).handleAsEnumFunction) {
 			val dependencies = collectFunctionDependencies(origin as Function)

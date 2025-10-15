@@ -1,6 +1,6 @@
 package com.rosetta.model.lib.context;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 public class ContextFactory {
     @Inject

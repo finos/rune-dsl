@@ -20,6 +20,7 @@ import com.regnosys.rosetta.generator.java.object.validators.OnlyExistsValidator
 import com.regnosys.rosetta.generator.java.object.validators.TypeFormatValidatorGenerator;
 import com.regnosys.rosetta.generator.java.reports.ReportGenerator;
 import com.regnosys.rosetta.generator.java.reports.RuleGenerator;
+import com.regnosys.rosetta.generator.java.scope.ScopeGenerator;
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.rosetta.util.DemandableLock;
@@ -78,6 +79,9 @@ public class RosettaGenerator implements IGenerator2 {
 	private DeepPathUtilGenerator deepPathUtilGenerator;
 	@Inject
 	private LabelProviderGenerator labelProviderGenerator;
+    
+    @Inject
+    private ScopeGenerator scopeGenerator;
 
 	@Inject
 	private ResourceAwareFSAFactory fsaFactory;
@@ -181,7 +185,8 @@ public class RosettaGenerator implements IGenerator2 {
 					ruleGenerator,
 					reportGenerator,
 					enumGenerator,
-					metaFieldGenerator
+					metaFieldGenerator,
+                    scopeGenerator
 				);
 				List<GenerationException> aggregatedGenerationExceptions = javaGenerators.stream()
 					.flatMap(generator -> generator.generateClasses(model, version, fsa2, context.getCancelIndicator()).stream())

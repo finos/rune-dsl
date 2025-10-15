@@ -125,17 +125,17 @@ public class InMemoryJavacCompiler {
 				.stream().collect(Collectors.groupingBy(d -> d.getSource() == null ? "unknown class"
 						: d.getSource().getName().substring(1).replace(".java", "").replace('/', '.')));
 		diagnosticsPerClass.values().forEach(ds -> ds.sort(Comparator.comparing(Diagnostic::getKind)));
-		if (!result || diagnosticsPerClass.size() > 0) {
+		if (!result || !diagnosticsPerClass.isEmpty()) {
 			boolean hasErrors = diagnosticsPerClass.values().stream()
 					.anyMatch(ds -> ds.stream().anyMatch(d -> d.getKind() == Kind.ERROR || d.getKind() == Kind.OTHER));
-			StringBuffer exceptionMsg = new StringBuffer();
+			StringBuilder exceptionMsg = new StringBuilder();
 			boolean hasWarnings = false;
 			for (Map.Entry<String, List<Diagnostic<? extends JavaFileObject>>> diagnosticsOfClass : diagnosticsPerClass
 					.entrySet()) {
 				String className = diagnosticsOfClass.getKey();
 				List<Diagnostic<? extends JavaFileObject>> diagnostics = diagnosticsOfClass.getValue();
-				if (hasErrors && !diagnostics.stream()
-						.anyMatch(d -> d.getKind() == Kind.ERROR || d.getKind() == Kind.OTHER)) {
+				if (hasErrors && diagnostics.stream()
+						.noneMatch(d -> d.getKind() == Kind.ERROR || d.getKind() == Kind.OTHER)) {
 					continue;
 				}
 				exceptionMsg.append("\n").append("Class ").append(className);

@@ -27,10 +27,9 @@ public abstract class STJavaClassGenerator<T, C extends JavaTypeDeclaration<?>> 
     @Override
     protected String generate(T object, C typeRepresentation, String version, JavaClassScope scope, JavaGeneratorErrorHandler errorHandler) {
         ST st = generateClass(object, typeRepresentation, version, scope);
-        AggregatingErrorListener errorListener = new AggregatingErrorListener();
+        STJavaGeneratorErrorListener errorListener = new STJavaGeneratorErrorListener(errorHandler);
         // TODO: pass input stream to fsa2
         try (InputStream generatedCodeStream = ProducerInputStreams.fromOutputStream(os -> writeTemplateToOutputStream(st, os, errorListener))) {
-            handleErrors(errorListener, errorHandler);
             return new String(generatedCodeStream.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             errorHandler.handleError(e);
@@ -38,7 +37,7 @@ public abstract class STJavaClassGenerator<T, C extends JavaTypeDeclaration<?>> 
         }
     }
     
-    private void writeTemplateToOutputStream(ST st, OutputStream os, AggregatingErrorListener errorListener) throws IOException {
+    private void writeTemplateToOutputStream(ST st, OutputStream os, STJavaGeneratorErrorListener errorListener) throws IOException {
         try (OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.UTF_8)) {
             STWriter writer = new AutoIndentWriter(osw, "\n");
             writer.setLineWidth(STWriter.NO_WRAP);
@@ -51,16 +50,5 @@ public abstract class STJavaClassGenerator<T, C extends JavaTypeDeclaration<?>> 
         PrintWriter pw = new PrintWriter(sw);
         t.printStackTrace(pw);
         return sw.toString();
-    }
-    
-    private void handleErrors(AggregatingErrorListener errorListener, JavaGeneratorErrorHandler errorHandler) {
-        for (STMessage err : errorListener.getErrors()) {
-            String errorMessage = String.format(err.error.message, err.arg, err.arg2, err.arg3);
-            if (err.cause != null) {
-                errorHandler.handleError(errorMessage, err.cause);
-            } else {
-                errorHandler.handleError(errorMessage);
-            }
-        }
     }
 }

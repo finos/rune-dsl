@@ -23,6 +23,8 @@ public class STTemplateLoader {
         return templateCache.computeIfAbsent(groupFile, this::doGetGroup);
     }
     private STGroup doGetGroup(String groupFile) {
-        return new STGroupFile(groupFile);
+        STGroup group = new STGroupFile(groupFile);
+        group.registerModelAdaptor(Record.class, new RecordModelAdaptor());
+        return group;
     }
 }

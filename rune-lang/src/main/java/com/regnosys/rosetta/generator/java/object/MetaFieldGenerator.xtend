@@ -22,10 +22,10 @@ import java.util.stream.Stream
 import com.regnosys.rosetta.types.RMetaAnnotatedType
 import com.regnosys.rosetta.rosetta.expression.WithMetaOperation
 import com.regnosys.rosetta.types.RosettaTypeProvider
-import com.regnosys.rosetta.generator.java.JavaClassGenerator
+import com.regnosys.rosetta.generator.java.XtendJavaClassGenerator
 import org.eclipse.emf.ecore.EObject
 
-class MetaFieldGenerator extends JavaClassGenerator<RMetaAnnotatedType, RJavaWithMetaValue> {
+class MetaFieldGenerator extends XtendJavaClassGenerator<RMetaAnnotatedType, RJavaWithMetaValue> {
 	@Inject extension ModelObjectGenerator
 	@Inject extension JavaTypeTranslator
 	@Inject extension RObjectFactory
@@ -48,7 +48,7 @@ class MetaFieldGenerator extends JavaClassGenerator<RMetaAnnotatedType, RJavaWit
 	override createTypeRepresentation(RMetaAnnotatedType t) {
 		t.toJavaReferenceType as RJavaWithMetaValue
 	}
-	override generate(RMetaAnnotatedType t, RJavaWithMetaValue metaJt, String version, JavaClassScope scope) {
+	override generateClass(RMetaAnnotatedType t, RJavaWithMetaValue metaJt, String version, JavaClassScope scope) {
 		val targetPackage = t.RType.namespace
 		
 		if (metaJt instanceof RJavaReferenceWithMeta) {
