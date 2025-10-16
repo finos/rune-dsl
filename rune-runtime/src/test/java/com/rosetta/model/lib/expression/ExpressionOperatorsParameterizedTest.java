@@ -40,7 +40,10 @@ public class ExpressionOperatorsParameterizedTest {
 
 	private static final Function<Foo, ComparisonResult> GREATER_THAN = (foo) -> 
 			greaterThan(MapperS.of(foo).map("getAttr1", Foo::getAttr1), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All);
-	
+
+    private static final Function<Foo, ComparisonResult> GREATER_THAN_EMPTY = (foo) ->
+            greaterThan(MapperS.of(foo).map("getAttr1", Foo::getAttr1), MapperS.<Integer>of(null), CardinalityOperator.All);
+
 	private static final Function<Foo, ComparisonResult> GREATER_THAN_WITH_OR = (foo) -> 
 			greaterThan(MapperS.of(foo).map("getAttr1", Foo::getAttr1), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All)
 					.or(greaterThan(MapperS.of(foo).map("getAttr2", Foo::getAttr2), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All));
@@ -78,6 +81,10 @@ public class ExpressionOperatorsParameterizedTest {
 						new Foo(1, 2), 
 						GREATER_THAN, false, 
 						Collections.singletonList("all elements of paths [Foo->getAttr1] values [1] are not > than all elements of paths [Integer] values [5]")),
+                Arguments.of("fail: ( Foo -> attr1 ) > empty",
+                        new Foo(null, null),
+                        GREATER_THAN_EMPTY, false,
+                        Collections.singletonList("Null operand: [[] : null] > [[] : null]")),
 				Arguments.of("success: ( Foo -> attr1 ) > 5 or ( Foo -> attr2 ) > 5", 
 						new Foo(10, 2), 
 						GREATER_THAN_WITH_OR, true, 
