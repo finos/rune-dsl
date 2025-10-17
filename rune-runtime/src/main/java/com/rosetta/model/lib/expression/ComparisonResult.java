@@ -98,6 +98,7 @@ public class ComparisonResult implements Mapper<Boolean> {
 	}
 	
 	private ComparisonResult and(ComparisonResult r1, ComparisonResult r2) {
+        //TODO: remove this when we limit the use of empty in conditions in the model
         if (r1.isEmptyOperand() && r2.isEmptyOperand()) {
             return ComparisonResult.ofEmpty();
         }
@@ -127,6 +128,11 @@ public class ComparisonResult implements Mapper<Boolean> {
 	}
 	
 	private ComparisonResult or(ComparisonResult r1, ComparisonResult r2) {
+        //TODO: remove this when we limit the use of empty in conditions in the model
+        if (r1.isEmptyOperand() && r2.isEmptyOperand()) {
+            return ComparisonResult.ofEmpty();
+        }
+
 		boolean newResult = r1.get() || r2.get();
 		String newError = "";
 		newError+=r1.error;
