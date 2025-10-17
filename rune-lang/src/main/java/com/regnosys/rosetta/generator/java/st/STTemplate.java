@@ -1,7 +1,5 @@
 package com.regnosys.rosetta.generator.java.st;
 
-import org.stringtemplate.v4.ST;
-
 public abstract class STTemplate {
     private final String groupFile;
     private final String templateName;
@@ -11,7 +9,7 @@ public abstract class STTemplate {
         this.templateName = templateName;
     }
     
-    protected abstract void applyArguments(ST st);
+    protected abstract void configure(STTemplateConfigurator configurator);
     
     public String getGroupFile() {
         return groupFile;

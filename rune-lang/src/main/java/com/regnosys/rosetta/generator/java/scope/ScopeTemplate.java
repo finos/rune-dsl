@@ -2,8 +2,9 @@ package com.regnosys.rosetta.generator.java.scope;
 
 
 import com.regnosys.rosetta.generator.java.st.STTemplate;
+import com.regnosys.rosetta.generator.java.st.STTemplateConfigurator;
+import com.rosetta.model.lib.context.AbstractRuneScope;
 import com.rosetta.util.types.JavaClass;
-import org.stringtemplate.v4.ST;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,11 +19,17 @@ public class ScopeTemplate extends STTemplate {
     }
 
     @Override
-    protected void applyArguments(ST st) {
-        st.add("scopeName", name);
-        st.add("overrides", overrides);
+    protected void configure(STTemplateConfigurator configurator) {
+        configurator.addArgument("scopeName", name);
+        configurator.addArgument("overrides", overrides);
+        
+        configurator.addImport(AbstractRuneScope.class);
+        for (OverridePair override : overrides) {
+            configurator.addImport(override.from());
+            configurator.addImport(override.to());
+        }
     }
-    
+
     public String getName() {
         return name;
     }

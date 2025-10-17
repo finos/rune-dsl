@@ -4,9 +4,13 @@ scopeClass(scopeName, overrides) ::= <<
 public class <scopeName> extends AbstractRuneScope {
   @Override
   protected void configure() {
-    <overrides:{o |
-      addOverride(<o.from>.class, <o.to>.class);
-    }>
+    <overrides:{o | addOverride(<typeRef(o.from)>, <typeRef(o.to)>);}; separator="\n">
+    
+    <generateExpression()>
   }
 }
+>>
+
+typeRef(clazz) ::= <<
+<clazz.simpleName>.class
 >>

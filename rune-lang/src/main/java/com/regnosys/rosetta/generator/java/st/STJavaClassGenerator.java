@@ -16,20 +16,18 @@ import java.util.Locale;
 
 public abstract class STJavaClassGenerator<T, C extends JavaTypeDeclaration<?>> extends JavaClassGenerator<T, C> {
     @Inject
-    private STTemplateLoader templateLoader;
+    private STImportManager importManager;
     
-    protected abstract ST generateClass(T object, C typeRepresentation, String version, JavaClassScope scope);
-    
-    protected ST loadTemplate(STTemplate template) {
-        return templateLoader.loadTemplate(template);
-    }
+    protected abstract STTemplate generateClass(T object, C typeRepresentation, String version, JavaClassScope scope);
 
     @Override
     protected String generate(T object, C typeRepresentation, String version, JavaClassScope scope, JavaGeneratorErrorHandler errorHandler) {
-        ST st = generateClass(object, typeRepresentation, version, scope);
+        STTemplate classTemplate = generateClass(object, typeRepresentation, version, scope);
+        ST javaFileTemplate = importManager.toJavaFileTemplate(typeRepresentation, classTemplate);
+        
         STJavaGeneratorErrorListener errorListener = new STJavaGeneratorErrorListener(errorHandler);
         // TODO: pass input stream to fsa2
-        try (InputStream generatedCodeStream = ProducerInputStreams.fromOutputStream(os -> writeTemplateToOutputStream(st, os, errorListener))) {
+        try (InputStream generatedCodeStream = ProducerInputStreams.fromOutputStream(os -> writeTemplateToOutputStream(javaFileTemplate, os, errorListener))) {
             return new String(generatedCodeStream.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             errorHandler.handleError(e);

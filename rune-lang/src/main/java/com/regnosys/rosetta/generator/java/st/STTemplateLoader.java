@@ -8,15 +8,13 @@ import org.stringtemplate.v4.STGroupFile;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Singleton // To make sure we compile the templates only once
+@Singleton // Singleton to make sure we compile the templates only once
 public class STTemplateLoader {
     private final Map<String, STGroup> templateCache = new ConcurrentHashMap<>();
     
     public ST loadTemplate(STTemplate template) {
         STGroup group = getGroup(template.getGroupFile());
-        ST st = group.getInstanceOf(template.getTemplateName());
-        template.applyArguments(st);
-        return st;
+        return group.getInstanceOf(template.getTemplateName());
     }
     
     private STGroup getGroup(String groupFile) {
@@ -24,6 +22,7 @@ public class STTemplateLoader {
     }
     private STGroup doGetGroup(String groupFile) {
         STGroup group = new STGroupFile(groupFile);
+        group.setListener(new STThrowingErrorListener(groupFile));
         group.registerModelAdaptor(Record.class, new RecordModelAdaptor());
         return group;
     }

@@ -3,6 +3,7 @@ package com.regnosys.rosetta.generator.java.scope;
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope;
 import com.regnosys.rosetta.generator.java.scoping.JavaPackageName;
 import com.regnosys.rosetta.generator.java.st.STJavaClassGenerator;
+import com.regnosys.rosetta.generator.java.st.STTemplate;
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass;
 import com.regnosys.rosetta.rosetta.RosettaModel;
@@ -39,7 +40,7 @@ public class ScopeGenerator extends STJavaClassGenerator<RosettaScope, RGenerate
     }
 
     @Override
-    protected ST generateClass(RosettaScope object, RGeneratedJavaClass<? extends RuneScope> typeRepresentation, String version, JavaClassScope scope) {
+    protected STTemplate generateClass(RosettaScope object, RGeneratedJavaClass<? extends RuneScope> typeRepresentation, String version, JavaClassScope scope) {
         ScopeTemplate template = new ScopeTemplate(object.getName());
         for (RosettaRootElement elem : object.getModel().getElements()) {
             if (elem instanceof Function f) {
@@ -51,6 +52,6 @@ public class ScopeGenerator extends STJavaClassGenerator<RosettaScope, RGenerate
                 }
             }
         }
-        return loadTemplate(template);
+        return template;
     }
 }

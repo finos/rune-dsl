@@ -7,14 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractRuneScope implements RuneScope {
-    private final Injector injector;
-    private final Map<Class<?>, Class<?>> overrides = new HashMap<>();
-    
     @Inject
-    public AbstractRuneScope(Injector injector) {
-        this.injector = injector;
-        this.configure();
-    }
+    private Injector injector;
+    
+    private final Map<Class<?>, Class<?>> overrides = new HashMap<>();
     
     protected abstract void configure();
     
