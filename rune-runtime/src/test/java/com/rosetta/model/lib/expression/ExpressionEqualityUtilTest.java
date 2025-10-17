@@ -60,7 +60,6 @@ public class ExpressionEqualityUtilTest {
 
         ComparisonResult res = ExpressionEqualityUtil.areEqual(m1, m2, CardinalityOperator.All);
         assertFalse(res.get());
-//        assertTrue(res.isEmptyOperand());
     }
 
     @Test
@@ -70,7 +69,6 @@ public class ExpressionEqualityUtilTest {
 
         ComparisonResult res = ExpressionEqualityUtil.areEqual(m1, m2, CardinalityOperator.All);
         assertFalse(res.get());
-//        assertTrue(res.isEmptyOperand());
     }
 
     @Test
@@ -136,7 +134,6 @@ public class ExpressionEqualityUtilTest {
 
         ComparisonResult res = ExpressionEqualityUtil.areEqual(m1, m2, CardinalityOperator.All);
         assertFalse(res.get());
-//        assertTrue(res.isEmptyOperand());
     }
 
     @Test
@@ -156,7 +153,6 @@ public class ExpressionEqualityUtilTest {
 
     @Test
     public void comparisonResult_wrapped_mapper_behaviour() {
-        // ComparisonResult.asMapper() returns MapperS<Boolean>
         ComparisonResult left = ComparisonResult.success();
         MapperC<Integer> right = MapperC.of(Collections.singletonList(1));
 
