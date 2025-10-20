@@ -79,7 +79,7 @@ Workflow {
 				composedCheck = "com.regnosys.rosetta.validation.RosettaValidator"
 			}
 			generator = {
-				generateXtendStub = true
+				generateStub = true
 			}
 			junitSupport = {
 				junitVersion = "5"

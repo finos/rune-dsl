@@ -22,7 +22,7 @@ git clone https://github.com/finos/rune-dsl.git
 ### Build and run
 
 ```
-mvn clean install && cd rosetta-ide/vscode && npm install
+mvn clean install && cd rune-ide/vscode && npm install
 ```
 
 ### Start VS Code
@@ -34,7 +34,7 @@ All done! Create a rosetta file and start modelling.
 
 ### Generate vsix to install
 
-Running the below command will generate a file called `rosetta-language-5.0.0.vsix` which you can install in vs code.
+Running the below command will generate a file called `rune-language-5.0.0.vsix` which you can install in vs code.
 
 ```
 npm run build

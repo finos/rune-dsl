@@ -50,7 +50,7 @@ To migrate a non-test file, perform the following steps:
 
 ## Files to Migrate
 
-### rosetta-ide (10 files)
+### rune-ide (10 files)
 
 #### Project Files (0 files)
 
@@ -72,7 +72,7 @@ No project files to migrate.
 - [ ] AbstractRosettaLanguageServerTest
 - [ ] AbstractRosettaLanguageServerValidationTest
 
-### rosetta-integration-tests (37 files)
+### rune-integration-tests (37 files)
 
 #### Project Files (0 files)
 
@@ -124,13 +124,13 @@ No project files to migrate.
 - [x] RosettaExistsExpressionTest
 - [ ] ModelObjectGeneratorTest
 
-### rosetta-lang (35 files)
+### rune-lang (35 files)
 
 #### Project Files (35 files)
 
 ##### Files without usage of string template features (14 files)
 - [ ] RosettaFormatter
-- [ ] RosettaGenerator
+- [x] RosettaGenerator
 - [x] RosettaInternalGenerator
 - [x] RosettaOutputConfigurationProvider
 - [ ] EnumHelper
@@ -167,14 +167,14 @@ No project files to migrate.
 - [x] IterableUtil
 - [x] RosettaSimpleValidator
 
-### rosetta-runtime (1 file)
+### rune-runtime (1 file)
 
 #### Project Files (1 file)
 
 ##### Files with usage of string template features (1 file)
 - [ ] MapperMaths
 
-### rosetta-testing (6 files)
+### rune-testing (6 files)
 
 #### Project Files (6 files)
 
@@ -188,7 +188,7 @@ No project files to migrate.
 - [ ] ExpressionJavaEvaluatorService
 - [ ] ModelHelper
 
-### rosetta-tools (1 file)
+### rune-tools (1 file)
 
 #### Project Files (0 files)
 
@@ -199,7 +199,7 @@ No project files to migrate.
 ##### Files with usage of string template features (1 file)
 - [ ] UnnecessaryElementsRemoverTest
 
-### rosetta-xcore-plugin-dependencies (1 file)
+### rune-xcore-plugin-dependencies (1 file)
 
 #### Project Files (1 file)
 
