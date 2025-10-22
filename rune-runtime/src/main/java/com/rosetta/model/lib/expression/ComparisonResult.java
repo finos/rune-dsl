@@ -56,11 +56,11 @@ public class ComparisonResult implements Mapper<Boolean> {
 	}
 	
 	public static ComparisonResult of(Mapper<Boolean> result) {
-        if (result.getMulti().stream().allMatch(Objects::isNull)) {
+        if (result.getMulti().isEmpty() || result.getMulti().stream().allMatch(Objects::isNull)) {
             return ofEmpty();
         }
         List<Boolean> filteredResults = result.getMulti().stream().filter(Objects::nonNull).collect(Collectors.toList());
-        return new ComparisonResult(!filteredResults.isEmpty() && filteredResults.stream().allMatch(r -> r == true), false, null);
+        return new ComparisonResult(filteredResults.stream().allMatch(r -> r == true), false, null);
 	}
 	
 	private ComparisonResult(Boolean result, Boolean emptyOperand, String error) {
