@@ -5,6 +5,7 @@ import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
 import java.util.List;
 import javax.inject.Inject;
+
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,43 @@ public class SwitchOperationTest {
     private RosettaTestModelService modelService;
     @Inject
     private JavaTypeUtil typeUtil;
+
+    @Test
+    void switchOnTypesInAnotherNamespace() {
+        var model1 = """
+                namespace other
+        
+                type Baz:
+        
+                type Foo extends Baz:
+                    someBoolean boolean (0..1)
+        
+                 type Bar extends Baz:
+                    someBoolean boolean (0..1)
+        """;
+
+        var model2 = """
+                import other.* as other
+        
+                func MyFunc:
+                    inputs:
+                        baz other.Baz (1..1)
+                    output:
+                        result string (0..1)
+        
+                    set result:
+                        baz switch
+                            other.Foo then "Foo",
+                            other.Bar then "Bar",
+                            default empty
+        """;
+
+        var model = modelService.toJavaTestModel(model2, model1).compile();
+
+        var result = model.evaluateExpression(String.class, "MyFunc(other.Foo { someBoolean: True })");
+
+        assertEquals("Foo", result);
+    }
 
     @Test
     public void switchOnDataType() {
