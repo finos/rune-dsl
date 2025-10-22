@@ -1,15 +1,11 @@
 package com.regnosys.rosetta.generator.java.expression;
 
-import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper;
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
 import java.util.List;
-import java.util.Map;
 import javax.inject.Inject;
 
-import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
-import com.rosetta.util.DottedPath;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
@@ -25,10 +21,6 @@ public class SwitchOperationTest {
     private RosettaTestModelService modelService;
     @Inject
     private JavaTypeUtil typeUtil;
-    @Inject
-    private FunctionGeneratorHelper functionGeneratorHelper;
-    @Inject
-    private CodeGeneratorTestHelper generatorTestHelper;
 
     @Test
     void switchOnTypesInAnotherNamespace() {
@@ -60,18 +52,9 @@ public class SwitchOperationTest {
                             default empty
         """;
 
-        var code = generatorTestHelper.generateCode(new String[]{model1, model2});
+        var model = modelService.toJavaTestModel(model2, model1).compile();
 
-        var classes = generatorTestHelper.compileToClasses(code);
-
-        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
-
-        var input = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("other"), "Foo", Map.of(
-                        "someBoolean", true
-                )
-        );
-
-        var result = functionGeneratorHelper.invokeFunc(myFunc, String.class, input);
+        var result = model.evaluateExpression(String.class, "MyFunc(other.Foo { someBoolean: True })");
 
         assertEquals("Foo", result);
     }
