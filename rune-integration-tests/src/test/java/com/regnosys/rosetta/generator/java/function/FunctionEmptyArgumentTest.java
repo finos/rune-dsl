@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.generator.java.function;
 
-import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.rosetta.model.lib.RosettaModelObject;
@@ -22,6 +21,77 @@ public class FunctionEmptyArgumentTest {
     FunctionGeneratorHelper functionGeneratorHelper;
     @Inject
     CodeGeneratorTestHelper generatorTestHelper;
+
+    @Test
+    void switchOnTypesInAnotherNamespace() {
+        var model1 = """
+                namespace other
+        
+                type Baz:
+        
+                type Foo extends Baz:
+                    someBoolean boolean (0..1)
+        
+                 type Bar extends Baz:
+                    someBoolean boolean (0..1)
+        """;
+
+        var model2 = """
+                import other.* as other
+        
+                func MyFunc:
+                    inputs:
+                        baz other.Baz (1..1)
+                    output:
+                        result string (0..1)
+        
+                    set result:
+                        baz switch
+                            other.Foo then "Foo",
+                            other.Bar then "Bar",
+                            default empty
+        """;
+
+        var code = generatorTestHelper.generateCode(new String[]{model1, model2});
+
+        var classes = generatorTestHelper.compileToClasses(code);
+
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var input = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("other"), "Foo", Map.of(
+                        "someBoolean", true
+                )
+        );
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, String.class, input);
+
+        assertEquals("Foo", result);
+    }
+
+    @Test
+    void argumentWithEmptyAttributeShouldResolveToFalse() {
+        var model = """
+                 type Foo:
+                    someBoolean boolean (0..1)
+                    alwaysFalse boolean (1..1)
+        
+                func MyFunc:
+                    output:
+                        result boolean (1..1)
+        
+                    set result: Foo { alwaysFalse: False, ... } -> someBoolean or Foo { alwaysFalse: False, ... } -> alwaysFalse
+        """;
+
+        var code = generatorTestHelper.generateCode(model);
+
+        var classes = generatorTestHelper.compileToClasses(code);
+
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, Boolean.class);
+
+        assertEquals(false, result);
+    }
 
     @Test
     void canSetPropertyOnEmptyInputArgument() {
