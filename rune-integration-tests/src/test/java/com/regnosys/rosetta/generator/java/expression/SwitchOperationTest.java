@@ -1,10 +1,15 @@
 package com.regnosys.rosetta.generator.java.expression;
 
+import com.regnosys.rosetta.generator.java.function.FunctionGeneratorHelper;
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
 import java.util.List;
+import java.util.Map;
 import javax.inject.Inject;
+
+import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
+import com.rosetta.util.DottedPath;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
@@ -20,6 +25,56 @@ public class SwitchOperationTest {
     private RosettaTestModelService modelService;
     @Inject
     private JavaTypeUtil typeUtil;
+    @Inject
+    private FunctionGeneratorHelper functionGeneratorHelper;
+    @Inject
+    private CodeGeneratorTestHelper generatorTestHelper;
+
+    @Test
+    void switchOnTypesInAnotherNamespace() {
+        var model1 = """
+                namespace other
+        
+                type Baz:
+        
+                type Foo extends Baz:
+                    someBoolean boolean (0..1)
+        
+                 type Bar extends Baz:
+                    someBoolean boolean (0..1)
+        """;
+
+        var model2 = """
+                import other.* as other
+        
+                func MyFunc:
+                    inputs:
+                        baz other.Baz (1..1)
+                    output:
+                        result string (0..1)
+        
+                    set result:
+                        baz switch
+                            other.Foo then "Foo",
+                            other.Bar then "Bar",
+                            default empty
+        """;
+
+        var code = generatorTestHelper.generateCode(new String[]{model1, model2});
+
+        var classes = generatorTestHelper.compileToClasses(code);
+
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var input = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("other"), "Foo", Map.of(
+                        "someBoolean", true
+                )
+        );
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, String.class, input);
+
+        assertEquals("Foo", result);
+    }
 
     @Test
     public void switchOnDataType() {

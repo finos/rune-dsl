@@ -23,52 +23,6 @@ public class FunctionEmptyArgumentTest {
     CodeGeneratorTestHelper generatorTestHelper;
 
     @Test
-    void switchOnTypesInAnotherNamespace() {
-        var model1 = """
-                namespace other
-        
-                type Baz:
-        
-                type Foo extends Baz:
-                    someBoolean boolean (0..1)
-        
-                 type Bar extends Baz:
-                    someBoolean boolean (0..1)
-        """;
-
-        var model2 = """
-                import other.* as other
-        
-                func MyFunc:
-                    inputs:
-                        baz other.Baz (1..1)
-                    output:
-                        result string (0..1)
-        
-                    set result:
-                        baz switch
-                            other.Foo then "Foo",
-                            other.Bar then "Bar",
-                            default empty
-        """;
-
-        var code = generatorTestHelper.generateCode(new String[]{model1, model2});
-
-        var classes = generatorTestHelper.compileToClasses(code);
-
-        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
-
-        var input = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("other"), "Foo", Map.of(
-                        "someBoolean", true
-                )
-        );
-
-        var result = functionGeneratorHelper.invokeFunc(myFunc, String.class, input);
-
-        assertEquals("Foo", result);
-    }
-
-    @Test
     void canSetPropertyOnEmptyInputArgument() {
         var model = """
                 type Foo:
