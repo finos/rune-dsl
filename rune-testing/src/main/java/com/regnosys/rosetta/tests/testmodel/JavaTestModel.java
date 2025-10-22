@@ -230,15 +230,12 @@ public class JavaTestModel {
             String name = entry.getKey();
             String pathName = name.replace('.', File.separatorChar);
 
-            if (!pathName.endsWith("Factory")) {
-                Path path = Paths.get("target", directory, "java", pathName + ".java");    
-				try {
-					Files.createDirectories(path.getParent());
-					Files.write(path, entry.getValue().getBytes());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-
+            Path path = Paths.get("target", directory, "java", pathName + ".java");
+            try {
+                Files.createDirectories(path.getParent());
+                Files.write(path, entry.getValue().getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
