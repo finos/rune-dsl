@@ -32,6 +32,40 @@ public class RosettaParsingTest {
     private RosettaTestModelService modelService;
 	@Inject
 	private RosettaValidationTestHelper validationHelper;
+
+    @Test
+    void testCanSwitchOverTypeFromAnotherNamespace() {
+        var model1 = """
+                namespace other
+        
+                type Baz:
+        
+                type Foo extends Baz:
+                    someBoolean boolean (0..1)
+        
+                 type Bar extends Baz:
+                    someBoolean boolean (0..1)
+        """;
+
+        var model2 = """
+                import other.* as other
+        
+                func MyFunc:
+                    inputs:
+                        baz other.Baz (1..1)
+                    output:
+                        result string (0..1)
+        
+                    set result:
+                        baz switch
+                            other.Foo then "Foo",
+                            other.Bar then "Bar",
+                            default empty
+        """;
+
+
+        modelService.toTestModel(model2, true, model1);
+    }
 	
 	@Test
 	void testCannotSetEnumAttribute() {
