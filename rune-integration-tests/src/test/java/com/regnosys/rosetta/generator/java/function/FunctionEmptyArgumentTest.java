@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.generator.java.function;
 
+import com.regnosys.rosetta.generator.java.RosettaJavaPackages;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.rosetta.model.lib.RosettaModelObject;
