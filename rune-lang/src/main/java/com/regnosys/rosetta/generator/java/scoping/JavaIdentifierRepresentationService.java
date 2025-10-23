@@ -19,6 +19,7 @@ package com.regnosys.rosetta.generator.java.scoping;
 import com.regnosys.rosetta.generator.IdentifierRepresentationService;
 import com.regnosys.rosetta.generator.ImplicitVariableRepresentation;
 import com.regnosys.rosetta.rosetta.RosettaRule;
+import com.regnosys.rosetta.types.RFunction;
 import com.rosetta.util.types.JavaClass;
 
 public class JavaIdentifierRepresentationService extends IdentifierRepresentationService {	
@@ -29,7 +30,12 @@ public class JavaIdentifierRepresentationService extends IdentifierRepresentatio
 	public ImplicitVariableRepresentation toRuleInputParameter(RosettaRule rule) {
 		return getImplicitVarInContext(rule.getExpression());
 	}
+	
 	public RuleOutputParameterRepresentation toRuleOutputParameter(RosettaRule rule) {
 		return new RuleOutputParameterRepresentation(rule);
+	}
+	
+	public SuperFunctionRepresentation toSuperFunctionInstance(RFunction superFunc) {
+		return new SuperFunctionRepresentation(superFunc);
 	}
 }

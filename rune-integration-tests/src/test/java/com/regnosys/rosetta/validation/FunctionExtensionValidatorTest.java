@@ -12,6 +12,8 @@ import java.util.List;
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
 public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
+    // TODO: detect cycles in function extension
+    
 	@Test
 	void testFunctionExtensionOnlyAllowedInScopedFile() {
 		assertIssues("""

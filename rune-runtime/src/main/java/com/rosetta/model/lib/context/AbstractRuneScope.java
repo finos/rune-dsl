@@ -10,6 +10,10 @@ public abstract class AbstractRuneScope implements RuneScope {
     @Inject
     private Injector injector;
     
+    public AbstractRuneScope() {
+        configure();
+    }
+    
     private final Map<Class<?>, Class<?>> overrides = new HashMap<>();
     
     protected abstract void configure();

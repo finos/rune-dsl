@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
+import com.rosetta.model.lib.context.RuneContextFactory;
 import com.rosetta.util.types.JavaType;
 import jakarta.inject.Inject;
 
@@ -58,6 +59,8 @@ public class RosettaTestModelService {
 	private JavaTypeTranslator typeTranslator;
 	@Inject
 	private ExpressionJavaEvaluatorService evaluatorService;
+	@Inject
+	private RuneContextFactory contextFactory;
 	@Inject
 	private Injector injector;
 	
@@ -125,7 +128,7 @@ public class RosettaTestModelService {
 	public JavaTestModel toJavaTestModel(CharSequence source, CharSequence... other) {
 		RosettaTestModel rosettaModel = toTestModel(source, other);
 		Map<String, String> javaCode = codeGeneratorHelper.generateCode(rosettaModel.getResourceSet().getResources());
-		return new JavaTestModel(rosettaModel, javaCode, rObjectFactory, typeTranslator, evaluatorService, injector);
+		return new JavaTestModel(rosettaModel, javaCode, rObjectFactory, typeTranslator, evaluatorService, contextFactory, injector);
 	}
 
     public RosettaExpression parseExpression(CharSequence expressionSource, String... attributes) {
@@ -138,13 +141,13 @@ public class RosettaTestModelService {
 	public JavaTestModel loadJavaTestModelFromResources(String resourceFolderOrFile) throws IOException {
 		RosettaTestModel rosettaModel = loadTestModelFromResources(resourceFolderOrFile);
 		Map<String, String> javaCode = codeGeneratorHelper.generateCode(rosettaModel.getModel());
-		return new JavaTestModel(rosettaModel, javaCode, rObjectFactory, typeTranslator, evaluatorService, injector);
+		return new JavaTestModel(rosettaModel, javaCode, rObjectFactory, typeTranslator, evaluatorService, contextFactory, injector);
 	}
 
     public <T> T evaluateExpression(Class<T> resultType, CharSequence expr) {
         return resultType.cast(evaluateExpression(JavaType.from(resultType), expr));
     }
     public Object evaluateExpression(JavaType resultType, CharSequence expr) {
-        return evaluatorService.evaluate(expressionParser.parseExpression(expr), resultType, this.getClass().getClassLoader());
+        return evaluatorService.evaluate(expressionParser.parseExpression(expr), resultType, null, this.getClass().getClassLoader());
     }
 }

@@ -27,12 +27,14 @@ public class RShortcut implements RAssignedRoot {
 	private final boolean isMulti;
 	private final String definition;
 	private final RosettaExpression expression;
+	private final RFunction function;
 	
-	public RShortcut(String name, boolean isMulti, String definition, RosettaExpression expression) {
+	public RShortcut(String name, boolean isMulti, String definition, RosettaExpression expression, RFunction function) {
 		this.name = name;
 		this.isMulti = isMulti;
 		this.definition = definition;
 		this.expression = expression;
+		this.function = function;
 	}
 
 	@Override
@@ -51,6 +53,10 @@ public class RShortcut implements RAssignedRoot {
 
 	public RosettaExpression getExpression() {
 		return expression;
+	}
+	
+	public RFunction getFunction() {
+		return function;
 	}
 
 	@Override

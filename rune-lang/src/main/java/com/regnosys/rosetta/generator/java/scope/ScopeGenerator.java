@@ -10,6 +10,7 @@ import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaScope;
 import com.regnosys.rosetta.rosetta.simple.Function;
+import com.rosetta.model.lib.context.AbstractRuneScope;
 import com.rosetta.model.lib.context.RuneScope;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
@@ -36,7 +37,7 @@ public class ScopeGenerator extends STJavaClassGenerator<RosettaScope, RGenerate
 
     @Override
     protected RGeneratedJavaClass<? extends RuneScope> createTypeRepresentation(RosettaScope object) {
-        return RGeneratedJavaClass.create(JavaPackageName.escape(DottedPath.splitOnDots(object.getModel().getName())), object.getName(), RuneScope.class);
+        return typeTranslator.toScopeJavaClass(object);
     }
 
     @Override

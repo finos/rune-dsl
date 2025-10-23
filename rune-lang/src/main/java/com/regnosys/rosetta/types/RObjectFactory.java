@@ -17,9 +17,11 @@
 package com.regnosys.rosetta.types;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.inject.Inject;
@@ -28,13 +30,17 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
 import com.regnosys.rosetta.cache.caches.RDataTypeCache;
+import com.regnosys.rosetta.cache.caches.RFunctionCache;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaMetaType;
+import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaReport;
+import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaRule;
+import com.regnosys.rosetta.rosetta.RosettaScope;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
@@ -59,11 +65,29 @@ public class RObjectFactory {
 	@Inject
 	private RuleReferenceService ruleService;
 	@Inject
-	private RDataTypeCache cache;
+	private RDataTypeCache typeCache;
+	@Inject
+	private RFunctionCache functionCache;
 
+	private RosettaScope getScope(RosettaRootElement elem) {
+		RosettaModel model = elem.getModel();
+		if (model == null) {
+			return null;
+		}
+		return model.getScope();
+	}
 	public RFunction buildRFunction(Function function) {
+		return functionCache.get(function, () -> buildRFunction(function, new HashSet<>()));
+	}
+	private RFunction buildRFunction(Function function, Set<Function> visited) {
+		if (function == null || !visited.add(function)) {
+			return null;
+		}
+		Function superFunc = function.getSuperFunction();
 		return new RFunction(
 				function,
+				superFunc == null ? null : buildRFunction(superFunc, visited),
+				getScope(function),
 				modelIdProvider.getSymbolId(function),
 				function.getDefinition(),
 				function.getInputs().stream().map(i -> buildRAttributeWithEnclosingType(null, i)).collect(Collectors.toList()),
@@ -87,6 +111,8 @@ public class RObjectFactory {
 		
 		return new RFunction(
 				rule,
+				null,
+				getScope(rule),
 				rule.getName() == null ? null : modelIdProvider.getSymbolId(rule),
 				rule.getDefinition(),
 				List.of(createArtificialAttribute("input", inputRType, false)),
@@ -121,6 +147,8 @@ public class RObjectFactory {
 		List<ROperation> operations = generateOperations(report, outputAttribute, outputRtype, inputAttribute);
 		return new RFunction(
 			report,
+			null,
+			getScope(report),
 			modelIdProvider.getReportId(report),
 			reportDefinition,
 			List.of(buildRAttributeWithEnclosingType(null, inputAttribute)),
@@ -199,7 +227,8 @@ public class RObjectFactory {
 	}
 
 	public RShortcut buildRShortcut(ShortcutDeclaration shortcut) {
-		return new RShortcut(shortcut.getName(), cardinalityProvider.isSymbolMulti(shortcut), shortcut.getDefinition(), shortcut.getExpression());
+		RFunction func = buildRFunction(shortcut.getFunction());
+		return new RShortcut(shortcut.getName(), cardinalityProvider.isSymbolMulti(shortcut), shortcut.getDefinition(), shortcut.getExpression(), func);
 
 	}
 
@@ -231,7 +260,7 @@ public class RObjectFactory {
 	}
 
 	public RDataType buildRDataType(Data data) {
-		return cache.get(data, () -> new RDataType(data, modelIdProvider, this, typeProvider));
+		return typeCache.get(data, () -> new RDataType(data, modelIdProvider, this, typeProvider));
 	}
 	public RChoiceType buildRChoiceType(Choice choice) {
 		return new RChoiceType(choice, modelIdProvider, typeProvider, this);

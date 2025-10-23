@@ -1,9 +1,9 @@
 package com.rosetta.model.lib.context;
 
-public class Context {
+public class RuneContext {
     private final RuneScope scope;
     
-    public Context(RuneScope scope) {
+    protected RuneContext(RuneScope scope) {
         this.scope = scope;
     }
     

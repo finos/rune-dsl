@@ -2,6 +2,8 @@ package com.regnosys.rosetta.generator.java.function;
 
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
+import com.rosetta.model.lib.context.RuneContextFactory;
+
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
@@ -17,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class FunctionExtensionGeneratorTest {
     @Inject
     private RosettaTestModelService modelService;
+    @Inject
+    private RuneContextFactory contextFactory;
     
     @Test
     void testFunctionExtensionIsSubtypeOfOriginal() {
@@ -96,7 +100,28 @@ public class FunctionExtensionGeneratorTest {
         assertEquals("Foo", result);
 
         var myScope = model.getScopeInstance("MyScope");
-        var resultInScope = model.evaluateExpression(String.class, "Test()", myScope);
+        var resultInScope = model.evaluateExpression(String.class, "Test()", contextFactory.withScope(myScope));
         assertEquals("Bar", resultInScope);
+    }
+    
+    @Test
+    void testSuperCall() {
+        var model = modelService.toJavaTestModel("""
+                namespace test
+                scope MyScope
+                
+                func Foo:
+                    output:
+                        result string (1..1)
+                    set result: "Foo"
+                
+                func Bar extends Foo:
+                    output:
+                        result string (1..1)
+                    set result: super() + "Bar"
+                """).compile();
+
+        var result = model.evaluateExpression(String.class, "Bar()");
+        assertEquals("FooBar", result);
     }
 }

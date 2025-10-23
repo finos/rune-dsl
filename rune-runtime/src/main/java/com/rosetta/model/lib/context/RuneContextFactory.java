@@ -2,15 +2,15 @@ package com.rosetta.model.lib.context;
 
 import javax.inject.Inject;
 
-public class ContextFactory {
+public class RuneContextFactory {
     @Inject
     private RuneScope.Default defaultScope;
     
-    public Context createDefault() {
+    public RuneContext createDefault() {
         return withScope(defaultScope);
     }
     
-    public Context withScope(RuneScope scope) {
-        return new Context(scope);
+    public RuneContext withScope(RuneScope scope) {
+        return new RuneContext(scope);
     }
 }

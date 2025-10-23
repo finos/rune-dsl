@@ -5,8 +5,6 @@ public class <scopeName> extends AbstractRuneScope {
   @Override
   protected void configure() {
     <overrides:{o | addOverride(<typeRef(o.from)>, <typeRef(o.to)>);}; separator="\n">
-    
-    <generateExpression()>
   }
 }
 >>

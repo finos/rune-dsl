@@ -3,6 +3,7 @@ package com.regnosys.rosetta.generator.java.expression;
 import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService;
 import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclarationStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaStatement;
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil;
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension;
@@ -85,19 +86,20 @@ public class ExpressionGeneratorTest {
         var scope = scopeUtil.createTestExpressionScope(pkg);
         var fileScope = scope.getFileScope();
 
-        List<StringConcatenationClient> dependencyStatements = dependencies.stream()
+        var runtimeScope = scope.createUniqueIdentifier("scope");
+        List<JavaLocalVariableDeclarationStatement> dependencyStatements = dependencies.stream()
                 .map(dep -> {
                     var identifier = scope.createIdentifier(javaIdentifierRepresentationService.toDependencyInstance(dep), StringUtils.uncapitalize(dep.getSimpleName()));
-                    var declaration = new JavaLocalVariableDeclarationStatement(false, dep, identifier);
-                    return new StringConcatenationClient() {
-                        @Override
+                    var expression = JavaExpression.from(new StringConcatenationClient() {
+                    	@Override
                         protected void appendTo(TargetStringConcatenation target) {
-                            target.append("@");
-                            target.append(Inject.class);
-                            target.append(" ");
-                            target.append(declaration);
+                            target.append(runtimeScope);
+                            target.append(".getInstance(");
+                            target.append(dep);
+                            target.append(".class)");
                         }
-                    };
+                    }, dep);
+                    return new JavaLocalVariableDeclarationStatement(false, dep, identifier, expression);
                 })
                 .collect(Collectors.toList());
 
@@ -113,7 +115,7 @@ public class ExpressionGeneratorTest {
                         })
                         .toList()
         );
-        var returnStmt = expressionGenerator.javaCode(parsedExpr, expectedType, scope).completeAsReturn();
+        var returnStmt = expressionGenerator.javaCode(parsedExpr, expectedType, null, scope).completeAsReturn();
         
         statements.add(returnStmt);
         
@@ -122,13 +124,15 @@ public class ExpressionGeneratorTest {
         var content = new StringConcatenationClient() {
             @Override
             protected void appendTo(TargetStringConcatenation sc) {
-                for (int i = 0; i < dependencyStatements.size(); i++) {
-                    sc.append(dependencyStatements.get(i));
-                    if (i < dependencyStatements.size() - 1) {
-                        sc.append("\n");
-                    }
-                }
-                if (!dependencyStatements.isEmpty()) {
+            	if (!dependencyStatements.isEmpty()) {
+            		sc.append(new JavaLocalVariableDeclarationStatement(true, javaTypeUtil.RUNE_SCOPE, runtimeScope));
+            		sc.append("\n");
+	                for (int i = 0; i < dependencyStatements.size(); i++) {
+	                    sc.append(dependencyStatements.get(i));
+	                    if (i < dependencyStatements.size() - 1) {
+	                        sc.append("\n");
+	                    }
+	                }
                     sc.append("\n\n");
                 }
                 actualBody.appendTo(sc);
