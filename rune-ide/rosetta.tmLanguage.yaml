@@ -56,6 +56,7 @@ repository:
   model:
     patterns:
     - include: '#namespace'
+    - include: '#scope'
     - include: '#version'
     - include: '#import'
     - include: '#configuration'
@@ -78,6 +79,17 @@ repository:
         - name: punctuation.separator.dot.rosetta
           match: \.
         - include: '#colon'
+      
+      scope:
+        name: meta.scope.rosetta
+        begin: '{{wordStart}}scope{{wordEnd}}'
+        beginCaptures:
+          0: { name: keyword.other.scope.rosetta }
+        end: '{{rootEnd}}|(?={{wordStart}}version{{wordEnd}})'
+        patterns:
+          - include: '#comment'
+          - name: entity.name.scope.rosetta
+            match: '{{identifier}}'
 
       version:
         name: meta.version.rosetta
@@ -1224,6 +1236,8 @@ repository:
           - include: '#expressionWithoutThenAndDefaultOperation'
         - name: keyword.operator.word.rosetta
           match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|default|disjoint|join|only|exists|as-key|one-of|as(?!-)|to-number|to-int|to-time|to-date|to-date-time|to-zoned-date-time|to-string|with-meta){{wordEnd}}'
+        - name: keyword.operator.word.super.rosetta
+          match: '{{wordStart}}super{{wordEnd}}'
         - name: keyword.operator.rosetta
           match: =|<>|>=|<=|>|<|\+|-|\*|\/
         - name: variable.rosetta # Need semantic tokens to specify variable

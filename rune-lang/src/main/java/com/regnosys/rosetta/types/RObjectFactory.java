@@ -31,6 +31,7 @@ import org.eclipse.xtext.EcoreUtil2;
 
 import com.regnosys.rosetta.cache.caches.RDataTypeCache;
 import com.regnosys.rosetta.cache.caches.RFunctionCache;
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
@@ -68,6 +69,8 @@ public class RObjectFactory {
 	private RDataTypeCache typeCache;
 	@Inject
 	private RFunctionCache functionCache;
+	@Inject
+	private RosettaFunctionExtensions funcExt;
 
 	private RosettaScope getScope(RosettaRootElement elem) {
 		RosettaModel model = elem.getModel();
@@ -90,8 +93,8 @@ public class RObjectFactory {
 				getScope(function),
 				modelIdProvider.getSymbolId(function),
 				function.getDefinition(),
-				function.getInputs().stream().map(i -> buildRAttributeWithEnclosingType(null, i)).collect(Collectors.toList()),
-				buildRAttributeWithEnclosingType(null, function.getOutput()),
+				funcExt.getInputs(function).stream().map(i -> buildRAttributeWithEnclosingType(null, i)).collect(Collectors.toList()),
+				buildRAttributeWithEnclosingType(null, funcExt.getOutput(function)),
 				RFunctionOrigin.FUNCTION,
 				function.getConditions(), function.getPostConditions(),
 				function.getShortcuts().stream().map(s -> buildRShortcut(s)).collect(Collectors.toList()),
@@ -227,8 +230,7 @@ public class RObjectFactory {
 	}
 
 	public RShortcut buildRShortcut(ShortcutDeclaration shortcut) {
-		RFunction func = buildRFunction(shortcut.getFunction());
-		return new RShortcut(shortcut.getName(), cardinalityProvider.isSymbolMulti(shortcut), shortcut.getDefinition(), shortcut.getExpression(), func);
+		return new RShortcut(shortcut.getName(), cardinalityProvider.isSymbolMulti(shortcut), shortcut.getDefinition(), shortcut.getExpression(), shortcut.getFunction(), this);
 
 	}
 

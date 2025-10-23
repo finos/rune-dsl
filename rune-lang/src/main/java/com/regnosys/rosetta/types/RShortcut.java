@@ -21,20 +21,25 @@ import java.util.Objects;
 import org.eclipse.emf.ecore.EObject;
 
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
+import com.regnosys.rosetta.rosetta.simple.Function;
 
 public class RShortcut implements RAssignedRoot {
 	private final String name;
 	private final boolean isMulti;
 	private final String definition;
 	private final RosettaExpression expression;
-	private final RFunction function;
 	
-	public RShortcut(String name, boolean isMulti, String definition, RosettaExpression expression, RFunction function) {
+	private final Function function;
+	private final RObjectFactory objectFactory;
+	
+	public RShortcut(String name, boolean isMulti, String definition, RosettaExpression expression, Function function, RObjectFactory objectFactory) {
 		this.name = name;
 		this.isMulti = isMulti;
 		this.definition = definition;
 		this.expression = expression;
+		
 		this.function = function;
+		this.objectFactory = objectFactory;
 	}
 
 	@Override
@@ -56,7 +61,7 @@ public class RShortcut implements RAssignedRoot {
 	}
 	
 	public RFunction getFunction() {
-		return function;
+		return objectFactory.buildRFunction(function);
 	}
 
 	@Override

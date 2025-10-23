@@ -96,7 +96,7 @@ public class AliasUtil {
 				if (requiresOutput(alias)) {
 					RAttribute output = func.getOutput();
 					target.append(scope.getIdentifierOrThrow(output));
-					target.append(", ");
+					target.append(".toBuilder(), ");
 				}
 				for (RAttribute input : func.getInputs()) {
 					target.append(scope.getIdentifierOrThrow(input));

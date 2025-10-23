@@ -11,7 +11,6 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.util.RecordJavaUtil
-import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
@@ -127,7 +126,6 @@ import java.util.stream.Collectors
 import jakarta.inject.Inject
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtend2.lib.StringConcatenationClient
-import org.eclipse.xtext.EcoreUtil2
 import org.eclipse.xtext.xbase.lib.Functions.Function3
 
 import static extension com.regnosys.rosetta.generator.java.enums.EnumHelper.convertValue
@@ -153,6 +151,7 @@ import com.rosetta.util.types.JavaClass
 import com.regnosys.rosetta.rosetta.expression.RosettaSuperCall
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.Context
 import com.regnosys.rosetta.generator.GeneratedIdentifier
+import com.regnosys.rosetta.generator.java.function.AliasUtil
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -182,7 +181,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	@Inject protected RosettaTypeProvider typeProvider
 	@Inject extension CardinalityProvider cardinalityProvider
-	@Inject RosettaFunctionExtensions funcExt
+	@Inject AliasUtil aliasUtil
 	@Inject extension RosettaEcoreUtil
 	@Inject extension ImportManagerExtension
 	@Inject ExpressionHelper exprHelper
@@ -326,15 +325,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	def StringConcatenationClient aliasCallArgs(RShortcut alias, RFunction function, JavaStatementScope scope) {
 		val output = function.output
 		val inputs = function.inputs
-		'''
-			«IF exprHelper.usesOutputParameter(alias.expression)»«scope.getIdentifierOrThrow(output)».toBuilder()«IF !inputs.empty», «ENDIF»«ENDIF
-			»«FOR input : inputs SEPARATOR ", "»«scope.getIdentifierOrThrow(input)»«ENDFOR»'''
-	}
-
-	private def StringConcatenationClient aliasCallArgs(ShortcutDeclaration alias, JavaStatementScope scope) {
-		val func = EcoreUtil2.getContainerOfType(alias, Function)
-		val output = rObjectFactory.buildRAttributeWithEnclosingType(null, funcExt.getOutput(func))
-		val inputs = funcExt.getInputs(func).map[rObjectFactory.buildRAttributeWithEnclosingType(null, it)]
 		'''
 			«IF exprHelper.usesOutputParameter(alias.expression)»«scope.getIdentifierOrThrow(output)».toBuilder()«IF !inputs.empty», «ENDIF»«ENDIF
 			»«FOR input : inputs SEPARATOR ", "»«scope.getIdentifierOrThrow(input)»«ENDFOR»'''
@@ -1095,12 +1085,12 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				val isMulti = s.isSymbolMulti
 				val shortcut = rObjectFactory.buildRShortcut(s)
 				val itemType = typeProvider.getRTypeOfSymbol(s).toJavaReferenceType
-				if (exprHelper.usesOutputParameter(s.expression)) {
+				if (aliasUtil.requiresOutput(shortcut)) {
 					val aliasType = isMulti ? LIST.wrap(itemType) : itemType
-					JavaExpression.from('''«context.scope.getIdentifierOrThrow(shortcut)»(«aliasCallArgs(s, context.scope)»).build()''', aliasType)
+					JavaExpression.from('''«context.scope.getIdentifierOrThrow(shortcut)»(«aliasUtil.getArguments(shortcut, context.runtimeContextId, context.scope)»).build()''', aliasType)
 				} else {
 					val aliasType = isMulti ? MAPPER_C.wrapExtendsIfNotFinal(itemType) as JavaType : MAPPER_S.wrapExtendsIfNotFinal(itemType)
-					JavaExpression.from('''«context.scope.getIdentifierOrThrow(shortcut)»(«aliasCallArgs(s, context.scope)»)''', aliasType)
+					JavaExpression.from('''«context.scope.getIdentifierOrThrow(shortcut)»(«aliasUtil.getArguments(shortcut, context.runtimeContextId, context.scope)»)''', aliasType)
 				}
 
 			}

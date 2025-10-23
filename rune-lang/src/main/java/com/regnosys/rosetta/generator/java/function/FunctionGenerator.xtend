@@ -333,7 +333,8 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 			«FOR alias : shortcuts»
 				«val aliasScope = aliasScopes.get(alias)»
 				«val contextId = aliasContextIds.get(alias)»
-				protected abstract «aliasUtil.getReturnType(alias)» «classScope.getIdentifierOrThrow(alias)»(«aliasUtil.getParameters(alias, contextId, aliasScope)»);
+				
+					protected abstract «aliasUtil.getReturnType(alias)» «classScope.getIdentifierOrThrow(alias)»(«aliasUtil.getParameters(alias, contextId, aliasScope)»);
 			«ENDFOR»
 
 				public static «defaultClass.asClassDeclaration» {
@@ -377,8 +378,10 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 						«val returnType = aliasUtil.getReturnType(alias)»
 						«val contextId = defaultClassContextIds.get(alias)»
 						«val body = expressionGenerator.javaCode(alias.expression, returnType, contextId, aliasScope.bodyScope)»
+						«val safeBody = aliasUtil.requiresOutput(alias) ? body.mapExpressionIfNotNull[JavaExpression.from('''toBuilder(«it»)''', returnType)] : body»
+						
 						@Override
-						protected «returnType» «defaultClassScope.getIdentifierOrThrow(alias)»(«aliasUtil.getParameters(alias, contextId, aliasScope)») «body.completeAsReturn.toBlock»
+						protected «returnType» «defaultClassScope.getIdentifierOrThrow(alias)»(«aliasUtil.getParameters(alias, contextId, aliasScope)») «safeBody.completeAsReturn.toBlock»
 					«ENDFOR»
 				}
 					«IF isQualifierFunction(function)»
