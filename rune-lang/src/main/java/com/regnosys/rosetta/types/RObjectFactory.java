@@ -86,19 +86,16 @@ public class RObjectFactory {
 		if (function == null || !visited.add(function)) {
 			return null;
 		}
-		Function superFunc = function.getSuperFunction();
 		return new RFunction(
 				function,
-				superFunc == null ? null : buildRFunction(superFunc, visited),
-				getScope(function),
 				modelIdProvider.getSymbolId(function),
 				function.getDefinition(),
 				funcExt.getInputs(function).stream().map(i -> buildRAttributeWithEnclosingType(null, i)).collect(Collectors.toList()),
 				buildRAttributeWithEnclosingType(null, funcExt.getOutput(function)),
 				RFunctionOrigin.FUNCTION,
 				function.getConditions(), function.getPostConditions(),
-				function.getShortcuts().stream().map(s -> buildRShortcut(s)).collect(Collectors.toList()),
-				function.getOperations().stream().map(o -> buildROperation(o)).collect(Collectors.toList()),
+				function.getShortcuts().stream().map(this::buildRShortcut).collect(Collectors.toList()),
+				function.getOperations().stream().map(this::buildROperation).collect(Collectors.toList()),
 				function.getAnnotations());
 	}
 	
@@ -114,8 +111,6 @@ public class RObjectFactory {
 		
 		return new RFunction(
 				rule,
-				null,
-				getScope(rule),
 				rule.getName() == null ? null : modelIdProvider.getSymbolId(rule),
 				rule.getDefinition(),
 				List.of(createArtificialAttribute("input", inputRType, false)),
@@ -150,8 +145,6 @@ public class RObjectFactory {
 		List<ROperation> operations = generateOperations(report, outputAttribute, outputRtype, inputAttribute);
 		return new RFunction(
 			report,
-			null,
-			getScope(report),
 			modelIdProvider.getReportId(report),
 			reportDefinition,
 			List.of(buildRAttributeWithEnclosingType(null, inputAttribute)),

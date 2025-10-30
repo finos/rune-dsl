@@ -73,9 +73,9 @@ public class RosettaTestModelService {
 		sources[0] = source;
 		System.arraycopy(other, 0, sources, 1, other.length);
 		if (assertNoIssues) {
-			model = modelHelper.parseRosettaWithNoIssues(sources).get(0);
+			model = modelHelper.parseRosettaWithNoIssues(sources).getFirst();
 		} else {
-			model = modelHelper.parseRosetta(sources).get(0);
+			model = modelHelper.parseRosetta(sources).getFirst();
 		}
 		return new RosettaTestModel(source, model, expressionParser);
 	}

@@ -29,6 +29,7 @@ public class JavaIdentifierRepresentationService extends IdentifierRepresentatio
 	public ImplicitVariableRepresentation toRuleInputParameter(RosettaRule rule) {
 		return getImplicitVarInContext(rule.getExpression());
 	}
+
 	public RuleOutputParameterRepresentation toRuleOutputParameter(RosettaRule rule) {
 		return new RuleOutputParameterRepresentation(rule);
 	}

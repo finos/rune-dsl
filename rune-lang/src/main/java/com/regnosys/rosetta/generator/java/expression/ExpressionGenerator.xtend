@@ -148,22 +148,18 @@ import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationS
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 import static com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperationType.*
 import com.rosetta.util.types.JavaClass
-import com.regnosys.rosetta.rosetta.expression.RosettaSuperCall
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.Context
-import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.regnosys.rosetta.generator.java.function.AliasUtil
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
 	static class Context {
 		public JavaType expectedType;
-		public GeneratedIdentifier runtimeContextId;
 		public JavaStatementScope scope;
 		
 		private def Context copy() {
 			new Context => [
 				it.expectedType = this.expectedType
-				it.runtimeContextId = this.runtimeContextId
 				it.scope = this.scope
 			]
 		}
@@ -200,10 +196,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	 * convert a rosetta expression to code
 	 * ParamMpa params  - a map keyed by classname or positional index that provides variable names for expression parameters
 	 */
-	def JavaStatementBuilder javaCode(RosettaExpression expr, JavaType expectedType, GeneratedIdentifier runtimeContextId, JavaStatementScope scope) {
+	def JavaStatementBuilder javaCode(RosettaExpression expr, JavaType expectedType, JavaStatementScope scope) {
 		javaCode(expr, new Context => [
 			it.expectedType = expectedType
-			it.runtimeContextId = runtimeContextId
 			it.scope = scope
 		])
 	}
@@ -279,14 +274,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 	private def JavaStatementBuilder evaluateCall(RFunction rCallable, GeneratedIdentifier dependencyId, List<RosettaExpression> arguments, Context context) {
 		val scope = context.scope
-		val contextId = context.runtimeContextId
 		val outputType = rCallable.output.toMetaJavaType
 		val args = newArrayList
 		for (var i = 0; i < arguments.size; i++) {
 			args.add(arguments.get(i).javaCode(context.withExpected(rCallable.inputs.get(i).toMetaJavaType)))
-		}
-		if (contextId !== null) {
-			args.add(new JavaVariable(contextId, RUNE_CONTEXT))
 		}
 		JavaStatementBuilder.invokeMethod(
 			args,
@@ -1507,10 +1498,5 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 
 	private def boolean needsBuilder(JavaExpression expr) {
 		expr != JavaLiteral.NULL && expr.expressionType.hasBuilderType
-	}
-	
-	override protected caseSuperCall(RosettaSuperCall expr, Context context) {
-		val superFunc = expr.superFunction.buildRFunction
-		evaluateCall(superFunc, context.scope.getIdentifierOrThrow(superFunc.toSuperFunctionInstance), expr.args, context)
 	}
 }

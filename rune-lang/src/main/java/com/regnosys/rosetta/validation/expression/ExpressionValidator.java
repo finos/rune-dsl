@@ -3,8 +3,6 @@ package com.regnosys.rosetta.validation.expression;
 import com.regnosys.rosetta.types.*;
 import jakarta.inject.Inject;
 
-import jakarta.inject.Provider;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
@@ -329,16 +327,6 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 			}
 		}
 	}
-    
-    @Check
-    public void checkSuperCall(RosettaSuperCall expr) {
-        Function superFunction = expr.getSuperFunction();
-        if (superFunction == null) {
-            error("Calling `super` is only allowed when extending a function", expr, ROSETTA_NAMED__NAME);
-        } else {
-            checkCallableReference(expr, superFunction);
-        }
-    }
     
     private void checkCallableReference(RosettaCallableReference expr, RosettaCallableWithArgs callable) {
         if (ecoreUtil.isResolved(callable)) {

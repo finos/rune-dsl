@@ -417,7 +417,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			expr.regionFor.keywords(',').forEach[
 				prepend[noSpace]
 			]
-			expr.regionFor.keyword(explicitArgumentsLeftParenthesisKeyword_0_1_0_0)
+			expr.regionFor.keyword(explicitArgumentsLeftParenthesisKeyword_0_2_0_0)
 				.prepend[noSpace]
 			
 			formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine),

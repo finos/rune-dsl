@@ -117,7 +117,7 @@ public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerVa
         }
     }
 
-    static class BrokenEnumGenerator extends EnumGenerator {    	
+    static class BrokenEnumGenerator extends EnumGenerator {
         @Override
         protected StringConcatenationClient generateClass(REnumType e, RJavaEnum javaEnum, String version, JavaClassScope scope) {
             throw new RuntimeException("Broken enum generator");
