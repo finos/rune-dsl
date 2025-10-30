@@ -27,7 +27,7 @@ variables:
   # - keywords that may also be used as an identifier (e.g., `version`),
   # - keywords that may also be used as another keyword in a certain context (e.g., `synonym`),
   # - keywords that are unambiguous, i.e., all other keywords indicating the start of a root element.
-  identifiersConflictingWithNamespace: '{{wordStart}}(version){{wordEnd}}'
+  identifiersConflictingWithNamespace: '{{wordStart}}(scope|version){{wordEnd}}'
   ambiguousRootStart: '{{wordStart}}(synonym|rule){{wordEnd}}'
   unambiguousRootStart: '{{wordStart}}(namespace|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|typeAlias|library|reporting|eligibility|metaType|report|annotation|enum|type|choice|func){{wordEnd}}'
   rootStart: '{{ambiguousRootStart}}|{{unambiguousRootStart}}'
@@ -966,6 +966,15 @@ repository:
             end: '(?=:)|{{rootEnd}}'
             patterns:
             - include: '#comment'
+            - name: meta.extends.rosetta
+              begin: '{{wordStart}}(extends){{wordEnd}}'
+              beginCaptures:
+                0: { name: keyword.other.extends.rosetta }
+              end: (?=:)|{{rootEnd}}
+              patterns:
+              - include: '#comment'
+              - name: entity.name.function.rosetta
+                match: '{{identifier}}'
             - name: meta.dispatch.rosetta
               begin: \(
               beginCaptures:

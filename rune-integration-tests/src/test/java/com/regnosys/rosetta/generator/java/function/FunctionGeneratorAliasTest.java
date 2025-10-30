@@ -25,6 +25,27 @@ public class FunctionGeneratorAliasTest {
 	@Inject
 	private RosettaTestModelService modelService;
 
+    @Test
+    void shouldSupportDependencyInAlias() {
+        var model = modelService.toJavaTestModel("""
+				func Foo:
+					output:
+						result int (1..1)
+				
+					alias a: Bar() + 1
+					set result: a + 1
+				
+				func Bar:
+				    output:
+				        result int (1..1)
+				    set result: 40
+				""").compile();
+
+        var result = model.evaluateExpression(Integer.class, "Foo()");
+
+        assertEquals(42, result);
+    }
+
 	@Test
 	void shouldAddComplexTypeListWithIfStatement() {
 		var model = modelService.toJavaTestModel("""

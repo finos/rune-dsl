@@ -219,7 +219,7 @@ TypeParameterValidID:
 
 ValidID:
 	ID | 'condition' | 'source' | 'value' | 'version'
-	| 'pattern'
+	| 'pattern' | 'scope'
 ;
 
 

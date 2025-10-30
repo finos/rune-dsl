@@ -111,8 +111,7 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 	override protected generateClass(RFunction rFunction, RGeneratedJavaClass<? extends RosettaFunction> javaFunctionClass, String version, JavaClassScope scope) {
 		val origin = rFunction.EObject
 		if (origin instanceof Function && (origin as Function).handleAsEnumFunction) {
-			val dependencies = collectFunctionDependencies(origin as Function)
-			(origin as Function).dispatchClassBody(javaFunctionClass, scope, dependencies, version)
+			(origin as Function).dispatchClassBody(javaFunctionClass, scope, version)
 		} else {
 			var overridesEvaluate = false
 			var List<JavaType> functionInterfaces
@@ -144,14 +143,6 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 		JavaParameterizedType.from(new TypeReference<IQualifyFunctionExtension<?>>() {}, parameterVariable)
 	}
 
-	private def collectFunctionDependencies(Function func) {
-		val expressions = 
-			func.shortcuts.map[expression] +
-			func.operations.map[expression] +
-			(func.conditions + func.postConditions).map[expression]
-		return dependencyProvider.javaDependencies(expressions)
-	}
-
 	private def collectFunctionDependencies(RFunction func) {
 		val expressions = func.preConditions.map[it.expression] + 
 				func.postConditions.map[it.expression] + 
@@ -176,6 +167,8 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 		val operations = function.operations
 		val preConditions = function.preConditions
 		val postConditions = function.postConditions
+		
+		val conditionDependencies = dependencyProvider.javaDependencies(preConditions.map[expression] + postConditions.map[expression])
 		
 		val superFunc = function.superFunction
 		val superClass = superFunc?.toFunctionJavaClass
@@ -203,17 +196,18 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 		
 		val evaluateScope = classScope.createMethodScope("evaluate")
 		inputs.forEach[evaluateScope.createIdentifier(it, it.name)]
-		evaluateScope.createIdentifier(output, output.name)
 		val evaluateContextId = evaluateScope.createUniqueIdentifier("context")
 		val evaluateBodyScope = evaluateScope.bodyScope
+		conditionDependencies.forEach[evaluateBodyScope.createIdentifier(it.toDependencyInstance, it.simpleName.toFirstLower)]
+		evaluateBodyScope.createIdentifier(output, output.name)
 		val outputBuilderId = if (output.needsBuilder) {
 			evaluateBodyScope.createUniqueIdentifier(output.name + "Builder")
 		}
 		
 		val doEvaluateScope = classScope.createMethodScope("doEvaluate")
 		inputs.forEach[doEvaluateScope.createIdentifier(it, it.name)]
-		doEvaluateScope.createIdentifier(output, output.name)
 		val doEvaluateContextId = doEvaluateScope.createUniqueIdentifier("context")
+		val doEvaluateBodyScope = doEvaluateScope.bodyScope
 		
 		val defaultDoEvaluateScope = defaultClassScope.createMethodScope("doEvaluate")
 		inputs.forEach[defaultDoEvaluateScope.createIdentifier(it, it.name)]
@@ -297,9 +291,18 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 				«FOR input : inputs»
 					* @param «evaluateScope.getIdentifierOrThrow(input)» «escape(input.definition)»
 				«ENDFOR»
-				* @return «evaluateScope.getIdentifierOrThrow(output)» «escape(output.definition)»
+				* @return «evaluateBodyScope.getIdentifierOrThrow(output)» «escape(output.definition)»
 				*/
 				public «outputType» evaluate(«inputs.inputsAsParameters(evaluateContextId, evaluateScope)») {
+					«IF !conditionDependencies.empty»
+						// condition dependencies
+						«val runtimeScopeId = evaluateBodyScope.createUniqueIdentifier("scope")»
+						final «RuneScope» «runtimeScopeId» = «evaluateContextId».getScope();
+						«FOR dep : conditionDependencies»
+						final «dep» «evaluateBodyScope.getIdentifierOrThrow(dep.toDependencyInstance)» = «runtimeScopeId».getInstance(«dep».class);
+						«ENDFOR»
+						
+					«ENDIF»
 					«IF !preConditions.empty»
 						// pre-conditions
 						«FOR cond:preConditions»
@@ -326,10 +329,19 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 							
 						«ENDFOR»
 					«ENDIF»
-					return «evaluateScope.getIdentifierOrThrow(output)»;
+					return «evaluateBodyScope.getIdentifierOrThrow(output)»;
 				}
-			
-				protected abstract «output.toBuilderType» doEvaluate(«inputs.inputsAsParameters(doEvaluateContextId, doEvaluateScope)»);
+				
+				/**
+				 * @deprecated Override #doEvaluate(«inputs.inputsAsParameters(doEvaluateContextId, doEvaluateScope)») instead.
+				 */
+				@Deprecated
+				protected «output.toBuilderType» doEvaluate(«inputs.inputsAsParameters(doEvaluateScope)») {
+					return doEvaluate(«inputs.inputsAsArguments(defaultScopeExpression, doEvaluateBodyScope)»);
+				}
+				protected «output.toBuilderType» doEvaluate(«inputs.inputsAsParameters(doEvaluateContextId, doEvaluateScope)») {
+					return doEvaluate(«inputs.inputsAsArguments(doEvaluateBodyScope)»);
+				}
 			«FOR alias : shortcuts»
 				«val aliasScope = aliasScopes.get(alias)»
 				«val contextId = aliasContextIds.get(alias)»
@@ -395,10 +407,20 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 		'''
 	}
 
-	private def StringConcatenationClient dispatchClassBody(Function function, RGeneratedJavaClass<? extends RosettaFunction> javaFunctionClass, JavaClassScope classScope, List<JavaClass<?>> dependencies, String version) {
+	private def StringConcatenationClient dispatchClassBody(Function function, RGeneratedJavaClass<? extends RosettaFunction> javaFunctionClass, JavaClassScope classScope, String version) {
+		val rfunc = rTypeBuilderFactory.buildRFunction(function)
 		val dispatchingFuncs = function.dispatchingFunctions.sortBy[name].toList
 		val enumParam = function.inputs.filter[typeCall.type instanceof RosettaEnumeration].head.name
 		val outputType = function.outputTypeOrVoid
+		
+		val contextFactoryId = classScope.createUniqueIdentifier("contextFactory")
+		val scopeClass = function.model?.scope?.toScopeJavaClass
+		val scopeId = scopeClass === null ? null : classScope.createUniqueIdentifier(scopeClass.simpleName.toFirstLower)
+		val defaultScopeExpression = if (scopeId === null) {
+			JavaExpression.from('''«contextFactoryId».createDefault()''', RUNE_CONTEXT)
+		} else {
+			JavaExpression.from('''«contextFactoryId».withScope(«scopeId»)''', RUNE_CONTEXT)
+		}
 
 		dispatchingFuncs.forEach[classScope.createIdentifier(it, (function.name + value.value.name.toFirstUpper).toFirstLower)]
 
@@ -429,23 +451,31 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 		]
 
 		val evaluateScope = classScope.createMethodScope("evaluate")
+		rfunc.inputs.forEach[evaluateScope.createIdentifier(it, it.name)]
+		val evaluateContextId = evaluateScope.createUniqueIdentifier("context")
 		val evaluateBodyScope = evaluateScope.bodyScope
 		'''
 		«javadoc(function.definition, function.references, version)»
 		public class «javaFunctionClass» implements «RosettaFunction» {
-			«FOR dep : dependencies»
-				@«javax.inject.Inject» protected «dep» «dep.simpleName.toFirstLower»;
-			«ENDFOR»
+			@«javax.inject.Inject» protected «RUNE_CONTEXT_FACTORY» «contextFactoryId»;
+			«IF scopeId !== null»
+				
+				@«javax.inject.Inject» protected «scopeClass» «scopeId»;
+			«ENDIF»
 			
 			«FOR enumFunc : dispatchingFuncs»
 				@«javax.inject.Inject» protected «enumFuncToClass.get(enumFunc)» «classScope.getIdentifierOrThrow(enumFunc)»;
 			«ENDFOR»
 			
-			public «outputType» evaluate(«function.inputsAsParameters(evaluateScope)») {
+			public «outputType» evaluate(«rfunc.inputs.inputsAsParameters(evaluateScope)») {
+				return evaluate(«rfunc.inputs.inputsAsArguments(defaultScopeExpression, evaluateBodyScope)»);
+			}
+			
+			public «outputType» evaluate(«rfunc.inputs.inputsAsParameters(evaluateContextId, evaluateScope)») {
 				switch («enumParam») {
 					«FOR enumFunc : dispatchingFuncs»
 						case «formatEnumName(enumFunc.value.value.name)»:
-							return «evaluateBodyScope.getIdentifierOrThrow(enumFunc)».evaluate(«function.inputsAsArguments(evaluateBodyScope)»);
+							return «evaluateBodyScope.getIdentifierOrThrow(enumFunc)».evaluate(«rfunc.inputs.inputsAsArguments(evaluateContextId, evaluateBodyScope)»);
 					«ENDFOR»
 					default:
 						throw new IllegalArgumentException("Enum value not implemented: " + «enumParam»);
@@ -752,21 +782,16 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 				typeProvider.getRTypeOfSymbol(out).RType.toListOrSingleJavaType(out.card.isMany)
 			}
 		}
-	}	
-
-	private def StringConcatenationClient inputsAsArguments(extension Function function, JavaStatementScope scope) {
-		'''«FOR input : getInputs(function) SEPARATOR ', '»«scope.getIdentifierOrThrow(input)»«ENDFOR»'''
 	}
 	
+	private def StringConcatenationClient inputsAsArguments(List<RAttribute> inputs, JavaStatementScope scope) {
+		'''«FOR input : inputs SEPARATOR ', '»«scope.getIdentifierOrThrow(input)»«ENDFOR»'''
+	}
 	private def StringConcatenationClient inputsAsArguments(List<RAttribute> inputs, GeneratedIdentifier contextId, JavaStatementScope scope) {
 		inputsAsArguments(inputs, new JavaVariable(contextId, RUNE_CONTEXT), scope)
 	}
 	private def StringConcatenationClient inputsAsArguments(List<RAttribute> inputs, JavaExpression context, JavaStatementScope scope) {
 		'''«FOR input : inputs SEPARATOR ', '»«scope.getIdentifierOrThrow(input)»«ENDFOR»«IF !inputs.isEmpty», «ENDIF»«context»'''
-	}
-
-	private def StringConcatenationClient inputsAsParameters(extension Function function, JavaMethodScope scope) {
-		'''«FOR input : getInputs(function) SEPARATOR ', '»«IF input.typeCall.type.needsBuilder»«typeProvider.getRTypeOfSymbol(input).toPolymorphicListOrSingleJavaType(input.card.isMany)»«ELSE»«typeProvider.getRTypeOfSymbol(input).toListOrSingleJavaType(input.card.isMany)»«ENDIF» «scope.createIdentifier(input)»«ENDFOR»'''
 	}
 	
 	private def StringConcatenationClient inputsAsParameters(List<RAttribute> inputs, JavaMethodScope scope) {

@@ -345,7 +345,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
             int paramCount = callable.numberOfParameters();
             int argCount = expr.getArgs().size();
             if (paramCount != argCount) {
-                error("Expected " + paramCount + " argument" + (paramCount == 1 ? "" : "s") + ", but got " + argCount + " instead", expr, ROSETTA_SYMBOL_REFERENCE__SYMBOL);
+                error("Expected " + paramCount + " argument" + (paramCount == 1 ? "" : "s") + ", but got " + argCount + " instead", expr, null);
             }
             int minCount = Math.min(paramCount, argCount);
 
