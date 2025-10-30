@@ -3,6 +3,7 @@ package com.regnosys.rosetta.validation.expression;
 import com.regnosys.rosetta.types.*;
 import jakarta.inject.Inject;
 
+import jakarta.inject.Provider;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.EcoreUtil2;
@@ -25,6 +26,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.ROSETTA_NAMED__NAME;
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 import static com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta;
@@ -60,7 +62,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 
         boolean symbolReferencesFeatureOfAttribute =
                 symbolReferences.stream()
-                .anyMatch(ref -> ref.getSymbol() instanceof Attribute && implicitFeatures.contains((Attribute) ref.getSymbol()));
+                .anyMatch(ref -> ref.getSymbol() instanceof Attribute attr && implicitFeatures.contains(attr));
 
         if (!symbolReferencesFeatureOfAttribute) {
             /*
@@ -293,44 +295,8 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	public void checkSymbolReference(RosettaSymbolReference expr) {
 		RosettaSymbol s = expr.getSymbol();
 		if (ecoreUtil.isResolved(s)) {
-			if (s instanceof RosettaCallableWithArgs) {
-				RosettaCallableWithArgs callable = (RosettaCallableWithArgs) s;
-				int paramCount = callable.numberOfParameters();
-				int argCount = expr.getArgs().size();
-				if (paramCount != argCount) {
-					error("Expected " + paramCount + " argument" + (paramCount == 1 ? "" : "s") + ", but got " + argCount + " instead", expr, ROSETTA_SYMBOL_REFERENCE__SYMBOL);
-				}
-				int minCount = Math.min(paramCount, argCount);
-				
-				if (callable instanceof RosettaExternalFunction) {
-					RosettaExternalFunction f = (RosettaExternalFunction) callable;
-					for (int i=0; i<minCount; i++) {
-						RosettaParameter param = f.getParameters().get(i);
-						RMetaAnnotatedType paramType = typeProvider.getRTypeOfSymbol(param, null);
-						RosettaExpression arg = expr.getArgs().get(i);
-						isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i, null);
-						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i, actual -> "Cannot assign `" + actual + "` to parameter `" + param.getName() + "`");
-					}
-				} else if (callable instanceof Function) {
-					Function f = (Function) callable;
-					for (int i=0; i<minCount; i++) {
-						Attribute param = f.getInputs().get(i);
-						RMetaAnnotatedType paramType = typeProvider.getRTypeOfSymbol(param, null);
-						RosettaExpression arg = expr.getArgs().get(i);
-						if (!cardinalityProvider.isSymbolMulti(f.getInputs().get(i))) {
-							isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i, null);
-						}
-						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, i, actual -> "Cannot assign `" + actual + "` to input `" + param.getName() + "`");
-					}
-				} else if (callable instanceof RosettaRule) {
-					RosettaRule f = (RosettaRule) callable;
-					if (minCount >= 1) {
-						RMetaAnnotatedType paramType = withNoMeta(typeSystem.getRuleInputType(f));
-						RosettaExpression arg = expr.getArgs().get(0);
-						isSingleCheck(arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0, null);
-						subtypeCheck(paramType, arg, expr, ROSETTA_SYMBOL_REFERENCE__RAW_ARGS, 0, actual -> "Rule `" + f.getName() + "` cannot be called with type `" + actual + "`");
-					}
-				}
+			if (s instanceof RosettaCallableWithArgs callable) {
+                checkCallableReference(expr, callable);
 			} else {
 				if (s instanceof Attribute) {
 					if (functionExtensions.isOutput((Attribute) s)) {
@@ -357,12 +323,60 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 					error(
 						"A variable may not be called",
 						expr,
-						ROSETTA_SYMBOL_REFERENCE__EXPLICIT_ARGUMENTS
+						ROSETTA_CALLABLE_REFERENCE__EXPLICIT_ARGUMENTS
 					);
 				}
 			}
 		}
 	}
+    
+    @Check
+    public void checkSuperCall(RosettaSuperCall expr) {
+        Function superFunction = expr.getSuperFunction();
+        if (superFunction == null) {
+            error("Calling `super` is only allowed when extending a function", expr, ROSETTA_NAMED__NAME);
+        } else {
+            checkCallableReference(expr, superFunction);
+        }
+    }
+    
+    private void checkCallableReference(RosettaCallableReference expr, RosettaCallableWithArgs callable) {
+        if (ecoreUtil.isResolved(callable)) {
+            int paramCount = callable.numberOfParameters();
+            int argCount = expr.getArgs().size();
+            if (paramCount != argCount) {
+                error("Expected " + paramCount + " argument" + (paramCount == 1 ? "" : "s") + ", but got " + argCount + " instead", expr, null);
+            }
+            int minCount = Math.min(paramCount, argCount);
+
+            if (callable instanceof RosettaExternalFunction f) {
+                for (int i=0; i<minCount; i++) {
+                    RosettaParameter param = f.getParameters().get(i);
+                    RMetaAnnotatedType paramType = typeProvider.getRTypeOfSymbol(param, null);
+                    RosettaExpression arg = expr.getArgs().get(i);
+                    isSingleCheck(arg, expr, ROSETTA_CALLABLE_REFERENCE__RAW_ARGS, i, null);
+                    subtypeCheck(paramType, arg, expr, ROSETTA_CALLABLE_REFERENCE__RAW_ARGS, i, actual -> "Cannot assign `" + actual + "` to parameter `" + param.getName() + "`");
+                }
+            } else if (callable instanceof Function f) {
+                for (int i=0; i<minCount; i++) {
+                    Attribute param = f.getInputs().get(i);
+                    RMetaAnnotatedType paramType = typeProvider.getRTypeOfSymbol(param, null);
+                    RosettaExpression arg = expr.getArgs().get(i);
+                    if (!cardinalityProvider.isSymbolMulti(f.getInputs().get(i))) {
+                        isSingleCheck(arg, expr, ROSETTA_CALLABLE_REFERENCE__RAW_ARGS, i, null);
+                    }
+                    subtypeCheck(paramType, arg, expr, ROSETTA_CALLABLE_REFERENCE__RAW_ARGS, i, actual -> "Cannot assign `" + actual + "` to input `" + param.getName() + "`");
+                }
+            } else if (callable instanceof RosettaRule f) {
+                if (minCount >= 1) {
+                    RMetaAnnotatedType paramType = withNoMeta(typeSystem.getRuleInputType(f));
+                    RosettaExpression arg = expr.getArgs().get(0);
+                    isSingleCheck(arg, expr, ROSETTA_CALLABLE_REFERENCE__RAW_ARGS, 0, null);
+                    subtypeCheck(paramType, arg, expr, ROSETTA_CALLABLE_REFERENCE__RAW_ARGS, 0, actual -> "Rule `" + f.getName() + "` cannot be called with type `" + actual + "`");
+                }
+            }
+        }
+    }
 	
 	@Check
 	public void checkExistsExpression(RosettaExistsExpression expr) {

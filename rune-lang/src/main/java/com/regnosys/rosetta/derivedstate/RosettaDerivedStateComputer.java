@@ -21,14 +21,13 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.resource.DerivedStateAwareResource;
 import org.eclipse.xtext.resource.IDerivedStateComputer;
 
-import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.HasGeneratedInput;
 import com.regnosys.rosetta.rosetta.expression.JoinOperation;
 import com.regnosys.rosetta.rosetta.expression.ListLiteral;
+import com.regnosys.rosetta.rosetta.expression.RosettaCallableReference;
 import com.regnosys.rosetta.rosetta.expression.RosettaConditionalExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
-import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 
 import jakarta.inject.Inject;
@@ -63,8 +62,8 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 			this.setDefaultElseToEmpty((RosettaConditionalExpression)obj);
 		} else if (obj instanceof JoinOperation) {
 			this.setDefaultJoinSeparator((JoinOperation)obj);
-		} else if (obj instanceof RosettaSymbolReference) {
-			this.setImplicitVariableInContextOfSymbolReference((RosettaSymbolReference)obj);
+		} else if (obj instanceof RosettaCallableReference) {
+			this.setImplicitVariableInContextOfCallableReference((RosettaCallableReference)obj);
 		}
 		if (obj instanceof HasGeneratedInput) {
 			this.setDefaultInput((HasGeneratedInput)obj);
@@ -84,8 +83,8 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 			this.discardDefaultElse((RosettaConditionalExpression)obj);
 		} else if (obj instanceof JoinOperation) {
 			this.discardDefaultJoinSeparator((JoinOperation)obj);
-		} else if (obj instanceof RosettaSymbolReference) {
-			this.discardImplicitVariableInContextOfSymbolReference((RosettaSymbolReference)obj);
+		} else if (obj instanceof RosettaCallableReference) {
+			this.discardImplicitVariableInContextOfCallableReference((RosettaCallableReference)obj);
 		}
 		if (obj instanceof HasGeneratedInput) {
 			this.discardDefaultInput((HasGeneratedInput)obj);
@@ -143,12 +142,12 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 		}
 	}
 	
-	private void setImplicitVariableInContextOfSymbolReference(RosettaSymbolReference expr) {
+	private void setImplicitVariableInContextOfCallableReference(RosettaCallableReference expr) {
 		if (implicitVariableUtil.implicitVariableExistsInContext(expr)) {
 			expr.setImplicitVariableIsInContext(true);
 			}
 		}
-	private void discardImplicitVariableInContextOfSymbolReference(RosettaSymbolReference expr) {
+	private void discardImplicitVariableInContextOfCallableReference(RosettaCallableReference expr) {
 		if (expr.isImplicitVariableIsInContext()) {
 			expr.setImplicitVariableIsInContext(false);
 		    expr.setImplicitArgument(null);

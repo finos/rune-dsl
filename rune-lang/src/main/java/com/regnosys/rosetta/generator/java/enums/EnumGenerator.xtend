@@ -31,7 +31,7 @@ class EnumGenerator extends RObjectJavaClassGenerator<REnumType, RJavaEnum> {
 	override protected createTypeRepresentation(REnumType object) {
 		object.toJavaReferenceType
 	}
-	override protected generate(REnumType e, RJavaEnum javaEnum, String version, JavaClassScope scope) {
+	override protected generateClass(REnumType e, RJavaEnum javaEnum, String version, JavaClassScope scope) {
 		'''
 		«javadoc(e.EObject.definition, e.EObject.references, version)»
 		@«RosettaEnum»("«e.name»")

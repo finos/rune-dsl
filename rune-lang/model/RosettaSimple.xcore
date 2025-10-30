@@ -159,9 +159,10 @@ class ChoiceOption extends Attribute, SwitchCaseTarget {
 }
 
 class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs, References {
+	refers Function superFunction
 	contains Attribute[] inputs
 	contains Attribute output
-	contains ShortcutDeclaration[] shortcuts
+	contains ShortcutDeclaration[] shortcuts opposite function
 	contains Condition[] conditions
 	contains Operation[] operations opposite function
 	contains Condition[] postConditions
@@ -221,6 +222,7 @@ class Segment {
 }
 
 class ShortcutDeclaration extends RosettaNamed, RosettaDefinable, AssignPathRoot {
+	container Function function opposite shortcuts
 	contains RosettaExpression expression
 }
 
