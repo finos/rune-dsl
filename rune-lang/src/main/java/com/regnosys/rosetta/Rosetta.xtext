@@ -644,7 +644,7 @@ SwitchCaseOrDefault:
 ;
 
 SwitchCaseGuard:
-	literalGuard=RosettaLiteral | referenceGuard=[SwitchCaseTarget|ValidID]
+	literalGuard=RosettaLiteral | referenceGuard=[SwitchCaseTarget|QualifiedName]
 ;
 
 WithMetaEntry:

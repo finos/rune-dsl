@@ -80,8 +80,8 @@ public class RosettaGenerator implements IGenerator2 {
 	@Inject
 	private LabelProviderGenerator labelProviderGenerator;
     
-    @Inject
-    private ScopeGenerator scopeGenerator;
+	@Inject
+	private ScopeGenerator scopeGenerator;
 
 	@Inject
 	private ResourceAwareFSAFactory fsaFactory;
@@ -184,7 +184,7 @@ public class RosettaGenerator implements IGenerator2 {
 					reportGenerator,
 					enumGenerator,
 					metaFieldGenerator,
-                    scopeGenerator
+					scopeGenerator
 				);
 				List<GenerationException> aggregatedGenerationExceptions = javaGenerators.stream()
 					.flatMap(generator -> generator.generateClasses(model, version, fsa2, context.getCancelIndicator()).stream())
