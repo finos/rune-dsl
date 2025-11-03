@@ -150,6 +150,7 @@ import static com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperatio
 import com.rosetta.util.types.JavaClass
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.Context
 import com.regnosys.rosetta.generator.java.function.AliasUtil
+import com.regnosys.rosetta.generator.GeneratedIdentifier
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1078,10 +1079,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				val itemType = typeProvider.getRTypeOfSymbol(s).toJavaReferenceType
 				if (aliasUtil.requiresOutput(shortcut)) {
 					val aliasType = isMulti ? LIST.wrap(itemType) : itemType
-					JavaExpression.from('''«context.scope.getIdentifierOrThrow(shortcut)»(«aliasUtil.getArguments(shortcut, context.runtimeContextId, context.scope)»).build()''', aliasType)
+					JavaExpression.from('''«context.scope.getIdentifierOrThrow(shortcut)»(«aliasUtil.getArguments(shortcut, context.scope)»).build()''', aliasType)
 				} else {
 					val aliasType = isMulti ? MAPPER_C.wrapExtendsIfNotFinal(itemType) as JavaType : MAPPER_S.wrapExtendsIfNotFinal(itemType)
-					JavaExpression.from('''«context.scope.getIdentifierOrThrow(shortcut)»(«aliasUtil.getArguments(shortcut, context.runtimeContextId, context.scope)»)''', aliasType)
+					JavaExpression.from('''«context.scope.getIdentifierOrThrow(shortcut)»(«aliasUtil.getArguments(shortcut, context.scope)»)''', aliasType)
 				}
 
 			}

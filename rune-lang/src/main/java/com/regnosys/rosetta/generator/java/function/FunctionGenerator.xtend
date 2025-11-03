@@ -289,7 +289,7 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 			«FOR alias : shortcuts»
 				«val aliasScope = aliasScopes.get(alias)»
 				
-				    protected abstract «aliasUtil.getReturnType(alias)» «classScope.getIdentifierOrThrow(alias)»(«aliasUtil.getParameters(alias, contextId, aliasScope)»);
+					protected abstract «aliasUtil.getReturnType(alias)» «classScope.getIdentifierOrThrow(alias)»(«aliasUtil.getParameters(alias, aliasScope)»);
 			«ENDFOR»
 
 				public static «defaultClass.asClassDeclaration» {
@@ -316,12 +316,12 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 					}
 					«FOR alias : shortcuts»
 						«val aliasScope = defaultClassAliasScopes.get(alias)»
-                        «val returnType = aliasUtil.getReturnType(alias)»
-                        «val body = expressionGenerator.javaCode(alias.expression, returnType, aliasScope.bodyScope)»
-                        «val safeBody = aliasUtil.requiresOutput(alias) ? body.mapExpressionIfNotNull[JavaExpression.from('''toBuilder(«it»)''', returnType)] : body»
-                        
-                        @Override
-                        protected «returnType» «defaultClassScope.getIdentifierOrThrow(alias)»(«aliasUtil.getParameters(alias, aliasScope)») «safeBody.completeAsReturn.toBlock»
+						«val returnType = aliasUtil.getReturnType(alias)»
+						«val body = expressionGenerator.javaCode(alias.expression, returnType, aliasScope.bodyScope)»
+						«val safeBody = aliasUtil.requiresOutput(alias) ? body.mapExpressionIfNotNull[JavaExpression.from('''toBuilder(«it»)''', returnType)] : body»
+						
+						@Override
+						protected «returnType» «defaultClassScope.getIdentifierOrThrow(alias)»(«aliasUtil.getParameters(alias, aliasScope)») «safeBody.completeAsReturn.toBlock»
 					«ENDFOR»
 				}
 					«IF isQualifierFunction(function)»
@@ -368,13 +368,11 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 		]
 
 		val evaluateScope = classScope.createMethodScope("evaluate")
+		rfunc.inputs.forEach[evaluateScope.createIdentifier(it, it.name)]
 		val evaluateBodyScope = evaluateScope.bodyScope
 		'''
 		«javadoc(function.definition, function.references, version)»
 		public class «javaFunctionClass» implements «RosettaFunction» {
-			«FOR dep : dependencies»
-				@«javax.inject.Inject» protected «dep» «dep.simpleName.toFirstLower»;
-			«ENDFOR»
 			
 			«FOR enumFunc : dispatchingFuncs»
 				@«javax.inject.Inject» protected «enumFuncToClass.get(enumFunc)» «classScope.getIdentifierOrThrow(enumFunc)»;

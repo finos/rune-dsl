@@ -478,7 +478,7 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         }
     }
 
-    // TODO
+    // TODO: refactor to fit in the `validation.names` package
     @Check
     public void checkFunctionElementNamesAreUnique(com.regnosys.rosetta.rosetta.simple.Function ele) {
         // Combine inputs, shortcuts, and output into a single list of AssignPathRoot elements (ignoring nulls)
@@ -498,7 +498,7 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         });
     }
 
-    // TODO
+    // TODO: refactor to fit in the `validation.names` package
     @Check
     public void checkClosureParameterNamesAreUnique(ClosureParameter param) {
         IScope scope = scopeProvider.getScope(param.getFunction().eContainer(), ExpressionPackage.Literals.ROSETTA_SYMBOL_REFERENCE__SYMBOL);

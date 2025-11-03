@@ -68,7 +68,8 @@ public class ModelHelper {
         List<RosettaModel> result = new ArrayList<>();
         List<Resource> resources = new ArrayList<>();
         for (CharSequence it : models) {
-            CharSequence content = it.toString().trim().startsWith("namespace")
+            String trimmed = it.toString().trim();
+            CharSequence content = trimmed.startsWith("namespace") || trimmed.startsWith("override")
                     ? it
                     : (getVersionInfo() + "\n" + it);
             try {

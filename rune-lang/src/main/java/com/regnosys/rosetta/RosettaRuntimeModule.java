@@ -1,7 +1,8 @@
 package com.regnosys.rosetta;
 
 import com.regnosys.rosetta.scoping.RosettaLinkingService;
-import com.regnosys.rosetta.validation.uniquenames.RosettaNamesAreUniqueValidationHelper;
+import com.regnosys.rosetta.validation.names.RosettaNamesAreUniqueValidationHelper;
+import com.regnosys.rosetta.validation.names.RosettaUniqueNamesContextProvider;
 import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.formatting2.FormatterRequest;
 import org.eclipse.xtext.generator.IOutputConfigurationProvider;
@@ -11,12 +12,10 @@ import org.eclipse.xtext.parser.IEncodingProvider;
 import org.eclipse.xtext.parsetree.reconstr.ITransientValueService;
 import org.eclipse.xtext.resource.DerivedStateAwareResourceDescriptionManager;
 import org.eclipse.xtext.resource.IDerivedStateComputer;
-import org.eclipse.xtext.resource.IFragmentProvider;
 import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.service.DispatchingProvider;
-import org.eclipse.xtext.validation.DefaultUniqueNameContext;
 import org.eclipse.xtext.validation.INamesAreUniqueValidationHelper;
 import org.eclipse.xtext.validation.IResourceValidator;
 
@@ -34,7 +33,6 @@ import com.regnosys.rosetta.generator.external.ExternalGenerators;
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory;
 import com.regnosys.rosetta.generator.resourcefsa.TestResourceAwareFSAFactory;
 import com.regnosys.rosetta.parsing.RosettaValueConverterService;
-import com.regnosys.rosetta.resource.RosettaFragmentProvider;
 import com.regnosys.rosetta.resource.RosettaResource;
 import com.regnosys.rosetta.resource.RosettaResourceDescriptionStrategy;
 import com.regnosys.rosetta.scoping.RosettaQualifiedNameProvider;
@@ -49,11 +47,6 @@ public class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	
 	public void configureRequestScopedCache(Binder binder) {
 		binder.install(new RequestScopedCacheModule());
-	}
-	
-	@Override
-	public Class<? extends IFragmentProvider> bindIFragmentProvider() {
-		return RosettaFragmentProvider.class;
 	}
 	
 	public Class<? extends ResourceAwareFSAFactory> bindResourceAwareFSAFactory() {
@@ -135,6 +128,6 @@ public class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
     	return RosettaNamesAreUniqueValidationHelper.class;
     }
     public Class<? extends RosettaNamesAreUniqueValidationHelper.ContextProvider> bindINamesAreUniqueValidationHelperContextProvider() {
-        return DefaultUniqueNameContext.Global.class;
+        return RosettaUniqueNamesContextProvider.class;
     }
 }

@@ -1031,15 +1031,6 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
-    void testParametrizedBasicTypesWithDuplicateParameters() {
-        var model = modelHelper.parseRosetta("""
-				basicType int(digits int, digits int)
-				""");
-        validationTestHelper.assertError(model, TYPE_PARAMETER, null,
-                "Duplicate parameter name `digits`.");
-    }
-
-    @Test
     void noDuplicateInheritanceForRuleSourceTest() {
         var model = modelHelper.parseRosetta("""
 				rule source TestA {}
@@ -1549,29 +1540,17 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
-    void testDuplicateType() {
-        var model = modelHelper.parseRosetta("""
-				type Bar:
-
-				type Foo:
-
-				enum Foo: BAR
-				""");
-        validationTestHelper.assertError(model, ROSETTA_TYPE, DUPLICATE_ELEMENT_NAME, "Duplicate element named 'Foo'");
-    }
-
-    @Test
     void testDuplicateChoiceRuleAttribute_thisOne() {
         var model = modelHelper.parseRosetta("""
-				type Bar:
-					attribute1 string (0..1)
-					attribute2 string (0..1)
-					attribute3 string (0..1)
-
-				condition Foo:
-					required choice
-						attribute1, attribute1
-				""");
+                type Bar:
+                	attribute1 string (0..1)
+                	attribute2 string (0..1)
+                	attribute3 string (0..1)
+                
+                	condition Foo:
+                		required choice
+                			attribute1, attribute1
+                """);
         validationTestHelper.assertError(model, CHOICE_OPERATION, null, "Duplicate attribute.");
     }
 
@@ -1583,8 +1562,8 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 					attribute2 string (0..1)
 					attribute3 string (0..1)
 
-				condition Foo:
-					required choice attribute1, attribute2, attribute2
+					condition Foo:
+						required choice attribute1, attribute2, attribute2
 				""");
         validationTestHelper.assertError(model, CHOICE_OPERATION, null, "Duplicate attribute.");
     }
@@ -1595,8 +1574,8 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				type Foo:
 					x string (0..1)
 
-				condition:
-					x exists
+					condition:
+						x exists
 				""");
         validationTestHelper.assertWarning(model, CONDITION, INVALID_NAME,
                 "Condition name should be specified");
@@ -1608,8 +1587,8 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				type Foo:
 					x string (0..1)
 
-				condition xExists:
-					x exists
+					condition xExists:
+						x exists
 				""");
         validationTestHelper.assertWarning(model, CONDITION, INVALID_CASE,
                 "Condition name should start with a capital");
@@ -1624,8 +1603,8 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				type Bar extends Foo:
 					y string (0..1)
 
-				condition XExists:
-					x exists
+					condition XExists:
+						x exists
 				""");
         validationTestHelper.assertNoErrors(model);
         validationTestHelper.assertNoIssues(model);
@@ -1728,21 +1707,21 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				type Clazz:
 					test boolean (0..1)
 
-				condition Condition:
-					if test = True
-						or False <> False
-						or 1 > 0
-						or 1 < 0
-						or 1 >= 0
-						or 1 <= 0
-						or 1 <> 0
-						or 1 = 0
-					then 1.1 = .0
-						and 0.2 <> 0.1
-						and 0.2 > 0.1
-						and 0.2 < 0.1
-						and 0.2 <= 0.1
-						and 0.2 >= 0.1
+					condition Condition:
+						if test = True
+							or False <> False
+							or 1 > 0
+							or 1 < 0
+							or 1 >= 0
+							or 1 <= 0
+							or 1 <> 0
+							or 1 = 0
+						then 1.1 = .0
+							and 0.2 <> 0.1
+							and 0.2 > 0.1
+							and 0.2 < 0.1
+							and 0.2 <= 0.1
+							and 0.2 >= 0.1
 				""");
         validationTestHelper.assertNoErrors(model);
     }

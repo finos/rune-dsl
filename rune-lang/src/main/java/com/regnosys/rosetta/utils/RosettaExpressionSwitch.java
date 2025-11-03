@@ -286,7 +286,6 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 	
 	protected abstract Return caseImplicitVariable(RosettaImplicitVariable expr, Context context);
 	protected abstract Return caseSymbolReference(RosettaSymbolReference expr, Context context);
-	protected abstract Return caseSuperCall(RosettaSuperCall expr, Context context);
 	
 	protected abstract Return caseAddOperation(ArithmeticOperation expr, Context context);
 	protected abstract Return caseSubtractOperation(ArithmeticOperation expr, Context context);

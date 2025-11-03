@@ -37,11 +37,8 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaMetaType;
-import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaReport;
-import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaRule;
-import com.regnosys.rosetta.rosetta.RosettaScope;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
@@ -72,13 +69,6 @@ public class RObjectFactory {
 	@Inject
 	private RosettaFunctionExtensions funcExt;
 
-	private RosettaScope getScope(RosettaRootElement elem) {
-		RosettaModel model = elem.getModel();
-		if (model == null) {
-			return null;
-		}
-		return model.getScope();
-	}
 	public RFunction buildRFunction(Function function) {
 		return functionCache.get(function, () -> buildRFunction(function, new HashSet<>()));
 	}
