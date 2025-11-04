@@ -59,16 +59,16 @@ public class AliasUtil {
 			@Override
 			protected void appendTo(TargetStringConcatenation target) {
 				if (requiresOutput(alias)) {
-					RAttribute output = func.getOutput();
-					JavaReferenceType outputParameterType = toMultiBuilderType(output.getRMetaAnnotatedType(), output.isMulti());
-					
-					target.append(outputParameterType);
-					target.append(" ");
-					target.append(scope.getIdentifierOrThrow(output));
-					target.append(", ");
-				}
-				for (RAttribute input : func.getInputs()) {
-					JavaReferenceType inputParameterType = typeTranslator.toMetaJavaType(input);
+                    RAttribute output = func.getOutput();
+                    JavaReferenceType outputParameterType = toMultiBuilderType(output.getRMetaAnnotatedType(), output.isMulti());
+
+                    target.append(outputParameterType);
+                    target.append(" ");
+                    target.append(scope.getIdentifierOrThrow(output));
+                    target.append(", ");
+                }
+                for (RAttribute input : func.getInputs()) {
+                    JavaReferenceType inputParameterType = typeTranslator.toMetaJavaType(input);
 					
 					target.append(inputParameterType);
 					target.append(" ");

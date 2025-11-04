@@ -97,8 +97,8 @@ public class RObjectFactory {
 				buildRAttributeWithEnclosingType(null, funcExt.getOutput(function)),
 				RFunctionOrigin.FUNCTION,
 				function.getConditions(), function.getPostConditions(),
-				function.getShortcuts().stream().map(s -> buildRShortcut(s)).collect(Collectors.toList()),
-				function.getOperations().stream().map(o -> buildROperation(o)).collect(Collectors.toList()),
+				function.getShortcuts().stream().map(this::buildRShortcut).collect(Collectors.toList()),
+				function.getOperations().stream().map(this::buildROperation).collect(Collectors.toList()),
 				function.getAnnotations());
 	}
 	

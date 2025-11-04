@@ -19,23 +19,19 @@ import com.regnosys.rosetta.utils.ImportManagementService;
 import com.regnosys.rosetta.utils.RosettaConfigExtension;
 import jakarta.inject.Inject;
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.impl.EClassImpl;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.resource.IEObjectDescription;
-import org.eclipse.xtext.resource.IResourceDescriptions;
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.validation.Check;
-import org.eclipse.xtext.validation.CheckType;
 import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 import org.eclipse.xtext.xbase.lib.Conversions;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
@@ -478,27 +474,7 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         }
     }
 
-    // TODO
-    @Check
-    public void checkFunctionElementNamesAreUnique(com.regnosys.rosetta.rosetta.simple.Function ele) {
-        // Combine inputs, shortcuts, and output into a single list of AssignPathRoot elements (ignoring nulls)
-        List<AssignPathRoot> features = new java.util.ArrayList<>();
-        for (Attribute in : ele.getInputs()) features.add(in);
-        for (ShortcutDeclaration sc : ele.getShortcuts()) features.add(sc);
-        if (ele.getOutput() != null) features.add(ele.getOutput());
-
-        Map<String, List<AssignPathRoot>> grouped = features.stream()
-                .filter(Objects::nonNull)
-                .collect(java.util.stream.Collectors.groupingBy(AssignPathRoot::getName));
-
-        grouped.forEach((k, v) -> {
-            if (v.size() > 1) {
-                v.forEach(it -> error("Duplicate feature \"" + k + "\"", (EObject) it, RosettaPackage.Literals.ROSETTA_NAMED__NAME));
-            }
-        });
-    }
-
-    // TODO
+    // TODO: refactor to fit in the `validation.names` package
     @Check
     public void checkClosureParameterNamesAreUnique(ClosureParameter param) {
         IScope scope = scopeProvider.getScope(param.getFunction().eContainer(), ExpressionPackage.Literals.ROSETTA_SYMBOL_REFERENCE__SYMBOL);
