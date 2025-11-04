@@ -34,7 +34,7 @@ public class RosettaTransientValueService extends DefaultTransientValueService {
 		EStructuralFeature generatedInputWasSetFeature = ExpressionPackage.eINSTANCE
 				.getHasGeneratedInput_GeneratedInputWasSet();
 		EStructuralFeature implicitVariableIsInContextFeature = ExpressionPackage.eINSTANCE
-				.getRosettaSymbolReference_ImplicitVariableIsInContext();
+				.getRosettaCallableReference_ImplicitVariableIsInContext();
 		EStructuralFeature hardcodedConditionFeature = SimplePackage.eINSTANCE.getChoice__hardcodedConditions();
 		EStructuralFeature hardcodedNameFeature = SimplePackage.eINSTANCE.getChoiceOption__hardcodedName();
 		EStructuralFeature hardcodedCardinalityFeature = SimplePackage.eINSTANCE

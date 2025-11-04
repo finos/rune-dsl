@@ -40,7 +40,7 @@ import java.util.concurrent.CancellationException;
 import java.util.stream.Collectors;
 
 /**
- * Generates code from your model files on save.
+ * Generates code from your model files on edit.
  *
  * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#code-generation
  */
@@ -112,8 +112,7 @@ public class RosettaGenerator implements IGenerator2 {
 		} catch (CancellationException e) {
 			LOGGER.trace("Code generation cancelled, this is expected");
 		} catch (Exception e) {
-			LOGGER.warn("Unexpected calling before all generate for rosetta -{} - see debug logging for more", e.getMessage());
-			LOGGER.debug("Unexpected calling before all generate for rosetta", e);
+			LOGGER.warn("Unexpected calling before all generate for rosetta", e);
 			throw new GenerationException(e.getMessage(), null, null, e.getCause());
 		} finally {
 			lock.releaseWriteLock();
@@ -144,8 +143,7 @@ public class RosettaGenerator implements IGenerator2 {
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected");
 			} catch (Exception e) {
-				LOGGER.warn("Unexpected calling before generate for rosetta -{} - see debug logging for more", e.getMessage());
-				LOGGER.debug("Unexpected calling before generate for rosetta", e);
+				LOGGER.warn("Unexpected calling before generate for rosetta", e);
 				throw new GenerationException(e.getMessage(), resource.getURI(), null, e.getCause());
 			} finally {
 				lock.releaseWriteLock();
@@ -202,12 +200,10 @@ public class RosettaGenerator implements IGenerator2 {
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected");
 			} catch (AggregateGenerationException | GenerationException e) {
-				LOGGER.warn("Unexpected calling standard generate for rosetta root element  -{} - see debug logging for more", e.getMessage());
-				LOGGER.info("Unexpected calling standard generate for rosetta root element", e);
+				LOGGER.warn("Unexpected calling standard generate for rosetta root element", e);
 				throw e;
 			} catch (Exception e) {
-				LOGGER.warn("Unexpected calling standard generate for rosetta -{} - see debug logging for more", e.getMessage());
-				LOGGER.info("Unexpected calling standard generate for rosetta", e);
+				LOGGER.warn("Unexpected calling standard generate for rosetta", e);
 				throw new GenerationException(e.getMessage(), resource.getURI(), null, e.getCause());
 			} finally {
 				LOGGER.trace("ending the main generate method");
@@ -247,8 +243,7 @@ public class RosettaGenerator implements IGenerator2 {
 			} catch (CancellationException e) {
 				LOGGER.trace("Code generation cancelled, this is expected");
 			} catch (Exception e) {
-				LOGGER.warn("Unexpected calling after generate for rosetta -{} - see debug logging for more", e.getMessage());
-				LOGGER.debug("Unexpected calling after generate for rosetta", e);
+				LOGGER.warn("Unexpected calling after generate for rosetta", e);
 				throw new GenerationException(e.getMessage(), resource.getURI(), null, e.getCause());
 			} finally {
 				lock.releaseWriteLock();
@@ -275,8 +270,7 @@ public class RosettaGenerator implements IGenerator2 {
 		} catch (CancellationException e) {
 			LOGGER.trace("Code generation cancelled, this is expected");
 		} catch (Exception e) {
-			LOGGER.warn("Unexpected calling after all generate for rosetta -{} - see debug logging for more", e.getMessage());
-			LOGGER.debug("Unexpected calling after all generate for rosetta", e);
+			LOGGER.warn("Unexpected calling after all generate for rosetta", e);
 			throw new GenerationException(e.getMessage(), null, null, e.getCause());
 		} finally {
 			lock.releaseWriteLock();

@@ -79,7 +79,7 @@ class FunctionGeneratorHelper {
 	private def void generate(RFunction func) {
 		val typeRepresentation = generator.createTypeRepresentation(func);
 		val classScope = JavaClassScope.createAndRegisterIdentifier(typeRepresentation);
-		val classCode = generator.generate(func, typeRepresentation, "test", classScope);
+		val classCode = generator.generateClass(func, typeRepresentation, "test", classScope);
 		val javaFileCode = importManager.buildClass(typeRepresentation.getPackageName(), classCode, classScope.getFileScope());
 		fsa.generateFile(typeRepresentation.getCanonicalName().withForwardSlashes() + ".java", javaFileCode);
 	}

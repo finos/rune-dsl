@@ -54,7 +54,8 @@ class TypeValidatorTest extends AbstractValidatorTest {
                             override attr int (1..1)
                         """,
                 """
-                        ERROR (null) 'Attribute 'attr' already defined' at 9:14, length 4, on Attribute
+                        ERROR (null) 'Duplicate attribute 'attr' in type 'Bar'' at 8:14, length 4, on Attribute
+                        ERROR (null) 'Duplicate attribute 'attr' in type 'Bar'' at 9:14, length 4, on Attribute
                         """);
     }
 
@@ -81,7 +82,8 @@ class TypeValidatorTest extends AbstractValidatorTest {
                             attr number (0..1)
                         """,
                 """
-                        ERROR (null) 'Attribute 'attr' already defined' at 6:5, length 4, on Attribute
+                        ERROR (null) 'Duplicate attribute 'attr' in type 'Foo'' at 5:5, length 4, on Attribute
+                        ERROR (null) 'Duplicate attribute 'attr' in type 'Foo'' at 6:5, length 4, on Attribute
                         """);
     }
 
@@ -96,7 +98,9 @@ class TypeValidatorTest extends AbstractValidatorTest {
                             attr string (1..1)
                         """,
                 """
-                        ERROR (null) 'Attribute 'attr' already defined' at 9:5, length 4, on Attribute
+                        ERROR (null) 'Duplicate attribute 'attr' in type 'Bar'' at 8:14, length 4, on Attribute
+                        WARNING (null) 'Attribute 'attr' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`' at 9:5, length 4, on Attribute
+                        ERROR (null) 'Duplicate attribute 'attr' in type 'Bar'' at 9:5, length 4, on Attribute
                         """);
     }
 

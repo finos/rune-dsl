@@ -23,7 +23,7 @@ public abstract class AbstractValidatorGenerator extends RObjectJavaClassGenerat
 	private JavaTypeTranslator translator;
 	
 	abstract protected RGeneratedJavaClass<?> createValidatorClass(JavaPojoInterface pojo);
-	abstract protected StringConcatenationClient generate(RDataType type, RGeneratedJavaClass<?> validator, JavaPojoInterface pojo, String version, JavaClassScope scope);
+	abstract protected StringConcatenationClient generateClass(RDataType type, RGeneratedJavaClass<?> validator, JavaPojoInterface pojo, String version, JavaClassScope scope);
 	
 	@Override
 	protected Stream<RDataType> streamObjects(RosettaModel model) {
@@ -40,9 +40,9 @@ public abstract class AbstractValidatorGenerator extends RObjectJavaClassGenerat
 	}
 
 	@Override
-	protected StringConcatenationClient generate(RDataType type, RGeneratedJavaClass<?> validator,
+	protected StringConcatenationClient generateClass(RDataType type, RGeneratedJavaClass<?> validator,
 			String version, JavaClassScope scope) {
-		return generate(type, validator, translator.toJavaReferenceType(type), version, scope);
+		return generateClass(type, validator, translator.toJavaReferenceType(type), version, scope);
 	}
 
 }

@@ -21,25 +21,25 @@ import java.util.Objects;
 import com.rosetta.util.types.JavaClass;
 
 public class DependencyInstanceRepresentation {
-	private final JavaClass<?> dependency;
-	public DependencyInstanceRepresentation(JavaClass<?> dependency) {
-		this.dependency = dependency;
-	}
-	
-	@Override
-	public String toString() {
-		return "DependencyInstance[" + dependency.getCanonicalName() + "]";
-	}
-	@Override
-	public int hashCode() {
-		return Objects.hash(this.getClass(), dependency);
-	}
-	@Override
-	public boolean equals(Object object) {
-		if (object == null) return false;
+    private final JavaClass<?> dependency;
+    public DependencyInstanceRepresentation(JavaClass<?> dependency) {
+        this.dependency = dependency;
+    }
+
+    @Override
+    public String toString() {
+        return "DependencyInstance[" + dependency.getCanonicalName() + "]";
+    }
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.getClass(), dependency);
+    }
+    @Override
+    public boolean equals(Object object) {
+        if (object == null) return false;
         if (this.getClass() != object.getClass()) return false;
 
         DependencyInstanceRepresentation other = (DependencyInstanceRepresentation) object;
         return Objects.equals(dependency, other.dependency);
-	}
+    }
 }

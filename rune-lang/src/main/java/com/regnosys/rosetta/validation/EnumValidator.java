@@ -23,7 +23,8 @@ public class EnumValidator extends AbstractDeclarativeRosettaValidator {
 	
 	@Check
 	public void checkEnumNameIsCapitalized(RosettaEnumeration enumeration) {
-		if (Character.isLowerCase(enumeration.getName().charAt(0))) {
+        String name = enumeration.getName();
+		if (name != null && Character.isLowerCase(name.charAt(0))) {
 			warning("Enumeration name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE);
 		}
 	}

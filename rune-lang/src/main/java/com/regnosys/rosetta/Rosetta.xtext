@@ -796,7 +796,7 @@ RosettaOnlyExistsElement returns RosettaExpression:
 	RosettaOnlyExistsElementRoot ({RosettaFeatureCall.receiver=current} '->' feature=[RosettaFeature|ValidID])*
 ;
 
-RosettaOnlyExistsElementRoot returns RosettaReference:
+RosettaOnlyExistsElementRoot returns RosettaExpression:
 	{RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName]
 	| RosettaImplicitVariable
 ;

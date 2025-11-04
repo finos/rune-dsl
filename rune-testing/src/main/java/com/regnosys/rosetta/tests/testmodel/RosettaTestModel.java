@@ -99,8 +99,8 @@ public class RosettaTestModel {
 	
 	private <T extends EObject> T getElementMatching(List<? extends EObject> elements, Class<T> clazz, Predicate<T> match, Supplier<? extends RuntimeException> exceptionSupplier) {
 		return elements.stream()
-				.filter(elem -> clazz.isInstance(elem))
-				.map(elem -> clazz.cast(elem))
+				.filter(clazz::isInstance)
+				.map(clazz::cast)
 				.filter(match)
 				.findAny()
 				.orElseThrow(exceptionSupplier);

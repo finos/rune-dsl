@@ -31,7 +31,7 @@ class ReportGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJav
 	override protected createTypeRepresentation(RFunction rFunction) {
 		rFunction.toFunctionJavaClass
 	}
-	override protected generate(RFunction rFunction, RGeneratedJavaClass<? extends RosettaFunction> clazz, String version, JavaClassScope scope) {
+	override protected generateClass(RFunction rFunction, RGeneratedJavaClass<? extends RosettaFunction> clazz, String version, JavaClassScope scope) {
 		val report = rFunction.EObject as RosettaReport
 		val baseInterface = JavaParameterizedType.from(new TypeReference<ReportFunction<?, ?>>() {}, rFunction.inputs.head.toMetaJavaType, rFunction.output.toMetaJavaType)
 		

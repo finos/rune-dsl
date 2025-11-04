@@ -19,23 +19,19 @@ import com.regnosys.rosetta.utils.ImportManagementService;
 import com.regnosys.rosetta.utils.RosettaConfigExtension;
 import jakarta.inject.Inject;
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.impl.EClassImpl;
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.resource.IEObjectDescription;
-import org.eclipse.xtext.resource.IResourceDescriptions;
 import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.validation.Check;
-import org.eclipse.xtext.validation.CheckType;
 import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 import org.eclipse.xtext.xbase.lib.Conversions;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
@@ -478,98 +474,13 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         }
     }
 
-    @Check
-    public void checkFunctionElementNamesAreUnique(com.regnosys.rosetta.rosetta.simple.Function ele) {
-        // Combine inputs, shortcuts, and output into a single list of AssignPathRoot elements (ignoring nulls)
-        List<AssignPathRoot> features = new java.util.ArrayList<>();
-        for (Attribute in : ele.getInputs()) features.add(in);
-        for (ShortcutDeclaration sc : ele.getShortcuts()) features.add(sc);
-        if (ele.getOutput() != null) features.add(ele.getOutput());
-
-        Map<String, List<AssignPathRoot>> grouped = features.stream()
-                .filter(Objects::nonNull)
-                .collect(java.util.stream.Collectors.groupingBy(AssignPathRoot::getName));
-
-        grouped.forEach((k, v) -> {
-            if (v.size() > 1) {
-                v.forEach(it -> error("Duplicate feature \"" + k + "\"", (EObject) it, RosettaPackage.Literals.ROSETTA_NAMED__NAME));
-            }
-        });
-    }
-
+    // TODO: refactor to fit in the `validation.names` package
     @Check
     public void checkClosureParameterNamesAreUnique(ClosureParameter param) {
         IScope scope = scopeProvider.getScope(param.getFunction().eContainer(), ExpressionPackage.Literals.ROSETTA_SYMBOL_REFERENCE__SYMBOL);
         IEObjectDescription sameNamedElement = scope.getSingleElement(QualifiedName.create(param.getName()));
         if (sameNamedElement != null) {
             error("Duplicate name.", param, null);
-        }
-    }
-
-    @Check(CheckType.FAST)
-    public void checkTypeNamesAreUnique(RosettaModel model) {
-        // TODO This probably should be made namespace aware
-        // NOTE: case-insensitive uniqueness to avoid clashes on case-insensitive filesystems
-        List<RosettaNamed> namedRootElems = model.getElements().stream()
-                .filter(RosettaNamed.class::isInstance)
-                .map(RosettaNamed.class::cast)
-                .filter(it -> !(it instanceof com.regnosys.rosetta.rosetta.simple.FunctionDispatch))
-                .toList();
-
-        IResourceDescriptions descr = resourceDescriptionsProvider.getResourceDescriptions(model.eResource());
-
-        List<RosettaNamed> nonAnnotations = namedRootElems.stream()
-                .filter(it -> !(it instanceof Annotation))
-                .toList();
-        checkNamesInGroupAreUnique(nonAnnotations, true, descr);
-
-        List<RosettaNamed> annotations = namedRootElems.stream()
-                .filter(it -> it instanceof Annotation)
-                .toList();
-        checkNamesInGroupAreUnique(annotations, true, descr);
-    }
-
-    private void checkNamesInGroupAreUnique(Collection<RosettaNamed> namedElems, boolean ignoreCase, IResourceDescriptions descr) {
-        HashMultimap<String, RosettaNamed> groupedElems = HashMultimap.create();
-        // Populate groupedElems by (optionally case-insensitive) name, ignoring nulls
-        for (RosettaNamed it : namedElems) {
-            String name = it.getName();
-            if (name == null) continue;
-            groupedElems.put(ignoreCase ? name.toUpperCase() : name, it);
-        }
-        for (String key : groupedElems.keySet()) {
-            Set<RosettaNamed> group = groupedElems.get(key);
-            if (group.size() > 1) {
-                for (RosettaNamed it : group) {
-                    error("Duplicate element named '" + it.getName() + "'", it, RosettaPackage.Literals.ROSETTA_NAMED__NAME, RosettaIssueCodes.DUPLICATE_ELEMENT_NAME);
-                }
-            } else if (group.size() == 1) {
-                RosettaNamed toCheck = group.iterator().next();
-                if (toCheck.eResource().getURI().isPlatformResource() && toCheck instanceof RosettaRootElement) {
-                    QualifiedName qName = qualifiedNameProvider.getFullyQualifiedName(toCheck);
-                    Iterable<IEObjectDescription> exported = descr.getExportedObjects(toCheck.eClass(), qName, false);
-                    // Filter to project-local and exclude function dispatch
-                    java.util.List<URI> sameNamed = new java.util.ArrayList<>();
-                    for (IEObjectDescription d : exported) {
-                        if (confExtensions.isProjectLocal(toCheck.eResource().getURI(), d.getEObjectURI())
-                            && d.getEClass() != SimplePackage.Literals.FUNCTION_DISPATCH) {
-                            sameNamed.add(d.getEObjectURI());
-                        }
-                    }
-                    if (sameNamed.size() > 1) {
-                        // Build comma-separated list of other file names (excluding the current one)
-                        StringBuilder sb = new StringBuilder();
-                        for (URI uri : sameNamed) {
-                            if (Objects.equals(EcoreUtil.getURI(toCheck), uri)) continue;
-                            if (sb.length() > 0) sb.append(", ");
-                            sb.append(uri.lastSegment());
-                        }
-                        if (sb.length() > 0) {
-                            error("Duplicate element named '" + qName + "' in " + sb, toCheck, RosettaPackage.Literals.ROSETTA_NAMED__NAME, RosettaIssueCodes.DUPLICATE_ELEMENT_NAME);
-                        }
-                    }
-                }
-            }
         }
     }
 

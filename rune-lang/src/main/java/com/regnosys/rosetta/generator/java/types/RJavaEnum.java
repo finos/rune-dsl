@@ -19,7 +19,6 @@ package com.regnosys.rosetta.generator.java.types;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 import com.regnosys.rosetta.generator.java.enums.EnumHelper;
 import com.regnosys.rosetta.generator.java.scoping.JavaPackageName;

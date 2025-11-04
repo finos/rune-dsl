@@ -45,7 +45,7 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 	override protected createTypeRepresentation(Condition object) {
 		object.toConditionJavaClass
 	}
-	override protected generate(Condition condition, JavaConditionInterface conditionClass, String version, JavaClassScope classScope) {
+	override protected generateClass(Condition condition, JavaConditionInterface conditionClass, String version, JavaClassScope classScope) {
 		val definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(condition, CONDITION__EXPRESSION))
 		val deps = dependencies.javaDependencies(condition.expression)
 		val implicitVarRepr = condition.expression.implicitVarInContext
