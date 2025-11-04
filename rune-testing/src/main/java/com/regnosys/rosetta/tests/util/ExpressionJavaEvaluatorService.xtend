@@ -90,7 +90,7 @@ class ExpressionJavaEvaluatorService {
 			.forEach[object|
 				val typeRepresentation = metaFieldGenerator.createTypeRepresentation(object);
 				val classScope = JavaClassScope.createAndRegisterIdentifier(typeRepresentation);
-				val classCode = metaFieldGenerator.generate(object, typeRepresentation, "0", classScope);
+				val classCode = metaFieldGenerator.generateClass(object, typeRepresentation, "0", classScope);
 				val javaFileCode = buildClass(typeRepresentation.getPackageName(), classCode, classScope.getFileScope());
 				compiler.addSource(typeRepresentation.canonicalName.withDots, javaFileCode)
 			];

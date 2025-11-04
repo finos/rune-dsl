@@ -29,7 +29,7 @@ class OnlyExistsValidatorGenerator extends AbstractValidatorGenerator {
 		pojo.toOnlyExistsValidatorClass
 	}
 	
-	override protected generate(RDataType type, RGeneratedJavaClass<?> validator, JavaPojoInterface javaType, String version, JavaClassScope scope) {
+	override protected generateClass(RDataType type, RGeneratedJavaClass<?> validator, JavaPojoInterface javaType, String version, JavaClassScope scope) {
 		'''
 		public «validator.asClassDeclaration» {
 

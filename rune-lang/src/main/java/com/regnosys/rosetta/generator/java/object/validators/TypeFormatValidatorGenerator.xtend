@@ -65,7 +65,7 @@ class TypeFormatValidatorGenerator extends AbstractValidatorGenerator {
 		pojo.toTypeFormatValidatorClass
 	}
 	
-	override protected generate(RDataType type, RGeneratedJavaClass<?> validatorClass, JavaPojoInterface javaType, String version, JavaClassScope classScope) {
+	override protected generateClass(RDataType type, RGeneratedJavaClass<?> validatorClass, JavaPojoInterface javaType, String version, JavaClassScope classScope) {
 		val attributes = type.allAttributes		
 		val pathId = classScope.createUniqueIdentifier("path")
 		

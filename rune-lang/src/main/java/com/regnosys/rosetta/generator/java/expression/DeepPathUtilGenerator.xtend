@@ -43,7 +43,7 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 	override protected createTypeRepresentation(RDataType choiceType) {
 		choiceType.toDeepPathUtilJavaClass
 	}
-	override protected generate(RDataType choiceType, JavaClass<?> javaClass, String version, JavaClassScope classScope) {
+	override protected generateClass(RDataType choiceType, JavaClass<?> javaClass, String version, JavaClassScope classScope) {
 		val deepFeatures = choiceType.findDeepFeatures
 		val dependencies = new HashSet<JavaClass<?>>()
 		val recursiveDeepFeaturesMap = choiceType.allAttributes.toMap([it], [

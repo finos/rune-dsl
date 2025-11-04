@@ -5,6 +5,7 @@ import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
 import com.regnosys.rosetta.cache.caches.RDataTypeCache;
+import com.regnosys.rosetta.cache.caches.RFunctionCache;
 
 
 public class RequestScopedCacheModule extends AbstractModule {
@@ -15,6 +16,7 @@ public class RequestScopedCacheModule extends AbstractModule {
 		multibinder = Multibinder.newSetBinder(binder(), new TypeLiteral<IRequestScopedCache<?, ?>>() {});
 		
 		bindCache(RDataTypeCache.class);
+		bindCache(RFunctionCache.class);
     }
 
 	private void bindCache(Class<? extends IRequestScopedCache<?, ?>> cacheClass) {

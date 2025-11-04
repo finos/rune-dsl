@@ -30,7 +30,7 @@ class CardinalityValidatorGenerator extends AbstractValidatorGenerator {
 	override protected createValidatorClass(JavaPojoInterface pojo) {
 		pojo.toValidatorClass
 	}
-	override protected generate(RDataType type, RGeneratedJavaClass<?> validatorClass, JavaPojoInterface pojo, String version, JavaClassScope scope) {
+	override protected generateClass(RDataType type, RGeneratedJavaClass<?> validatorClass, JavaPojoInterface pojo, String version, JavaClassScope scope) {
 		'''
 		public «validatorClass.asClassDeclaration» {
 		

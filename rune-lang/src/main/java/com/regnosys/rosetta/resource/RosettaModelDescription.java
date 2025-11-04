@@ -3,6 +3,7 @@ package com.regnosys.rosetta.resource;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.regnosys.rosetta.rosetta.Import;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.resource.EObjectDescription;
 
@@ -17,7 +18,7 @@ public class RosettaModelDescription extends EObjectDescription {
 	
 	private static String getImportsList(RosettaModel model) {
 		return model.getImports().stream()
-				.map(imp -> imp.getImportedNamespace())
+				.map(Import::getImportedNamespace)
 				.collect(Collectors.joining(";"));
 	}
 }
