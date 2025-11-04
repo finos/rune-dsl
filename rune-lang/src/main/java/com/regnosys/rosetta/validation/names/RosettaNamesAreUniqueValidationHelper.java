@@ -9,6 +9,8 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.validation.NamesAreUniqueValidationHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +19,8 @@ import static com.regnosys.rosetta.resource.RosettaResourceDescriptionStrategy.I
 
 @Singleton // Singleton because Xtext's default implementation is a singleton too.
 public class RosettaNamesAreUniqueValidationHelper extends NamesAreUniqueValidationHelper {
+    private static final Logger LOGGER = LoggerFactory.getLogger(RosettaNamesAreUniqueValidationHelper.class);
+    
     /**
      * Object classes that should not be checked for uniqueness.
      */
@@ -56,6 +60,7 @@ public class RosettaNamesAreUniqueValidationHelper extends NamesAreUniqueValidat
 
     @Override
     protected EClass getClusterType(IEObjectDescription description) {
+        LOGGER.info("Getting cluster type for {}", description);
         if (IGNORED_TYPES.contains(description.getEClass()) || isInOverriddenNamespace(description)) {
             return null;
         }
@@ -86,6 +91,7 @@ public class RosettaNamesAreUniqueValidationHelper extends NamesAreUniqueValidat
     
     @Override
     protected boolean isDuplicate(IEObjectDescription description, IEObjectDescription candidate) {
+        LOGGER.info("Checking if {} is a duplicate of {}", candidate, description);
         return !isInOverriddenNamespace(candidate);
     }
     
