@@ -7,16 +7,12 @@ import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.ISelectable;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.validation.INamesAreUniqueValidationHelper.Context;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.function.Function;
 
 @SuppressWarnings("UnstableApiUsage")
 public class RosettaUniqueNamesContext implements Context {
-    private static final Logger LOGGER = LoggerFactory.getLogger(RosettaUniqueNamesContext.class);
-    
     private final IResourceDescription resourceDescription;
     private final Map<EClass, Function<IEObjectDescription, ISelectable>> validationScopes;
     private final Map<EClass, DuplicationCluster> duplicationClusters;
@@ -36,9 +32,6 @@ public class RosettaUniqueNamesContext implements Context {
 
     @Override
     public Iterable<IEObjectDescription> getObjectsToValidate() {
-        LOGGER.info("Getting objects to validate");
-        LOGGER.info("Resource description: {}", resourceDescription.getURI());
-        LOGGER.info("Exported objects: {}", resourceDescription.getExportedObjects());
         return resourceDescription.getExportedObjects(); // TODO: also include local elements
     }
 
