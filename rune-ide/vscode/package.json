@@ -128,9 +128,6 @@
     "vsce": "^2.14.0",
     "vscode-languageclient": "^9.0.0"
   },
-  "overrides": {
-    "tar-fs": "2.1.3"
-  },
   "scripts": {
     "copy-lsp": "shx cp -r ../target/languageserver src/rosetta",
     "copy-text-mate": "shx cp -r ../src-gen/main/resources/syntaxes .",
