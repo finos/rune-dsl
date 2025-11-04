@@ -49,7 +49,7 @@ public class NamesValidationTest {
     }
 
     @Test
-    void testDuplicateTypeInDifferentNamespaces() {
+    void testDuplicateTypeInDifferentFiles() {
         var models = modelHelper.parseRosetta("""
                 type Foo:
                 """, """
