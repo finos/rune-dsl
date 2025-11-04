@@ -1,36 +1,77 @@
 package com.regnosys.rosetta.validation.names;
 
+import com.regnosys.rosetta.rosetta.RosettaNamed;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
-import com.regnosys.rosetta.rosetta.simple.SimplePackage;
+import com.regnosys.rosetta.rosetta.RosettaSymbol;
+import com.regnosys.rosetta.rosetta.simple.*;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.EcoreUtil2;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.regnosys.rosetta.validation.names.ValidationScopeEnum.*;
-
+/**
+ * Configure which unique name checks to run.
+ */
 @Singleton
 public class RosettaUniqueNamesConfig {
+    private final ClusterScopes scopes;
     private final Map<EClass, DuplicationCluster> duplicationClusters = new HashMap<>();
     
     @Inject
-    public RosettaUniqueNamesConfig() {
+    public RosettaUniqueNamesConfig(ClusterScopes scopes) {
+        this.scopes = scopes;
         initialize();
     }
     
-    private void initialize() {
-        add(RosettaPackage.eINSTANCE.getRosettaSynonymSource(), GLOBAL, false);
-        add(RosettaPackage.eINSTANCE.getRosettaExternalRuleSource(), GLOBAL, false);
-        add(RosettaPackage.eINSTANCE.getRosettaCallableWithArgs(), GLOBAL, false);
-        add(RosettaPackage.eINSTANCE.getRosettaType(), GLOBAL, false);
-        add(SimplePackage.eINSTANCE.getAnnotation(), GLOBAL, false);
-        add(RosettaPackage.eINSTANCE.getRosettaBody(), GLOBAL, false);
-        add(RosettaPackage.eINSTANCE.getRosettaCorpus(), GLOBAL, false);
-        add(RosettaPackage.eINSTANCE.getRosettaSegment(), GLOBAL, false);
+    protected void initialize() {
+        // Check synonym sources have a unique name
+        addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaSynonymSource(), false);
         
-        add(SimplePackage.eINSTANCE.getAttribute(), LOCAL, true);
+        // Check rule sources have a unique name
+        addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaExternalRuleSource(), false);
+        
+        // Check functions, rules and other callable things have a unique name
+        addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaCallableWithArgs(), false);
+        
+        // Check types, enums, choice types, aliases and other types have a unique name
+        addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaType(), false);
+        
+        // Check annotations have a unique name
+        addGlobalCheck(SimplePackage.eINSTANCE.getAnnotation(), false);
+        
+        // Check regulatory reference constituents have a unique name
+        addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaBody(), true);
+        addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaCorpus(), true);
+        addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaSegment(), true);
+        
+        // Check attributes in data have a unique name
+        addLocalCheck(SimplePackage.eINSTANCE.getAttribute(), Attribute.class, this::getDirectDataContainer, Data::getAttributes, true);
+        
+        // Check function symbols have a unique name
+        addLocalCheck(RosettaPackage.eINSTANCE.getRosettaSymbol(), RosettaSymbol.class, this::getFunctionContainer, this::getFunctionSymbols, true);
+    }
+    
+    private Data getDirectDataContainer(Attribute attr) {
+        return containerOfType(attr, Data.class);
+    }
+    
+    private Function getFunctionContainer(RosettaSymbol symbol) {
+        return EcoreUtil2.getContainerOfType(symbol, Function.class);
+    }
+    private Iterable<RosettaSymbol> getFunctionSymbols(Function function) {
+        return EcoreUtil2.getAllContentsOfType(function, RosettaSymbol.class);
+    }
+    
+    private <T> T containerOfType(EObject eObject, Class<T> clazz) {
+        EObject parent = eObject.eContainer();
+        if (clazz.isInstance(parent)) {
+            return clazz.cast(parent);
+        }
+        return null;
     }
     
     public Map<EClass, DuplicationCluster> getDuplicationClusters() {
@@ -40,7 +81,10 @@ public class RosettaUniqueNamesConfig {
         return duplicationClusters.get(clusterType);
     }
     
-    private void add(EClass clusterType, ValidationScopeEnum validationScope, boolean caseSensitive) {
-        duplicationClusters.put(clusterType, new DuplicationCluster(clusterType, validationScope, caseSensitive));
+    protected void addGlobalCheck(EClass clusterType, boolean caseSensitive) {
+        duplicationClusters.put(clusterType, new DuplicationCluster(clusterType, scopes.global(), caseSensitive));
+    }
+    protected <Parent, Child extends RosettaNamed> void addLocalCheck(EClass clusterType, Class<Child> childClass, java.util.function.Function<Child, Parent> getParent, java.util.function.Function<Parent, Iterable<Child>> getChildren, boolean caseSensitive) {
+        duplicationClusters.put(clusterType, new DuplicationCluster(clusterType, scopes.local(childClass, getParent, getChildren), caseSensitive));
     }
 }

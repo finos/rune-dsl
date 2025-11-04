@@ -45,10 +45,12 @@ public class RosettaNamesAreUniqueValidationHelper extends NamesAreUniqueValidat
             .put(SimplePackage.eINSTANCE.getAttribute(), "attribute")
             .build();
     
+    private final RosettaUniqueNamesConfig config;
     private final Set<EClass> clusterTypes;
     
     @Inject
     public RosettaNamesAreUniqueValidationHelper(RosettaUniqueNamesConfig config) {
+        this.config = config;
         this.clusterTypes = config.getDuplicationClusters().keySet();
     }
 
@@ -57,7 +59,15 @@ public class RosettaNamesAreUniqueValidationHelper extends NamesAreUniqueValidat
         if (IGNORED_TYPES.contains(description.getEClass()) || isInOverriddenNamespace(description)) {
             return null;
         }
-        return super.getClusterType(description);
+        EClass associatedType = this.getAssociatedClusterType(description.getEClass());
+        if (associatedType == null) {
+            return null;
+        }
+        DuplicationCluster cluster = config.getDuplicationCluster(associatedType);
+        if (cluster != null && cluster.clusterScope().acceptCluster(description, associatedType)) {
+            return associatedType;
+        }
+        return null;
     }
 
     @Override
@@ -84,8 +94,8 @@ public class RosettaNamesAreUniqueValidationHelper extends NamesAreUniqueValidat
     }
 
     @Override
-    protected String getTypeLabel(EClass eClass) {
-        String label = TYPE_LABELS.get(eClass);
-        return label != null ? label : super.getTypeLabel(eClass);
+    protected String getTypeLabel(EClass clusterType) {
+        String label = TYPE_LABELS.get(clusterType);
+        return label != null ? label : super.getTypeLabel(clusterType);
     }
 }

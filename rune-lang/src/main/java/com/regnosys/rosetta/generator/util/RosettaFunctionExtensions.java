@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.regnosys.rosetta.rosetta.RosettaModel;
 import org.eclipse.xtext.EcoreUtil2;
 
 import com.google.common.collect.Iterables;
@@ -143,7 +144,13 @@ public class RosettaFunctionExtensions {
         }
 		return element.getAnnotations().stream()
 			.filter(ecoreUtil::isResolved)
-			.filter(it -> "com.rosetta.model".equals(it.getAnnotation().getModel().getName()))
+			.filter(it -> {
+                RosettaModel model = it.getAnnotation().getModel();
+                if (model == null) {
+                    return false;
+                }
+                return "com.rosetta.model".equals(model.getName());
+            })
 			.filter(it -> Stream.of("ingest", "enrich", "projection").anyMatch(transformName -> transformName.equals(it.getAnnotation().getName())))
 			.toList();
 	}
