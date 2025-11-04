@@ -56,7 +56,7 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 	override protected createTypeRepresentation(RDataType t) {
 		t.toJavaReferenceType
 	}
-	override protected generate(RDataType t, JavaPojoInterface javaType, String version, JavaClassScope pojoScope) {
+	override protected generateClass(RDataType t, JavaPojoInterface javaType, String version, JavaClassScope pojoScope) {
 		classBody(javaType, pojoScope, javaType.toJavaMetaDataClass, version)
 	}
 

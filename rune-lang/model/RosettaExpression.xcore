@@ -6,6 +6,7 @@
 package com.regnosys.rosetta.rosetta.expression
 
 import java.util.regex.Pattern
+import org.eclipse.xtext.EcoreUtil2
 
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaNamed
@@ -117,17 +118,20 @@ class ListLiteral extends RosettaExpression {
  * Variables, projections, conditionals, function calls and constructors
  */
 
-abstract class RosettaReference extends RosettaExpression {
-}
-
-class RosettaSymbolReference extends RosettaReference {
-	refers RosettaSymbol symbol
-	
+abstract class RosettaCallableReference extends RosettaExpression {
 	boolean explicitArguments
 	contains RosettaExpression[] rawArgs
 	
 	boolean implicitVariableIsInContext
 	contains RosettaExpression implicitArgument
+	
+	op RosettaExpression[] getArgs() {
+	    rawArgs
+	}
+}
+
+class RosettaSymbolReference extends RosettaCallableReference {
+	refers RosettaSymbol symbol
 	
 	op RosettaExpression[] getArgs() {
 		if (!explicitArguments && implicitVariableIsInContext && symbol instanceof RosettaCallableWithArgs && (symbol as RosettaCallableWithArgs).numberOfParameters == 1) {
@@ -143,7 +147,7 @@ class RosettaSymbolReference extends RosettaReference {
 	}
 }
 
-class RosettaImplicitVariable extends RosettaReference, RosettaNamed, AnnotationPathExpression {
+class RosettaImplicitVariable extends RosettaExpression, RosettaNamed, AnnotationPathExpression {
 }
 
 class RosettaFeatureCall extends RosettaExpression {

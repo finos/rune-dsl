@@ -1,7 +1,11 @@
 package com.regnosys.rosetta.resource;
 
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.regnosys.rosetta.rosetta.ExternalAnnotationSource;
+import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import org.apache.log4j.Logger;
 import org.eclipse.xtext.naming.QualifiedName;
@@ -9,6 +13,7 @@ import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.util.IAcceptor;
@@ -21,6 +26,7 @@ import jakarta.inject.Singleton;
 
 @Singleton
 public class RosettaResourceDescriptionStrategy extends DefaultResourceDescriptionStrategy {
+    public static final String IN_OVERRIDDEN_NAMESPACE = "IN_OVERRIDDEN_NAMESPACE";
 
     private final static Logger LOGGER = Logger.getLogger(RosettaResourceDescriptionStrategy.class);
 
@@ -30,20 +36,43 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
             return false;
         }
         try {
-            if (eObject instanceof RosettaExpression) {
-                return false;
-            } else if (eObject instanceof RosettaModel) {
-                return createRosettaModelDescription((RosettaModel) eObject, acceptor);
-            } else if (eObject instanceof Attribute) {
-                return createAttributeDescription((Attribute) eObject, acceptor);
-            } else if (eObject instanceof RosettaRule) {
-                return createRosettaRuleDescription((RosettaRule) eObject, acceptor);
-            }
+            return doCreateEObjectDescriptions(eObject, isInOverriddenNamespace(eObject), acceptor);
         } catch (Exception exc) {
             LOGGER.error(exc.getMessage(), exc);
             return true;
         }
-        return super.createEObjectDescriptions(eObject, acceptor);
+    }
+    
+    private boolean isInOverriddenNamespace(EObject object) {
+        if (!(object instanceof RosettaRootElement elem) || elem.getModel() == null) {
+            return false;
+        }
+        return elem.getModel().isOverridden();
+    }
+
+    protected boolean doCreateEObjectDescriptions(EObject eObject, boolean isInOverriddenNamespace, IAcceptor<IEObjectDescription> acceptor) {
+        if (eObject instanceof RosettaExpression) {
+            return false;
+        } else if (eObject instanceof RosettaModel model) {
+            return createRosettaModelDescription(model, acceptor);
+        } else if (eObject instanceof Attribute attribute) {
+            return createAttributeDescription(attribute, acceptor);
+        } else if (eObject instanceof RosettaRule rule) {
+            return createRosettaRuleDescription(rule, acceptor);
+        } else if (eObject instanceof ExternalAnnotationSource) {
+            defaultCreateEObjectDescriptions(eObject, isInOverriddenNamespace, acceptor);
+            return false; // Do not traverse down annotation sources
+        } else {
+            defaultCreateEObjectDescriptions(eObject, isInOverriddenNamespace, acceptor);
+            return true;
+        }
+    }
+    
+    private void defaultCreateEObjectDescriptions(EObject eObject, boolean isInOverriddenNamespace, IAcceptor<IEObjectDescription> acceptor) {
+        QualifiedName qualifiedName = getQualifiedNameProvider().getFullyQualifiedName(eObject);
+        if (qualifiedName != null) {
+            acceptor.accept(EObjectDescription.create(qualifiedName, eObject, isInOverriddenNamespace ? Map.of(IN_OVERRIDDEN_NAMESPACE, "true") : Map.of()));
+        }
     }
 
     private boolean createRosettaModelDescription(RosettaModel model, IAcceptor<IEObjectDescription> acceptor) {
@@ -78,7 +107,7 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
         }
         INode node = NodeModelUtils.getNode(eObject);
         if (node != null) {
-            return node.getText();
+            return NodeModelUtils.getTokenText(node);
         }
         return null;
     }
@@ -87,8 +116,8 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
     		return null;
     	}
         return list.stream()
-        		.map(e -> serialize(e))
-        		.filter(s -> s != null)
+        		.map(this::serialize)
+        		.filter(Objects::nonNull)
         		.collect(Collectors.joining(","));
     }
 }

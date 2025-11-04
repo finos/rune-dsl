@@ -74,15 +74,11 @@ public class TypeValidator extends AbstractDeclarativeRosettaValidator {
 	@Check
 	public void checkAttributeNamesAreUnique(Data data) {
 		Set<String> usedNamesInSuperType = new HashSet<>();
-		Set<String> usedNamesInType = new HashSet<>();
 		if (data.getSuperType() != null) {
 			ecoreUtil.getAllAttributes(data.getSuperType()).forEach(attr -> usedNamesInSuperType.add(attr.getName()));
 		}
 		for (Attribute attr: data.getAttributes()) {
-			if (!usedNamesInType.add(attr.getName())) {
-				error("Attribute '" + attr.getName() + "' already defined", attr, ROSETTA_NAMED__NAME);
-			}
-			else if (!attr.isOverride() && usedNamesInSuperType.contains(attr.getName())) {
+			if (!attr.isOverride() && usedNamesInSuperType.contains(attr.getName())) {
 				// TODO: make this an error once `override` keyword is mandatory
 				warning("Attribute '" + attr.getName() + "' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`", attr, ROSETTA_NAMED__NAME);
 			}

@@ -1021,13 +1021,12 @@ public class RosettaRuleGeneratorTest {
     @Test
     void filter() {
         var model = """
-                    reporting rule SimpleRule from Input:
-                [regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
+                
+                reporting rule SimpleRule from Input:
                     filter traderef="Hello"
                 
-                    type Input:
+                type Input:
                     traderef string (1..1)
-                
                 """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var ruleJava = code.get("com.rosetta.test.model.reports.SimpleRuleRule");
@@ -1097,13 +1096,11 @@ public class RosettaRuleGeneratorTest {
     @Test
     void filter2() {
         var model = """
-                    reporting rule SimpleRule from Input:
-                [regulatoryReference ESMA MiFIR RTS_22 annex "" provision ""]
+                reporting rule SimpleRule from Input:
                     filter traderef exists
                 
-                    type Input:
+                type Input:
                     traderef string (0..1)
-                
                 """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var ruleJava = code.get("com.rosetta.test.model.reports.SimpleRuleRule");

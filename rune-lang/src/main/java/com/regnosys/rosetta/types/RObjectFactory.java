@@ -17,9 +17,11 @@
 package com.regnosys.rosetta.types;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import jakarta.inject.Inject;
@@ -28,6 +30,8 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
 import com.regnosys.rosetta.cache.caches.RDataTypeCache;
+import com.regnosys.rosetta.cache.caches.RFunctionCache;
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
 import com.regnosys.rosetta.rosetta.RosettaCardinality;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
@@ -59,19 +63,29 @@ public class RObjectFactory {
 	@Inject
 	private RuleReferenceService ruleService;
 	@Inject
-	private RDataTypeCache cache;
+	private RDataTypeCache typeCache;
+	@Inject
+	private RFunctionCache functionCache;
+	@Inject
+	private RosettaFunctionExtensions funcExt;
 
 	public RFunction buildRFunction(Function function) {
+		return functionCache.get(function, () -> buildRFunction(function, new HashSet<>()));
+	}
+	private RFunction buildRFunction(Function function, Set<Function> visited) {
+		if (function == null || !visited.add(function)) {
+			return null;
+		}
 		return new RFunction(
 				function,
 				modelIdProvider.getSymbolId(function),
 				function.getDefinition(),
-				function.getInputs().stream().map(i -> buildRAttributeWithEnclosingType(null, i)).collect(Collectors.toList()),
-				buildRAttributeWithEnclosingType(null, function.getOutput()),
+				funcExt.getInputs(function).stream().map(i -> buildRAttributeWithEnclosingType(null, i)).collect(Collectors.toList()),
+				buildRAttributeWithEnclosingType(null, funcExt.getOutput(function)),
 				RFunctionOrigin.FUNCTION,
 				function.getConditions(), function.getPostConditions(),
-				function.getShortcuts().stream().map(s -> buildRShortcut(s)).collect(Collectors.toList()),
-				function.getOperations().stream().map(o -> buildROperation(o)).collect(Collectors.toList()),
+				function.getShortcuts().stream().map(this::buildRShortcut).collect(Collectors.toList()),
+				function.getOperations().stream().map(this::buildROperation).collect(Collectors.toList()),
 				function.getAnnotations());
 	}
 	
@@ -199,7 +213,7 @@ public class RObjectFactory {
 	}
 
 	public RShortcut buildRShortcut(ShortcutDeclaration shortcut) {
-		return new RShortcut(shortcut.getName(), cardinalityProvider.isSymbolMulti(shortcut), shortcut.getDefinition(), shortcut.getExpression());
+		return new RShortcut(shortcut.getName(), cardinalityProvider.isSymbolMulti(shortcut), shortcut.getDefinition(), shortcut.getExpression(), shortcut.getFunction(), this);
 
 	}
 
@@ -231,7 +245,7 @@ public class RObjectFactory {
 	}
 
 	public RDataType buildRDataType(Data data) {
-		return cache.get(data, () -> new RDataType(data, modelIdProvider, this, typeProvider));
+		return typeCache.get(data, () -> new RDataType(data, modelIdProvider, this, typeProvider));
 	}
 	public RChoiceType buildRChoiceType(Choice choice) {
 		return new RChoiceType(choice, modelIdProvider, typeProvider, this);
