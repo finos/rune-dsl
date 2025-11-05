@@ -1,19 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<fileset-config file-format-version="1.2.0" simple-config="false" sync-formatter="false">
-  <local-check-config name="Custom" location="checkstyle-for-deprecated-guice.xml" type="project" description="">
+<fileset-config file-format-version="1.2.0" simple-config="true" sync-formatter="false">
+  <local-check-config name="Custom" location="/rune-integration-tests/checkstyle-for-deprecated-guice.xml" type="project" description="">
     <additional-data name="protect-config-file" value="false"/>
   </local-check-config>
-  <local-check-config name="maven-checkstyle-plugin Check style" location="file:/Users/werk/Seafile/regnosys/code/rune-dsl/rune-integration-tests/checkstyle-for-deprecated-guice.xml" type="remote" description="maven-checkstyle-plugin configuration Check style">
-    <property name="checkstyle.header.file" value="/Users/werk/eclipse-workspace/.metadata/.plugins/org.eclipse.core.resources/.projects/rune-integration-tests/com.basistech.m2e.code.quality.checkstyleConfigurator/checkstyle-header-Check_style.txt"/>
-    <property name="checkstyle.cache.file" value="${project_loc}/target/checkstyle-cachefile"/>
-  </local-check-config>
-  <fileset name="java-sources-Check_style" enabled="true" check-config-name="maven-checkstyle-plugin Check style" local="true">
-    <file-match-pattern match-pattern="^src/test/java.*\/.*\.java" include-pattern="true"/>
-    <file-match-pattern match-pattern="^xtend-gen/main/java.*\/.*\.java" include-pattern="true"/>
-    <file-match-pattern match-pattern="^src/main/java.*\/.*\.java" include-pattern="true"/>
-    <file-match-pattern match-pattern="^xtend-gen/test/java/.*\/.*\.java" include-pattern="true"/>
-    <file-match-pattern match-pattern="^src/main/resources.*\.properties" include-pattern="true"/>
-    <file-match-pattern match-pattern="^src/test/resources/.*\.properties" include-pattern="true"/>
+  <fileset name="all" enabled="true" check-config-name="Custom" local="true">
+    <file-match-pattern match-pattern="." include-pattern="true"/>
   </fileset>
 </fileset-config>
