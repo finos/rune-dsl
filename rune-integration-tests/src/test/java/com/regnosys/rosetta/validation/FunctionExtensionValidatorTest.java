@@ -12,7 +12,27 @@ import java.util.List;
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
 public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
-    // TODO: detect cycles in function extension
+    @Test
+    void testCyclesResultInAnError() {
+        assertIssues("""
+				namespace test
+				scope MyScope
+				version "1"
+				
+				func Foo extends Bar:
+					output:
+						result int (1..1)
+					set result: 0
+				
+				func Bar extends Foo:
+					output:
+						result int (1..1)
+					set result: 42
+				""", """
+                ERROR (null) 'Cyclic extension: Foo extends Bar extends Foo' at 5:18, length 3, on Function
+                ERROR (null) 'Cyclic extension: Bar extends Foo extends Bar' at 10:18, length 3, on Function
+                """);
+    }
     
 	@Test
 	void testFunctionExtensionOnlyAllowedInScopedFile() {

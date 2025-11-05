@@ -8,15 +8,20 @@ import com.regnosys.rosetta.rosetta.RosettaScope;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.SimplePackage;
+import jakarta.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 
-import java.util.Collection;
+import java.util.*;
+
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.FUNCTION__SUPER_FUNCTION;
 
 public class FunctionExtensionValidator extends AbstractDeclarativeRosettaValidator {
+    @Inject
+    private CycleValidationHelper cycleValidationHelper;
+    
     @Check
     public void checkFunctionExtensionMustBeInScopedFile(Function function) {
         if (function.getSuperFunction() == null) return;
@@ -46,6 +51,16 @@ public class FunctionExtensionValidator extends AbstractDeclarativeRosettaValida
                 }
             }
         }
+    }
+
+    @Check
+    public void checkCyclicExtensions(Function func) {
+        cycleValidationHelper.detectCycle(
+                func,
+                Function::getSuperFunction,
+                "extends",
+                (pathMsg) -> error("Cyclic extension: " + pathMsg, func, FUNCTION__SUPER_FUNCTION)
+        );
     }
     
     @Check

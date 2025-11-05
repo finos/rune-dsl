@@ -28,6 +28,13 @@ public class RosettaUniqueNamesConfig {
     }
     
     protected void initialize() {
+        // Note about case sensitivity: in general, if a generator uses the name of an element
+        // to generate a file, then that name should be unique in a case-insensitive way,
+        // otherwise case-insensitive file systems such as Mac and Windows will have problems.
+        // For example, the Java generator generates a Java file for each type and enum, so these
+        // should be checked for case-insensitive uniqueness. On the other hand, it does not
+        // generate a file for an attribute, so we can check those for case-sensitive uniqueness.
+        
         // Check synonym sources have a unique name
         addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaSynonymSource(), false);
         
@@ -47,6 +54,9 @@ public class RosettaUniqueNamesConfig {
         addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaBody(), true);
         addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaCorpus(), true);
         addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaSegment(), true);
+        
+        // Check scopes have a unique name
+        addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaScope(), false);
         
         // Check attributes in data have a unique name
         addLocalCheck(SimplePackage.eINSTANCE.getAttribute(), Attribute.class, this::getDirectDataContainer, Data::getAttributes, true);
