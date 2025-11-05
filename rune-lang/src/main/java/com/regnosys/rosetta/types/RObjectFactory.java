@@ -37,8 +37,11 @@ import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaMetaType;
+import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaReport;
+import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaRule;
+import com.regnosys.rosetta.rosetta.RosettaScope;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
@@ -69,6 +72,13 @@ public class RObjectFactory {
 	@Inject
 	private RosettaFunctionExtensions funcExt;
 
+	private RosettaScope getScope(RosettaRootElement elem) {
+		RosettaModel model = elem.getModel();
+		if (model == null) {
+			return null;
+		}
+		return model.getScope();
+	}
 	public RFunction buildRFunction(Function function) {
 		return functionCache.get(function, () -> buildRFunction(function, new HashSet<>()));
 	}
@@ -76,8 +86,11 @@ public class RObjectFactory {
 		if (function == null || !visited.add(function)) {
 			return null;
 		}
+		Function superFunc = function.getSuperFunction();
 		return new RFunction(
 				function,
+				superFunc == null ? null : buildRFunction(superFunc, visited),
+				getScope(function),
 				modelIdProvider.getSymbolId(function),
 				function.getDefinition(),
 				funcExt.getInputs(function).stream().map(i -> buildRAttributeWithEnclosingType(null, i)).collect(Collectors.toList()),
@@ -101,6 +114,8 @@ public class RObjectFactory {
 		
 		return new RFunction(
 				rule,
+				null,
+				getScope(rule),
 				rule.getName() == null ? null : modelIdProvider.getSymbolId(rule),
 				rule.getDefinition(),
 				List.of(createArtificialAttribute("input", inputRType, false)),
@@ -135,6 +150,8 @@ public class RObjectFactory {
 		List<ROperation> operations = generateOperations(report, outputAttribute, outputRtype, inputAttribute);
 		return new RFunction(
 			report,
+			null,
+			getScope(report),
 			modelIdProvider.getReportId(report),
 			reportDefinition,
 			List.of(buildRAttributeWithEnclosingType(null, inputAttribute)),

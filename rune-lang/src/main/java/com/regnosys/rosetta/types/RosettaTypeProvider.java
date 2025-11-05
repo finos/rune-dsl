@@ -662,4 +662,9 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
         
         return argType.addMeta(newMetaAttributes);
     }
+
+	@Override
+	protected RMetaAnnotatedType caseSuperCall(RosettaSuperCall expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
+        return safeRType(expr.getSuperFunction(), expr, cycleTracker);
+	}
 }

@@ -209,6 +209,11 @@ public interface ExpectedTypeProvider {
             protected RMetaAnnotatedType caseSymbolReference(RosettaSymbolReference expr, Context context) {
                 return caseCallableReference(expr::getSymbol, context);
             }
+
+            @Override
+            protected RMetaAnnotatedType caseSuperCall(RosettaSuperCall expr, Context context) {
+                return caseCallableReference(expr::getSuperFunction, context);
+            }
             
             private RMetaAnnotatedType caseCallableReference(Provider<RosettaSymbol> symbolProvider, Context context) {
                 if (ROSETTA_CALLABLE_REFERENCE__RAW_ARGS.equals(context.reference)) {
