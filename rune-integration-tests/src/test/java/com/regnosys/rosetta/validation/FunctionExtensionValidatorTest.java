@@ -1,5 +1,8 @@
 package com.regnosys.rosetta.validation;
 
+import com.google.inject.Module;
+import com.google.inject.util.Modules;
+import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
@@ -10,15 +13,26 @@ import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import java.util.List;
 
 @ExtendWith(InjectionExtension.class)
-@InjectWith(RosettaTestInjectorProvider.class)
+@InjectWith(FunctionExtensionValidatorTest.RosettaTestInjectorWithScopesEnabledProvider.class)
 public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
+    // Enable scopes feature for this test
+    public static class RosettaTestInjectorWithScopesEnabledProvider extends RosettaTestInjectorProvider {
+        @Override
+        protected Module createRuntimeModule() {
+            Module base = super.createRuntimeModule();
+            return Modules.override(base).with(
+                    binder -> binder.bind(RosettaConfigurationFileProvider.class)
+                            .toInstance(RosettaConfigurationFileProvider.createFromClasspath("rosetta-config-with-enabled-scopes.yml")));
+        }
+    }
+    
     @Test
-    void testScopesAreABetaFeature() {
+    void testScopesAreExperimental() {
         assertIssues("""
 				namespace test
 				scope MyScope
 				""", """
-                ERROR (null) 'Scopes are a beta feature, and are not enabled for this project' at 1:1, length 5, on RosettaScope
+                ERROR (null) 'Scopes are an experimental feature, and are not enabled for this project' at 2:1, length 13, on RosettaScope
                 """);
     }
     
