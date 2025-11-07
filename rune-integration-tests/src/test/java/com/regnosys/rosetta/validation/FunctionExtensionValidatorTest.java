@@ -188,39 +188,4 @@ public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
                     """
         ));
     }
-
-//    @Test
-//    void testCannotCallExtendedFunctionFromInsideScope() {
-//        assertIssues("""
-//                namespace test
-//                scope MyScope
-//                version "1"
-//    
-//                func Bar1 extends Foo1:
-//                    output:
-//                        result int (1..1)
-//                    set result: super()
-//    
-//                func Bar2 extends Foo2:
-//                    output:
-//                        result int (1..1)
-//                    set result: Bar1()
-//                """, List.of("""
-//                    namespace test
-//                    version "1"
-//                    
-//                    func Foo1:
-//                        output:
-//                            result int (1..1)
-//                        set result: 0
-//                    
-//                    func Foo2:
-//                        output:
-//                            result int (1..1)
-//                        set result: 0
-//                    """
-//                ), """
-//                ERROR cannot call extension Bar1 from within scope
-//                """);
-//    }
 }
