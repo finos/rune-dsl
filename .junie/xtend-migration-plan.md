@@ -82,7 +82,7 @@ No project files to migrate.
 
 ##### Files without usage of string template features (32 files)
 - [ ] DocReferenceTest
-- [ ] ExpressionFormatterTestHelper
+- [x] ExpressionFormatterTestHelper
 - [x] RosettaExpressionFormattingTest
 - [x] RosettaFormattingTest
 - [ ] ListOperationTest

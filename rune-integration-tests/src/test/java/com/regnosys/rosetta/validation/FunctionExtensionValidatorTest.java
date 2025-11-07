@@ -13,6 +13,16 @@ import java.util.List;
 @InjectWith(RosettaTestInjectorProvider.class)
 public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
     @Test
+    void testScopesAreABetaFeature() {
+        assertIssues("""
+				namespace test
+				scope MyScope
+				""", """
+                ERROR (null) 'Scopes are a beta feature, and are not enabled for this project' at 1:1, length 5, on RosettaScope
+                """);
+    }
+    
+    @Test
     void testCyclesResultInAnError() {
         assertIssues("""
 				namespace test

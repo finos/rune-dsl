@@ -427,7 +427,7 @@ public class RosettaFormattingTest {
 						[synonym FpML value "SAT"]
 					SUN <"Sunday">
 						[synonym FpML value "SUN"]
-					""");
+				""");
 	}
 
 	@Test
@@ -449,7 +449,7 @@ public class RosettaFormattingTest {
 						[synonym FpML value "Long"]
 					Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
 						[synonym FpML value "Short"]
-					""");
+				""");
 	}
 
 	@Test
@@ -553,20 +553,20 @@ public class RosettaFormattingTest {
 			});
 
 			cfg.setExpectation("""
-					namespace "test"
-
-					type AllocationOutcome:
-
-						condition C1:
-							if True
-							then True
-									extract [
-										item = False
-									] = True
-
-						condition C2:
-							True
-					""");
+                     namespace "test"
+        
+                     type AllocationOutcome:
+        
+                         condition C1:
+                             if True
+                             then True
+                                     extract [
+                                         item = False
+                                     ] = True
+        
+                         condition C2:
+                             True
+                     """);
 			cfg.setToBeFormatted("""
 					namespace "test"
 

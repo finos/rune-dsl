@@ -414,7 +414,7 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 	
 	private IScope createExtendedFeatureScope(EObject receiver, RMetaAnnotatedType metaReceiverType) {
 		var receiverType = metaReceiverType.getRType();
-		if (receiverType instanceof REnumType) {
+		if (receiverType instanceof REnumType && metaReceiverType.getMetaAttributes().isEmpty()) {
 			if (!(receiver instanceof RosettaSymbolReference) || !(((RosettaSymbolReference)receiver).getSymbol() instanceof RosettaEnumeration)) {
 				return IScope.NULLSCOPE;
 			}
