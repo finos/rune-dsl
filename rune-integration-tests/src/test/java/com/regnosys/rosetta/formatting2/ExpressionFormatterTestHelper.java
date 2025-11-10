@@ -62,7 +62,7 @@ public class ExpressionFormatterTestHelper extends FormatterTestHelper {
 	}
 
 	protected String indent(String string, String indent) {
-		return Arrays.stream(string.split("\\r?\\n"))
+		return Arrays.stream(string.split("\\n"))
 				.map(line -> {
 					if (line.isEmpty()) {
 						return line;
@@ -98,7 +98,7 @@ public class ExpressionFormatterTestHelper extends FormatterTestHelper {
 					output:
 						result int (0..*)
 					set result:""";
-		req.setToBeFormatted(prefix + Strings.newLine() + indent(req.getToBeFormatted().toString().trim(), "\t\t"));
+		req.setToBeFormatted(prefix + "\n" + indent(req.getToBeFormatted().toString().trim(), "\t\t"));
 
 		var request = req.getRequest();
 		checkArgument(request.getTextRegionAccess() == null);
@@ -122,14 +122,14 @@ public class ExpressionFormatterTestHelper extends FormatterTestHelper {
 		assertReplacementsAreInRegion(replacements, request.getRegions(), document);
 		if (!req.isAllowUnformattedWhitespace())
 			assertAllWhitespaceIsFormatted(request.getTextRegionAccess(), replacements);
-		String formatted = request.getTextRegionAccess().getRewriter().renderToString(replacements);
+		String formatted = request.getTextRegionAccess().getRewriter().renderToString(replacements).replace("\r\n", "\n");
 
-		int prefixLines = prefix.split("\r\n|\r|\n").length;
-		int resultLines = formatted.split("\r\n|\r|\n").length;
+		int prefixLines = prefix.split("\n").length;
+		int resultLines = formatted.split("\n").length;
 		if (prefixLines == resultLines) {
-			req.setExpectation(prefix + ' ' + req.getExpectationOrToBeFormatted().toString().trim() + Strings.newLine());
+			req.setExpectation(prefix + ' ' + req.getExpectationOrToBeFormatted().toString().trim() + "\n");
 		} else {
-			req.setExpectation(prefix + Strings.newLine() + indent(req.getExpectationOrToBeFormatted().toString().trim(), "\t\t") + Strings.newLine());
+			req.setExpectation(prefix + "\n" + indent(req.getExpectationOrToBeFormatted().toString().trim(), "\t\t") + "\n");
 		}
 
 		Assertions.assertEquals(req.getExpectationOrToBeFormatted().toString(), formatted);

@@ -17,7 +17,7 @@ public class RosettaExpressionFormattingTest {
 
     private void formatAndAssertExpression(CharSequence unformatted, CharSequence expectation) {
         expressionFormatterTestHelper.assertFormattedExpression(cfg -> {
-            cfg.setExpectation(expectation.toString().replace("\n", System.lineSeparator()));
+            cfg.setExpectation(expectation);
             cfg.setToBeFormatted(unformatted);
 
             // extra check to make sure we didn't miss any hidden region in our formatter:
