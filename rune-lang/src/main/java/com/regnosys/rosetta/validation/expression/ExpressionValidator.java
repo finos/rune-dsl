@@ -299,8 +299,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 			} else {
 				if (s instanceof Attribute) {
 					if (functionExtensions.isOutput((Attribute) s)) {
-						RMetaAnnotatedType implicitType = typeProvider.typeOfImplicitVariable(expr);
-						Iterable<? extends RosettaFeature> implicitFeatures = ecoreUtil.allFeatures(implicitType, expr);
+						Iterable<? extends RosettaFeature> implicitFeatures = typeProvider.findFeaturesOfImplicitVariable(expr);
 						if (Iterables.any(implicitFeatures, f -> f.getName().equals(s.getName()))) {
 							error(
 								"Ambiguous reference. `" + s.getName() + "` may either refer to `item -> " + s.getName() + "` or to the output variable.",

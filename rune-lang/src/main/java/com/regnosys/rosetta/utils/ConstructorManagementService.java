@@ -56,7 +56,7 @@ public class ConstructorManagementService {
         if (constructor != null) {
             RMetaAnnotatedType metaAnnotatedType = types.getRMetaAnnotatedType(constructor);
             List<RosettaFeature> populatedFeatures = populatedFeaturesInConstructor(constructor);
-            List<RosettaFeature> allFeatures = Lists.newArrayList(extensions.allFeatures(metaAnnotatedType.getRType(), constructor));
+            List<RosettaFeature> allFeatures = Lists.newArrayList(extensions.allFeaturesExcludingEnumValues(metaAnnotatedType.getRType(), constructor));
             return new RosettaFeatureGroup(populatedFeatures, allFeatures);
         }
         return new RosettaFeatureGroup();
