@@ -64,13 +64,13 @@ No project files to migrate.
 - [ ] RosettaDocumentationProviderTest
 - [ ] InlayHintTest
 - [ ] Issue785
-- [ ] QuickFixTest
+- [x] QuickFixTest
 - [ ] SemanticTokenTest
 
 ##### Files with usage of string template features (3 files)
 - [ ] HandleParseErrorGracefullyTest
-- [ ] AbstractRosettaLanguageServerTest
-- [ ] AbstractRosettaLanguageServerValidationTest
+- [x] AbstractRosettaLanguageServerTest
+- [x] AbstractRosettaLanguageServerValidationTest
 
 ### rune-integration-tests (37 files)
 

@@ -17,6 +17,7 @@ import org.eclipse.xtext.validation.Check;
 import java.util.*;
 
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.FUNCTION__SUPER_FUNCTION;
+import static com.regnosys.rosetta.validation.RosettaIssueCodes.CHANGED_EXTENDED_FUNCTION_PARAMETERS;
 
 public class FunctionExtensionValidator extends AbstractDeclarativeRosettaValidator {
     @Inject
@@ -69,11 +70,11 @@ public class FunctionExtensionValidator extends AbstractDeclarativeRosettaValida
         if (original == null) return;
         
         if (function.getInputs().size() < original.getInputs().size()) {
-            error("Function " + function.getName() + " does not define all inputs of the original function " + original.getName(), function, SimplePackage.Literals.FUNCTION__SUPER_FUNCTION);
+            error("Function " + function.getName() + " does not define all inputs of the original function " + original.getName(), function, SimplePackage.Literals.FUNCTION__SUPER_FUNCTION, CHANGED_EXTENDED_FUNCTION_PARAMETERS);
         }
         for (int i = 0; i < function.getInputs().size(); i++) {
             if (i >= original.getInputs().size()) {
-                error("Too many inputs. The original function " + original.getName() + " only defines " + original.getInputs().size() + " inputs.", function, SimplePackage.Literals.FUNCTION__INPUTS, i);
+                error("Too many inputs. The original function " + original.getName() + " only defines " + original.getInputs().size() + " inputs.", function, SimplePackage.Literals.FUNCTION__INPUTS, i, CHANGED_EXTENDED_FUNCTION_PARAMETERS);
             } else {
                 checkEqual(function.getInputs().get(i), original.getInputs().get(i), "input", function, SimplePackage.Literals.FUNCTION__INPUTS, i);
             }
@@ -85,7 +86,7 @@ public class FunctionExtensionValidator extends AbstractDeclarativeRosettaValida
         if (toCheck == null || expected == null) return;
         
         if (!EcoreUtil2.equals(toCheck, expected)) {
-            error(StringUtils.capitalize(description) + " " + toCheck.getName() + " does not match the original " + description + " in " + function.getSuperFunction().getName(), function, feature, index);
+            error(StringUtils.capitalize(description) + " " + toCheck.getName() + " does not match the original " + description + " in " + function.getSuperFunction().getName(), function, feature, index, CHANGED_EXTENDED_FUNCTION_PARAMETERS);
         }
     }
 }
