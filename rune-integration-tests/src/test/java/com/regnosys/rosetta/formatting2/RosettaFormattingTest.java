@@ -19,7 +19,7 @@ public class RosettaFormattingTest {
 
 	private void formatAndAssert(CharSequence unformatted, CharSequence expectation) {
 		formatterTestHelper.assertFormatted(cfg -> {
-			cfg.setExpectation(expectation.toString().replace("\n", System.lineSeparator()));
+			cfg.setExpectation(expectation.toString());
 			cfg.setToBeFormatted(unformatted);
 
 			// extra check to make sure we didn't miss any hidden region in our formatter:

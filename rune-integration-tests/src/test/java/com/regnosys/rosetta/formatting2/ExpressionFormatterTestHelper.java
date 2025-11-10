@@ -122,7 +122,7 @@ public class ExpressionFormatterTestHelper extends FormatterTestHelper {
 		assertReplacementsAreInRegion(replacements, request.getRegions(), document);
 		if (!req.isAllowUnformattedWhitespace())
 			assertAllWhitespaceIsFormatted(request.getTextRegionAccess(), replacements);
-		String formatted = request.getTextRegionAccess().getRewriter().renderToString(replacements).replace("\r\n", "\n");
+		String formatted = request.getTextRegionAccess().getRewriter().renderToString(replacements);
 
 		int prefixLines = prefix.split("\n").length;
 		int resultLines = formatted.split("\n").length;

@@ -1,12 +1,14 @@
 package com.regnosys.rosetta.formatting2;
 
 import org.eclipse.lsp4j.FormattingOptions;
+import org.eclipse.xtext.formatting2.FormatterPreferenceKeys;
 import org.eclipse.xtext.preferences.ITypedPreferenceValues;
 import org.eclipse.xtext.preferences.MapBasedPreferenceValues;
 
 import com.google.common.base.Strings;
 
 public class FormattingOptionsAdaptor {
+    public static String PREFERENCE_LINE_SEPARATOR_KEY = "lineSeparator";
 	public static String PREFERENCE_INDENTATION_KEY = "indentation";
 	public static String PREFERENCE_MAX_LINE_WIDTH_KEY = "maxLineWidth";
 	public static String PREFERENCE_CONDITIONAL_MAX_LINE_WIDTH_KEY = "conditionalMaxLineWidth";
@@ -43,6 +45,11 @@ public class FormattingOptionsAdaptor {
 						(int) (maxLineWidth.doubleValue() * defaultRatio));
 			}
 		}
+        
+        String lineSeparator = options.getString(PREFERENCE_LINE_SEPARATOR_KEY);
+        if (lineSeparator != null) {
+            preferences.put(FormatterPreferenceKeys.lineSeparator, lineSeparator);
+        }
 
 		return preferences;
 	}
