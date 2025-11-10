@@ -23,6 +23,36 @@ public class RosettaExpressionParsingTest {
 	private ExpressionParser parser;
 	@Inject
 	private RosettaValidationTestHelper validationHelper;
+
+    @Test
+    void cannotLeaveOutEnumType() {
+        var context = modelService.toTestModel("""			
+			enum FooEnum:
+			    VALUE
+			""");
+
+        var expr = context.parseExpression("""
+				FooEnum -> VALUE filter VALUE = item
+				""");
+
+        validationHelper.assertIssues(expr, """
+                ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaSymbol 'VALUE'.' at 1:25, length 5, on RosettaSymbolReference
+                """);
+    }
+
+    @Test
+    void canLeaveOutItemWhenUsingEnumWithMeta() {
+        var context = modelService.toTestModel("""			
+			enum FooEnum:
+			    VALUE
+			""");
+
+        var expr = context.parseExpression("""
+				FooEnum -> VALUE with-meta { scheme: "foo" } then scheme
+				""");
+
+        validationHelper.assertNoIssues(expr);
+    }
 	
 	@Test
 	void canSwitchWithSingleCase() {

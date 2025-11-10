@@ -77,7 +77,12 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
     }
 
     public Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
-        return extensions.allFeatures(typeOfImplicitVariable(context), context);
+        RMetaAnnotatedType type = typeOfImplicitVariable(context);
+        RType rType = type.getRType();
+        if (rType instanceof REnumType && type.getMetaAttributes().isEmpty()) {
+            return Collections.emptyList();
+        }
+        return extensions.allFeatures(type, context);
     }
 
     public RMetaAnnotatedType getRMetaAnnotatedType(AnnotationPathExpression expr) {
