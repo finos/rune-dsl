@@ -73,8 +73,12 @@ class ExpressionEqualityUtil {
 		ListIterator<T> e1 = multi1.listIterator();
 		ListIterator<T> e2 = multi2.listIterator();
 		
-		if (multi1.isEmpty() || multi2.isEmpty())
-			return ComparisonResult.failureEmptyOperand(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
+		if (multi1.isEmpty() || multi2.isEmpty()) {
+            if (multi1.isEmpty() && multi2.isEmpty()) {
+                return ComparisonResult.success();
+            }
+            return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
+        }
 		
 		while (e1.hasNext() && e2.hasNext()) {
 			T b1 = e1.next();
@@ -94,7 +98,7 @@ class ExpressionEqualityUtil {
 		}
 		
 		if (e1.hasNext() || e2.hasNext())
-			return ComparisonResult.failureEmptyOperand(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
+			return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
 		
 		return o == CardinalityOperator.All ? 
 				ComparisonResult.success() :
@@ -106,7 +110,7 @@ class ExpressionEqualityUtil {
 		U b2 = m2.get();
 		
 		if (multi1.isEmpty())
-			return ComparisonResult.failureEmptyOperand(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
+			return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
 		
 		ListIterator<T> e1 = multi1.listIterator();
 		
@@ -165,8 +169,8 @@ class ExpressionEqualityUtil {
 		ListIterator<T> e2 = multi2.listIterator();
 		
 		if (multi1.isEmpty() || multi2.isEmpty())
-			return ComparisonResult.successEmptyOperand(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
-		
+		    return ComparisonResult.success();
+
 		while (e1.hasNext() && e2.hasNext()) {
 			T b1 = e1.next();
 			T b2 = e2.next();
@@ -203,8 +207,8 @@ class ExpressionEqualityUtil {
 		U b2 = m2.get();
 
 		if (multi1.isEmpty())
-			return ComparisonResult.successEmptyOperand(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
-		
+		    return ComparisonResult.success();
+
 		ListIterator<T> e1 = multi1.listIterator();
 		
 		while (e1.hasNext()) {

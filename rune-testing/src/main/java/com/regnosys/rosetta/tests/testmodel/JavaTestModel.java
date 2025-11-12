@@ -1,5 +1,10 @@
 package com.regnosys.rosetta.tests.testmodel;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -220,4 +225,18 @@ public class JavaTestModel {
 	public Object getConditionJavaInstance(String typeName, String conditionName) {
 		return injector.getInstance(getConditionJavaClass(typeName, conditionName));
 	}
+    public void writeClasses(String directory) {
+        for (Map.Entry<String, String> entry : javaSourceCode.entrySet()) {
+            String name = entry.getKey();
+            String pathName = name.replace('.', File.separatorChar);
+
+            Path path = Paths.get("target", directory, "java", pathName + ".java");
+            try {
+                Files.createDirectories(path.getParent());
+                Files.write(path, entry.getValue().getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

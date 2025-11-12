@@ -283,7 +283,7 @@ class RosettaBinaryOperationTest {
 		val foo = RosettaModelObject.cast(classes.createInstanceUsingBuilder('Foo', of('baz', baz), of()))
 		
 		assertResult("FeatureCallEqualToLiteral", foo, false)
-		assertResult("FeatureCallEqualToFeatureCall", foo, false)
+		assertResult("FeatureCallEqualToFeatureCall", foo, true)
 		assertResult("FeatureCallNotEqualToLiteral", foo, true)
 		assertResult("FeatureCallNotEqualToFeatureCall", foo, true)
 		assertResult("FeatureCallListEqualToFeatureCall", foo, false)

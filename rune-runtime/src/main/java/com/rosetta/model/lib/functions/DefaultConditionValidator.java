@@ -23,7 +23,7 @@ import com.rosetta.model.lib.expression.ComparisonResult;
 public class DefaultConditionValidator implements ConditionValidator {
     @Override
     public void validate(Supplier<ComparisonResult> condition, String description) {
-        if (!condition.get().get()) {
+        if (!condition.get().getOrDefault(true)) {
             throw new ConditionException(description);
         }
     }
