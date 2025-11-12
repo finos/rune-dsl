@@ -133,7 +133,7 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 			} else if (reference.equals(CONSTRUCTOR_KEY_VALUE_PAIR__KEY)) {
 				if (context instanceof ConstructorKeyValuePair) {
 					var constructor = (RosettaConstructorExpression) context.eContainer();
-					return Scopes.scopeFor(ecoreUtil.allFeatures(typeProvider.getRMetaAnnotatedType(constructor).getRType(), context));
+					return Scopes.scopeFor(ecoreUtil.allFeaturesExcludingEnumValues(typeProvider.getRMetaAnnotatedType(constructor).getRType(), context));
 				}
 				return IScope.NULLSCOPE;
 			} else if (reference.equals(OPERATION__ASSIGN_ROOT)) {
@@ -152,7 +152,7 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 					var receiverType = typeProvider.getRTypeOfSymbol(op.getAssignRoot());
 					
 					// All features accessible from receiver type including meta attributes
-					var features = ecoreUtil.allFeatures(receiverType, context, t -> !(t instanceof REnumType));
+					var features = ecoreUtil.allFeaturesExcludingEnumValues(receiverType, context);
 					
 					// We also want to allow the scope provider to return the meta for the type of the attribute (e.g., metadata key)
 					if (receiverType.getRType() instanceof RDataType) {
@@ -165,7 +165,7 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 					if (prev != null) {
 						if (ecoreUtil.isResolved(prev.getFeature())) {
 							var receiverType = typeProvider.getRTypeOfFeature(prev.getFeature(), context);
-							return Scopes.scopeFor(ecoreUtil.allFeatures(receiverType, context, t -> !(t instanceof REnumType)));
+							return Scopes.scopeFor(ecoreUtil.allFeaturesExcludingEnumValues(receiverType, context));
 						}
 					}
 					if (context.eContainer() instanceof Operation) {
@@ -177,12 +177,12 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 			} else if (reference.equals(ANNOTATION_PATH_ATTRIBUTE_REFERENCE__ATTRIBUTE)) {
 				if (context instanceof Attribute attr) {
 					var t = typeProvider.getRTypeOfSymbol(attr);
-					return Scopes.scopeFor(ecoreUtil.allFeatures(t, context));
+					return Scopes.scopeFor(ecoreUtil.allFeaturesExcludingEnumValues(t, context));
 				}
 			} else if (reference.equals(ANNOTATION_PATH__ATTRIBUTE)) {
 				if (context instanceof AnnotationPath ap) {
 					var t = typeProvider.getRMetaAnnotatedType(ap.getReceiver());
-					return Scopes.scopeFor(ecoreUtil.allFeatures(t, context));
+					return Scopes.scopeFor(ecoreUtil.allFeaturesExcludingEnumValues(t, context));
 				}
 				return IScope.NULLSCOPE;
 			} else if (reference.equals(ANNOTATION_DEEP_PATH__ATTRIBUTE)) {
@@ -414,13 +414,13 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 	
 	private IScope createExtendedFeatureScope(EObject receiver, RMetaAnnotatedType metaReceiverType) {
 		var receiverType = metaReceiverType.getRType();
-		if (receiverType instanceof REnumType) {
-			if (!(receiver instanceof RosettaSymbolReference) || !(((RosettaSymbolReference)receiver).getSymbol() instanceof RosettaEnumeration)) {
-				return IScope.NULLSCOPE;
+		if (receiverType instanceof REnumType enumType) {
+			if (receiver instanceof RosettaSymbolReference symbolRef && symbolRef.getSymbol() instanceof RosettaEnumeration) {
+				return Scopes.scopeFor(enumType.getAllEnumValues());
 			}
 		}
 		
-		return Scopes.scopeFor(ecoreUtil.allFeatures(metaReceiverType, receiver));
+		return Scopes.scopeFor(ecoreUtil.allFeaturesExcludingEnumValues(metaReceiverType, receiver));
 	}
 
 

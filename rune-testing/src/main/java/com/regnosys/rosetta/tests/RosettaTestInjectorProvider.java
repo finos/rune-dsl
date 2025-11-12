@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.tests;
 
+import com.google.inject.Module;
 import org.eclipse.xtext.testing.validation.ValidationTestHelper;
-import org.eclipse.xtext.testing.validation.ValidationTestHelper.Mode;
 
 import com.google.inject.Binder;
 import com.regnosys.rosetta.RosettaRuntimeModule;
@@ -9,7 +9,8 @@ import com.regnosys.rosetta.tests.validation.RosettaValidationTestHelper;
 import com.rosetta.model.lib.validation.ValidatorFactory;
 
 public class RosettaTestInjectorProvider extends RosettaInjectorProvider {
-	protected RosettaRuntimeModule createRuntimeModule() {
+	@Override
+    protected Module createRuntimeModule() {
 		// make it work also with Maven/Tycho and OSGI
 		// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=493672
 		return new RosettaRuntimeModule() {

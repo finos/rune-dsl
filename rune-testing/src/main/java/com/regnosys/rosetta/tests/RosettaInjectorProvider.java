@@ -6,6 +6,7 @@ package com.regnosys.rosetta.tests;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Module;
 import com.regnosys.rosetta.RosettaRuntimeModule;
 import com.regnosys.rosetta.RosettaStandaloneSetup;
 
@@ -42,7 +43,7 @@ public class RosettaInjectorProvider implements IInjectorProvider, IRegistryConf
 		}.createInjectorAndDoEMFRegistration();
 	}
 
-	protected RosettaRuntimeModule createRuntimeModule() {
+	protected Module createRuntimeModule() {
 		// make it work also with Maven/Tycho and OSGI
 		// see https://bugs.eclipse.org/bugs/show_bug.cgi?id=493672
 		return new RosettaRuntimeModule() {
