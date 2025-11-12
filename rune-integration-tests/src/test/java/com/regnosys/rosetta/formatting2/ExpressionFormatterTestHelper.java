@@ -27,6 +27,7 @@ public class ExpressionFormatterTestHelper extends FormatterTestHelper {
 		FormatterTestRequest request = formatterRequestProvider.get();
 		request.preferences(prefs -> {
 			prefs.put(FormatterPreferenceKeys.maxLineWidth, 80);
+            prefs.put(FormatterPreferenceKeys.lineSeparator, "\n");
 			prefs.put(FormatterPreferenceKeys.indentation, "\t"); // Note: this should not be required if we have proper code formatting...
 		});
 		test.accept(request);
@@ -53,10 +54,11 @@ public class ExpressionFormatterTestHelper extends FormatterTestHelper {
 		assertFormatted(cfg -> {
 			cfg.preferences(prefs -> {
 				prefs.put(FormatterPreferenceKeys.maxLineWidth, 80);
+                prefs.put(FormatterPreferenceKeys.lineSeparator, "\n");
 				prefs.put(FormatterPreferenceKeys.indentation, "\t"); // Note: this should not be required if we have proper code formatting...
 			});
 			test.accept(cfg);
-			cfg.setExpectation(prefix + indent(cfg.getExpectationOrToBeFormatted().toString().trim(), "\t") + Strings.newLine());
+			cfg.setExpectation(prefix + indent(cfg.getExpectationOrToBeFormatted().toString().trim(), "\t") + "\n");
 			cfg.setToBeFormatted(prefix + indent(cfg.getToBeFormatted().toString().trim(), "\t"));
 		});
 	}
@@ -70,7 +72,7 @@ public class ExpressionFormatterTestHelper extends FormatterTestHelper {
 						return indent + line;
 					}
 				})
-				.collect(Collectors.joining(Strings.newLine()));
+				.collect(Collectors.joining("\n"));
 	}
 
 	/**

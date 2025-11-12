@@ -30,10 +30,6 @@ public class RosettaExpressionFormattingTest {
             // see issue https://github.com/eclipse/xtext-core/issues/164
             // and issue https://github.com/eclipse/xtext-core/issues/2060
             cfg.setUseSerializer(false);
-            
-            cfg.preferences(prefs -> {
-                prefs.put(FormatterPreferenceKeys.lineSeparator, "\n");
-            });
         });
     }
 

@@ -529,6 +529,7 @@ public class RosettaFormattingTest {
 	void formatIndentationTest() {
 		formatterTestHelper.assertFormatted(cfg -> {
 			cfg.preferences(prefs -> {
+                prefs.put(FormatterPreferenceKeys.lineSeparator, "\n");
 				prefs.put(FormatterPreferenceKeys.maxLineWidth, 20);
 			});
 
