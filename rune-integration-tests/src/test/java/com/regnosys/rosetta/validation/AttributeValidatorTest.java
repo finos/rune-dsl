@@ -93,7 +93,34 @@ public class AttributeValidatorTest extends AbstractValidatorTest {
 				"""
 			);
     }
-    
+
+    @Test
+    void testCanOverrideEmptyUsingRuleReferenceForAttribute() {
+        assertNoIssues("""
+                namespace test
+                
+                type Input:
+                
+                type CommonReport:
+                    additionalFields CommonAdditionalFields (0..1)
+               
+                type Report extends CommonReport:
+                    override additionalFields CommonAdditionalFields (0..1)
+                        [ruleReference for attr empty]
+                
+                reporting rule AttrRule from Input:
+                    extract "hello"
+                
+                type CommonAdditionalFields:
+                    [rootType]
+                    attr string (0..*)
+                	    [ruleReference AttrRule]
+                
+                """);
+    }
+
+
+
     @Test
     void testCannotEmptyNonExistingRuleReference() {
     	assertIssues("""
