@@ -33,6 +33,7 @@ public class RosettaFormattingTest {
 			cfg.setUseSerializer(false);
 
 			cfg.preferences(prefs -> {
+                prefs.put(FormatterPreferenceKeys.lineSeparator, "\n");
 				prefs.put(FormatterPreferenceKeys.indentation, "\t"); // Note: this should not be required if we have proper code formatting...
 			});
 		});

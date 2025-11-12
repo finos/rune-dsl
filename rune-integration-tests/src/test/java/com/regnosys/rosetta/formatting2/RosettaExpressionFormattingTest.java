@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.formatting2;
 
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
+import org.eclipse.xtext.formatting2.FormatterPreferenceKeys;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,10 @@ public class RosettaExpressionFormattingTest {
             // see issue https://github.com/eclipse/xtext-core/issues/164
             // and issue https://github.com/eclipse/xtext-core/issues/2060
             cfg.setUseSerializer(false);
+            
+            cfg.preferences(prefs -> {
+                prefs.put(FormatterPreferenceKeys.lineSeparator, "\n");
+            });
         });
     }
 
