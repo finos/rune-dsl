@@ -3,6 +3,8 @@ package com.regnosys.rosetta.validation.expression;
 import com.regnosys.rosetta.types.*;
 import jakarta.inject.Inject;
 
+import jakarta.inject.Provider;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
@@ -58,9 +60,8 @@ public class ExpressionValidator extends AbstractExpressionValidator {
         Set<RosettaFeature> implicitFeatures = StreamSupport.stream(typeProvider.findFeaturesOfImplicitVariable(inlineFunction).spliterator(), false)
                 .collect(Collectors.toSet());
 
-        boolean symbolReferencesFeatureOfAttribute =
-                symbolReferences.stream()
-                .anyMatch(ref -> ref.getSymbol() instanceof Attribute attr && implicitFeatures.contains(attr));
+        boolean symbolReferencesFeatureOfAttribute = symbolReferences.stream()
+                .anyMatch(ref -> implicitFeatures.contains(ref.getSymbol()));
 
         if (!symbolReferencesFeatureOfAttribute) {
             /*
@@ -298,8 +299,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 			} else {
 				if (s instanceof Attribute) {
 					if (functionExtensions.isOutput((Attribute) s)) {
-						RMetaAnnotatedType implicitType = typeProvider.typeOfImplicitVariable(expr);
-						Iterable<? extends RosettaFeature> implicitFeatures = ecoreUtil.allFeatures(implicitType, expr);
+						Iterable<? extends RosettaFeature> implicitFeatures = typeProvider.findFeaturesOfImplicitVariable(expr);
 						if (Iterables.any(implicitFeatures, f -> f.getName().equals(s.getName()))) {
 							error(
 								"Ambiguous reference. `" + s.getName() + "` may either refer to `item -> " + s.getName() + "` or to the output variable.",

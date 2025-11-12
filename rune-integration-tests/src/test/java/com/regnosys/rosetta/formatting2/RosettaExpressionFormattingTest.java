@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.formatting2;
 
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
+import org.eclipse.xtext.formatting2.FormatterPreferenceKeys;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ public class RosettaExpressionFormattingTest {
     @Inject
     private ExpressionFormatterTestHelper expressionFormatterTestHelper;
 
-    private void arrow(CharSequence unformatted, CharSequence expectation) {
+    private void formatAndAssertExpression(CharSequence unformatted, CharSequence expectation) {
         expressionFormatterTestHelper.assertFormattedExpression(cfg -> {
             cfg.setExpectation(expectation);
             cfg.setToBeFormatted(unformatted);
@@ -32,7 +33,7 @@ public class RosettaExpressionFormattingTest {
         });
     }
 
-    private void doubleArrow(CharSequence unformatted, CharSequence expectation) {
+    private void formatAndAssertRuleExpression(CharSequence unformatted, CharSequence expectation) {
         expressionFormatterTestHelper.assertFormattedRuleExpression(cfg -> {
             cfg.setExpectation(expectation);
             cfg.setToBeFormatted(unformatted);
@@ -50,8 +51,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testSwitchFormat() {
-        arrow("""
+    void testSwitchFormat() {
+        formatAndAssertExpression("""
                 input
                 switch   Foo then "Some expression",
                 	Bar then   extract
@@ -71,8 +72,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testWithMetaOnConstructorWithInnerConstructorFormat() {
-        arrow("""
+    void testWithMetaOnConstructorWithInnerConstructorFormat() {
+        formatAndAssertExpression("""
                 Bar {
                     someBarField: "blah" with-meta {
                             scheme: "someScheme"
@@ -118,8 +119,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testInnerConstructorIsOnNewLine() {
-        arrow("""
+    void testInnerConstructorIsOnNewLine() {
+        formatAndAssertExpression("""
                 Bar {
                 	innerBar: Bar {
                 			someBarField: "blah"
@@ -135,8 +136,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testWithMetaOnLiteralConstructorFields() {
-        arrow("""
+    void testWithMetaOnLiteralConstructorFields() {
+        formatAndAssertExpression("""
                 Bar {
                     someBarField: "blah" with-meta {
                     scheme: "someScheme"
@@ -160,8 +161,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testWithMetaOnConstructorFormat() {
-        arrow("""
+    void testWithMetaOnConstructorFormat() {
+        formatAndAssertExpression("""
                 SomeType {
                 	attr1: "Some expression"
                 }
@@ -187,8 +188,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testWithMetaFormat() {
-        arrow("""
+    void testWithMetaFormat() {
+        formatAndAssertExpression("""
                 input
                 with-meta   {
                 	scheme: "Some expression",
@@ -210,8 +211,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testConstructorFormat1() {
-        arrow("""
+    void testConstructorFormat1() {
+        formatAndAssertExpression("""
                 SomeType {
                 	attr1: "Some expression",
                 	attr2: foo extract
@@ -232,8 +233,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testConstructorFormat2() {
-        arrow("""
+    void testConstructorFormat2() {
+        formatAndAssertExpression("""
                 SomeType {
                 	attr1: "Some expression",
                 	attr2: foo extract
@@ -256,8 +257,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testConstructorFormat3() {
-        arrow("""
+    void testConstructorFormat3() {
+        formatAndAssertExpression("""
                 SomeType {
                 	attr1: "Some expression",
                 	attr2: Foo {
@@ -275,8 +276,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testConstructorNestedWithBooleanFormat() {
-        arrow("""
+    void testConstructorNestedWithBooleanFormat() {
+        formatAndAssertExpression("""
                 Constr1 {
                 attr1: if True
                 then False,
@@ -299,8 +300,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testCollapsingBracketsDeepNested() {
-        arrow("""
+    void testCollapsingBracketsDeepNested() {
+        formatAndAssertExpression("""
                 Constr1 {
                 			attr1: if True then False,
                 			attr2: if False
@@ -323,8 +324,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testConstructorNestedInUnaryOperation() {
-        arrow("""
+    void testConstructorNestedInUnaryOperation() {
+        formatAndAssertExpression("""
                 el1
                 extract
                 	Constr1 {
@@ -340,8 +341,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testOperationChainingFormat1() {
-        arrow("""
+    void testOperationChainingFormat1() {
+        formatAndAssertExpression("""
                 input
                 	extract [
                 		item -> bar
@@ -365,8 +366,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testOperationChainingFormat2() {
-        arrow("""
+    void testOperationChainingFormat2() {
+        formatAndAssertExpression("""
                 input
                 	extract [
                 		item -> bar
@@ -389,8 +390,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortParenthesesAreFormatted() {
-        arrow("""
+    void testShortParenthesesAreFormatted() {
+        formatAndAssertExpression("""
                 (  
                   [  1,   ( 2) ,3  ] )
                 """, """
@@ -399,8 +400,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongParenthesesAreFormatted() {
-        arrow("""
+    void testLongParenthesesAreFormatted() {
+        formatAndAssertExpression("""
                 (  
                   [["This"], "is", "a", "veeeeeeeeeeeery", "looooooooooooooooooooong", "list"] )
                 """, """
@@ -416,8 +417,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongParenthesesOnSameLineStayOnSameLine() {
-        arrow("""
+    void testLongParenthesesOnSameLineStayOnSameLine() {
+        formatAndAssertExpression("""
                 ( ["This", "is", "a", "veeeeeeeeeeeery", "looooooooooooooooooooong", "list"] )
                 """, """
                 (["This", "is", "a", "veeeeeeeeeeeery", "looooooooooooooooooooong", "list"])
@@ -425,8 +426,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortExpressionWithLongCommentOnSameLine() {
-        arrow("""
+    void testShortExpressionWithLongCommentOnSameLine() {
+        formatAndAssertExpression("""
                 [  1,   2 ,3  ] // this is a veeeerrrrrrrrrryyyyyyyyyyyy looooooooooong comment
                 """, """
                 [1, 2, 3] // this is a veeeerrrrrrrrrryyyyyyyyyyyy looooooooooong comment
@@ -434,8 +435,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortListFormatting1() {
-        arrow("""
+    void testShortListFormatting1() {
+        formatAndAssertExpression("""
                 [  1,   2 ,3  ]
                 """, """
                 [1, 2, 3]
@@ -443,8 +444,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortListFormatting2() {
-        arrow("""
+    void testShortListFormatting2() {
+        formatAndAssertExpression("""
                 [  1
                 ,   
                 
@@ -457,8 +458,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortListFormatting3() {
-        arrow("""
+    void testShortListFormatting3() {
+        formatAndAssertExpression("""
                 [1  then extract  [  item] ]
                 """, """
                 [1 then extract [ item ]]
@@ -466,8 +467,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongListFormatting1() {
-        arrow("""
+    void testLongListFormatting1() {
+        formatAndAssertExpression("""
                 [["This"], "is", "a", "veeeeeeeeeeeery", "looooooooooooooooooooong", "list"]
                 """, """
                 [
@@ -482,8 +483,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongListFormatting2() {
-        arrow("""
+    void testLongListFormatting2() {
+        formatAndAssertExpression("""
                 [
                 	["This"] ,
                 	"is", "a", "veeeeeeeeeeeery",
@@ -503,8 +504,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongListFormatting3() {
-        arrow("""
+    void testLongListFormatting3() {
+        formatAndAssertExpression("""
                 ["This is a veeeeeeeeery loooooooong list" then extract [PerformComputation], 2, 3]
                 """, """
                 [
@@ -517,8 +518,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongListFormatting4() {
-        arrow("""
+    void testLongListFormatting4() {
+        formatAndAssertExpression("""
                 ["This", "is", "a", "veeeeeeeeeeeery", "looooooooooooooooooooong", ["nested", "list"]]
                 """, """
                 [
@@ -533,8 +534,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortConditional1() {
-        arrow("""
+    void testShortConditional1() {
+        formatAndAssertExpression("""
                 if  True 
                   then 10   else  42
                 """, """
@@ -543,8 +544,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortConditional2() {
-        arrow("""
+    void testShortConditional2() {
+        formatAndAssertExpression("""
                 if  True 
                   then 10
                 """, """
@@ -553,8 +554,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongConditional1() {
-        arrow("""
+    void testLongConditional1() {
+        formatAndAssertExpression("""
                 if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999 then 1 else 2
                 """, """
                 if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999
@@ -564,8 +565,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongConditional2() {
-        arrow("""
+    void testLongConditional2() {
+        formatAndAssertExpression("""
                 if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999 then 1 else if False then "foo" else "bar"
                 """, """
                 if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999
@@ -577,8 +578,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testNestedConditional() {
-        arrow("""
+    void testNestedConditional() {
+        formatAndAssertExpression("""
                 if True then if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999 then "foo" else "bar" else if False then "foo" else "bar"
                 """, """
                 if True
@@ -592,8 +593,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testFeatureCall() {
-        arrow("""
+    void testFeatureCall() {
+        formatAndAssertExpression("""
                 foo 
                 -> bar  ->bar
                 """, """
@@ -602,8 +603,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortAsKey1() {
-        arrow("""
+    void testShortAsKey1() {
+        formatAndAssertExpression("""
                 "bla" 
                 		 as-key
                 """, """
@@ -612,8 +613,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongAsKey1() {
-        arrow("""
+    void testLongAsKey1() {
+        formatAndAssertExpression("""
                 if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999 then 1 else if False then "foo" else "bar"
                  as-key
                 """, """
@@ -627,8 +628,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testOnlyExists1() {
-        arrow("""
+    void testOnlyExists1() {
+        formatAndAssertExpression("""
                 foo 
                 -> 
                 bar only  
@@ -639,8 +640,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testOnlyExists2() {
-        arrow("""
+    void testOnlyExists2() {
+        formatAndAssertExpression("""
                 ( foo -> bar, foo  ->  bar,
                 foo -> 
                 bar )  only  
@@ -651,8 +652,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortFunctionCall1() {
-        arrow("""
+    void testShortFunctionCall1() {
+        formatAndAssertExpression("""
                 SomeFunc 
                  ( 
                    )
@@ -662,8 +663,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortFunctionCall2() {
-        arrow("""
+    void testShortFunctionCall2() {
+        formatAndAssertExpression("""
                 SomeFunc 
                  ( 1 ,  [ 43 exists , False ],
                   42 )
@@ -673,8 +674,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongFunctionCall1() {
-        arrow("""
+    void testLongFunctionCall1() {
+        formatAndAssertExpression("""
                 SomeFunc 
                  ( "This", "is", "a", "verrrrryyyyyyyyy" ,
                    "looooooooooooooooooooooong", "function", "call")
@@ -692,8 +693,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongFunctionCall2() {
-        arrow("""
+    void testLongFunctionCall2() {
+        formatAndAssertExpression("""
                 SomeFunc(if "This is a veryyyyyyyy loooooooong expression" count > 999 then 1 else 2, "another param", "and another")
                 """, """
                 SomeFunc(
@@ -707,8 +708,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortBinaryOperation1() {
-        arrow("""
+    void testShortBinaryOperation1() {
+        formatAndAssertExpression("""
                 1  
                  contains 
                 2
@@ -718,8 +719,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortBinaryOperation2() {
-        arrow("""
+    void testShortBinaryOperation2() {
+        formatAndAssertExpression("""
                 1  all  =
                 2
                 """, """
@@ -728,8 +729,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortBinaryOperation3() { // with implicit left parameter
-        arrow("""
+    void testShortBinaryOperation3() { // with implicit left parameter
+        formatAndAssertExpression("""
                 contains
                 
                   5
@@ -739,8 +740,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongBinaryOperation1() {
-        arrow("""
+    void testLongBinaryOperation1() {
+        formatAndAssertExpression("""
                 SomeFunc(if "This is a veryyyyyyyy loooooooong expression" count > 999 then 1 else 2, "another param", "and another")  all  =
                 if "This is a verryyyyyyyyy loooooooooooooong expression" count > 999 then 1 else 2
                 """, """
@@ -759,8 +760,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongBinaryOperation2() {
-        arrow("""
+    void testLongBinaryOperation2() {
+        formatAndAssertExpression("""
                 adjustedDate exists
                 	or relativeDate exists
                 	or unadjustedDate exists
@@ -774,8 +775,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortUnaryOperation1() {
-        arrow("""
+    void testShortUnaryOperation1() {
+        formatAndAssertExpression("""
                 1
                  exists
                 """, """
@@ -784,8 +785,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortUnaryOperation2() {
-        arrow("""
+    void testShortUnaryOperation2() {
+        formatAndAssertExpression("""
                 [3, 2, 1]  
                   distinct
                   sort
@@ -796,8 +797,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortUnaryOperation3() {
-        arrow("""
+    void testShortUnaryOperation3() {
+        formatAndAssertExpression("""
                 [3, 2, 1]  
                   is 
                  absent
@@ -807,8 +808,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortUnaryOperation4() { // with implicit left parameter
-        arrow("""
+    void testShortUnaryOperation4() { // with implicit left parameter
+        formatAndAssertExpression("""
                 is 
                  absent
                 """, """
@@ -817,8 +818,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortUnaryOperation5() {
-        arrow("""
+    void testShortUnaryOperation5() {
+        formatAndAssertExpression("""
                 execution -> foo is absent
                 """, """
                 execution -> foo is absent
@@ -826,8 +827,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongUnaryOperation1() {
-        arrow("""
+    void testLongUnaryOperation1() {
+        formatAndAssertExpression("""
                 [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]  distinct  
                 sort
                 multiple  exists is  absent
@@ -841,8 +842,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongUnaryOperation2() { // with implicit left parameter
-        arrow("""
+    void testLongUnaryOperation2() { // with implicit left parameter
+        formatAndAssertExpression("""
                 distinct  
                 sort   reverse count   only-element
                 multiple  exists is  absent
@@ -861,8 +862,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortFunctionalOperation1() {
-        arrow("""
+    void testShortFunctionalOperation1() {
+        formatAndAssertExpression("""
                 [3, 2, 1]  
                   extract   MyFunc
                 """, """
@@ -871,8 +872,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortFunctionalOperation2() {
-        arrow("""
+    void testShortFunctionalOperation2() {
+        formatAndAssertExpression("""
                 [3, 2, 1]  
                   extract  a  [  a+1]
                 """, """
@@ -881,8 +882,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongFunctionalOperation1() {
-        arrow("""
+    void testLongFunctionalOperation1() {
+        formatAndAssertExpression("""
                 [3, 2, 1]  
                   reduce  a ,
                   b [if "This is a veryyyyyyyy loooooooong expression" count > a then b else a]
@@ -897,8 +898,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongFunctionalOperation2() { // with implicit parameter
-        arrow("""
+    void testLongFunctionalOperation2() { // with implicit parameter
+        formatAndAssertExpression("""
                 reduce  a ,
                   b [if "This is a veryyyyyyyy loooooooong expression" count > a then b else a]
                    only-element
@@ -913,8 +914,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongFunctionalOperation3() {
-        arrow("""
+    void testLongFunctionalOperation3() {
+        formatAndAssertExpression("""
                 FilterQuantity( quantity1, unitOfAmount )
                 	extract q1 [
                 		FilterQuantity( quantity2, unitOfAmount )
@@ -932,8 +933,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testFunctionalOperationWithoutBrackets() {
-        arrow("""
+    void testFunctionalOperationWithoutBrackets() {
+        formatAndAssertExpression("""
                 FilterQuantity( quantity1, unitOfAmount )
                 	extract FilterQuantity( quantity2, unitOfAmount )
                 		extract q2 [ CompareNumbers( value, op, q2 -> value ) ]
@@ -950,8 +951,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testRuleChaining1() {
-        doubleArrow("""
+    void testRuleChaining1() {
+        formatAndAssertRuleExpression("""
                 OtherRule
                    then  OtherRule
                 """, """
@@ -960,8 +961,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testRuleChaining2() {
-        doubleArrow("""
+    void testRuleChaining2() {
+        formatAndAssertRuleExpression("""
                 extract  OtherRule
                    then    extract OtherRule
                 """, """
@@ -971,8 +972,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortRuleFilter1() {
-        doubleArrow("""
+    void testShortRuleFilter1() {
+        formatAndAssertRuleExpression("""
                 filter
                     True
                 """, """
@@ -981,8 +982,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testShortRuleExtract1() {
-        doubleArrow("""
+    void testShortRuleExtract1() {
+        formatAndAssertRuleExpression("""
                 extract
                 
                  42
@@ -992,8 +993,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testLongRuleExtract1() {
-        doubleArrow("""
+    void testLongRuleExtract1() {
+        formatAndAssertRuleExpression("""
                 extract
                      (["This", "is", "a", "loooooooooooooooooooooooong", "list"] 
                    count > 10)
@@ -1004,8 +1005,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testFunctionCallInParenthesis() {
-        arrow("""
+    void testFunctionCallInParenthesis() {
+        formatAndAssertExpression("""
                 (SomeFunc 
                  ( 
                    ))
@@ -1015,8 +1016,8 @@ public class RosettaExpressionFormattingTest {
     }
 
     @Test
-    public void testConditionalInParenthesis() {
-        arrow("""
+    void testConditionalInParenthesis() {
+        formatAndAssertExpression("""
                 (if  True 
                 		  then 10)
                 """, """
