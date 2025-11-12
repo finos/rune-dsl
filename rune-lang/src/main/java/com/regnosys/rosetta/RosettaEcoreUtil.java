@@ -14,7 +14,6 @@ import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
-import com.regnosys.rosetta.types.REnumType;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
@@ -61,31 +60,16 @@ public class RosettaEcoreUtil {
 		return obj != null && !obj.eIsProxy();
 	}
 	
-	public Iterable<? extends RosettaFeature> allFeatures(RMetaAnnotatedType t, EObject context) {
-		Iterable<? extends RosettaFeature> features = allFeatures(t.getRType(), getResourceSet(context));
+	public Iterable<? extends RosettaFeature> allFeaturesExcludingEnumValues(RMetaAnnotatedType t, EObject context) {
+		Iterable<? extends RosettaFeature> features = allFeaturesExcludingEnumValues(t.getRType(), getResourceSet(context));
 		if (t.equals(builtins.NOTHING_WITH_ANY_META)) {
 			return features;
 		}
 		return Iterables.concat(features, getMetaDescriptions(t, context));
 	}
 	
-	public Iterable<? extends RosettaFeature> allFeatures(RMetaAnnotatedType t, EObject context, Predicate<RType> restrictType) {
-		Iterable<? extends RosettaFeature> features = allFeatures(t.getRType(), context, restrictType);
-		if (t.equals(builtins.NOTHING_WITH_ANY_META)) {
-			return features;
-		}
-		return Iterables.concat(features, getMetaDescriptions(t, context));
-	}
-	
-	public Iterable<? extends RosettaFeature> allFeatures(RType t, EObject context) {
-		return allFeatures(t, getResourceSet(context));
-	}
-	
-	public Iterable<? extends RosettaFeature> allFeatures(RType t, EObject context, Predicate<RType> restrictType) {
-		if (restrictType.test(t)) {
-			return allFeatures(t, context);
-		}
-		return Collections::emptyIterator;
+	public Iterable<? extends RosettaFeature> allFeaturesExcludingEnumValues(RType t, EObject context) {
+		return allFeaturesExcludingEnumValues(t, getResourceSet(context));
 	}
 	
 	public ResourceSet getResourceSet(EObject context) {
@@ -99,13 +83,11 @@ public class RosettaEcoreUtil {
 		return resource.getResourceSet();
 	}
 	
-	public Iterable<? extends RosettaFeature> allFeatures(RType t, ResourceSet resourceSet) {
+	public Iterable<? extends RosettaFeature> allFeaturesExcludingEnumValues(RType t, ResourceSet resourceSet) {
 		if (t instanceof RDataType) {
 			return Iterables.transform(((RDataType) t).getAllAttributes(), RAttribute::getEObject);
 		} else if (t instanceof RChoiceType) {
-			return allFeatures(((RChoiceType) t).asRDataType(), resourceSet);
-		} else if (t instanceof REnumType) {
-			return ((REnumType) t).getAllEnumValues();
+			return allFeaturesExcludingEnumValues(((RChoiceType) t).asRDataType(), resourceSet);
 		} else if (t instanceof RRecordType) {
 			if (resourceSet != null) {
 				return builtins.toRosettaType(t, RosettaRecordType.class, resourceSet).getFeatures();

@@ -27,6 +27,7 @@ public class ExpressionFormatterTestHelper extends FormatterTestHelper {
 		FormatterTestRequest request = formatterRequestProvider.get();
 		request.preferences(prefs -> {
 			prefs.put(FormatterPreferenceKeys.maxLineWidth, 80);
+            prefs.put(FormatterPreferenceKeys.lineSeparator, "\n");
 			prefs.put(FormatterPreferenceKeys.indentation, "\t"); // Note: this should not be required if we have proper code formatting...
 		});
 		test.accept(request);
@@ -53,16 +54,17 @@ public class ExpressionFormatterTestHelper extends FormatterTestHelper {
 		assertFormatted(cfg -> {
 			cfg.preferences(prefs -> {
 				prefs.put(FormatterPreferenceKeys.maxLineWidth, 80);
+                prefs.put(FormatterPreferenceKeys.lineSeparator, "\n");
 				prefs.put(FormatterPreferenceKeys.indentation, "\t"); // Note: this should not be required if we have proper code formatting...
 			});
 			test.accept(cfg);
-			cfg.setExpectation(prefix + indent(cfg.getExpectationOrToBeFormatted().toString().trim(), "\t") + Strings.newLine());
+			cfg.setExpectation(prefix + indent(cfg.getExpectationOrToBeFormatted().toString().trim(), "\t") + "\n");
 			cfg.setToBeFormatted(prefix + indent(cfg.getToBeFormatted().toString().trim(), "\t"));
 		});
 	}
 
 	protected String indent(String string, String indent) {
-		return Arrays.stream(string.split("\\r?\\n"))
+		return Arrays.stream(string.split("\\n"))
 				.map(line -> {
 					if (line.isEmpty()) {
 						return line;
@@ -70,7 +72,7 @@ public class ExpressionFormatterTestHelper extends FormatterTestHelper {
 						return indent + line;
 					}
 				})
-				.collect(Collectors.joining(Strings.newLine()));
+				.collect(Collectors.joining("\n"));
 	}
 
 	/**
@@ -98,7 +100,7 @@ public class ExpressionFormatterTestHelper extends FormatterTestHelper {
 					output:
 						result int (0..*)
 					set result:""";
-		req.setToBeFormatted(prefix + Strings.newLine() + indent(req.getToBeFormatted().toString().trim(), "\t\t"));
+		req.setToBeFormatted(prefix + "\n" + indent(req.getToBeFormatted().toString().trim(), "\t\t"));
 
 		var request = req.getRequest();
 		checkArgument(request.getTextRegionAccess() == null);
@@ -124,12 +126,12 @@ public class ExpressionFormatterTestHelper extends FormatterTestHelper {
 			assertAllWhitespaceIsFormatted(request.getTextRegionAccess(), replacements);
 		String formatted = request.getTextRegionAccess().getRewriter().renderToString(replacements);
 
-		int prefixLines = prefix.split("\r\n|\r|\n").length;
-		int resultLines = formatted.split("\r\n|\r|\n").length;
+		int prefixLines = prefix.split("\n").length;
+		int resultLines = formatted.split("\n").length;
 		if (prefixLines == resultLines) {
-			req.setExpectation(prefix + ' ' + req.getExpectationOrToBeFormatted().toString().trim() + Strings.newLine());
+			req.setExpectation(prefix + ' ' + req.getExpectationOrToBeFormatted().toString().trim() + "\n");
 		} else {
-			req.setExpectation(prefix + Strings.newLine() + indent(req.getExpectationOrToBeFormatted().toString().trim(), "\t\t") + Strings.newLine());
+			req.setExpectation(prefix + "\n" + indent(req.getExpectationOrToBeFormatted().toString().trim(), "\t\t") + "\n");
 		}
 
 		Assertions.assertEquals(req.getExpectationOrToBeFormatted().toString(), formatted);

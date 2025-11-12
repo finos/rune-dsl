@@ -265,7 +265,7 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 		if (symbol instanceof Attribute) {
 			RMetaAnnotatedType implicitType = typeProvider.typeOfImplicitVariable(objectToMark);
 			if (implicitType != null) {
-				Set<? extends RosettaFeature> implicitFeatures = Sets.newHashSet(extensions.allFeatures(implicitType, objectToMark));
+				Set<? extends RosettaFeature> implicitFeatures = Sets.newHashSet(extensions.allFeaturesExcludingEnumValues(implicitType, objectToMark));
 				if (implicitFeatures.contains(symbol)) {
 					return markAttribute(objectToMark, featureToMark, (Attribute)symbol, AttributeType.INPUT);
 				}

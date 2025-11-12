@@ -41,7 +41,7 @@ public abstract class AbstractRosettaLanguageServerValidationTest extends Abstra
 	}
 
 	protected void assertIssues(String expected, List<Diagnostic> actual) {
-		assertEquals(expected, toExpectation(actual));
+		assertEquals(expected.stripTrailing(), toExpectation(actual));
 	}
 
 	protected String toExpectation(Diagnostic diagnostic) {

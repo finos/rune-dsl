@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.formatting2;
 
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
+import org.eclipse.xtext.formatting2.FormatterPreferenceKeys;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;

@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.types;
 
-import com.google.common.collect.Iterables;
 import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.*;
 import com.regnosys.rosetta.rosetta.expression.*;
@@ -78,12 +77,7 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
     }
 
     public Iterable<? extends RosettaFeature> findFeaturesOfImplicitVariable(EObject context) {
-        RMetaAnnotatedType type = typeOfImplicitVariable(context);
-        RType rType = type.getRType();
-        if (rType instanceof REnumType && type.getMetaAttributes().isEmpty()) {
-            return Collections.emptyList();
-        }
-        return extensions.allFeatures(type, context);
+        return extensions.allFeaturesExcludingEnumValues(typeOfImplicitVariable(context), context);
     }
 
     public RMetaAnnotatedType getRMetaAnnotatedType(AnnotationPathExpression expr) {
