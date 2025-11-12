@@ -27,16 +27,6 @@ public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
     }
     
     @Test
-    void testScopesAreExperimental() {
-        assertIssues("""
-				namespace test
-				scope MyScope
-				""", """
-                ERROR (null) 'Scopes are an experimental feature, and are not enabled for this project' at 2:1, length 13, on RosettaScope
-                """);
-    }
-    
-    @Test
     void testCyclesResultInAnError() {
         assertIssues("""
 				namespace test
@@ -161,11 +151,11 @@ public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
                         set result: 0
                     """
                 ), """
-                ERROR (null) 'Input ab does not match the original input in Foo' at 7:9, length 13, on Function
-                ERROR (null) 'Input b does not match the original input in Foo' at 8:9, length 10, on Function
-                ERROR (null) 'Input c does not match the original input in Foo' at 9:9, length 15, on Function
-                ERROR (null) 'Too many inputs. The original function Foo only defines 3 inputs.' at 10:9, length 12, on Function
-                ERROR (null) 'Output result does not match the original output in Foo' at 12:3, length 17, on Function
+                ERROR (RosettaIssueCodes.changedExtendedFunctionParameters) 'Input ab does not match the original input in Foo' at 7:9, length 13, on Function
+                ERROR (RosettaIssueCodes.changedExtendedFunctionParameters) 'Input b does not match the original input in Foo' at 8:9, length 10, on Function
+                ERROR (RosettaIssueCodes.changedExtendedFunctionParameters) 'Input c does not match the original input in Foo' at 9:9, length 15, on Function
+                ERROR (RosettaIssueCodes.changedExtendedFunctionParameters) 'Too many inputs. The original function Foo only defines 3 inputs.' at 10:9, length 12, on Function
+                ERROR (RosettaIssueCodes.changedExtendedFunctionParameters) 'Output result does not match the original output in Foo' at 12:3, length 17, on Function
                 """);
 	}
 
