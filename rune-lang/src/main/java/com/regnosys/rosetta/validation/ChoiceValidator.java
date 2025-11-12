@@ -1,19 +1,14 @@
 package com.regnosys.rosetta.validation;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
+import com.google.common.collect.Iterables;
 import jakarta.inject.Inject;
 
 import org.eclipse.xtext.validation.Check;
 
 import com.regnosys.rosetta.rosetta.simple.Choice;
-import com.regnosys.rosetta.rosetta.simple.ChoiceOption;
 import com.regnosys.rosetta.types.RChoiceOption;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
@@ -27,41 +22,18 @@ public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
 	private RObjectFactory rObjectFactory;
 	@Inject
 	private RBuiltinTypeService builtins;
+    @Inject
+    private CycleValidationHelper cycleValidationHelper;
 	
 	@Check
 	public void checkCyclicOptions(Choice choice) {
-		for (ChoiceOption opt : choice.getOptions()) {
-			if (opt.getTypeCall().getType() instanceof Choice) {
-				Choice choiceOpt = (Choice) opt.getTypeCall().getType();
-				List<Choice> path = new ArrayList<>();
-				path.add(choice);
-				Set<Choice> visited = new HashSet<>();
-				visited.add(choice);
-				if (hasCyclicOption(choiceOpt, path, visited)) {
-					String pathString = path.stream().map(e -> e.getName()).collect(Collectors.joining(" includes "));
-					error("Cyclic option: " + pathString, opt, ROSETTA_NAMED__NAME);
-				}
-			}
-		}
-	}
-	private boolean hasCyclicOption(Choice current, List<Choice> path, Set<Choice> visited) {
-		path.add(current);
-		if (visited.add(current)) {
-			for (ChoiceOption opt : current.getOptions()) {
-				if (opt.getTypeCall().getType() instanceof Choice) {
-					Choice choiceOpt = (Choice) opt.getTypeCall().getType();
-					if (hasCyclicOption(choiceOpt, path, visited)) {
-						return true;
-					}
-				}
-			}
-		} else {
-			if (path.get(0).equals(path.get(path.size() - 1))) {
-				return true;
-			}
-		}
-		path.remove(path.size() - 1);
-		return false;
+        cycleValidationHelper.detectMultipleCycles(
+                choice,
+                c -> Iterables.filter(c.getOptions(), opt -> opt.getTypeCall().getType() instanceof Choice),
+                opt -> (Choice) opt.getTypeCall().getType(),
+                "includes",
+                (opt, pathMsg) -> error("Cyclic option: " + pathMsg, opt, ROSETTA_NAMED__NAME)
+        );
 	}
 	
 	@Check

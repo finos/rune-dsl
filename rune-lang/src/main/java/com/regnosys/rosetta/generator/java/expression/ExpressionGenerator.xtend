@@ -1067,7 +1067,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				val attribute = rObjectFactory.buildRAttribute(s)
 				// Data attributes can only be called if there is an implicit variable present.
 				val implicitType = typeProvider.typeOfImplicitVariable(expr)
-				val implicitFeatures = implicitType.RType.allFeatures(expr)
+				val implicitFeatures = implicitType.RType.allFeaturesExcludingEnumValues(expr)
 				if (implicitFeatures.contains(s)) {
 					attributeCall(implicitVariable(expr, context.scope), implicitType, s.buildRAttribute, false, context.expectedType, context.scope)
 				} else

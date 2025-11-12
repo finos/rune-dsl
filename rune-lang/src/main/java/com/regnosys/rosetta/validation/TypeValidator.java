@@ -1,10 +1,7 @@
 package com.regnosys.rosetta.validation;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import jakarta.inject.Inject;
 
@@ -22,6 +19,8 @@ import static com.regnosys.rosetta.validation.RosettaIssueCodes.*;
 public class TypeValidator extends AbstractDeclarativeRosettaValidator {
 	@Inject
 	private RosettaEcoreUtil ecoreUtil;
+    @Inject
+    private CycleValidationHelper cycleValidationHelper;
 
 	@Check
 	public void checkTypeNameIsCapitalized(Data data) {
@@ -44,31 +43,12 @@ public class TypeValidator extends AbstractDeclarativeRosettaValidator {
 	
 	@Check
 	public void checkCyclicExtensions(Data data) {
-		Data p = data.getSuperType();
-		if (p != null) {
-			List<Data> path = new ArrayList<>();
-			path.add(data);
-			Set<Data> visited = new HashSet<>();
-			visited.add(data);
-			if (hasCyclicExtension(p, path, visited)) {
-				String pathString = path.stream().map(e -> e.getName()).collect(Collectors.joining(" extends "));
-				error("Cyclic extension: " + pathString, data, DATA__SUPER_TYPE);
-			}
-		}
-	}
-	private boolean hasCyclicExtension(Data current, List<Data> path, Set<Data> visited) {
-		path.add(current);
-		if (visited.add(current) && current.getSuperType() != null) {
-			if (hasCyclicExtension(current.getSuperType(), path, visited)) {
-				return true;
-			}
-		} else {
-			if (path.get(0).equals(path.get(path.size() - 1))) {
-				return true;
-			}
-		}
-		path.remove(path.size() - 1);
-		return false;
+        cycleValidationHelper.detectCycle(
+                data,
+                Data::getSuperType,
+                "extends",
+                (pathMsg) -> error("Cyclic extension: " + pathMsg, data, DATA__SUPER_TYPE)
+        );
 	}
 
 	@Check

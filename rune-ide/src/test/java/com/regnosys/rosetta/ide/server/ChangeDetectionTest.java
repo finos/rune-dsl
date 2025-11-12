@@ -248,8 +248,10 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(nsA, 2, 0, "", "break me");
 		List<Diagnostic> issues = getDiagnostics().get(nsB);
 
-		assertIssues("Error [[4, 25] .. [4, 28]]: Couldn't resolve reference to RosettaType 'a.Y'.\n" +
-				"Error [[4, 30] .. [4, 33]]: There are no optional attributes left\n", issues);
+        assertIssues("""
+                Error [4, 25] -> [4, 28]: Couldn't resolve reference to RosettaType 'a.Y'.
+                Error [4, 30] -> [4, 33]: There are no optional attributes left
+                """, issues);
 
 		makeChange(nsA, 2, 0, "break me", "");
 
@@ -283,7 +285,9 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(nsA, 2, 0, "", "break me");
 		List<Diagnostic> issues = getDiagnostics().get(nsB);
 
-		assertIssues("Error [[5, 25] .. [5, 30]]: Couldn't resolve reference to RosettaSymbol 'a.SSS'.\n", issues);
+        assertIssues("""
+                Error [5, 25] -> [5, 30]: Couldn't resolve reference to RosettaSymbol 'a.SSS'.
+                """, issues);
 
 		makeChange(nsA, 2, 0, "break me", "");
 
@@ -312,8 +316,10 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(nsA, 2, 0, "", "break me");
 		List<Diagnostic> issues = getDiagnostics().get(nsB);
 
-		assertIssues("Error [[3, 25] .. [3, 28]]: Couldn't resolve reference to RosettaSymbol 'a.Y'.\n" +
-				"Error [[3, 32] .. [3, 33]]: Couldn't resolve reference to RosettaFeature 'Q'.\n", issues);
+        assertIssues("""
+                Error [3, 25] -> [3, 28]: Couldn't resolve reference to RosettaSymbol 'a.Y'.
+                Error [3, 32] -> [3, 33]: Couldn't resolve reference to RosettaFeature 'Q'.
+                """, issues);
 
 		makeChange(nsA, 2, 0, "break me", "");
 

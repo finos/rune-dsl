@@ -64,13 +64,13 @@ No project files to migrate.
 - [ ] RosettaDocumentationProviderTest
 - [ ] InlayHintTest
 - [ ] Issue785
-- [ ] QuickFixTest
+- [x] QuickFixTest
 - [ ] SemanticTokenTest
 
 ##### Files with usage of string template features (3 files)
 - [ ] HandleParseErrorGracefullyTest
-- [ ] AbstractRosettaLanguageServerTest
-- [ ] AbstractRosettaLanguageServerValidationTest
+- [x] AbstractRosettaLanguageServerTest
+- [x] AbstractRosettaLanguageServerValidationTest
 
 ### rune-integration-tests (37 files)
 
@@ -82,9 +82,9 @@ No project files to migrate.
 
 ##### Files without usage of string template features (32 files)
 - [ ] DocReferenceTest
-- [ ] ExpressionFormatterTestHelper
-- [ ] RosettaExpressionFormattingTest
-- [ ] RosettaFormattingTest
+- [x] ExpressionFormatterTestHelper
+- [x] RosettaExpressionFormattingTest
+- [x] RosettaFormattingTest
 - [ ] ListOperationTest
 - [x] RosettaCountOperationTest
 - [ ] CalculationFunctionGeneratorTest
@@ -105,9 +105,9 @@ No project files to migrate.
 - [ ] RosettaQualifyEventTest
 - [ ] RosettaQualifyProductTest
 - [ ] ModelGeneratorUtilTest
-- [ ] Issue844
-- [ ] Issue868
-- [ ] RosettaFragmentProviderTest
+- [x] Issue844
+- [x] Issue868
+- [x] RosettaFragmentProviderTest
 - [ ] RosettaExpressionsTest
 - [ ] ExpressionParserTest
 - [ ] RosettaTypeProviderXtendTest
@@ -186,7 +186,7 @@ No project files to migrate.
 ##### Files with usage of string template features (3 files)
 - [ ] CodeGeneratorTestHelper
 - [ ] ExpressionJavaEvaluatorService
-- [ ] ModelHelper
+- [x] ModelHelper
 
 ### rune-tools (1 file)
 
@@ -197,7 +197,7 @@ No project files to migrate.
 #### Test Files (1 file)
 
 ##### Files with usage of string template features (1 file)
-- [ ] UnnecessaryElementsRemoverTest
+- [x] UnnecessaryElementsRemoverTest
 
 ### rune-xcore-plugin-dependencies (1 file)
 
