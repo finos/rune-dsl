@@ -197,7 +197,7 @@ public class RuleReferenceService {
 
         // Second, add own rule annotations
         if (source == null) {
-            addRuleReferenceAnnotationsToMap1(attribute, pathMap);
+            addRuleReferenceAnnotationsToMap(attribute.getOwnRuleReferences(), pathMap);
         } else {
             findAttributesInSource(source, type, attribute).forEach(annotatedAttr -> {
                 if (annotatedAttr.getOperator() == ExternalValueOperator.MINUS) {
