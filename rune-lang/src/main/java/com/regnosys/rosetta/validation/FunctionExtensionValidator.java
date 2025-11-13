@@ -8,15 +8,21 @@ import com.regnosys.rosetta.rosetta.RosettaScope;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.SimplePackage;
+import jakarta.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 
 import java.util.Collection;
+import java.util.*;
+
+import static com.regnosys.rosetta.validation.RosettaIssueCodes.CHANGED_EXTENDED_FUNCTION_PARAMETERS;
 
 public class FunctionExtensionValidator extends AbstractDeclarativeRosettaValidator {
+    @Inject
+    private CycleValidationHelper cycleValidationHelper;
+    
     @Check
     public void checkFunctionExtensionMustBeInScopedFile(Function function) {
         if (function.getSuperFunction() == null) return;
@@ -47,6 +53,16 @@ public class FunctionExtensionValidator extends AbstractDeclarativeRosettaValida
             }
         }
     }
+
+    @Check
+    public void checkCyclicExtensions(Function func) {
+        cycleValidationHelper.detectCycle(
+                func,
+                Function::getSuperFunction,
+                "extends",
+                (pathMsg) -> error("Cyclic extension: " + pathMsg, func, FUNCTION__SUPER_FUNCTION)
+        );
+    }
     
     @Check
     public void checkInputAndOutputsOfFunctionExtensionAreTheSameAsOriginal(Function function) {
@@ -54,11 +70,11 @@ public class FunctionExtensionValidator extends AbstractDeclarativeRosettaValida
         if (original == null) return;
         
         if (function.getInputs().size() < original.getInputs().size()) {
-            error("Function " + function.getName() + " does not define all inputs of the original function " + original.getName(), function, SimplePackage.Literals.FUNCTION__SUPER_FUNCTION);
+            error("Function " + function.getName() + " does not define all inputs of the original function " + original.getName(), function, SimplePackage.Literals.FUNCTION__SUPER_FUNCTION, CHANGED_EXTENDED_FUNCTION_PARAMETERS);
         }
         for (int i = 0; i < function.getInputs().size(); i++) {
             if (i >= original.getInputs().size()) {
-                error("Too many inputs. The original function " + original.getName() + " only defines " + original.getInputs().size() + " inputs.", function, SimplePackage.Literals.FUNCTION__INPUTS, i);
+                error("Too many inputs. The original function " + original.getName() + " only defines " + original.getInputs().size() + " inputs.", function, SimplePackage.Literals.FUNCTION__INPUTS, i, CHANGED_EXTENDED_FUNCTION_PARAMETERS);
             } else {
                 checkEqual(function.getInputs().get(i), original.getInputs().get(i), "input", function, SimplePackage.Literals.FUNCTION__INPUTS, i);
             }
@@ -70,7 +86,7 @@ public class FunctionExtensionValidator extends AbstractDeclarativeRosettaValida
         if (toCheck == null || expected == null) return;
         
         if (!EcoreUtil2.equals(toCheck, expected)) {
-            error(StringUtils.capitalize(description) + " " + toCheck.getName() + " does not match the original " + description + " in " + function.getSuperFunction().getName(), function, feature, index);
+            error(StringUtils.capitalize(description) + " " + toCheck.getName() + " does not match the original " + description + " in " + function.getSuperFunction().getName(), function, feature, index, CHANGED_EXTENDED_FUNCTION_PARAMETERS);
         }
     }
 }

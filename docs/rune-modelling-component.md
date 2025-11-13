@@ -18,6 +18,7 @@ weight: 2
 - Namespace
 - Mapping (or *synonym*)
 - Reporting
+- Function Overriding
 
 This documentation details the purpose and features of each type of model component and highlights their relationships. Examples drawn from the [Demonstration Model](https://github.com/rosetta-models/demo), a sandbox model of the "vehicle" domain, will be used to illustrate each of those features.
 
@@ -2491,4 +2492,166 @@ type Report extends CommonReport:
     override component ReportComponent (1..1)
         [ruleReference for componentValue OverriddenReportComponentValue]
         [ruleReference for componentUnit empty]
+```
+
+## Function Overriding
+
+### Purpose
+
+**Function overriding provides a mechanism to extend and customize existing functions within specific contexts.** When a model used in functions needs to be extended, the functions themselves often need to be adjusted. Rather than duplicating the entire function or modifying the original, function overriding allows selective replacement of specific function implementations while maintaining compatibility with all existing code that calls the original function.
+
+This feature enables:
+
+- **Flexibility**. Business participants can extend and customize function logic for specific use cases without modifying the base implementation.
+- **Reusability**. Most of the original function implementation can be reused, with only specific parts requiring customization.
+- **Maintainability**. Changes to base functions automatically propagate to extended versions, except where explicitly overridden.
+
+### Scope
+
+Function overriding is organized through **scopes**. A scope defines a context in which functions can be extended. All function extensions must be defined within a scoped file, which is declared using the `scope` keyword at the namespace level.
+
+#### Syntax
+
+A scope is declared in a Rune file as follows:
+
+``` Haskell
+namespace <namespace>
+scope <ScopeName>
+version "<version>"
+```
+
+For example:
+
+``` Haskell
+namespace cdm.product.asset
+scope CustomizedDerivatives
+version "1.0"
+```
+
+Scope names must be unique within a namespace. Functions can only extend other functions when defined within a scoped file.
+
+{{< notice info "Note" >}}
+Scopes are an experimental feature and must be explicitly enabled in the project configuration file.
+{{< /notice >}}
+
+### Function Extension
+
+#### Purpose
+
+Function extension allows a function to inherit the inputs, output, and optionally the implementation of another function, while providing a customized implementation. The extending function must match the signature (inputs and output) of the original function.
+
+#### Syntax
+
+A function is extended using the `extends` keyword:
+
+``` Haskell
+func <ExtendedFunctionName> extends <OriginalFunctionName>:
+  inputs:
+    <same inputs as original>
+  output:
+    <same output as original>
+  <custom implementation>
+```
+
+The extending function must:
+- Have the same input parameters (name, type, and cardinality) as the original function
+- Have the same output (name, type, and cardinality) as the original function
+- Be defined in a scoped file
+- Only extend each base function once within a given scope
+
+For example:
+
+``` Haskell
+namespace cdm.base.math
+version "1.0"
+
+func CalculateNotional:
+  inputs:
+    quantity number (1..1)
+    price number (1..1)
+  output:
+    notional number (1..1)
+
+  set notional:
+    quantity * price
+```
+
+``` Haskell
+namespace cdm.base.math
+scope AdjustedCalculations
+version "1.0"
+
+func ExtendedCalculateNotional extends CalculateNotional:
+  inputs:
+    quantity number (1..1)
+    price number (1..1)
+  output:
+    notional number (1..1)
+
+  set notional:
+    quantity * price * 1.05  // Apply 5% adjustment
+```
+
+### Super Call
+
+#### Purpose
+
+Within an extending function, the `super` keyword allows calling the original function implementation. This enables extending functions to build upon the base implementation rather than completely replacing it.
+
+#### Syntax
+
+The super call uses the following syntax:
+
+```
+super(<input1>, <input2>, ...)
+```
+
+The `super` call invokes the original function, passing the specified arguments explicitly. It returns the result of the original function execution, which can then be used in expressions.
+
+For example:
+
+``` Haskell
+namespace cdm.event.common
+scope EnhancedEvents
+version "1.0"
+
+func ExtendedProcessTransfer extends ProcessTransfer:
+  inputs:
+    transfer Transfer (1..1)
+  output:
+    result TransferResult (1..1)
+
+  alias baseResult: super(transfer)  // Call the original implementation with explicit argument
+
+  set result -> transferStatus:
+    if baseResult -> transferStatus = TransferStatusEnum -> Pending
+    then TransferStatusEnum -> UnderReview
+    else baseResult -> transferStatus
+
+  set result -> transferDetails:
+    baseResult -> transferDetails
+```
+
+In this example, the extending function explicitly passes the `transfer` input to the original function via `super(transfer)`.
+
+{{< notice info "Note" >}}
+The `super` keyword can only be used within functions that extend another function. Attempting to use it in a regular function will result in a validation error.
+{{< /notice >}}
+
+### Calling Extended Functions
+
+Extended functions can be called from any location in the model, not just from within the scope where they are defined. When a function is extended in a scope, calling code can choose to use either the original or the extended version depending on the execution context.
+
+``` Haskell
+namespace cdm.product.asset
+version "1.0"
+
+func CalculatePayment:
+  inputs:
+    amount number (1..1)
+  output:
+    payment number (1..1)
+
+  set payment:
+    ExtendedCalculateNotional()  // Call the extended version from a scope
 ```

@@ -44,6 +44,7 @@ import com.regnosys.rosetta.rosetta.RosettaCorpus
 import com.regnosys.rosetta.rosetta.RosettaSegment
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.rosetta.RosettaRecordType
+import com.regnosys.rosetta.rosetta.RosettaScope
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.simple.Annotation
@@ -85,6 +86,13 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		}
 		rosettaModel.regionFor.keyword(namespaceKeyword_1)
 			.append[oneSpace]
+		
+		val scope = rosettaModel.scope
+		if (scope !== null) {
+		    scope
+		        .prepend[newLine]
+		        .format
+		}
 
 		rosettaModel.regionFor.keyword(versionKeyword_5_0)
 			.prepend[newLine]
@@ -116,6 +124,10 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			.append[newLine]
 	}
 	
+	def dispatch void format(RosettaScope ele, extension IFormattableDocument document) {
+	    val extension scopeGrammarAccess = rosettaScopeAccess
+		ele.regionFor.keyword(scopeKeyword_0).append[oneSpace]
+	}
 	
 	def dispatch void format(RosettaBasicType ele, extension IFormattableDocument document) {
 		ele.regionFor.keyword(rosettaBasicTypeAccess.basicTypeKeyword_0)

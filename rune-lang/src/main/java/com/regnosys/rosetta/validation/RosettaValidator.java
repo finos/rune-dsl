@@ -20,7 +20,8 @@ import com.regnosys.rosetta.validation.expression.ParseOperationValidator;
    	ChoiceValidator.class,
    	ExpressionValidator.class,
    	FunctionValidator.class,
-    FunctionExtensionValidator.class
+    FunctionExtensionValidator.class,
+    ExperimentalFeatureValidator.class
 })
 public class RosettaValidator extends AbstractRosettaValidator {
 

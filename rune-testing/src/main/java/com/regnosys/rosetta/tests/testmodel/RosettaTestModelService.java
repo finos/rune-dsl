@@ -47,8 +47,6 @@ public class RosettaTestModelService {
 	private ModelHelper modelHelper;
 	@Inject 
     private ValidationTestHelper validationHelper;
-    @Inject
-    private IResourceDescriptionsProvider indexAccess;
 	@Inject
 	private ExpressionParser expressionParser;
 	@Inject
@@ -63,6 +61,8 @@ public class RosettaTestModelService {
 	private RuneContextFactory contextFactory;
 	@Inject
 	private Injector injector;
+	@Inject
+	private IResourceDescriptionsProvider indexAccess;
 	
 	/**
 	 * Load a test model from a character sequence. It will assert that there are no issues in the model.

@@ -564,6 +564,7 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
                     single -> single [[19, 8] .. [19, 8]]
                     sort -> sort [[19, 8] .. [19, 8]]
                     sum -> sum [[19, 8] .. [19, 8]]
+                    super -> super [[19, 8] .. [19, 8]]
                     switch -> switch [[19, 8] .. [19, 8]]
                     to-date -> to-date [[19, 8] .. [19, 8]]
                     to-date-time -> to-date-time [[19, 8] .. [19, 8]]
