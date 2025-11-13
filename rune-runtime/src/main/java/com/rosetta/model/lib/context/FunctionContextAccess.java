@@ -18,8 +18,11 @@ public class FunctionContextAccess {
     public FunctionContext getContext() {
         return contextPerThread.get();
     }
+    public ScopedFunctionContext getContextInScope(Class<? extends FunctionScope> scopeClass) {
+        return getContext().inScope(scopeClass);
+    }
     
     private FunctionContext createEmptyContext() {
-        return new FunctionContext(injector);
+        return new ScopedFunctionContext(injector);
     }
 }
