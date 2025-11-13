@@ -59,8 +59,7 @@ public class FileBasedRosettaConfigurationProvider implements Provider<RosettaCo
 			LOGGER.debug("No configuration file was found. Falling back to the default configuration.");
 			return null;
 		} catch (IOException e) {
-			LOGGER.error("Could not read Rosetta configuration.", e);
-			return null;
+      throw new FileBasedRosettaConfigurationRuntimeException("Could not read Rosetta configuration.", e);
 		}
 	}
 }
