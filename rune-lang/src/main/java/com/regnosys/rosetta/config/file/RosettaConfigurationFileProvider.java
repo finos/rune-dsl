@@ -16,6 +16,9 @@ public class RosettaConfigurationFileProvider implements Provider<URL>, javax.in
     public static RosettaConfigurationFileProvider createFromFile(String fileName) {
         return new RosettaConfigurationFileProvider(false, fileName);
     }
+    public static RosettaConfigurationFileProvider createFromClasspath(String fileName) {
+        return new RosettaConfigurationFileProvider(true, fileName);
+    }
 
     @Inject
     public RosettaConfigurationFileProvider() {

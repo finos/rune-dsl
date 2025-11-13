@@ -46,6 +46,7 @@ public class RosettaNamesAreUniqueValidationHelper extends NamesAreUniqueValidat
             .put(RosettaPackage.eINSTANCE.getRosettaBody(), "body")
             .put(RosettaPackage.eINSTANCE.getRosettaCorpus(), "corpus")
             .put(RosettaPackage.eINSTANCE.getRosettaSegment(), "segment")
+            .put(RosettaPackage.eINSTANCE.getRosettaScope(), "scope")
             .put(SimplePackage.eINSTANCE.getAttribute(), "attribute")
             .build();
     

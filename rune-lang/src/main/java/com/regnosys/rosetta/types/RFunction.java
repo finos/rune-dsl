@@ -21,6 +21,7 @@ import java.util.Objects;
 
 import org.eclipse.emf.ecore.EObject;
 
+import com.regnosys.rosetta.rosetta.RosettaScope;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.rosetta.model.lib.ModelId;
@@ -30,6 +31,8 @@ import com.rosetta.util.DottedPath;
 
 public class RFunction implements RObject {
 	private final EObject eObject;
+	private final RFunction superFunction;
+	private final RosettaScope scope;
 	private ModelSymbolId symbolId;
 	private ModelReportId reportId;
 	private final String definition;
@@ -42,10 +45,12 @@ public class RFunction implements RObject {
 	private final List<ROperation> operations;
 	private final List<AnnotationRef> annotations;
 	
-	private RFunction(EObject eObject, String definition, List<RAttribute> inputs,
+	private RFunction(EObject eObject, RFunction superFunction, RosettaScope scope, String definition, List<RAttribute> inputs,
 			RAttribute output, RFunctionOrigin origin, List<Condition> preConditions, List<Condition> postConditions,
 			List<RShortcut> shortcuts, List<ROperation> operations, List<AnnotationRef> annotations) {
 		this.eObject = eObject;
+		this.scope = scope;
+		this.superFunction = superFunction;
 		this.definition = definition;
 		this.inputs = inputs;
 		this.output = output;
@@ -57,17 +62,17 @@ public class RFunction implements RObject {
 		this.annotations = annotations;
 	}
 	
-	public RFunction(EObject eObject, ModelSymbolId symbolId, String definition, List<RAttribute> inputs,
+	public RFunction(EObject eObject, RFunction superFunction, RosettaScope scope, ModelSymbolId symbolId, String definition, List<RAttribute> inputs,
 			RAttribute output, RFunctionOrigin origin, List<Condition> preConditions, List<Condition> postConditions,
 			List<RShortcut> shortcuts, List<ROperation> operations, List<AnnotationRef> annotations) {
-		this(eObject, definition, inputs, output, origin, preConditions, postConditions,
+		this(eObject, superFunction, scope, definition, inputs, output, origin, preConditions, postConditions,
 			shortcuts, operations, annotations);
 		this.symbolId = symbolId;
 	}
-	public RFunction(EObject eObject, ModelReportId reportId, String definition, List<RAttribute> inputs,
+	public RFunction(EObject eObject, RFunction superFunction, RosettaScope scope, ModelReportId reportId, String definition, List<RAttribute> inputs,
 			RAttribute output, RFunctionOrigin origin, List<Condition> preConditions, List<Condition> postConditions,
 			List<RShortcut> shortcuts, List<ROperation> operations, List<AnnotationRef> annotations) {
-		this(eObject, definition, inputs, output, origin, preConditions, postConditions,
+		this(eObject, superFunction, scope, definition, inputs, output, origin, preConditions, postConditions,
 			shortcuts, operations, annotations);
 		this.reportId = reportId;
 	}
@@ -75,6 +80,14 @@ public class RFunction implements RObject {
 	@Override
 	public EObject getEObject() {
 		return eObject;
+	}
+	
+	public RFunction getSuperFunction() {
+		return superFunction;
+	}
+	
+	public RosettaScope getScope() {
+		return scope;
 	}
 	
 	public ModelId getId() {

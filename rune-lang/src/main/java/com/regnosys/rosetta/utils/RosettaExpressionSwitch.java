@@ -59,6 +59,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
+import com.regnosys.rosetta.rosetta.expression.RosettaSuperCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation;
 import com.regnosys.rosetta.rosetta.expression.SortOperation;
@@ -114,7 +115,9 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 		throw errorMissedCase(expr);
 	}
 	protected Return doSwitch(RosettaCallableReference expr, Context context) {
-		if (expr instanceof RosettaSymbolReference) {
+		if (expr instanceof RosettaSuperCall) {
+			return caseSuperCall((RosettaSuperCall)expr, context);
+		} else if (expr instanceof RosettaSymbolReference) {
 			return caseSymbolReference((RosettaSymbolReference)expr, context);
 		}
 		throw errorMissedCase(expr);
@@ -286,6 +289,7 @@ public abstract class RosettaExpressionSwitch<Return, Context> {
 	
 	protected abstract Return caseImplicitVariable(RosettaImplicitVariable expr, Context context);
 	protected abstract Return caseSymbolReference(RosettaSymbolReference expr, Context context);
+	protected abstract Return caseSuperCall(RosettaSuperCall expr, Context context);
 	
 	protected abstract Return caseAddOperation(ArithmeticOperation expr, Context context);
 	protected abstract Return caseSubtractOperation(ArithmeticOperation expr, Context context);

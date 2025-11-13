@@ -8,7 +8,7 @@ public class DefaultRosettaConfigurationProvider implements Provider<RosettaConf
 	@Override
 	public RosettaConfiguration get() {
 		return new RosettaConfiguration(
-					new RosettaModelConfiguration("Just another Rosetta model"),
+					new RosettaModelConfiguration("Just another Rosetta model", List.of()),
 					List.of(),
 					new RosettaGeneratorsConfiguration()
 				);

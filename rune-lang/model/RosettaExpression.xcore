@@ -8,6 +8,7 @@ package com.regnosys.rosetta.rosetta.expression
 import java.util.regex.Pattern
 import org.eclipse.xtext.EcoreUtil2
 
+import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaSymbol
@@ -148,6 +149,32 @@ class RosettaSymbolReference extends RosettaCallableReference {
 }
 
 class RosettaImplicitVariable extends RosettaExpression, RosettaNamed, AnnotationPathExpression {
+}
+
+class RosettaSuperCall extends RosettaCallableReference, RosettaNamed {
+    op Function getSuperFunction() {
+        val containingFunction = EcoreUtil2.getContainerOfType(this, Function)
+        if (containingFunction !== null) {
+            return containingFunction.superFunction
+        }
+        return null
+    }
+
+	op RosettaExpression[] getArgs() {
+		if (!explicitArguments && implicitVariableIsInContext) {
+			val superFunction = this.getSuperFunction
+			if (superFunction !== null && superFunction.numberOfParameters == 1) {
+				if (implicitArgument === null) {
+					val def = ExpressionFactory.eINSTANCE.createRosettaImplicitVariable();
+					def.setName("item");
+					def.setGenerated(true);
+					implicitArgument = def
+				}
+				return new BasicEList(#[implicitArgument])
+			}
+		}
+		return rawArgs
+	}
 }
 
 class RosettaFeatureCall extends RosettaExpression {

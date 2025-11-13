@@ -27,7 +27,7 @@ variables:
   # - keywords that may also be used as an identifier (e.g., `version`),
   # - keywords that may also be used as another keyword in a certain context (e.g., `synonym`),
   # - keywords that are unambiguous, i.e., all other keywords indicating the start of a root element.
-  identifiersConflictingWithNamespace: '{{wordStart}}(version){{wordEnd}}'
+  identifiersConflictingWithNamespace: '{{wordStart}}(scope|version){{wordEnd}}'
   ambiguousRootStart: '{{wordStart}}(synonym|rule){{wordEnd}}'
   unambiguousRootStart: '{{wordStart}}(namespace|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|typeAlias|library|reporting|eligibility|metaType|report|annotation|enum|type|choice|func){{wordEnd}}'
   rootStart: '{{ambiguousRootStart}}|{{unambiguousRootStart}}'
@@ -56,6 +56,7 @@ repository:
   model:
     patterns:
     - include: '#namespace'
+    - include: '#scope'
     - include: '#version'
     - include: '#import'
     - include: '#configuration'
@@ -78,6 +79,17 @@ repository:
         - name: punctuation.separator.dot.rosetta
           match: \.
         - include: '#colon'
+      
+      scope:
+        name: meta.scope.rosetta
+        begin: '{{wordStart}}scope{{wordEnd}}'
+        beginCaptures:
+          0: { name: keyword.other.scope.rosetta }
+        end: '{{rootEnd}}|(?={{wordStart}}version{{wordEnd}})'
+        patterns:
+          - include: '#comment'
+          - name: entity.name.scope.rosetta
+            match: '{{identifier}}'
 
       version:
         name: meta.version.rosetta
@@ -954,6 +966,15 @@ repository:
             end: '(?=:)|{{rootEnd}}'
             patterns:
             - include: '#comment'
+            - name: meta.extends.rosetta
+              begin: '{{wordStart}}(extends){{wordEnd}}'
+              beginCaptures:
+                0: { name: keyword.other.extends.rosetta }
+              end: (?=:)|{{rootEnd}}
+              patterns:
+              - include: '#comment'
+              - name: entity.name.function.rosetta
+                match: '{{identifier}}'
             - name: meta.dispatch.rosetta
               begin: \(
               beginCaptures:
@@ -1224,6 +1245,8 @@ repository:
           - include: '#expressionWithoutThenAndDefaultOperation'
         - name: keyword.operator.word.rosetta
           match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|default|disjoint|join|only|exists|as-key|one-of|as(?!-)|to-number|to-int|to-time|to-date|to-date-time|to-zoned-date-time|to-string|with-meta){{wordEnd}}'
+        - name: keyword.operator.word.super.rosetta
+          match: '{{wordStart}}super{{wordEnd}}'
         - name: keyword.operator.rosetta
           match: =|<>|>=|<=|>|<|\+|-|\*|\/
         - name: variable.rosetta # Need semantic tokens to specify variable

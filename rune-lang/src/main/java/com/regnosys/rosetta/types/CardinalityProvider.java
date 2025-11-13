@@ -61,6 +61,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
+import com.regnosys.rosetta.rosetta.expression.RosettaSuperCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.expression.RosettaUnaryOperation;
 import com.regnosys.rosetta.rosetta.expression.SortOperation;
@@ -585,6 +586,15 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 
 	@Override
 	protected Boolean caseWithMetaOperation(WithMetaOperation expr, Map<RosettaSymbol, Boolean> cycleTracker) {
+		return false;
+	}
+	
+	@Override
+	protected Boolean caseSuperCall(RosettaSuperCall expr, Map<RosettaSymbol, Boolean> context) {
+		Function superFunction = expr.getSuperFunction();
+        if (superFunction != null) {
+            return isSymbolMulti(superFunction);
+        }
 		return false;
 	}
 }

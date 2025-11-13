@@ -20,6 +20,7 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.xtext.EcoreUtil2;
+import org.eclipse.xtext.resource.IResourceDescriptionsProvider;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.testing.validation.ValidationTestHelper;
 
@@ -57,6 +58,8 @@ public class RosettaTestModelService {
 	private ExpressionJavaEvaluatorService evaluatorService;
 	@Inject
 	private Injector injector;
+	@Inject
+	private IResourceDescriptionsProvider indexAccess;
 	
 	/**
 	 * Load a test model from a character sequence. It will assert that there are no issues in the model.
@@ -77,7 +80,7 @@ public class RosettaTestModelService {
 		} else {
 			model = modelHelper.parseRosetta(sources).getFirst();
 		}
-		return new RosettaTestModel(source, model, expressionParser);
+		return new RosettaTestModel(source, model, indexAccess, expressionParser);
 	}
 	/**
 	 * Load a test model from a file or folder on the classpath. It will assert that there are no issues in the model.
@@ -113,7 +116,7 @@ public class RosettaTestModelService {
 	    
 	    String source = CharStreams.toString(new InputStreamReader(resourceSet.getURIConverter().createInputStream(resource.getURI(), resourceSet.getLoadOptions()), StandardCharsets.UTF_8));
 	    RosettaModel model = (RosettaModel) resource.getContents().get(0);
-	    return new RosettaTestModel(source, model, expressionParser);
+	    return new RosettaTestModel(source, model, indexAccess, expressionParser);
 	}
 	
 	/**
