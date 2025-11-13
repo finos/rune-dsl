@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.regnosys.rosetta.rosetta.*;
 import jakarta.inject.Inject;
 
 import org.eclipse.emf.ecore.EObject;
@@ -32,13 +33,6 @@ import org.eclipse.xtext.EcoreUtil2;
 import com.regnosys.rosetta.cache.caches.RDataTypeCache;
 import com.regnosys.rosetta.cache.caches.RFunctionCache;
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
-import com.regnosys.rosetta.rosetta.RosettaCardinality;
-import com.regnosys.rosetta.rosetta.RosettaEnumeration;
-import com.regnosys.rosetta.rosetta.RosettaFactory;
-import com.regnosys.rosetta.rosetta.RosettaFeature;
-import com.regnosys.rosetta.rosetta.RosettaMetaType;
-import com.regnosys.rosetta.rosetta.RosettaReport;
-import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
@@ -69,15 +63,28 @@ public class RObjectFactory {
 	@Inject
 	private RosettaFunctionExtensions funcExt;
 
-	public RFunction buildRFunction(Function function) {
-		return functionCache.get(function, () -> buildRFunction(function, new HashSet<>()));
-	}
-	private RFunction buildRFunction(Function function, Set<Function> visited) {
-		if (function == null || !visited.add(function)) {
+	private RosettaScope getScope(RosettaRootElement elem) {
+		RosettaModel model = elem.getModel();
+		if (model == null) {
 			return null;
 		}
+		return model.getScope();
+	}
+	public RFunction buildRFunction(Function function) {
+		return buildRFunction(function, new HashSet<>());
+	}
+    private RFunction buildRFunction(Function function, Set<Function> visited) {
+        if (function == null || !visited.add(function)) {
+            return null;
+        }
+        return functionCache.get(function, () -> doBuildRFunction(function, visited));
+    }
+	private RFunction doBuildRFunction(Function function, Set<Function> visited) {
+		Function superFunc = function.getSuperFunction();
 		return new RFunction(
 				function,
+				superFunc == null ? null : buildRFunction(superFunc, visited),
+				getScope(function),
 				modelIdProvider.getSymbolId(function),
 				function.getDefinition(),
 				funcExt.getInputs(function).stream().map(i -> buildRAttributeWithEnclosingType(null, i)).collect(Collectors.toList()),
@@ -101,6 +108,8 @@ public class RObjectFactory {
 		
 		return new RFunction(
 				rule,
+				null,
+				getScope(rule),
 				rule.getName() == null ? null : modelIdProvider.getSymbolId(rule),
 				rule.getDefinition(),
 				List.of(createArtificialAttribute("input", inputRType, false)),
@@ -118,7 +127,7 @@ public class RObjectFactory {
 		String reportDefinition = report.getRegulatoryBody().getBody().getName() + " " 
 				+ report.getRegulatoryBody().getCorpusList()
 				.stream()
-				.map(c -> c.getName())
+				.map(RosettaNamed::getName)
 				.collect(Collectors.joining(" "));
 		
 		RDataType outputRtype = buildRDataType(report.getReportType());
@@ -135,6 +144,8 @@ public class RObjectFactory {
 		List<ROperation> operations = generateOperations(report, outputAttribute, outputRtype, inputAttribute);
 		return new RFunction(
 			report,
+			null,
+			getScope(report),
 			modelIdProvider.getReportId(report),
 			reportDefinition,
 			List.of(buildRAttributeWithEnclosingType(null, inputAttribute)),

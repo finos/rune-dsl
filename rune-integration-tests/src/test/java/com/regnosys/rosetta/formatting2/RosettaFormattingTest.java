@@ -19,7 +19,7 @@ public class RosettaFormattingTest {
 
 	private void formatAndAssert(CharSequence unformatted, CharSequence expectation) {
 		formatterTestHelper.assertFormatted(cfg -> {
-			cfg.setExpectation(expectation.toString());
+			cfg.setExpectation(expectation);
 			cfg.setToBeFormatted(unformatted);
 
 			// extra check to make sure we didn't miss any hidden region in our formatter:
@@ -38,6 +38,27 @@ public class RosettaFormattingTest {
 			});
 		});
 	}
+
+    @Test
+    void testFormatFunctionExtension() {
+        formatAndAssert("""
+                namespace test
+                scope MyScope
+                
+                func Foo extends Bar:
+                    output:
+                        result int (1..1)
+                    set result: super(123, "foo")
+                """, """
+                namespace test
+                scope MyScope
+                
+                func Foo extends Bar:
+                	output:
+                		result int (1..1)
+                	set result: super(123, "foo")
+                """);
+    }
 
 	@Test
 	void testFormatTypeAlias() {

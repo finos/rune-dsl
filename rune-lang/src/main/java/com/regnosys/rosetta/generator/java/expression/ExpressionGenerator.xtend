@@ -151,6 +151,7 @@ import com.rosetta.util.types.JavaClass
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.Context
 import com.regnosys.rosetta.generator.java.function.AliasUtil
 import com.regnosys.rosetta.generator.GeneratedIdentifier
+import com.regnosys.rosetta.rosetta.expression.RosettaSuperCall
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -1500,4 +1501,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	private def boolean needsBuilder(JavaExpression expr) {
 		expr != JavaLiteral.NULL && expr.expressionType.hasBuilderType
 	}
+	
+	override protected caseSuperCall(RosettaSuperCall expr, Context context) {
+		JavaLiteral.NULL
+	}
+	
 }

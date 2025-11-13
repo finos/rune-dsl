@@ -44,6 +44,7 @@ import com.regnosys.rosetta.rosetta.RosettaCorpus
 import com.regnosys.rosetta.rosetta.RosettaSegment
 import com.regnosys.rosetta.rosetta.RosettaBasicType
 import com.regnosys.rosetta.rosetta.RosettaRecordType
+import com.regnosys.rosetta.rosetta.RosettaScope
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.simple.Annotation
@@ -85,8 +86,15 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		}
 		rosettaModel.regionFor.keyword(namespaceKeyword_1)
 			.append[oneSpace]
+		
+		val scope = rosettaModel.scope
+		if (scope !== null) {
+		    scope
+		        .prepend[newLine]
+		        .format
+		}
 
-		rosettaModel.regionFor.keyword(versionKeyword_4_0)
+		rosettaModel.regionFor.keyword(versionKeyword_5_0)
 			.prepend[newLine]
 			.append[oneSpace]
 		
@@ -116,6 +124,10 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			.append[newLine]
 	}
 	
+	def dispatch void format(RosettaScope ele, extension IFormattableDocument document) {
+	    val extension scopeGrammarAccess = rosettaScopeAccess
+		ele.regionFor.keyword(scopeKeyword_0).append[oneSpace]
+	}
 	
 	def dispatch void format(RosettaBasicType ele, extension IFormattableDocument document) {
 		ele.regionFor.keyword(rosettaBasicTypeAccess.basicTypeKeyword_0)
@@ -440,7 +452,12 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 				.surround[noSpace]
 		}
 		
-		ele.regionFor.keyword(colonKeyword_2)
+		if (ele.superFunction !== null) {
+			ele.regionFor.keyword(extendsKeyword_2_0)
+				.surround[oneSpace]
+		}
+		
+		ele.regionFor.keyword(colonKeyword_3)
 			.prepend[noSpace]
 		ele.formatDefinition(document)
 		
@@ -455,11 +472,11 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			format
 		]
 		
-		val inputsKW = ele.regionFor.keyword(inputsKeyword_5_0)
+		val inputsKW = ele.regionFor.keyword(inputsKeyword_6_0)
 		if (inputsKW !== null) {
 			inputsKW
 				.prepend[newLine]
-			val inputsColon = ele.regionFor.keyword(colonKeyword_5_1)
+			val inputsColon = ele.regionFor.keyword(colonKeyword_6_1)
 				.prepend[noSpace]
 			set(
 				inputsColon.nextHiddenRegion,
@@ -473,12 +490,12 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		}
 		
 		if (ele.output !== null) { // might be null for dispatch functions!
-			ele.regionFor.keyword(outputKeyword_6_0)
+			ele.regionFor.keyword(outputKeyword_7_0)
 				.prepend[newLine]
-			ele.regionFor.keyword(colonKeyword_6_1)
+			ele.regionFor.keyword(colonKeyword_7_1)
 				.prepend[noSpace]
 			set(
-				ele.regionFor.keyword(colonKeyword_6_1).nextHiddenRegion,
+				ele.regionFor.keyword(colonKeyword_7_1).nextHiddenRegion,
 				ele.output.nextHiddenRegion,
 				[indent]
 			)

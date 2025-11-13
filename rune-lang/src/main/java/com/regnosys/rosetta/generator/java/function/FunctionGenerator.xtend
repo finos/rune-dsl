@@ -349,6 +349,8 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 		dispatchingFuncs.forEach[enumFunc|
 			val rFunction = new RFunction(
 				enumFunc,
+				null,
+				null,
 				new ModelSymbolId(function.model.toDottedPath, function.name + formatEnumName(enumFunc.value.value.name)),
 				enumFunc.definition,
 				function.inputs.map[rTypeBuilderFactory.buildRAttributeWithEnclosingType(null, it)],

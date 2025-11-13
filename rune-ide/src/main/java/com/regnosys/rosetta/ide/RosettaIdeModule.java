@@ -4,6 +4,7 @@
  */
 package com.regnosys.rosetta.ide;
 
+import com.regnosys.rosetta.ide.symbol.RosettaDocumentSymbolService;
 import org.eclipse.xtext.documentation.IEObjectDocumentationProvider;
 import org.eclipse.xtext.generator.IContextualOutputConfigurationProvider;
 import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalProvider;
@@ -13,6 +14,7 @@ import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2;
 import org.eclipse.xtext.ide.server.contentassist.ContentAssistService;
 import org.eclipse.xtext.ide.server.formatting.FormattingService;
 import org.eclipse.xtext.ide.server.hover.IHoverService;
+import org.eclipse.xtext.ide.server.symbol.DocumentSymbolService;
 import org.eclipse.xtext.service.OperationCanceledManager;
 
 import com.regnosys.rosetta.generator.RosettaOutputConfigurationProvider;
@@ -132,4 +134,8 @@ public class RosettaIdeModule extends AbstractRosettaIdeModule {
 	public Class<? extends IParentsService> bindIParentsService() {
 		return RosettaParentsService.class;
 	}
+    
+    public Class<? extends DocumentSymbolService> bindDocumentSymbolService() {
+        return RosettaDocumentSymbolService.class;
+    }
 }

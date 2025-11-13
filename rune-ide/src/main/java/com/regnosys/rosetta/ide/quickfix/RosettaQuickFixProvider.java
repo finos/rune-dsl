@@ -21,12 +21,15 @@ import static org.eclipse.xtext.EcoreUtil2.getContainerOfType;
 
 import java.util.List;
 
+import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.Function;
 import jakarta.inject.Inject;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextEdit;
+import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.ide.editor.quickfix.AbstractDeclarativeIdeQuickfixProvider;
 import org.eclipse.xtext.ide.editor.quickfix.DiagnosticResolutionAcceptor;
 import org.eclipse.xtext.ide.editor.quickfix.ISemanticModification;
@@ -124,4 +127,21 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
         acceptor.accept("Add all attributes", semanticModification);
     }
 
+    @QuickFix(RosettaIssueCodes.CHANGED_EXTENDED_FUNCTION_PARAMETERS)
+    public void copyOriginalInputsAndOutput(DiagnosticResolutionAcceptor acceptor) {
+        ISemanticModification semanticModification = (Diagnostic diagnostic, EObject object) -> 
+                context -> {
+                    Function func = getContainerOfType(object, Function.class);
+                    if (func == null) return;
+                    Function original = func.getSuperFunction();
+                    if (original == null) return;
+                    
+                    func.getInputs().clear();
+                    for (Attribute input : original.getInputs()) {
+                        func.getInputs().add(EcoreUtil2.copy(input));
+                    }
+                    func.setOutput(EcoreUtil2.copy(original.getOutput()));
+                };
+        acceptor.accept("Copy original inputs and output", semanticModification);
+    }
 }

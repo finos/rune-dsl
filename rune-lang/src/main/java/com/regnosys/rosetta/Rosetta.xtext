@@ -13,6 +13,7 @@ RosettaModel:
 	 (overridden?='override')? 'namespace' name=(QualifiedName | STRING) (':' RosettaDefinable)? // TODO do we need STRING here? It is not supported for highlighting.
 	// TODO colon is inconsistent with other documentation
 	
+	scope=RosettaScope?
 	('version' version=STRING)? // TODO: could do better than STRING
 	
 	imports+=Import*
@@ -23,6 +24,10 @@ RosettaModel:
 
 QualifiedName:
 	ValidID ('.' ValidID)*
+;
+
+RosettaScope:
+	'scope' name=ValidID RosettaDefinable?
 ;
 
 Import:
@@ -103,7 +108,8 @@ Function:
 		RosettaNamed
 		| ({FunctionDispatch} RosettaNamed '(' attribute=[Attribute|ValidID] ':' value=EnumValueReference')')
 	)
-	 ':' RosettaDefinable?
+	('extends' superFunction=[Function|QualifiedName])?
+	':' RosettaDefinable?
 	(References|Annotations)*
 	('inputs' ':' inputs += Attribute+)?
 	('output' ':' output = Attribute)?
@@ -213,7 +219,7 @@ TypeParameterValidID:
 
 ValidID:
 	ID | 'condition' | 'source' | 'value' | 'version'
-	| 'pattern'
+	| 'pattern' | 'scope'
 ;
 
 
@@ -459,7 +465,7 @@ RosettaSegment:
  */ 
 
 RosettaReferenceOrFunctionCall returns RosettaExpression:
-	  {RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName] (explicitArguments?='(' (rawArgs+=Expression (',' rawArgs+=Expression)*)? ')')?
+	  ({RosettaSuperCall} name='super' | {RosettaSymbolReference} symbol=[RosettaSymbol|QualifiedName]) (explicitArguments?='(' (rawArgs+=Expression (',' rawArgs+=Expression)*)? ')')?
 	| RosettaImplicitVariable
 ;
 

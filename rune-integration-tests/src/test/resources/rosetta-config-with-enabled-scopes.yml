@@ -1,0 +1,4 @@
+model:
+  name: My test model
+  enableExperimentalFeatures:
+  - scopes

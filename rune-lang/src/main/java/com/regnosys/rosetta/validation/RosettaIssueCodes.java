@@ -43,4 +43,6 @@ public interface RosettaIssueCodes {
 	static final String REDUNDANT_SQUARE_BRACKETS = PREFIX + "redundantSquareBrackets";
 	static final String MANDATORY_THEN = PREFIX + "mandatoryThen";
 	static final String MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT = PREFIX + "missingAttributes";
+
+    static final String CHANGED_EXTENDED_FUNCTION_PARAMETERS = PREFIX + "changedExtendedFunctionParameters";
 }

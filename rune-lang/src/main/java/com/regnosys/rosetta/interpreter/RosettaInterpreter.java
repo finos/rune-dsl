@@ -69,6 +69,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaNumberLiteral;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyElement;
 import com.regnosys.rosetta.rosetta.expression.RosettaOnlyExistsExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaStringLiteral;
+import com.regnosys.rosetta.rosetta.expression.RosettaSuperCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.expression.SortOperation;
 import com.regnosys.rosetta.rosetta.expression.SumOperation;
@@ -596,5 +597,10 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 	protected RosettaValue caseWithMetaOperation(WithMetaOperation expr, RosettaInterpreterContext context) {
  		// TODO
  		throw new RosettaInterpreterException("WithMeta operations are not supported yet.");
+	}
+	@Override
+	protected RosettaValue caseSuperCall(RosettaSuperCall expr, RosettaInterpreterContext context) {
+		// TODO
+		 		throw new RosettaInterpreterException("super calls are not supported yet.");
 	}
 }

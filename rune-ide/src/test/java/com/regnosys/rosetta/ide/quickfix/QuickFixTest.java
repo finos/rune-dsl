@@ -14,6 +14,113 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class QuickFixTest extends AbstractRosettaLanguageServerTest {
 	@Inject
 	private RangeUtils ru;
+    
+    @Test
+    public void testResolveChangedExtendedFunctionParameters() {
+        String model = """
+                namespace test
+                scope MyScope
+                version "1"
+                
+                func Bar extends Foo:
+                    inputs:
+                        ab int (1..1)
+                        b U (1..1)
+                        c string (0..1)
+                        d int (0..1)
+                	output:
+                		result int (1..1)
+                	set result: 42
+                """;
+        String additionalModel = """
+                namespace test
+                version "1"
+           
+                type T:
+                type U extends T:
+           
+                func Foo:
+                    inputs:
+                        a int (0..1)
+                        b T (1..1)
+                        c string (0..1)
+                            [metadata scheme]
+                    output:
+                        result number (1..1)
+                    set result: 0
+                """;
+        testResultCodeAction(cfg -> {
+            cfg.setModel(model);
+            cfg.setFilesInScope(Map.of("additional.rosetta", additionalModel));
+            cfg.setExpectedCodeActions("""
+                    title : Copy original inputs and output
+                    kind : quickfix
+                    command :\s
+                    codes : RosettaIssueCodes.changedExtendedFunctionParameters
+                    edit : changes :
+                        MyModel.rosetta :\s
+                                a int (0..1)
+                                b T (1..1)
+                                c string (0..1)
+                                    [metadata scheme] [[5, 11] .. [9, 20]]
+                       \s
+                                result number (1..1) [[10, 8] .. [11, 19]]
+                    documentChanges :\s
+                    title : Copy original inputs and output
+                    kind : quickfix
+                    command :\s
+                    codes : RosettaIssueCodes.changedExtendedFunctionParameters
+                    edit : changes :
+                        MyModel.rosetta :\s
+                                a int (0..1)
+                                b T (1..1)
+                                c string (0..1)
+                                    [metadata scheme] [[5, 11] .. [9, 20]]
+                       \s
+                                result number (1..1) [[10, 8] .. [11, 19]]
+                    documentChanges :\s
+                    title : Copy original inputs and output
+                    kind : quickfix
+                    command :\s
+                    codes : RosettaIssueCodes.changedExtendedFunctionParameters
+                    edit : changes :
+                        MyModel.rosetta :\s
+                                a int (0..1)
+                                b T (1..1)
+                                c string (0..1)
+                                    [metadata scheme] [[5, 11] .. [9, 20]]
+                       \s
+                                result number (1..1) [[10, 8] .. [11, 19]]
+                    documentChanges :\s
+                    title : Copy original inputs and output
+                    kind : quickfix
+                    command :\s
+                    codes : RosettaIssueCodes.changedExtendedFunctionParameters
+                    edit : changes :
+                        MyModel.rosetta :\s
+                                a int (0..1)
+                                b T (1..1)
+                                c string (0..1)
+                                    [metadata scheme] [[5, 11] .. [9, 20]]
+                       \s
+                                result number (1..1) [[10, 8] .. [11, 19]]
+                    documentChanges :\s
+                    title : Copy original inputs and output
+                    kind : quickfix
+                    command :\s
+                    codes : RosettaIssueCodes.changedExtendedFunctionParameters
+                    edit : changes :
+                        MyModel.rosetta :\s
+                                a int (0..1)
+                                b T (1..1)
+                                c string (0..1)
+                                    [metadata scheme] [[5, 11] .. [9, 20]]
+                       \s
+                                result number (1..1) [[10, 8] .. [11, 19]]
+                    documentChanges :\s
+                    """);
+        });
+    }
 
 	@Test
 	public void testQuickFixRedundantSquareBrackets() {
