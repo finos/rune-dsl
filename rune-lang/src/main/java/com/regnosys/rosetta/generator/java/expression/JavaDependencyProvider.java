@@ -13,6 +13,7 @@ import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.Function;
+import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RObjectFactory;
@@ -51,6 +52,9 @@ public class JavaDependencyProvider {
 				.map(s -> rTypeBuilderFactory.buildRFunction((RosettaRule)s))
 				.map(typeTranslator::toFunctionJavaClass)
 				.forEach(result::add);
+			rosettaSymbols.stream()
+				.filter(s -> s instanceof ShortcutDeclaration)
+				.forEach(s -> javaDependencies(((ShortcutDeclaration)s).getExpression(), result, visited));
 			deepFeatureCalls.stream()
 				.map(dfc -> typeProvider.getRMetaAnnotatedType(dfc.getReceiver()).getRType())
 				.map(t -> t instanceof RChoiceType ? ((RChoiceType)t).asRDataType() : t)

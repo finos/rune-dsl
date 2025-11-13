@@ -23,6 +23,7 @@ import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaReport;
+import com.regnosys.rosetta.rosetta.RosettaScope;
 import com.regnosys.rosetta.rosetta.simple.*;
 import com.regnosys.rosetta.types.*;
 import com.regnosys.rosetta.types.builtin.*;
@@ -30,6 +31,8 @@ import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.regnosys.rosetta.utils.RosettaTypeSwitch;
 import com.rosetta.model.lib.ModelReportId;
 import com.rosetta.model.lib.ModelSymbolId;
+import com.rosetta.model.lib.context.AbstractRuneScope;
+import com.rosetta.model.lib.context.RuneScope;
 import com.rosetta.model.lib.functions.LabelProvider;
 import com.rosetta.model.lib.functions.RosettaFunction;
 import com.rosetta.model.lib.meta.RosettaMetaData;
@@ -93,6 +96,9 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	public JavaParameterizedType<List<?>> toPolymorphicList(JavaReferenceType t) {
 		return typeUtil.wrapExtends(typeUtil.LIST, t);
 	}
+    public RGeneratedJavaClass<? extends RuneScope> toScopeJavaClass(RosettaScope scope) {
+        return RGeneratedJavaClass.create(JavaPackageName.escape(DottedPath.splitOnDots(scope.getModel().getName())), scope.getName(), AbstractRuneScope.class);
+    }
 	public RGeneratedJavaClass<? extends RosettaFunction> toFunctionJavaClass(RFunction func) {
 		switch (func.getOrigin()) {
 		case FUNCTION:

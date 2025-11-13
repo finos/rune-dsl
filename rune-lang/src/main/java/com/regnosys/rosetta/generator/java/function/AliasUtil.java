@@ -2,6 +2,8 @@ package com.regnosys.rosetta.generator.java.function;
 
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 
+import com.regnosys.rosetta.generator.GeneratedIdentifier;
+import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider;
 import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService;
 import com.regnosys.rosetta.generator.java.scoping.JavaMethodScope;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
@@ -33,6 +35,8 @@ public class AliasUtil {
 	@Inject
 	private JavaTypeUtil typeUtil;
 	@Inject
+	private JavaDependencyProvider dependencyProvider;
+	@Inject
 	private JavaIdentifierRepresentationService identifierService;
 	
 	public JavaReferenceType getReturnType(RShortcut alias) {
@@ -49,38 +53,42 @@ public class AliasUtil {
 		}
 	}
 	
-	public StringConcatenationClient getParameters(RShortcut alias, JavaMethodScope scope) {
+	public StringConcatenationClient getParameters(RShortcut alias, GeneratedIdentifier runtimeContextId, JavaMethodScope scope) {
 		RFunction func = alias.getFunction();
 		return new StringConcatenationClient() {
 			@Override
 			protected void appendTo(TargetStringConcatenation target) {
 				if (requiresOutput(alias)) {
-					RAttribute output = func.getOutput();
-					JavaReferenceType outputParameterType = toMultiBuilderType(output.getRMetaAnnotatedType(), output.isMulti());
-					
-					target.append(outputParameterType);
-					target.append(" ");
-					target.append(scope.getIdentifierOrThrow(output));
-                    if (!func.getInputs().isEmpty()) {
-                        target.append(", ");
-                    }
-				}
-				for (int i=0; i<func.getInputs().size(); i++) {
-                    RAttribute input = func.getInputs().get(i);
-					JavaReferenceType inputParameterType = typeTranslator.toMetaJavaType(input);
+                    RAttribute output = func.getOutput();
+                    JavaReferenceType outputParameterType = toMultiBuilderType(output.getRMetaAnnotatedType(), output.isMulti());
+
+                    target.append(outputParameterType);
+                    target.append(" ");
+                    target.append(scope.getIdentifierOrThrow(output));
+                    target.append(", ");
+                }
+                for (RAttribute input : func.getInputs()) {
+                    JavaReferenceType inputParameterType = typeTranslator.toMetaJavaType(input);
 					
 					target.append(inputParameterType);
 					target.append(" ");
 					target.append(scope.getIdentifierOrThrow(input));
-                    if (i < func.getInputs().size() - 1) {
-                        target.append(", ");
-                    }
+					target.append(", ");
 				}
+				for (JavaClass<?> dependency : dependencyProvider.javaDependencies(alias.getExpression())) {
+					target.append(dependency);
+					target.append(" ");
+					target.append(scope.getIdentifierOrThrow(identifierService.toDependencyInstance(dependency)));
+					target.append(", ");
+				}
+				target.append(typeUtil.RUNE_CONTEXT);
+				target.append(" ");
+				target.append(runtimeContextId);
 			}
 		};
 	}
 	
-	public StringConcatenationClient getArguments(RShortcut alias, JavaStatementScope scope) {
+	public StringConcatenationClient getArguments(RShortcut alias, GeneratedIdentifier runtimeContextId, JavaStatementScope scope) {
 		RFunction func = alias.getFunction();
 		return new StringConcatenationClient() {
 			@Override
@@ -88,18 +96,17 @@ public class AliasUtil {
 				if (requiresOutput(alias)) {
 					RAttribute output = func.getOutput();
 					target.append(scope.getIdentifierOrThrow(output));
-					target.append(".toBuilder()");
-                    if (!func.getInputs().isEmpty()) {
-                        target.append(", ");
-                    }
+					target.append(".toBuilder(), ");
 				}
-                for (int i=0; i<func.getInputs().size(); i++) {
-                    RAttribute input = func.getInputs().get(i);
+				for (RAttribute input : func.getInputs()) {
 					target.append(scope.getIdentifierOrThrow(input));
-                    if (i < func.getInputs().size() - 1) {
-                        target.append(", ");
-                    }
+					target.append(", ");
 				}
+				for (JavaClass<?> dependency : dependencyProvider.javaDependencies(alias.getExpression())) {
+					target.append(scope.getIdentifierOrThrow(identifierService.toDependencyInstance(dependency)));
+					target.append(", ");
+				}
+				target.append(runtimeContextId);
 			}
 		};
 	}
