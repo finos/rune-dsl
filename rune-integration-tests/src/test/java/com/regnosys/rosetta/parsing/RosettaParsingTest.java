@@ -69,8 +69,7 @@ public class RosettaParsingTest {
 	
 	@Test
 	void testCannotSetEnumAttribute() {
-        // TODO: revert back to `assertIssues`
-		assertNoIssues("""
+		assertIssues("""
 				enum FooEnum:
 					VALUE1
 					VALUE2
@@ -79,10 +78,10 @@ public class RosettaParsingTest {
 					output:
 						result FooEnum (0..1)
 					set result -> VALUE1: empty
-				"""); /*,
+				""",
 				"""
 				ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'VALUE1'.' at 11:16, length 6, on Segment
-				""");*/
+				""");
 	}
 	
 	@Test
