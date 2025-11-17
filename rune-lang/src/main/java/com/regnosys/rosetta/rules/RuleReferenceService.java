@@ -220,30 +220,6 @@ public class RuleReferenceService {
         return pathMap;
     }
 
-    private void addRuleReferenceAnnotationsToMap1(RAttribute attribute, RulePathMap map) {
-
-        List<RuleReferenceAnnotation> annotations = attribute.getOwnRuleReferences();
-        for (RuleReferenceAnnotation ruleRef : annotations) {
-            if (ruleRef.getReportingRule() != null && ruleRef.getReportingRule().eIsProxy()) {
-                continue; // ignore unresolved rule references
-            }
-            List<String> path = toList(ruleRef.getPath());
-            if (path != null) { // Only add the annotation if the path is valid, i.e., if it does not contain any deep paths.
-
-                if (!path.isEmpty() && ruleRef.getReportingRule() == null) {
-                    Attribute targetAttribute = pathExpressionUtil.getTargetAttribute(ruleRef.getPath());
-                    List<RuleReferenceAnnotation> ruleReferences = targetAttribute.getRuleReferences();
-                    if (!ruleReferences.isEmpty()) {
-                        map.add(path, RuleResult.fromAnnotation(ruleReferences.iterator().next()));
-                    }
-                } else {
-                    map.add(path, RuleResult.fromAnnotation(ruleRef));
-                }
-            }
-        }
-    }
-
-
     private void addRuleReferenceAnnotationsToMap(List<RuleReferenceAnnotation> annotations, RulePathMap map) {
         for (RuleReferenceAnnotation ruleRef : annotations) {
             if (ruleRef.getReportingRule() != null && ruleRef.getReportingRule().eIsProxy()) {
