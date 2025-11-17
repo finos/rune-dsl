@@ -2,7 +2,6 @@ package com.regnosys.rosetta.rules;
 
 import com.regnosys.rosetta.rosetta.*;
 import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression;
-import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RChoiceType;
@@ -68,7 +67,6 @@ public class RuleReferenceService {
     public <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initialState, BiFunction<T, RuleReferenceContext, T> updateState) {
         return traverse(source, type, initialState, updateState, new HashMap<>(), new ArrayList<>(), new HashSet<>());
     }
-
     private <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initialState, BiFunction<T, RuleReferenceContext, T> updateState, Map<List<String>, RuleResult> nestedRuleContext, List<RAttribute> path, Set<RDataType> visited) {
         boolean isCycle = !visited.add(type);
         if (isCycle && nestedRuleContext.isEmpty()) {
@@ -154,7 +152,6 @@ public class RuleReferenceService {
     public RulePathMap computeRulePathMap(RAttribute attribute) {
         return computeRulePathMapInContext(null, attribute.getEnclosingType(), attribute);
     }
-
     public RulePathMap computeRulePathMapInContext(RosettaExternalRuleSource source, RDataType type, RAttribute attribute) {
         // First, compute parents from super sources and super types.
         RulePathMap parentInSameContext = null;
