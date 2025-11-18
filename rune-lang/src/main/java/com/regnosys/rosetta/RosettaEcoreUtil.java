@@ -1,6 +1,5 @@
 package com.regnosys.rosetta;
 
-import com.regnosys.rosetta.types.*;
 import jakarta.inject.Inject;
 
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
@@ -12,6 +11,11 @@ import com.regnosys.rosetta.rosetta.expression.OneOfOperation;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.Data;
+import com.regnosys.rosetta.types.RAttribute;
+import com.regnosys.rosetta.types.RChoiceType;
+import com.regnosys.rosetta.types.RDataType;
+import com.regnosys.rosetta.types.RMetaAnnotatedType;
+import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RRecordType;
 import com.regnosys.rosetta.utils.RosettaConfigExtension;
@@ -35,7 +39,7 @@ import com.regnosys.rosetta.rosetta.simple.Annotation;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 
 import java.util.function.Predicate;
-
+import com.regnosys.rosetta.types.RMetaAttribute;
 import org.eclipse.xtext.EcoreUtil2;
 
 import com.google.common.collect.Iterables;
@@ -88,9 +92,7 @@ public class RosettaEcoreUtil {
 			if (resourceSet != null) {
 				return builtins.toRosettaType(t, RosettaRecordType.class, resourceSet).getFeatures();
 			}
-		} else if (t instanceof REnumType enumType) { // TODO: this is wrong. Remove this case.
-            return getAllEnumValues(enumType.getEObject());
-        }
+		}
 		return Collections::emptyIterator;
 	}
 	
