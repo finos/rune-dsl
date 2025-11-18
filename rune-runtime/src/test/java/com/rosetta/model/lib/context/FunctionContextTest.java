@@ -2,9 +2,9 @@ package com.rosetta.model.lib.context;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.rosetta.model.lib.context.util.Three;
-import com.rosetta.model.lib.context.util.ThreeInScopeA;
-import com.rosetta.model.lib.context.util.ThreeInScopeB;
+import com.rosetta.model.lib.context.example.Three;
+import com.rosetta.model.lib.context.example.ThreeInScopeA;
+import com.rosetta.model.lib.context.example.ThreeInScopeB;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
