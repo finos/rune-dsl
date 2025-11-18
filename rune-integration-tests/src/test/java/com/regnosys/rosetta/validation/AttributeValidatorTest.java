@@ -93,7 +93,67 @@ public class AttributeValidatorTest extends AbstractValidatorTest {
 				"""
 			);
     }
+
+    @Test
+    void testCanOverrideEmptyUsingRuleReferenceForAttribute() {
+        assertNoIssues("""
+                namespace test
+                
+                type Input:
+                
+                type CommonReport:
+                    additionalFields CommonAdditionalFields (0..1)
+               
+                type Report extends CommonReport:
+                    override additionalFields CommonAdditionalFields (0..1)
+                        [ruleReference for attr empty]
+                
+                reporting rule AttrRule from Input:
+                    extract "hello"
+                
+                type CommonAdditionalFields:
+                    [rootType]
+                    attr string (0..*)
+                	    [ruleReference AttrRule]
+                
+                """);
+    }
+
+    @Test
+    void testCannotOverrideEmptyUsingRuleReferenceForAttributeWhenAlreadyEmpty() {
+        assertIssues("""
+                namespace test
+
+                type Input:
+
+                type CommonReport:
+                    additionalFields CommonAdditionalFields (0..1)
+
+                type Report extends CommonReport:
+                    override additionalFields CommonAdditionalFields (0..1)
+                        [ruleReference for attr empty]
+
+                type CommonAdditionalFields extends CommonAdditionalFieldsBase:
+                    [rootType]
+                    override attr string (0..*)
+                	    [ruleReference empty]
+
+                type CommonAdditionalFieldsBase:
+                    [rootType]
+                    attr string (0..*)
+                	    [ruleReference AttrRule]
+                
+                reporting rule AttrRule from Input:
+                    extract "hello"
+                ""","""
+				ERROR (null) 'There is no rule reference for attr to remove' at 10:33, length 5, on RuleReferenceAnnotation
+				"""
+        );
+    }
+
+
     
+
     @Test
     void testCannotEmptyNonExistingRuleReference() {
     	assertIssues("""
