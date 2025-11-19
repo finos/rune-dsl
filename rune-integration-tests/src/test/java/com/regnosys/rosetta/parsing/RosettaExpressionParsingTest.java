@@ -35,11 +35,9 @@ public class RosettaExpressionParsingTest {
 				FooEnum -> VALUE filter VALUE = item
 				""");
 
-        // TODO: bring back
-//        validationHelper.assertIssues(expr, """
-//                ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaSymbol 'VALUE'.' at 1:25, length 5, on RosettaSymbolReference
-//                """);
-        validationHelper.assertNoIssues(expr);
+        validationHelper.assertIssues(expr, """
+                ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaSymbol 'VALUE'.' at 1:25, length 5, on RosettaSymbolReference
+                """);
     }
 
     @Test
@@ -129,11 +127,9 @@ public class RosettaExpressionParsingTest {
 				"""
 			);
 		
-        // TODO: bring back
-//		validationHelper.assertIssues(expr, """
-//			ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'VALUE_A'.' at 1:17, length 7, on RosettaFeatureCall
-//			""");
-        validationHelper.assertNoIssues(expr);
+		validationHelper.assertIssues(expr, """
+			ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'VALUE_A'.' at 1:17, length 7, on RosettaFeatureCall
+			""");
 	}
 	
 	@Test
