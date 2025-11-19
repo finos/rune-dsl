@@ -25,6 +25,9 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
+import com.rosetta.model.lib.context.RuneContextFactory;
+import com.rosetta.model.lib.context.RuneScope;
+
 import jakarta.inject.Inject;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -34,6 +37,7 @@ import com.rosetta.model.lib.GlobalKey;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.Templatable;
+import com.rosetta.model.lib.context.RuneContext;
 import com.rosetta.model.lib.expression.ComparisonResult;
 import com.rosetta.model.lib.mapper.Mapper;
 import com.rosetta.model.lib.mapper.MapperC;
@@ -108,6 +112,10 @@ public class JavaTypeUtil {
 	public final JavaGenericTypeDeclaration<RosettaMetaData<?>> ROSETTA_META_DATA = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	public final JavaGenericTypeDeclaration<Validator<?>> VALIDATOR = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	public final JavaGenericTypeDeclaration<ValidatorWithArg<?, ?>> VALIDATOR_WITH_ARG = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
+	
+    public final JavaClass<RuneContext> RUNE_CONTEXT = JavaClass.from(RuneContext.class);
+    public final JavaClass<RuneContextFactory> RUNE_CONTEXT_FACTORY = JavaClass.from(RuneContextFactory.class);
+    public final JavaClass<RuneScope> RUNE_SCOPE = JavaClass.from(RuneScope.class);
 	
 	private final Map<JavaTypeDeclaration<?>, JavaTypeDeclaration<?>> builderMap = Map.of(
 				ROSETTA_MODEL_OBJECT, ROSETTA_MODEL_OBJECT_BUILDER,

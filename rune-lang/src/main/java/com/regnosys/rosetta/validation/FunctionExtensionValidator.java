@@ -14,9 +14,9 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.validation.Check;
 
+import java.util.Collection;
 import java.util.*;
 
-import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.FUNCTION__SUPER_FUNCTION;
 import static com.regnosys.rosetta.validation.RosettaIssueCodes.CHANGED_EXTENDED_FUNCTION_PARAMETERS;
 
 public class FunctionExtensionValidator extends AbstractDeclarativeRosettaValidator {

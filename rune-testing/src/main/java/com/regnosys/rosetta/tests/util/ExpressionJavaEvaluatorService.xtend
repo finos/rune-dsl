@@ -19,6 +19,15 @@ import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator
 import com.regnosys.rosetta.tests.compiler.CompilationException
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.rosetta.model.lib.context.RuneContext
+import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclarationStatement
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
+import com.regnosys.rosetta.generator.GeneratedIdentifier
+import com.rosetta.util.types.JavaClass
+import com.regnosys.rosetta.generator.java.statement.JavaStatement
+import com.rosetta.model.lib.context.RuneContextFactory
 
 class ExpressionJavaEvaluatorService {
 	@Inject
@@ -37,12 +46,16 @@ class ExpressionJavaEvaluatorService {
 	Injector injector
 	@Inject
 	extension ImportManagerExtension
+	@Inject
+	extension JavaTypeUtil
+	@Inject
+	RuneContextFactory contextFactory
 	
-	def Object evaluate(CharSequence rosettaExpression, RosettaModel context, JavaType expectedType, ClassLoader classLoader) {
+	def Object evaluate(CharSequence rosettaExpression, RosettaModel context, JavaType expectedType, RuneContext runtimeContext, ClassLoader classLoader) {
 		val expr = expressionParser.parseExpression(rosettaExpression, #[context])
-		evaluate(expr, expectedType, classLoader)
+		evaluate(expr, expectedType, runtimeContext, classLoader)
 	}
-	def Object evaluate(RosettaExpression expr, JavaType expectedType, ClassLoader classLoader) {
+	def Object evaluate(RosettaExpression expr, JavaType expectedType, RuneContext runtimeContext, ClassLoader classLoader) {
 		validationHelper.assertNoIssues(expr)
 		
 		val packageName = DottedPath.splitOnDots("com.regnosys.rosetta.tests.testexpression")
@@ -51,20 +64,27 @@ class ExpressionJavaEvaluatorService {
 		
 		val classScope = JavaClassScope.createAndRegisterIdentifier(RGeneratedJavaClass.create(JavaPackageName.escape(packageName), className, Object))
 		val evaluateScope = classScope.createMethodScope(methodName)
+		val contextId = evaluateScope.createUniqueIdentifier("context")
 		val evaluateBodyScope = evaluateScope.bodyScope
+		val scopeId = evaluateBodyScope.createUniqueIdentifier("scope")
 		
 		val dependencies = dependencyProvider.javaDependencies(expr)
-		dependencies.forEach[classScope.createIdentifier(toDependencyInstance, simpleName.toFirstLower)]
+		dependencies.forEach[evaluateBodyScope.createIdentifier(toDependencyInstance, simpleName.toFirstLower)]
 		
-		val javaCode = expressionGenerator.javaCode(expr, expectedType, evaluateBodyScope)
+		val javaCode = expressionGenerator.javaCode(expr, expectedType, contextId, evaluateBodyScope)
 		val StringConcatenationClient content = '''
 			public class «className» {
-				«FOR dep : dependencies»
-				@«Inject»
-				private «dep» «classScope.getIdentifierOrThrow(dep.toDependencyInstance)»;
-				«ENDFOR»
-				
-				public «expectedType» «methodName»() «javaCode.completeAsReturn.toBlock»
+				public «expectedType» «methodName»(«RUNE_CONTEXT» «contextId») «
+					if (dependencies.isEmpty) {
+						javaCode.completeAsReturn.toBlock
+					} else {
+						var JavaStatement body = new JavaLocalVariableDeclarationStatement(true, RUNE_SCOPE, scopeId, JavaExpression.from('''«contextId».getScope()''', RUNE_SCOPE))
+						for (dep : dependencies) {
+							body = body.append(declareDependency(evaluateBodyScope, scopeId, dep))
+						}
+						body.append(javaCode.completeAsReturn)
+					}
+				»
 			}
 		'''
 		
@@ -82,7 +102,7 @@ class ExpressionJavaEvaluatorService {
 		}
 		val instance = injector.getInstance(evaluatorClass)
 		
-		evaluatorClass.getDeclaredMethod(methodName).invoke(instance)
+		evaluatorClass.getDeclaredMethod(methodName, RuneContext).invoke(instance, runtimeContext ?: contextFactory.createDefault)
 	}
 	
 	private def void generateMetaFieldClasses(RosettaExpression expr, InMemoryJavacCompiler compiler) {
@@ -94,5 +114,9 @@ class ExpressionJavaEvaluatorService {
 				val javaFileCode = buildClass(typeRepresentation.getPackageName(), classCode, classScope.getFileScope());
 				compiler.addSource(typeRepresentation.canonicalName.withDots, javaFileCode)
 			];
+	}
+	
+	private def JavaLocalVariableDeclarationStatement declareDependency(JavaStatementScope scope, GeneratedIdentifier runeScopeVar, JavaClass<?> dependencyType) {
+		new JavaLocalVariableDeclarationStatement(true, dependencyType, scope.getIdentifierOrThrow(dependencyType.toDependencyInstance), JavaExpression.from('''«runeScopeVar».getInstance(«dependencyType».class)''', dependencyType))
 	}
 }

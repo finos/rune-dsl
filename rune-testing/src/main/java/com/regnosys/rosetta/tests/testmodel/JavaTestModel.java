@@ -11,6 +11,7 @@ import com.regnosys.rosetta.generator.java.types.RJavaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rosetta.RosettaRule;
+import com.regnosys.rosetta.rosetta.RosettaScope;
 import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
@@ -21,6 +22,9 @@ import com.regnosys.rosetta.types.REnumType;
 import com.regnosys.rosetta.types.RFunction;
 import com.regnosys.rosetta.types.RObjectFactory;
 import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.context.RuneContext;
+import com.rosetta.model.lib.context.RuneContextFactory;
+import com.rosetta.model.lib.context.RuneScope;
 import com.rosetta.model.lib.functions.LabelProvider;
 import com.rosetta.model.lib.functions.RosettaFunction;
 import com.rosetta.util.types.JavaType;
@@ -43,15 +47,17 @@ public class JavaTestModel {
 	private final RObjectFactory rObjectFactory;
 	private final JavaTypeTranslator typeTranslator;
 	private final ExpressionJavaEvaluatorService evaluatorService;
+	private final RuneContextFactory contextFactory;
 	private final Injector injector;
 	
-	public JavaTestModel(RosettaTestModel rosettaModel, Map<String, String> javaSourceCode, RObjectFactory rObjectFactory, JavaTypeTranslator typeTranslator, ExpressionJavaEvaluatorService evaluatorService, Injector injector) {
+	public JavaTestModel(RosettaTestModel rosettaModel, Map<String, String> javaSourceCode, RObjectFactory rObjectFactory, JavaTypeTranslator typeTranslator, ExpressionJavaEvaluatorService evaluatorService, RuneContextFactory contextFactory, Injector injector) {
 		this.rosettaModel = rosettaModel;
 		this.javaSourceCode = javaSourceCode;
 		
 		this.rObjectFactory = rObjectFactory;
 		this.typeTranslator = typeTranslator;
 		this.evaluatorService = evaluatorService;
+		this.contextFactory = contextFactory;
 		this.injector = injector;
 	}
 	
@@ -94,19 +100,43 @@ public class JavaTestModel {
 		return this;
 	}
 	
-	public <T> T evaluateExpression(Class<T> resultType, CharSequence expr) {		
-		return resultType.cast(evaluateExpression(JavaType.from(resultType), expr));
+    public <T> T evaluateExpression(Class<T> resultType, CharSequence expr) {
+    	return evaluateExpression(resultType, expr, getDefaultContext());
+    }
+	public <T> T evaluateExpression(Class<T> resultType, CharSequence expr, RuneContext runtimeContext) {		
+		return resultType.cast(evaluateExpression(JavaType.from(resultType), expr, runtimeContext));
 	}
-	public Object evaluateExpression(JavaType resultType, CharSequence expr) {
+    public Object evaluateExpression(JavaType resultType, CharSequence expr) {
+        return evaluateExpression(resultType, expr, getDefaultContext());
+    }
+	public Object evaluateExpression(JavaType resultType, CharSequence expr, RuneContext runtimeContext) {
 		assertCompiled();
-		
-		return evaluatorService.evaluate(expr, rosettaModel.getModel(), resultType, inMemoryCompiler.getClassloader());
+		if (runtimeContext == null) {
+			
+		}
+		return evaluatorService.evaluate(expr, rosettaModel.getModel(), resultType, runtimeContext, inMemoryCompiler.getClassloader());
 	}
-	
+	private RuneContext getDefaultContext() {
+		RosettaScope scope = rosettaModel.getModel().getScope();
+		if (scope == null) {
+			return contextFactory.createDefault();
+		}
+		return contextFactory.withScope(getScopeInstance(scope.getName()));
+	}
 	
 	public RosettaTestModel getRosettaModel() {
 		return rosettaModel;
 	}
+    
+    private JavaType getScopeJavaType(String name) {
+        return typeTranslator.toScopeJavaClass(rosettaModel.getScope(name));
+    }
+    public Class<? extends RuneScope> getScopeClass(String name) {
+    	return getClass(RuneScope.class, getScopeJavaType(name));
+    }
+    public RuneScope getScopeInstance(String name) {
+    	return injector.getInstance(getScopeClass(name));
+    }
 	
 	public JavaType getTypeJavaType(String name) {
 		Data type = rosettaModel.getType(name);
