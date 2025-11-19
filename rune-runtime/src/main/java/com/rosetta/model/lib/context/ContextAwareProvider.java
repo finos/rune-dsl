@@ -29,19 +29,19 @@ import javax.inject.Provider;
  */
 public class ContextAwareProvider<T> implements Provider<T>, jakarta.inject.Provider<T> {
     private final TypeLiteral<T> type;
-    private final FunctionContextAccess contextAccess;
+    private final FunctionContext context;
 
     @Inject
     public ContextAwareProvider(TypeLiteral<T> type,
-                                FunctionContextAccess contextAccess) {
+                                FunctionContext context) {
         this.type = type;
-        this.contextAccess = contextAccess;
+        this.context = context;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public T get() {
         Class<? extends T> raw = (Class<? extends T>) type.getRawType();
-        return contextAccess.getContext().getInstanceInScope(raw);
+        return context.getInstance(raw);
     }
 }

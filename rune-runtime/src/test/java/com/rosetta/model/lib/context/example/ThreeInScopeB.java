@@ -1,18 +1,18 @@
 package com.rosetta.model.lib.context.example;
 
 import com.rosetta.model.lib.context.ContextAwareProvider;
-import com.rosetta.model.lib.context.FunctionContextAccess;
+import com.rosetta.model.lib.context.FunctionContext;
 
 import javax.inject.Inject;
 
 public class ThreeInScopeB {
     @Inject
-    private FunctionContextAccess contextAccess;
+    private FunctionContext context;
     @Inject
     private ContextAwareProvider<ThreeInScopeA> threeInScopeAProvider;
     
     public int evaluate() {
-        return contextAccess.runInScope(ScopeB.class, () -> {
+        return context.evaluateInScope(ScopeB.class, () -> {
             ThreeInScopeA threeInScopeA = threeInScopeAProvider.get();
             return threeInScopeA.evaluate();
         });
