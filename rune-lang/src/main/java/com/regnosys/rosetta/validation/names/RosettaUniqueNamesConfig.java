@@ -55,6 +55,9 @@ public class RosettaUniqueNamesConfig {
         addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaCorpus(), true);
         addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaSegment(), true);
         
+        // Check scopes have a unique name
+        addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaScope(), false);
+        
         // Check attributes in data have a unique name
         addLocalCheck(SimplePackage.eINSTANCE.getAttribute(), Attribute.class, this::getDirectDataContainer, Data::getAttributes, true);
         

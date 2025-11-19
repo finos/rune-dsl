@@ -6,25 +6,18 @@ import java.util.NoSuchElementException;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import com.regnosys.rosetta.rosetta.*;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 
-import com.regnosys.rosetta.rosetta.RegulatoryDocumentReference;
-import com.regnosys.rosetta.rosetta.RosettaEnumeration;
-import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
-import com.regnosys.rosetta.rosetta.RosettaModel;
-import com.regnosys.rosetta.rosetta.RosettaNamed;
-import com.regnosys.rosetta.rosetta.RosettaReport;
-import com.regnosys.rosetta.rosetta.RosettaRootElement;
-import com.regnosys.rosetta.rosetta.RosettaRule;
-import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
-import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.tests.util.ExpressionParser;
+import org.eclipse.xtext.resource.IEObjectDescription;
+import org.eclipse.xtext.resource.IResourceDescriptionsProvider;
 
 /**
  * A test utility for accessing elements in a Rune model by name.
@@ -32,13 +25,15 @@ import com.regnosys.rosetta.tests.util.ExpressionParser;
 public class RosettaTestModel {
 	private final String source;
 	private final RosettaModel model;
-	
+
+    private final IResourceDescriptionsProvider indexAccess;
 	private final ExpressionParser expressionParser;
 	
-	public RosettaTestModel(CharSequence source, RosettaModel model, ExpressionParser expressionParser) {
+	public RosettaTestModel(CharSequence source, RosettaModel model, IResourceDescriptionsProvider indexAccess, ExpressionParser expressionParser) {
 		this.source = source.toString();
 		this.model = model;
 		
+        this.indexAccess = indexAccess;
 		this.expressionParser = expressionParser;
 	}
 	
@@ -56,6 +51,15 @@ public class RosettaTestModel {
 		return expressionParser.parseExpression(expressionSource, List.of(model), List.of(attributes));
 	}
 	
+    public RosettaScope getScope(String name) {
+        for (IEObjectDescription descr : indexAccess.getResourceDescriptions(getResourceSet()).getExportedObjectsByType(RosettaPackage.eINSTANCE.getRosettaScope())) {
+            if (name.equals(descr.getName().getLastSegment())) {
+                return (RosettaScope) descr.getEObjectOrProxy();
+            }
+        }
+        throw new NoSuchElementException("No scope named '" + name + "' found in model.\n\n" + source);
+    }
+    
 	public Data getType(String name) {
 		return getNamedElement(Data.class, name);
 	}
