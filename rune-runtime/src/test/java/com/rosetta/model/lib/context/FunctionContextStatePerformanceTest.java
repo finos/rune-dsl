@@ -35,7 +35,7 @@ public class FunctionContextStatePerformanceTest {
     }
 
     @Test
-    void testPerformanceImprovement() {
+    void testPerformanceForADeepScopeStack() {
         // Test that deep scopes don't degrade performance significantly
         // This proves O(1) vs O(n) by comparing shallow vs deep stack performance
         // Tests first-run performance (realistic usage without JIT warmup)
