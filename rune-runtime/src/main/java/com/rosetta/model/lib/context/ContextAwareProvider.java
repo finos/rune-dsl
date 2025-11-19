@@ -27,7 +27,7 @@ import javax.inject.Provider;
  *
  * @param <T> the type to provide
  */
-public class ContextAwareProvider<T> implements Provider<T>, jakarta.inject.Provider<T> {
+public class ContextAwareProvider<T> implements Provider<T> {
     private final TypeLiteral<T> type;
     private final FunctionContext context;
 
