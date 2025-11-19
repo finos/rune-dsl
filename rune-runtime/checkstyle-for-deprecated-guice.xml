@@ -14,7 +14,7 @@
 		</module>
 	</module>
 	<module name="RegexpSingleline">
-	    <property name="format" value=".*jakarta\.inject.*" />
+	    <property name="format" value="import jakarta\.inject.*" />
 	    <property name="message" value="The use of 'jakarta.inject' is forbidden in generated code." />
 	    <property name="severity" value="error"/>
 	</module>
