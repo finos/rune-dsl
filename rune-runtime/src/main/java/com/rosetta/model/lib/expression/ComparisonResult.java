@@ -106,13 +106,15 @@ public class ComparisonResult implements Mapper<Boolean> {
 		boolean newResult = r1.get() && r2.get();
 		String newError = "";
 		if (!r1.get()) {
-			newError+=r1.error == null ? "left of `and` operation is empty" : r1.error;
+            String r1Value = r1.isEmptyOperand() ? "empty" : r1.get().toString();
+			newError+=r1.error == null ? String.format("left of `and` operation is %s", r1Value) : r1.error;
 		}
 		if (!r2.get()) {
 			if (!r1.get()) {
 				newError+=" and ";
 			}
-			newError+=r2.error == null ? "right of `and` operation is empty" : r2.error;
+            String r2Value = r2.isEmptyOperand() ? "empty" : r2.get().toString();
+			newError+=r2.error == null ? String.format("right of `and` operation is %s", r2Value) : r2.error;
 		}
 		return new ComparisonResult(newResult, false, newError);
 	}
