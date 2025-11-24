@@ -98,7 +98,7 @@ class ExpressionEqualityUtil {
 		}
 		
 		if (e1.hasNext() || e2.hasNext())
-			return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
+			return ComparisonResult.ofEmpty();
 		
 		return o == CardinalityOperator.All ? 
 				ComparisonResult.success() :
@@ -110,7 +110,7 @@ class ExpressionEqualityUtil {
 		U b2 = m2.get();
 		
 		if (multi1.isEmpty())
-			return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
+			return ComparisonResult.ofEmpty();
 		
 		ListIterator<T> e1 = multi1.listIterator();
 		
