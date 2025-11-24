@@ -60,7 +60,7 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@v6
     - name: Install XQ
       run: pip install xq
     - uses: ./.github/actions/maven-build

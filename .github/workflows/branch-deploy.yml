@@ -19,7 +19,7 @@ jobs:
     outputs:
       normalized: ${{ steps.normalize.outputs.normalized }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Normalize branch name
         id: normalize
         uses: ./.github/actions/normalize-branch-name
@@ -30,7 +30,7 @@ jobs:
     outputs:
       build-ts: ${{ steps.capture-ts.outputs.build_ts }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Capture build timestamp
         id: capture-ts
         run: echo "::set-output name=build_ts::$(date +%s)"
