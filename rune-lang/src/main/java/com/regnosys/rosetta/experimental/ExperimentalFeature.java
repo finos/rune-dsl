@@ -7,7 +7,7 @@ public enum ExperimentalFeature {
 
     private final String featureName;
 
-    private ExperimentalFeature(String featureName) {
+    ExperimentalFeature(String featureName) {
         this.featureName = featureName;
     }
 
