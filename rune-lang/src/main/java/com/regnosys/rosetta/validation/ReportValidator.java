@@ -161,7 +161,7 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
                 RulePathMap targetRuleMap = ruleService.computeRulePathMapInContext(source, targetAttribute.getEnclosingType(), targetAttribute);
                 RuleResult ruleDefinedOnTarget = targetRuleMap.get(List.of());
 
-                if (!parentRules.containsKey(path) && ruleDefinedOnTarget.isExplicitlyEmpty()) {
+                if (!parentRules.containsKey(path) && ruleDefinedOnTarget != null && ruleDefinedOnTarget.isExplicitlyEmpty()) {
                     EObject errorOrigin = ruleResult.getOrigin();
                     String msg = "There is no rule reference" + toPathMessage(path) + " to remove";
                     if (errorOrigin instanceof RuleReferenceAnnotation) {
