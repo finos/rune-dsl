@@ -98,7 +98,7 @@ class ExpressionEqualityUtil {
 		}
 		
 		if (e1.hasNext() || e2.hasNext())
-			return ComparisonResult.ofEmpty();
+			return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
 		
 		return o == CardinalityOperator.All ? 
 				ComparisonResult.success() :
