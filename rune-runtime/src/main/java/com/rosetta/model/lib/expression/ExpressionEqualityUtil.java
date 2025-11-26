@@ -110,7 +110,7 @@ class ExpressionEqualityUtil {
 		U b2 = m2.get();
 		
 		if (multi1.isEmpty())
-			return ComparisonResult.ofEmpty();
+			return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
 		
 		ListIterator<T> e1 = multi1.listIterator();
 		

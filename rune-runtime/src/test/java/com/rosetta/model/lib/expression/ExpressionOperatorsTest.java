@@ -49,7 +49,7 @@ public class ExpressionOperatorsTest {
 	}
 	
 	@Test
-	public void shouldCompareDifferentSizeListsAndReturnFail() {
+	public void shouldCompareDifferentSizeListsAndReturnEmpty() {
 		Foo foo1 = new Foo(Arrays.asList(BRANCH_NODE_1), null);
 		Foo foo2 = new Foo(Arrays.asList(BRANCH_NODE_1, BRANCH_NODE_2), null);
 		
@@ -58,8 +58,7 @@ public class ExpressionOperatorsTest {
 		
 		ComparisonResult result = ExpressionOperators.areEqual(mapper1, mapper2, CardinalityOperator.All);
 		
-		assertThat(result.get(), is(false));
-		assertThat(result.getError(), is("[Foo->getListBranchNodes[0]->getIntLeafNode] [5] cannot be compared to [Foo->getListBranchNodes[0]->getIntLeafNode, Foo->getListBranchNodes[1]->getIntLeafNode] [5, 5]"));
+		assertThat(result.isEmptyOperand(), is(true));
 	}
 	
 	@Test
