@@ -19,6 +19,10 @@ package com.rosetta.model.lib.mapper;
 import java.util.function.Supplier;
 import com.rosetta.model.lib.expression.ComparisonResult;
 
+/**
+ * @deprecated This class is not used anywhere in the code generators. Don't use this, it's not null safe, instead use {@link ComparisonResult} and other expression utilities.
+ */
+@Deprecated
 public class MapperUtils {
 	
 	/**

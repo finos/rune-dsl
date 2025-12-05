@@ -16,20 +16,19 @@
 
 package com.rosetta.model.lib.expression;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import com.rosetta.model.lib.mapper.Mapper;
+import com.rosetta.model.lib.mapper.MapperC;
+import com.rosetta.model.lib.mapper.MapperS;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
-import com.rosetta.model.lib.mapper.Mapper;
-import com.rosetta.model.lib.mapper.MapperC;
-import com.rosetta.model.lib.mapper.MapperS;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 
-@Deprecated
-public class ExpressionOperatorsTest {
+public class ExpressionOperatorsNullSafeTest {
 
 	private final static BranchNode BRANCH_NODE_1 = new BranchNode(5);
 	private final static BranchNode BRANCH_NODE_2 = new BranchNode(5);
@@ -44,7 +43,7 @@ public class ExpressionOperatorsTest {
 		Mapper<Integer> mapper1 = MapperS.of(foo1).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapper2 = MapperS.of(foo2).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 
-		ComparisonResult result = ExpressionOperators.areEqual(mapper1, mapper2, CardinalityOperator.All);
+		ComparisonResult result = ExpressionOperatorsNullSafe.areEqual(mapper1, mapper2, CardinalityOperator.All);
 
 		assertThat(result.get(), is(true));
 	}
@@ -57,7 +56,7 @@ public class ExpressionOperatorsTest {
 		Mapper<Integer> mapper1 = MapperS.of(foo1).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapper2 = MapperS.of(foo2).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 
-		ComparisonResult result = ExpressionOperators.areEqual(mapper1, mapper2, CardinalityOperator.All);
+		ComparisonResult result = ExpressionOperatorsNullSafe.areEqual(mapper1, mapper2, CardinalityOperator.All);
 
 		assertThat(result.get(), is(false));
 		assertThat(result.getError(), is("[Foo->getListBranchNodes[0]->getIntLeafNode] [5] cannot be compared to [Foo->getListBranchNodes[0]->getIntLeafNode, Foo->getListBranchNodes[1]->getIntLeafNode] [5, 5]"));
@@ -70,7 +69,7 @@ public class ExpressionOperatorsTest {
 		Mapper<Integer> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapperS = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getIntLeafNode", BranchNode::getIntLeafNode);
 
-		ComparisonResult result = ExpressionOperators.areEqual(mapperC, mapperS, CardinalityOperator.All);
+		ComparisonResult result = ExpressionOperatorsNullSafe.areEqual(mapperC, mapperS, CardinalityOperator.All);
 
 		assertThat(result.get(), is(true));
 	}
@@ -82,7 +81,7 @@ public class ExpressionOperatorsTest {
 		Mapper<Integer> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapperS = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getIntLeafNode", BranchNode::getIntLeafNode);
 
-		ComparisonResult result = ExpressionOperators.areEqual(mapperC, mapperS, CardinalityOperator.All);
+		ComparisonResult result = ExpressionOperatorsNullSafe.areEqual(mapperC, mapperS, CardinalityOperator.All);
 
 		assertThat(result.get(), is(false));
 		assertThat(result.getError(), is("[Foo->getListBranchNodes[0]->getIntLeafNode] [10] does not equal [Foo->getObjectBranchNode->getIntLeafNode] [5]"));
@@ -95,7 +94,7 @@ public class ExpressionOperatorsTest {
 		Mapper<Integer> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapperS = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getIntLeafNode", BranchNode::getIntLeafNode);
 
-		ComparisonResult result = ExpressionOperators.areEqual(mapperC, mapperS, CardinalityOperator.All);
+		ComparisonResult result = ExpressionOperatorsNullSafe.areEqual(mapperC, mapperS, CardinalityOperator.All);
 
 		assertThat(result.get(), is(false));
 		assertThat(result.getError(), is("[Foo->getListBranchNodes[0]->getIntLeafNode, Foo->getListBranchNodes[1]->getIntLeafNode] [5, 10] does not equal [Foo->getObjectBranchNode->getIntLeafNode] [5]"));
@@ -108,7 +107,7 @@ public class ExpressionOperatorsTest {
 		Mapper<Integer> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapperS = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getIntLeafNode", BranchNode::getIntLeafNode);
 
-		ComparisonResult result = ExpressionOperators.areEqual(mapperC, mapperS, CardinalityOperator.All);
+		ComparisonResult result = ExpressionOperatorsNullSafe.areEqual(mapperC, mapperS, CardinalityOperator.All);
 
 		assertThat(result.get(), is(false));
 		assertThat(result.getError(), is("[Foo->getListBranchNodes[0]->getIntLeafNode] [5] does not equal [Foo->getObjectBranchNode->getIntLeafNode]"));
@@ -121,7 +120,7 @@ public class ExpressionOperatorsTest {
 		Mapper<Integer> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapperS = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getIntLeafNode", BranchNode::getIntLeafNode);
 
-		ComparisonResult result = ExpressionOperators.areEqual(mapperC, mapperS, CardinalityOperator.All);
+		ComparisonResult result = ExpressionOperatorsNullSafe.areEqual(mapperC, mapperS, CardinalityOperator.All);
 
 		assertThat(result.get(), is(false));
 		assertThat(result.getError(), is("[Foo->getListBranchNodes[0]->getIntLeafNode] cannot be compared to [Foo->getObjectBranchNode->getIntLeafNode]"));
@@ -134,7 +133,7 @@ public class ExpressionOperatorsTest {
 		Mapper<Integer> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapperS = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getIntLeafNode", BranchNode::getIntLeafNode);
 
-		ComparisonResult result = ExpressionOperators.areEqual(mapperC, mapperS, CardinalityOperator.All);
+		ComparisonResult result = ExpressionOperatorsNullSafe.areEqual(mapperC, mapperS, CardinalityOperator.All);
 
 		assertThat(result.get(), is(false));
 		assertThat(result.getError(), is("[Foo->getListBranchNodes[0]->getIntLeafNode] [5] does not equal [Foo->getObjectBranchNode]"));
@@ -147,7 +146,7 @@ public class ExpressionOperatorsTest {
 		Mapper<Integer> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes).map("getIntLeafNode", BranchNode::getIntLeafNode);
 		Mapper<Integer> mapperS = MapperS.of(foo).map("getObjectBranchNode", Foo::getObjectBranchNode).map("getIntLeafNode", BranchNode::getIntLeafNode);
 
-		ComparisonResult result = ExpressionOperators.areEqual(mapperC, mapperS, CardinalityOperator.All);
+		ComparisonResult result = ExpressionOperatorsNullSafe.areEqual(mapperC, mapperS, CardinalityOperator.All);
 
 		assertThat(result.get(), is(false));
 		assertThat(result.getError(), is("[Foo->getListBranchNodes] cannot be compared to [Foo->getObjectBranchNode]"));
@@ -160,13 +159,13 @@ public class ExpressionOperatorsTest {
 
 		Mapper<BranchNode> mapperC = MapperS.of(foo).mapC("getListBranchNodes", Foo::getListBranchNodes);
 
-		ComparisonResult result = ExpressionOperators.contains(mapperC, MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_2)));
+		ComparisonResult result = ExpressionOperatorsNullSafe.contains(mapperC, MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_2)));
 		assertThat(result.get(), is(true));
 
-		result = ExpressionOperators.contains(mapperC, MapperS.of(BRANCH_NODE_3));
+		result = ExpressionOperatorsNullSafe.contains(mapperC, MapperS.of(BRANCH_NODE_3));
 		assertThat(result.get(), is(false));
 
-		result = ExpressionOperators.contains(mapperC, MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_3)));
+		result = ExpressionOperatorsNullSafe.contains(mapperC, MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_3)));
 		assertThat(result.get(), is(false));
 
 		assertThat(result.getError(), is("[5, 5] does not contain all of [5, 10]"));
@@ -174,7 +173,7 @@ public class ExpressionOperatorsTest {
 
 	@Test
 	public void countElementsListLiteral() {
-		ComparisonResult result = ExpressionOperators.areEqual(
+		ComparisonResult result = ExpressionOperatorsNullSafe.areEqual(
 				MapperS.of(MapperC.of(MapperS.of(BRANCH_NODE_1), MapperS.of(BRANCH_NODE_3)).resultCount()), MapperS.of(Integer.valueOf(2)),
 				CardinalityOperator.All);
 		assertThat(result.get(), is(true));

@@ -9,7 +9,7 @@ import java.util.List;
 import test.pojo.Foo1;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.rosetta.model.lib.expression.ExpressionOperators.checkNumber;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkNumber;
 import static com.rosetta.model.lib.validation.ValidationResult.failure;
 import static com.rosetta.model.lib.validation.ValidationResult.success;
 import static java.util.Optional.empty;

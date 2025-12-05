@@ -16,22 +16,18 @@
 
 package com.rosetta.model.lib.expression;
 
-import static com.rosetta.model.lib.expression.ErrorHelper.formatEqualsComparisonResultError;
+import com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.CompareFunction;
+import com.rosetta.model.lib.mapper.Mapper;
+import com.rosetta.model.lib.mapper.MapperC;
+import com.rosetta.model.lib.mapper.MapperS;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.ListIterator;
 
-import com.rosetta.model.lib.expression.ExpressionOperators.CompareFunction;
-import com.rosetta.model.lib.mapper.Mapper;
-import com.rosetta.model.lib.mapper.MapperC;
-import com.rosetta.model.lib.mapper.MapperS;
+import static com.rosetta.model.lib.expression.ErrorHelper.formatEqualsComparisonResultError;
 
-/**
- * @deprecated use {@link ExpressionCompareUtilNullSafe} instead
- */
-@Deprecated
-class ExpressionEqualityUtil {
+class ExpressionEqualityUtilNullSafe {
 
 	/**
 	 * Checks whether given mappers are both groupBy functions, if not handles as ungrouped mappers.
@@ -43,7 +39,7 @@ class ExpressionEqualityUtil {
 	static <T, U, G> ComparisonResult evaluate(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o, CompareFunction<Mapper<T>, Mapper<U>> func) {
 		return func.apply(m1, m2, o);
 	}
-
+	
 	/**
 	 * Checks that all items in the given mappers are equal.
 	 * @param m1
@@ -58,7 +54,7 @@ class ExpressionEqualityUtil {
 		if (m2 instanceof ComparisonResult) {
 			m2 = (Mapper<U>) ((ComparisonResult) m2).asMapper();
 		}
-
+					
 		if(m1.getClass().equals(m2.getClass())) {
 			return areEqualSame(m1, (Mapper<T>)m2, o);
 		}
@@ -69,17 +65,21 @@ class ExpressionEqualityUtil {
 			return areEqualDifferent((MapperC<T>)m1, (MapperS<U>)m2, o);
 		}
 	}
-
+	
 	private static <T> ComparisonResult areEqualSame(Mapper<T> m1, Mapper<T> m2, CardinalityOperator o) {
 		List<T> multi1 = m1.getMulti();
 		List<T> multi2 = m2.getMulti();
-
+		
 		ListIterator<T> e1 = multi1.listIterator();
 		ListIterator<T> e2 = multi2.listIterator();
-
-		if (multi1.isEmpty() || multi2.isEmpty())
-			return ComparisonResult.failureEmptyOperand(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
-
+		
+		if (multi1.isEmpty() || multi2.isEmpty()) {
+            if (multi1.isEmpty() && multi2.isEmpty()) {
+                return ComparisonResult.success();
+            }
+            return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
+        }
+		
 		while (e1.hasNext() && e2.hasNext()) {
 			T b1 = e1.next();
 			T b2 = e2.next();
@@ -96,27 +96,27 @@ class ExpressionEqualityUtil {
 				return ComparisonResult.success();
 			}
 		}
-
+		
 		if (e1.hasNext() || e2.hasNext())
-			return ComparisonResult.failureEmptyOperand(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
-
-		return o == CardinalityOperator.All ?
+			return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
+		
+		return o == CardinalityOperator.All ? 
 				ComparisonResult.success() :
 				ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " does not equal " + formatEqualsComparisonResultError(m2));
 	}
-
+	
 	private static <T, U> ComparisonResult areEqualDifferent(MapperC<T> m1, MapperS<U> m2, CardinalityOperator o) {
 		List<T> multi1 = m1.getMulti();
 		U b2 = m2.get();
-
+		
 		if (multi1.isEmpty())
-			return ComparisonResult.failureEmptyOperand(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
-
+			return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
+		
 		ListIterator<T> e1 = multi1.listIterator();
-
+		
 		while (e1.hasNext()) {
 			T b1 = e1.next();
-
+			
 			if (b1 instanceof Number && b2 instanceof Number) {
 				int compRes = CompareHelper.compare(b1, b2);
 				if (compRes != 0 && o == CardinalityOperator.All) {
@@ -136,12 +136,12 @@ class ExpressionEqualityUtil {
 				}
 			}
 		}
-
-		return o == CardinalityOperator.All ?
+		
+		return o == CardinalityOperator.All ? 
 				ComparisonResult.success() :
 				ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " does not equal " + formatEqualsComparisonResultError(m2));
 	}
-
+	
 	/**
 	 * Checks that the given mappers have no equal items.
 	 * @param m1
@@ -159,17 +159,17 @@ class ExpressionEqualityUtil {
 		else {
 			return notEqualDifferent((MapperC<T>)m1, (MapperS<U>)m2, o);
 		}
-	}
-
+	}	
+	
 	private static <T> ComparisonResult notEqualSame(Mapper<T> m1, Mapper<T> m2, CardinalityOperator o) {
 		List<T> multi1 = m1.getMulti();
 		List<T> multi2 = m2.getMulti();
 
 		ListIterator<T> e1 = multi1.listIterator();
 		ListIterator<T> e2 = multi2.listIterator();
-
+		
 		if (multi1.isEmpty() || multi2.isEmpty())
-			return ComparisonResult.successEmptyOperand(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
+		    return ComparisonResult.success();
 
 		while (e1.hasNext() && e2.hasNext()) {
 			T b1 = e1.next();
@@ -192,28 +192,28 @@ class ExpressionEqualityUtil {
 				}
 			}
 		}
-
+		
 		if (e1.hasNext() || e2.hasNext())
 			return ComparisonResult.success();
-
-		return o == CardinalityOperator.Any ?
+		
+		return o == CardinalityOperator.Any ? 
 				ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " should not equal " + formatEqualsComparisonResultError(m2)) :
 				ComparisonResult.success();
 
 	}
-
+	
 	private static <T, U> ComparisonResult notEqualDifferent(MapperC<T> m1, MapperS<U> m2, CardinalityOperator o) {
 		List<T> multi1 = m1.getMulti();
 		U b2 = m2.get();
 
 		if (multi1.isEmpty())
-			return ComparisonResult.successEmptyOperand(formatEqualsComparisonResultError(m1) + " cannot be compared to " + formatEqualsComparisonResultError(m2));
+		    return ComparisonResult.success();
 
 		ListIterator<T> e1 = multi1.listIterator();
-
+		
 		while (e1.hasNext()) {
 			T b1 = e1.next();
-
+			
 			if (b1 instanceof Number && b2 instanceof Number) {
 				int compRes = CompareHelper.compare(b1, b2);
 				if (compRes != 0 && o == CardinalityOperator.Any) {
@@ -232,10 +232,10 @@ class ExpressionEqualityUtil {
 					return ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " should not equal " + formatEqualsComparisonResultError(m2));
 				}
 			}
-
+				
 		}
 
-		return o == CardinalityOperator.Any ?
+		return o == CardinalityOperator.Any ? 
 				ComparisonResult.failure(formatEqualsComparisonResultError(m1) + " should not equal  " + formatEqualsComparisonResultError(m2)) :
 				ComparisonResult.success();
 	}

@@ -19,6 +19,220 @@ import com.rosetta.model.lib.path.RosettaPath;
 public class DataTypeConditionTest extends AbstractConditionTest {
 	@Inject
 	private RosettaTestModelService testModelService;
+
+    @Test
+    void thenExpressionWithAndThatResolvesFalseIsFailure() {
+        JavaTestModel model = testModelService.toJavaTestModel("""
+				type Bar:
+				    barValue int (1..1)
+				
+				type Foo:
+					fooValue int (0..1)
+					bar Bar (0..1)
+				
+					condition C:
+					    if fooValue exists
+					    then fooValue > 0 and if bar exists
+					        then bar -> barValue > 0
+				""").compile();
+
+        var condition = getCondition(model, "Foo", "C");
+
+        RosettaModelObject foo = model.evaluateExpression(RosettaModelObject.class, """
+				Foo {
+				    fooValue: 10,
+				    ...
+				}
+				""");
+
+        var fooResults = condition.invoke(RosettaPath.valueOf("foo"), foo);
+
+        assertResults(
+                fooResults,
+                (v1) -> assertFailure(v1, "FooC", "foo", "right of `and` operation is empty")
+        );
+    }
+
+    @Test
+    void emptyOrEmptyIsSuccess() {
+        JavaTestModel model = testModelService.toJavaTestModel("""
+				type Foo:
+					a int (0..1)
+				
+					condition C:
+					    if a exists
+					    then empty or empty
+				""").compile();
+
+        var condition = getCondition(model, "Foo", "C");
+
+        RosettaModelObject foo = model.evaluateExpression(RosettaModelObject.class, """
+				Foo {
+				    a: 10
+				}
+				""");
+
+        var fooResults = condition.invoke(RosettaPath.valueOf("foo"), foo);
+
+        assertResults(
+                fooResults,
+                (v1) -> assertSuccess(v1, "FooC", "foo")
+        );
+    }
+
+    @Test
+    void emptyAndEmptyIsSuccess() {
+        JavaTestModel model = testModelService.toJavaTestModel("""
+				type Foo:
+					a int (0..1)
+				
+					condition C:
+					    if a exists
+					    then empty and empty
+				""").compile();
+
+        var condition = getCondition(model, "Foo", "C");
+
+        RosettaModelObject foo = model.evaluateExpression(RosettaModelObject.class, """
+				Foo {
+				    a: 10
+				}
+				""");
+
+        var fooResults = condition.invoke(RosettaPath.valueOf("foo"), foo);
+
+        assertResults(
+                fooResults,
+                (v1) -> assertSuccess(v1, "FooC", "foo")
+        );
+    }
+
+    @Test
+    void explicitEmptyFromConditionFunctionIsSuccess() {
+        JavaTestModel model = testModelService.toJavaTestModel("""
+				func FooCondition:
+				    inputs:
+				        foo Foo (1..1)
+				
+				    output:
+				        valid boolean (0..1)
+				
+				    set valid:
+				        if foo -> a exists
+				        then empty
+				
+				type Foo:
+					a int (0..1)
+				
+					condition FooCheck:
+					    FooCondition
+				""").compile();
+
+        var condition = getCondition(model, "Foo", "FooCheck");
+
+        RosettaModelObject foo = model.evaluateExpression(RosettaModelObject.class, """
+                Foo {
+                    a: 10
+                }
+                """);
+
+        var fooResults = condition.invoke(RosettaPath.valueOf("foo"), foo);
+
+        assertResults(
+                fooResults,
+                (v1) -> assertSuccess(v1, "FooFooCheck", "foo")
+        );
+    }
+
+    @Test
+    void implicitEmptyFromConditionFunctionIsSuccess() {
+    	JavaTestModel model = testModelService.toJavaTestModel("""
+				func FooCondition:
+				    inputs:
+				        foo Foo (1..1)
+				
+				    output:
+				        valid boolean (0..1)
+				
+				    set valid:
+				        if foo -> a exists
+				        then True
+				
+				type Foo:
+					a int (0..1)
+				
+					condition FooCheck:
+					    FooCondition
+				""").compile();
+
+    	var condition = getCondition(model, "Foo", "FooCheck");
+
+        RosettaModelObject foo = model.evaluateExpression(RosettaModelObject.class, """
+				Foo {
+				    ...
+				}
+				""");
+
+        var fooResults = condition.invoke(RosettaPath.valueOf("foo"), foo);
+
+        assertResults(
+                fooResults,
+                (v1) -> assertSuccess(v1, "FooFooCheck", "foo")
+        );
+    }
+
+	@Test
+	void emptyConditionIsSuccess() {
+		JavaTestModel model = testModelService.toJavaTestModel("""
+				type Foo:
+					a int (0..1)
+				
+					condition C:
+					    empty
+				""").compile();
+		
+		var condition = getCondition(model, "Foo", "C");
+
+		RosettaModelObject foo = model.evaluateExpression(RosettaModelObject.class, """
+				Foo {
+				    a: 10
+				}
+				""");
+		
+		var fooResults = condition.invoke(RosettaPath.valueOf("foo"), foo);
+		
+		assertResults(
+			fooResults,
+			(v1) -> assertSuccess(v1, "FooC", "foo")
+		);
+	}
+
+	@Test
+	void emptyConditionIfThenIsSuccess() {	
+		JavaTestModel model = testModelService.toJavaTestModel("""
+				type Foo:
+					a int (0..1)
+				
+					condition C:
+					    if a exists
+					    then empty
+				""").compile();
+		
+		var condition = getCondition(model, "Foo", "C");
+
+		RosettaModelObject foo = model.evaluateExpression(RosettaModelObject.class, """
+				Foo {
+				    a: 10
+				}
+				""");
+		
+		var fooResults = condition.invoke(RosettaPath.valueOf("foo"), foo);
+		
+		assertResults(
+			fooResults,
+			(v1) -> assertSuccess(v1, "FooC", "foo")
+		);
+	}
 	
 	@Test
 	void testChoiceCondition() {
@@ -69,7 +283,7 @@ public class DataTypeConditionTest extends AbstractConditionTest {
 		JavaTestModel model = testModelService.toJavaTestModel("""
 				type Foo:
 					a int (0..1)
-					
+				
 					condition C:
 					    if a exists
 					    then a = 42
@@ -98,7 +312,7 @@ public class DataTypeConditionTest extends AbstractConditionTest {
 					[metadata key]
 					a date (1..1)
 					b date (1..1)
-					
+				
 					condition DateCondition:
 						a <= b
 				""").compile();
@@ -131,7 +345,7 @@ public class DataTypeConditionTest extends AbstractConditionTest {
 		JavaTestModel model = testModelService.toJavaTestModel("""
 				type Foo:
 					a int (0..1)
-					
+				
 					condition C:
 					    FooIsValid
 				
@@ -170,7 +384,7 @@ public class DataTypeConditionTest extends AbstractConditionTest {
 		JavaTestModel model = testModelService.toJavaTestModel("""
 				type Foo:
 					a int (0..1)
-					
+				
 					condition C:
 					    item -> a exists and [item, item] any = item
 				""").compile();
@@ -204,13 +418,13 @@ public class DataTypeConditionTest extends AbstractConditionTest {
 				type Foo:
 					x string (0..1)
 					y string (0..1)
-					
+				
 					condition A:
 						x exists
 				
 				type Bar extends Foo:
 					z string (0..1)
-					
+				
 					condition B:
 						y exists
 				""").compile();

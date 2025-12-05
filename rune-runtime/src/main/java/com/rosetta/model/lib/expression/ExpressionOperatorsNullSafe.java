@@ -16,26 +16,6 @@
 
 package com.rosetta.model.lib.expression;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.mapper.Mapper;
 import com.rosetta.model.lib.mapper.Mapper.Path;
@@ -46,61 +26,69 @@ import com.rosetta.model.lib.validation.ChoiceRuleValidationMethod;
 import com.rosetta.model.lib.validation.ExistenceChecker;
 import com.rosetta.model.lib.validation.ValidationResult;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
+import org.apache.commons.lang3.StringUtils;
 
-/**
- * @deprecated use {@link ExpressionOperatorsNullSafe} instead
- */
-@Deprecated
-public class ExpressionOperators {
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.*;
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+public class ExpressionOperatorsNullSafe {
+	
 	// notExists
-
+	
 	public static <T> ComparisonResult notExists(Mapper<T> o) {
 		if (o.resultCount()==0) {
 			return ComparisonResult.success();
 		}
 		return ComparisonResult.failure(o.getPaths() + " does exist and is " + formatMultiError(o));
 	}
-
+	
 	// exists
-
+	
 	public static <T> ComparisonResult exists(Mapper<T> o) {
 		if (o.resultCount()>0) {
 			return ComparisonResult.success();
 		}
 		return ComparisonResult.failure(o.getErrorPaths() + " does not exist");
 	}
-
+	
 	// singleExists
-
+	
 	public static <T> ComparisonResult singleExists(Mapper<T> o) {
 		if (o.resultCount()==1) {
 			return  ComparisonResult.success();
 		}
-
+		
 		String error = o.resultCount() > 0 ?
 				String.format("Expected single %s but found %s [%s]", o.getPaths(), o.resultCount(), formatMultiError(o)) :
 				String.format("Expected single %s but found zero", o.getErrorPaths());
-
+		
 		return ComparisonResult.failure(error);
 	}
-
+	
 	// multipleExists
-
+	
 	public static <T> ComparisonResult multipleExists(Mapper<T> o) {
 		if (o.resultCount()>1) {
 			return ComparisonResult.success();
 		}
-
+		
 		String error = o.resultCount() > 0 ?
 				String.format("Expected multiple %s but only one [%s]", o.getPaths(), formatMultiError(o)) :
 				String.format("Expected multiple %s but found zero", o.getErrorPaths());
-
+				
 		return ComparisonResult.failure(error);
 	}
-
+	
 	// onlyExists
-
+	
 	@Deprecated // Since 9.11.3
 	public static ComparisonResult onlyExists(List<? extends Mapper<?>> o) {
 		// Validation rule checks that all parents match
@@ -109,7 +97,7 @@ public class ExpressionOperators {
 				.flatMap(Collection::stream)
 				.map(RosettaModelObject.class::cast)
 			    .collect(Collectors.toSet());
-
+		
 		if (parents.size() == 0) {
 			return ComparisonResult.failure("No fields set.");
 		}
@@ -117,32 +105,32 @@ public class ExpressionOperators {
 		// Find attributes to check
 		Set<String> fields = o.stream()
 				.flatMap(m -> Stream.concat(m.getPaths().stream(), m.getErrorPaths().stream()))
-				.map(ExpressionOperators::getAttributeName)
+				.map(ExpressionOperatorsNullSafe::getAttributeName)
 				.collect(Collectors.toSet());
-
+		
 		// The number of attributes to check, should equal the number of mappers
 		if (fields.size() != o.size()) {
 			return ComparisonResult.failure("All required fields not set.");
 		}
-
-		// Run validation then and results together
+		
+		// Run validation then and results together 
 		return parents.stream()
 			.map(p -> validateOnlyExists(p, fields))
-			.reduce(ComparisonResult.success(), (a, b) -> a.and(b));
+			.reduce(ComparisonResult.success(), (a, b) -> a.andNullSafe(b));
 	}
-
+	
 	public static <T> ComparisonResult onlyExists(Mapper<T> mapper, List<String> allFieldNames, List<String> requiredFields) {
 		List<T> objects = mapper.getMulti();
-
+		
 		if (objects == null || objects.isEmpty()) {
 			String requiredFieldsMessage = requiredFields.stream().collect(Collectors.joining("', '", "'", "'"));
 			String errorMessage = String.format("Expected only %s to be set, but object was absent.", requiredFieldsMessage);
 			return ComparisonResult.failure(errorMessage);
 		}
-
+		
 		return objects.stream()
 				.map(p -> validateOnlyExists(p, allFieldNames, requiredFields))
-				.reduce(ComparisonResult.success(), (a, b) -> a.and(b));
+				.reduce(ComparisonResult.success(), (a, b) -> a.andNullSafe(b));
 	}
 
 	private static <T> ComparisonResult validateOnlyExists(T object, List<String> allFieldNames, List<String> requiredFields) {
@@ -157,7 +145,7 @@ public class ExpressionOperators {
 				throw new IllegalArgumentException(e);
 			}
 		}
-
+				
 		if (new HashSet<>(populatedFieldNames).equals(new HashSet<>(requiredFields))) {
 			return ComparisonResult.success();
 		}
@@ -171,17 +159,17 @@ public class ExpressionOperators {
 		}
 		return ComparisonResult.failure(errorMessage);
 	}
-
+	
 	/**
-	 * @return attributeName - get the attribute name which is the path leaf node, unless attribute has metadata (scheme/reference etc), where it is the paths penultimate node.
+	 * @return attributeName - get the attribute name which is the path leaf node, unless attribute has metadata (scheme/reference etc), where it is the paths penultimate node. 
 	 */
 	private static String getAttributeName(Path p) {
 		String attr = p.getLastName();
-		return "value".equals(attr) || "reference".equals(attr) || "globalReference".equals(attr) ?
-				p.getNames().get(p.getNames().size() - 2) :
+		return "value".equals(attr) || "reference".equals(attr) || "globalReference".equals(attr) ? 
+				p.getNames().get(p.getNames().size() - 2) : 
 				attr;
 	}
-
+	
 	@Deprecated // Since 9.11.3
 	private static <T extends RosettaModelObject> ComparisonResult validateOnlyExists(T parent, Set<String> fields) {
 		@SuppressWarnings("unchecked")
@@ -191,13 +179,13 @@ public class ExpressionOperators {
 			ValidationResult<? extends RosettaModelObject> validationResult = onlyExistsValidator.validate(null, parent, fields);
 			// Translate validationResult into comparisonResult
 			return validationResult.isSuccess() ?
-					ComparisonResult.success() :
+					ComparisonResult.success() : 
 					ComparisonResult.failure(validationResult.getFailureReason().orElse(""));
 		} else {
 			return ComparisonResult.success();
 		}
 	}
-
+	
 	/**
 	 * DoIf implementation for Mappers
 	 */
@@ -210,8 +198,8 @@ public class ExpressionOperators {
 	public static <T, A extends Mapper<T>> A doIf(Mapper<Boolean> test, Supplier<A> ifthen) {
 		return doIf(test, ifthen, () -> (A) MapperS.of((T) null));
 	}
-
-
+	
+	
 	/**
 	 * DoIf implementation for ComparisonResult.
 	 */
@@ -223,11 +211,11 @@ public class ExpressionOperators {
 			return toComparisonResult(elsethen.get());
 		}
 	}
-
+	
 	public static ComparisonResult resultDoIf(Mapper<Boolean> test, Supplier<Mapper<Boolean>> ifthen) {
 		return resultDoIf(test, ifthen, () -> ComparisonResult.success());
 	}
-
+	
 	private static ComparisonResult toComparisonResult(Mapper<Boolean> mapper) {
 		if (mapper instanceof ComparisonResult) {
 			return (ComparisonResult) mapper;
@@ -235,53 +223,53 @@ public class ExpressionOperators {
 			return mapper.getMulti().stream().allMatch(Boolean::booleanValue) ? ComparisonResult.success() : ComparisonResult.failure("");
 		}
 	}
-
+	
 	interface CompareFunction<T, U> {
 	    ComparisonResult apply(T t, U u, CardinalityOperator o);
 	}
-
+	
 	// areEqual
-
+	
 	public static <T, U> ComparisonResult areEqual(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o) {
-		return ExpressionEqualityUtil.evaluate(m1, m2, o, ExpressionEqualityUtil::areEqual);
+		return ExpressionEqualityUtilNullSafe.evaluate(m1, m2, o, ExpressionEqualityUtilNullSafe::areEqual);
 	}
-
+	
 	// notEqual
-
+		
 	public static <T, U> ComparisonResult notEqual(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o) {
-		return ExpressionEqualityUtil.evaluate(m1, m2, o, ExpressionEqualityUtil::notEqual);
+		return ExpressionEqualityUtilNullSafe.evaluate(m1, m2, o, ExpressionEqualityUtilNullSafe::notEqual);
 	}
-
+	
 	public static <T extends Comparable<? super T>> ComparisonResult notEqual(ComparisonResult r1, ComparisonResult r2) {
 		return r1.get() != r2.get() ? ComparisonResult.success() : ComparisonResult.failure("Results are not equal");
 	}
-
+	
 	// greaterThan
-
+		
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThan(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o) {
-		return ExpressionCompareUtil.evaluate(m1, m2, o, ExpressionCompareUtil::greaterThan);
+		return ExpressionCompareUtilNullSafe.evaluate(m1, m2, o, ExpressionCompareUtilNullSafe::greaterThan);
 	}
-
+	
 	// greaterThanEquals
-
+	
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult greaterThanEquals(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o) {
-		return ExpressionCompareUtil.evaluate(m1, m2, o, ExpressionCompareUtil::greaterThanEquals);
+		return ExpressionCompareUtilNullSafe.evaluate(m1, m2, o, ExpressionCompareUtilNullSafe::greaterThanEquals);
 	}
-
+	
 	// lessThan
 
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThan(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o)  {
-		return ExpressionCompareUtil.evaluate(m1, m2, o, ExpressionCompareUtil::lessThan);
+		return ExpressionCompareUtilNullSafe.evaluate(m1, m2, o, ExpressionCompareUtilNullSafe::lessThan);
 	}
-
+	
 	// lessThanEquals
 
 	public static <T extends Comparable<? super T>, U extends Comparable<? super U>> ComparisonResult lessThanEquals(Mapper<T> m1, Mapper<U> m2, CardinalityOperator o)  {
-		return ExpressionCompareUtil.evaluate(m1, m2, o, ExpressionCompareUtil::lessThanEquals);
+		return ExpressionCompareUtilNullSafe.evaluate(m1, m2, o, ExpressionCompareUtilNullSafe::lessThanEquals);
 	}
 
 	// contains
-
+	
 	public static <T> ComparisonResult contains(Mapper<? extends T> o1, Mapper<? extends T> o2) {
 		if (o1.getMulti().isEmpty()) {
 			return ComparisonResult.failure("Empty list does not contain all of " +formatMultiError(o2));
@@ -297,9 +285,9 @@ public class ExpressionOperators {
 			return ComparisonResult.failure(formatMultiError(o1) + " does not contain all of " +formatMultiError(o2));
 		}
 	}
-
+	
 	// disjoint
-
+	
 	public static <T> ComparisonResult disjoint(Mapper<T> o1, Mapper<T> o2) {
 		List<T> multi2 = o2.getMulti();
 		List<T> multi1 = o1.getMulti();
@@ -312,16 +300,16 @@ public class ExpressionOperators {
 			return ComparisonResult.failure(formatMultiError(o1) + " is not disjoint from " +formatMultiError(o2) + "common items are " + common);
 		}
 	}
-
+	
 	// distinct
-
+	
 	public static <T> MapperC<T> distinct(Mapper<T> o) {
 		return MapperC.of(o.getMulti()
 				.stream()
 				.distinct()
 				.collect(Collectors.toList()));
 	}
-
+	
 	public static ComparisonResult checkCardinality(String msgPrefix, int actual, int min, int max) {
 		if (actual < min) {
 			if(actual == 0){
@@ -475,14 +463,14 @@ public class ExpressionOperators {
 				failures.stream().collect(Collectors.joining(" - "))
 			);
 	}
-
+	
 	private static <T> String formatMultiError(Mapper<T> o) {
 		T t = o.getMulti().stream().findAny().orElse(null);
-		return t instanceof RosettaModelObject  ?
+		return t instanceof RosettaModelObject  ? 
 				t.getClass().getSimpleName() : // for rosettaModelObjects only log class name otherwise error messages are way too long
 				o.getMulti().toString();
 	}
-
+	
 	// one-of and choice
 
 	@Deprecated // Since 9.7.0
@@ -502,7 +490,7 @@ public class ExpressionOperators {
 				throw new IllegalArgumentException(e);
 			}
 		}
-
+				
 		if (necessity.check(populatedFieldNames.size())) {
 			return ComparisonResult.success();
 		}

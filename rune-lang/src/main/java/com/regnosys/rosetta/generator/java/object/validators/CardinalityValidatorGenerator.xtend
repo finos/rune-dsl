@@ -4,7 +4,7 @@ import com.google.common.base.Strings
 import com.google.common.collect.Lists
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.rosetta.model.lib.expression.ComparisonResult
-import com.rosetta.model.lib.expression.ExpressionOperators
+import com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.validation.ValidationResult
 import java.util.stream.Collectors
@@ -68,9 +68,9 @@ class CardinalityValidatorGenerator extends AbstractValidatorGenerator {
 	        /* Casting is required to ensure types are output to ensure recompilation in Rosetta */
 			'''
 			«IF attr.isMulti»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («prop.type») «propCode» == null ? 0 : «propCode».size(), «attr.cardinality.min», «attr.cardinality.max.orElse(0)»)
+				«method(ExpressionOperatorsNullSafe, "checkCardinality")»("«attr.name»", («prop.type») «propCode» == null ? 0 : «propCode».size(), «attr.cardinality.min», «attr.cardinality.max.orElse(0)»)
 			«ELSE»
-				«method(ExpressionOperators, "checkCardinality")»("«attr.name»", («prop.type») «propCode» != null ? 1 : 0, «attr.cardinality.min», «attr.cardinality.max.orElse(0)»)
+				«method(ExpressionOperatorsNullSafe, "checkCardinality")»("«attr.name»", («prop.type») «propCode» != null ? 1 : 0, «attr.cardinality.min», «attr.cardinality.max.orElse(0)»)
 			«ENDIF»
 			'''
 		}

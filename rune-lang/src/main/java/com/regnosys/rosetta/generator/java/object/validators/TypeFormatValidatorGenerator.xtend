@@ -5,7 +5,7 @@ import com.google.common.collect.Lists
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension
 import com.regnosys.rosetta.generator.java.statement.JavaIfThenStatement
 import com.rosetta.model.lib.expression.ComparisonResult
-import com.rosetta.model.lib.expression.ExpressionOperators
+import com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.validation.ValidationResult
 import java.util.stream.Collectors
@@ -143,7 +143,7 @@ class TypeFormatValidatorGenerator extends AbstractValidatorGenerator {
 				val max = t.interval.max.optional
 				val pattern = t.pattern.optionalPattern
 								
-				checks.add('''«method(ExpressionOperators, "checkString")»("«attr.name»", «javaType.getAttributeValue(attr)», «min», «max», «pattern»)''')
+				checks.add('''«method(ExpressionOperatorsNullSafe, "checkString")»("«attr.name»", «javaType.getAttributeValue(attr)», «min», «max», «pattern»)''')
 			}
 		} else if (t instanceof RNumberType) {
 			if (t != UNCONSTRAINED_NUMBER) {
@@ -152,7 +152,7 @@ class TypeFormatValidatorGenerator extends AbstractValidatorGenerator {
 				val min = t.interval.min.optionalBigDecimal
 				val max = t.interval.max.optionalBigDecimal
 				
-				checks.add('''«method(ExpressionOperators, "checkNumber")»("«attr.name»", «javaType.getAttributeValue(attr)», «digits», «fractionalDigits», «min», «max»)''')
+				checks.add('''«method(ExpressionOperatorsNullSafe, "checkNumber")»("«attr.name»", «javaType.getAttributeValue(attr)», «digits», «fractionalDigits», «min», «max»)''')
 			}
 		}
 		

@@ -10,7 +10,7 @@ import java.util.List;
 import test.pojo.Qux;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.rosetta.model.lib.expression.ExpressionOperators.checkCardinality;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkCardinality;
 import static com.rosetta.model.lib.validation.ValidationResult.failure;
 import static com.rosetta.model.lib.validation.ValidationResult.success;
 import static java.util.stream.Collectors.toList;
