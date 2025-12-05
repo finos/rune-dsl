@@ -274,7 +274,7 @@ class TypeCoercionTest {
 		import com.rosetta.model.lib.mapper.MapperS;
 		
 		
-		return ComparisonResult.of(MapperS.of(Boolean.valueOf(true)));
+		return ComparisonResult.ofNullSafe(MapperS.of(Boolean.valueOf(true)));
 		'''
 		assertCoercion(expected, '''«Boolean».valueOf(true)''', Boolean, ComparisonResult)
 	}
@@ -338,7 +338,7 @@ class TypeCoercionTest {
 		import com.rosetta.model.lib.mapper.MapperS;
 		
 		
-		return ComparisonResult.of(MapperS.of(true));
+		return ComparisonResult.ofNullSafe(MapperS.of(true));
 		'''
 		assertCoercion(expected, '''«MapperS».of(true)''', MAPPER_S.wrap(Boolean), ComparisonResult)
 		
