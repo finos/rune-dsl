@@ -19,6 +19,10 @@ package com.rosetta.model.lib.mapper;
 import java.util.function.Supplier;
 import com.rosetta.model.lib.expression.ComparisonResult;
 
+/**
+ * @deprecated This class is not used anywhere in the code generators. Don't use this, it's not null safe, instead use {@link ComparisonResult} and other expression utilities.
+ */
+@Deprecated
 public class MapperUtils {
 	
 	/**
@@ -87,22 +91,13 @@ public class MapperUtils {
 		return supplier.get();
 	}
 
-    public static ComparisonResult toComparisonResultNullSafe(Mapper<Boolean> mapper) {
-        if (mapper instanceof ComparisonResult) {
-            return (ComparisonResult) mapper;
-        } else if (mapper.getMulti().isEmpty()) {
-            return ComparisonResult.ofEmpty();
-        } else {
-            return mapper.getMulti().stream().allMatch(Boolean::booleanValue) ? ComparisonResult.success() : ComparisonResult.failure("");
-        }
-    }
-//	public static ComparisonResult toComparisonResult(Mapper<Boolean> mapper) {
-//		if (mapper instanceof ComparisonResult) {
-//			return (ComparisonResult) mapper;
-//		} else if (mapper.getMulti().isEmpty()) {
-//			return ComparisonResult.successEmptyOperand("");
-//		} else {
-//			return mapper.getMulti().stream().allMatch(Boolean::booleanValue) ? ComparisonResult.success() : ComparisonResult.failure("");
-//		}
-//	}
+	public static ComparisonResult toComparisonResult(Mapper<Boolean> mapper) {
+		if (mapper instanceof ComparisonResult) {
+			return (ComparisonResult) mapper;
+		} else if (mapper.getMulti().isEmpty()) {
+			return ComparisonResult.successEmptyOperand("");
+		} else {
+			return mapper.getMulti().stream().allMatch(Boolean::booleanValue) ? ComparisonResult.success() : ComparisonResult.failure("");
+		}
+	}
 }
