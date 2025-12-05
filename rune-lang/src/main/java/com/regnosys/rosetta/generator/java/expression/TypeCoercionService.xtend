@@ -290,7 +290,7 @@ class TypeCoercionService {
 			} else if (actual.extendsMapper) {
 				if (expected.isComparisonResult) {
 					// Case Mapper to ComparisonResult
-					[JavaExpression.from('''«ComparisonResult».of(«it»)''', COMPARISON_RESULT)]
+					[JavaExpression.from('''«ComparisonResult».ofNullSafe(«it»)''', COMPARISON_RESULT)]
 				} else if (expected.extendsMapper) {
 					if (actual.isMapperS && actual.hasWildcardArgument && expected.isMapperS && !expected.hasWildcardArgument) {
 						// Case immutable MapperS<? extends T> to mutable MapperS<T>
@@ -323,7 +323,7 @@ class TypeCoercionService {
 			} else if (actual.isList) {
 				if (expected.isComparisonResult) {
 					// Case List to ComparisonResult
-					[JavaExpression.from('''«ComparisonResult».of(«MapperC».of(«it»))''', COMPARISON_RESULT)]
+					[JavaExpression.from('''«ComparisonResult».ofNullSafe(«MapperC».of(«it»))''', COMPARISON_RESULT)]
 				} else if (expected.isMapperS) {
 					// Case List to MapperS
 					[JavaExpression.from('''«MapperS».of(«it».get(0))''', MAPPER_S.wrap(expected.itemType))]
@@ -586,7 +586,7 @@ class TypeCoercionService {
 		JavaExpression.from('''«MapperC».of(«Collections».singletonList(«expression»))''', MAPPER_C.wrap(expression.expressionType))
 	}
 	private def JavaExpression getItemToComparisonResultConversionExpression(JavaExpression expression) {
-		JavaExpression.from('''«ComparisonResult».of(«MapperS».of(«expression»))''', COMPARISON_RESULT)
+		JavaExpression.from('''«ComparisonResult».ofNullSafe(«MapperS».of(«expression»))''', COMPARISON_RESULT)
 	}
 	private def JavaExpression getListToItemConversionExpression(JavaExpression expression) {
 		JavaExpression.from('''«MapperC».of(«expression»).get()''', expression.expressionType.itemType)

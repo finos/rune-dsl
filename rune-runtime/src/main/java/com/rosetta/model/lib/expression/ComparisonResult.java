@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 public class ComparisonResult implements Mapper<Boolean> {
@@ -54,14 +53,18 @@ public class ComparisonResult implements Mapper<Boolean> {
 	public static ComparisonResult ofEmpty() {
 		return new ComparisonResult(null, null, null);
 	}
-	
-	public static ComparisonResult of(Mapper<Boolean> result) {
+
+    public static ComparisonResult ofNullSafe(Mapper<Boolean> result) {
         if (result.getMulti().isEmpty() || result.getMulti().stream().allMatch(Objects::isNull)) {
             return ofEmpty();
         }
         List<Boolean> filteredResults = result.getMulti().stream().filter(Objects::nonNull).collect(Collectors.toList());
         return new ComparisonResult(filteredResults.stream().allMatch(r -> r == true), false, null);
-	}
+    }
+	
+//	public static ComparisonResult of(Mapper<Boolean> result) {
+//		return new ComparisonResult(result.getMulti().stream().allMatch(r -> r == true), false, null);
+//	}
 	
 	private ComparisonResult(Boolean result, Boolean emptyOperand, String error) {
 		this.result = result;
@@ -71,7 +74,7 @@ public class ComparisonResult implements Mapper<Boolean> {
 	
 	@Override
 	public Boolean get() {
-		return getOrDefault(false);
+		return result;
 	}
 	
 	@Override
@@ -88,75 +91,106 @@ public class ComparisonResult implements Mapper<Boolean> {
 	public boolean isEmptyOperand() {
 		return result == null || (emptyOperand != null && emptyOperand);
 	}
+
+    public ComparisonResult andNullSafe(ComparisonResult other) {
+        return andNullSafe(this, other);
+    }
+
+//	public ComparisonResult and(ComparisonResult other) {
+//		return and(this, other);
+//	}
 	
-	public ComparisonResult and(ComparisonResult other) {
-		return and(this, other);
-	}
-	
-	public ComparisonResult andIgnoreEmptyOperand(ComparisonResult other) {
-		return combineIgnoreEmptyOperand(other, this::and);
-	}
-	
-	private ComparisonResult and(ComparisonResult r1, ComparisonResult r2) {
-        //TODO: remove this when we limit the use of empty in conditions in the model
+//	public ComparisonResult andIgnoreEmptyOperand(ComparisonResult other) {
+//		return combineIgnoreEmptyOperand(other, this::and);
+//	}
+
+    private ComparisonResult andNullSafe(ComparisonResult r1, ComparisonResult r2) {
         if (r1.isEmptyOperand() && r2.isEmptyOperand()) {
             return ComparisonResult.ofEmpty();
         }
 
-		boolean newResult = r1.get() && r2.get();
-		String newError = "";
-		if (!r1.get()) {
-            String r1Value = r1.isEmptyOperand() ? "empty" : r1.get().toString();
-			newError+=r1.error == null ? String.format("left of `and` operation is %s", r1Value) : r1.error;
-		}
-		if (!r2.get()) {
-			if (!r1.get()) {
-				newError+=" and ";
-			}
-            String r2Value = r2.isEmptyOperand() ? "empty" : r2.get().toString();
-			newError+=r2.error == null ? String.format("right of `and` operation is %s", r2Value) : r2.error;
-		}
-		return new ComparisonResult(newResult, false, newError);
-	}
+        boolean newResult = r1.getOrDefault(false) && r2.getOrDefault(false);
+        String newError = "";
+        if (!r1.getOrDefault(false)) {
+            String r1Value = r1.isEmptyOperand() ? "empty" : r1.getOrDefault(false).toString();
+            newError+=r1.error == null ? String.format("left of `and` operation is %s", r1Value) : r1.error;
+        }
+        if (!r2.getOrDefault(false)) {
+            if (!r1.getOrDefault(false)) {
+                newError+=" and ";
+            }
+            String r2Value = r2.isEmptyOperand() ? "empty" : r2.getOrDefault(false).toString();
+            newError+=r2.error == null ? String.format("right of `and` operation is %s", r2Value) : r2.error;
+        }
+        return new ComparisonResult(newResult, false, newError);
+    }
+	
+//	private ComparisonResult and(ComparisonResult r1, ComparisonResult r2) {
+//		boolean newResult = r1.result && r2.result;
+//		String newError = "";
+//		if (!r1.result) {
+//			newError+=r1.error;
+//		}
+//		if (!r2.result) {
+//			if (!r1.result) {
+//				newError+=" and ";
+//			}
+//			newError+=r2.error;
+//		}
+//		return new ComparisonResult(newResult, false, newError);
+//	}
 	
 	// or
+
+    public ComparisonResult orNullSafe(ComparisonResult other) {
+        return orNullSafe(this, other);
+    }
 	
-	public ComparisonResult or(ComparisonResult other) {
-		return or(this, other);
-	}
+//	public ComparisonResult or(ComparisonResult other) {
+//		return or(this, other);
+//	}
 	
-	public ComparisonResult orIgnoreEmptyOperand(ComparisonResult other) {
-		return combineIgnoreEmptyOperand(other, this::or);
-	}
-	
-	private ComparisonResult or(ComparisonResult r1, ComparisonResult r2) {
+//	public ComparisonResult orIgnoreEmptyOperand(ComparisonResult other) {
+//		return combineIgnoreEmptyOperand(other, this::or);
+//	}
+
+    private ComparisonResult orNullSafe(ComparisonResult r1, ComparisonResult r2) {
         //TODO: remove this when we limit the use of empty in conditions in the model
         if (r1.isEmptyOperand() && r2.isEmptyOperand()) {
             return ComparisonResult.ofEmpty();
         }
 
-		boolean newResult = r1.get() || r2.get();
-		String newError = "";
-		newError+=r1.error;
-		newError+=" and ";
-		newError+=r2.error;
-		return new ComparisonResult(newResult, false, newResult?null:newError);
-	}
+        boolean newResult = r1.getOrDefault(false) || r2.getOrDefault(false);
+        String newError = "";
+        newError+=r1.error;
+        newError+=" and ";
+        newError+=r2.error;
+        return new ComparisonResult(newResult, false, newResult?null:newError);
+    }
+	
+//	private ComparisonResult or(ComparisonResult r1, ComparisonResult r2) {
+//		boolean newResult = r1.result || r2.result;
+//		String newError = "";
+//		newError+=r1.error;
+//		newError+=" and ";
+//		newError+=r2.error;
+//		return new ComparisonResult(newResult, false, newResult?null:newError);
+//	}
 	
 	// utils
 	
-	private ComparisonResult combineIgnoreEmptyOperand(ComparisonResult other, BinaryOperator<ComparisonResult> combineFunc) {
-		if(this.isEmptyOperand() && other.isEmptyOperand()) {
-			return ComparisonResult.ofEmpty();
-		}
-		if(this.isEmptyOperand()) {
-			return other;
-		}
-		if(other.isEmptyOperand()) {
-			return this;
-		}
-		return combineFunc.apply(this, other);
-	}
+//	private ComparisonResult combineIgnoreEmptyOperand(ComparisonResult other, BinaryOperator<ComparisonResult> combineFunc) {
+//		if(this.emptyOperand && other.emptyOperand) {
+//			return ComparisonResult.failureEmptyOperand(this.error + " and " + other.error);
+//		}
+//		if(this.emptyOperand) {
+//			return other;
+//		}
+//		if(other.emptyOperand) {
+//			return this;
+//		}
+//		return combineFunc.apply(this, other);
+//	}
 
 	@Override
 	public List<Boolean> getMulti() {

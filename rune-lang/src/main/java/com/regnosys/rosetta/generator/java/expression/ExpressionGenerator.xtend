@@ -115,7 +115,7 @@ import com.regnosys.rosetta.utils.ExpressionHelper
 import com.regnosys.rosetta.utils.ImplicitVariableUtil
 import com.regnosys.rosetta.utils.RosettaExpressionSwitch
 import com.rosetta.model.lib.expression.CardinalityOperator
-import com.rosetta.model.lib.expression.ExpressionOperators
+import com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe
 import com.rosetta.model.lib.expression.MapperMaths
 import com.rosetta.model.lib.mapper.MapperC
 import com.rosetta.model.lib.mapper.MapperS
@@ -165,6 +165,7 @@ import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator.Contex
 import com.regnosys.rosetta.generator.java.function.AliasUtil
 import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.regnosys.rosetta.rosetta.expression.RosettaSuperCall
+import com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe
 
 class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, ExpressionGenerator.Context> {
 	
@@ -229,7 +230,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	private def StringConcatenationClient runtimeMethod(String methodName) {
-		'''«importWildcard(method(ExpressionOperators, methodName))»'''
+		'''«importWildcard(method(ExpressionOperatorsNullSafe, methodName))»'''
 	}
 	private def JavaStatementBuilder applyRuntimeMethod(JavaStatementBuilder expr, String methodName, JavaType resultType) {
 		expr.mapExpression[JavaExpression.from('''«runtimeMethod(methodName)»(«it»)''', resultType)]
@@ -407,7 +408,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				val leftCode = javaCode(left, context.withExpected(COMPARISON_RESULT))
 				val rightCode = javaCode(right, context.withExpected(COMPARISON_RESULT))
 				leftCode
-					.then(rightCode, [l, r|JavaExpression.from('''«l».«expr.operator»(«r»)''', COMPARISON_RESULT)], context.scope)
+					.then(rightCode, [l, r|JavaExpression.from('''«l».«expr.operator»NullSafe(«r»)''', COMPARISON_RESULT)], context.scope)
 			}
 			case "+",
 			case "-",
