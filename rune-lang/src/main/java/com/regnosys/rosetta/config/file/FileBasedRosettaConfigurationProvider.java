@@ -56,10 +56,10 @@ public class FileBasedRosettaConfigurationProvider implements Provider<RosettaCo
 			if (file != null) {
 				return mapper.readValue(file, RosettaConfiguration.class);
 			}
-			LOGGER.debug("No configuration file was found. Falling back to the default configuration.");
+			LOGGER.warn("No configuration file was found. Falling back to the default configuration.");
 			return null;
 		} catch (IOException e) {
-      throw new FileBasedRosettaConfigurationRuntimeException("Could not read Rosetta configuration.", e);
+      throw new FileBasedRosettaConfigurationRuntimeException("Unable to parse the Rosetta configuration.", e);
 		}
 	}
 }
