@@ -75,12 +75,12 @@ jobs:
         LINES_FOUND=`echo "$LICENSE_REPORT" | wc -l`
         if [ $LINES_FOUND -gt 1 ]; then echo "License issues found ..." ; echo "$LICENSE_REPORT" ; exit -1; fi
     - name: Upload license reports
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: license-reports
         path: '**/${{ env.REPORT_PATH }}/'
     - name: Upload license XML reports
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: license-xml-reports
         path: '**/${{ env.REPORT_PATH }}/licenses.xml'
