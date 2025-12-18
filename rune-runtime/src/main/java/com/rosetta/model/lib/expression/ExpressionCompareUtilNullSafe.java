@@ -16,19 +16,15 @@
 
 package com.rosetta.model.lib.expression;
 
+import com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.CompareFunction;
+import com.rosetta.model.lib.mapper.Mapper;
+
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.BinaryOperator;
 
-import com.rosetta.model.lib.expression.ExpressionOperators.CompareFunction;
-import com.rosetta.model.lib.mapper.Mapper;
-
-/**
- * @deprecated use {@link ExpressionCompareUtilNullSafe} instead
- */
-@Deprecated
-class ExpressionCompareUtil {
-
+class ExpressionCompareUtilNullSafe {
+	
 	/**
 	 * Checks whether given mappers are both groupBy functions, if not handles as ungrouped mappers.
 	 * @param m1
@@ -39,49 +35,49 @@ class ExpressionCompareUtil {
 	static <T extends Comparable<? super T>,X extends Comparable<? super X>,G> ComparisonResult evaluate(Mapper<T> m1, Mapper<X> m2, CardinalityOperator o, CompareFunction<Mapper<T>, Mapper<X>> func) {
 		return func.apply(m1, m2, o);
 	}
-
+	
 	// Comparison functions
-
+	
 	static <T extends Comparable<? super T>, X extends Comparable<? super X>> ComparisonResult greaterThan(Mapper<T> m1, Mapper<X> m2, CardinalityOperator o) {
-		BinaryOperator<X> op = o == CardinalityOperator.All ?
+		BinaryOperator<X> op = o == CardinalityOperator.All ? 
 				(a,b) -> a.compareTo(b)>0?a:b : // for All, reduce to the biggest number
 				(a,b) -> a.compareTo(b)<0?a:b;  // for Any, reduce to the smallest number
 		return compare(m1, m2, o, op, (a,b)->CompareHelper.compare(a, b)>0, ">");
 	}
 
 	static <T extends Comparable<? super T>, X extends Comparable<? super X>> ComparisonResult greaterThanEquals(Mapper<T> m1, Mapper<X> m2, CardinalityOperator o) {
-		BinaryOperator<X> op =  o == CardinalityOperator.All ?
+		BinaryOperator<X> op =  o == CardinalityOperator.All ? 
 				(a,b) -> a.compareTo(b)>0?a:b :
 				(a,b) -> a.compareTo(b)<0?a:b;
 		return compare(m1, m2, o, op, (a,b)->CompareHelper.compare(a, b)>=0, ">=");
 	}
 
 	static <T extends Comparable<? super T>, X extends Comparable<? super X>> ComparisonResult lessThan(Mapper<T> m1, Mapper<X> m2, CardinalityOperator o)  {
-		BinaryOperator<X> op =  o == CardinalityOperator.All ?
+		BinaryOperator<X> op =  o == CardinalityOperator.All ? 
 				(a,b) -> a.compareTo(b)<0?a:b : // for All, reduce to the smallest number
 				(a,b) -> a.compareTo(b)>0?a:b;  // for Any, reduce to the biggest number
 		return compare(m1, m2, o, op, (a,b)->CompareHelper.compare(a, b)<0, "<");
 	}
 
 	static <T extends Comparable<? super T>, X extends Comparable<? super X>> ComparisonResult lessThanEquals(Mapper<T> m1, Mapper<X> m2, CardinalityOperator o)  {
-		BinaryOperator<X> op =  o == CardinalityOperator.All ?
+		BinaryOperator<X> op =  o == CardinalityOperator.All ? 
 				(a,b) -> a.compareTo(b)<0?a:b :
 				(a,b) -> a.compareTo(b)>0?a:b;
 		return compare(m1, m2, o, op, (a,b)->CompareHelper.compare(a, b)<=0, "<=");
 	}
-
+	
 	private static <T extends Comparable<? super T>, X extends Comparable<? super X>> ComparisonResult compare(Mapper<T> m1, Mapper<X> m2, CardinalityOperator o, BinaryOperator<X> reducer, BiPredicate<T, X> comparator, String comparatorString) {
 		if(m1 == null || m2 == null) {
-			return ComparisonResult.failureEmptyOperand("Null operand: [" + m1 + "] " + comparatorString + " [" + m2 + "]");
+			return ComparisonResult.failure("Null operand: [" + m1 + "] " + comparatorString + " [" + m2 + "]");
 		}
-
+		
 		if(m2.resultCount() == 0 || m1.resultCount() == 0) {
-			return ComparisonResult.failureEmptyOperand("Null operand: [" + m1.getPaths() + " : " + m1.get() + "] " + comparatorString + " [" + m2.getPaths() + " : " + m2.get() + "]");
+			return ComparisonResult.failure("Null operand: [" + m1.getPaths() + " : " + m1.get() + "] " + comparatorString + " [" + m2.getPaths() + " : " + m2.get() + "]");
 		}
 
 		Optional<X> compareValue = m2.getMulti().stream().reduce(reducer);
 
-		boolean result = o == CardinalityOperator.All ?
+		boolean result = o == CardinalityOperator.All ? 
 				m1.getMulti().stream().allMatch(a->comparator.test(a,compareValue.get())) :
 				m1.getMulti().stream().anyMatch(a->comparator.test(a,compareValue.get()));
 

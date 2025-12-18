@@ -21,35 +21,54 @@ import com.rosetta.model.lib.mapper.MapperS;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
 
 public class ComparisonResult implements Mapper<Boolean> {
-	private final boolean result;
-	private final boolean emptyOperand;
+	private final Boolean result;
+	@Deprecated
+	private final Boolean emptyOperand;
 	private final String error;
 	
 	public static ComparisonResult success() {
 		return new ComparisonResult(true, false, null);
 	}
 	
+	@Deprecated
 	public static ComparisonResult successEmptyOperand(String error) {
 		return new ComparisonResult(true, true, error);
 	}
+	
 	
 	public static ComparisonResult failure(String error) {
 		return new ComparisonResult(false, false, error);
 	}
 	
+	@Deprecated
 	public static ComparisonResult failureEmptyOperand(String error) {
 		return new ComparisonResult(false, true, error);
 	}
 	
+	public static ComparisonResult ofEmpty() {
+		return new ComparisonResult(null, null, null);
+	}
+
+    public static ComparisonResult ofNullSafe(Mapper<Boolean> result) {
+        if (result.getMulti().isEmpty() || result.getMulti().stream().allMatch(Objects::isNull)) {
+            return ofEmpty();
+        }
+        List<Boolean> filteredResults = result.getMulti().stream().filter(Objects::nonNull).collect(Collectors.toList());
+        return new ComparisonResult(filteredResults.stream().allMatch(r -> r == true), false, null);
+    }
+
+    @Deprecated
 	public static ComparisonResult of(Mapper<Boolean> result) {
 		return new ComparisonResult(result.getMulti().stream().allMatch(r -> r == true), false, null);
 	}
 	
-	private ComparisonResult(boolean result, boolean emptyOperand, String error) {
+	private ComparisonResult(Boolean result, Boolean emptyOperand, String error) {
 		this.result = result;
 		this.emptyOperand = emptyOperand;
 		this.error = error;
@@ -62,7 +81,7 @@ public class ComparisonResult implements Mapper<Boolean> {
 	
 	@Override
 	public Boolean getOrDefault(Boolean defaultValue) {
-		return result;
+		return result == null ? defaultValue : result;
 	}
 	
 	public String getError() {
@@ -71,14 +90,46 @@ public class ComparisonResult implements Mapper<Boolean> {
 	
 	// and
 	
+	public boolean isEmptyOperand() {
+		return result == null || (emptyOperand != null && emptyOperand);
+	}
+
+    public ComparisonResult andNullSafe(ComparisonResult other) {
+        return andNullSafe(this, other);
+    }
+
+    @Deprecated
 	public ComparisonResult and(ComparisonResult other) {
 		return and(this, other);
 	}
-	
+
+    @Deprecated
 	public ComparisonResult andIgnoreEmptyOperand(ComparisonResult other) {
 		return combineIgnoreEmptyOperand(other, this::and);
 	}
-	
+
+    private ComparisonResult andNullSafe(ComparisonResult r1, ComparisonResult r2) {
+        if (r1.isEmptyOperand() && r2.isEmptyOperand()) {
+            return ComparisonResult.ofEmpty();
+        }
+
+        boolean newResult = r1.getOrDefault(false) && r2.getOrDefault(false);
+        String newError = "";
+        if (!r1.getOrDefault(false)) {
+            String r1Value = r1.isEmptyOperand() ? "empty" : r1.getOrDefault(false).toString();
+            newError+=r1.error == null ? String.format("left of `and` operation is %s", r1Value) : r1.error;
+        }
+        if (!r2.getOrDefault(false)) {
+            if (!r1.getOrDefault(false)) {
+                newError+=" and ";
+            }
+            String r2Value = r2.isEmptyOperand() ? "empty" : r2.getOrDefault(false).toString();
+            newError+=r2.error == null ? String.format("right of `and` operation is %s", r2Value) : r2.error;
+        }
+        return new ComparisonResult(newResult, false, newError);
+    }
+
+    @Deprecated
 	private ComparisonResult and(ComparisonResult r1, ComparisonResult r2) {
 		boolean newResult = r1.result && r2.result;
 		String newError = "";
@@ -95,15 +146,35 @@ public class ComparisonResult implements Mapper<Boolean> {
 	}
 	
 	// or
-	
+
+    public ComparisonResult orNullSafe(ComparisonResult other) {
+        return orNullSafe(this, other);
+    }
+
+    @Deprecated
 	public ComparisonResult or(ComparisonResult other) {
 		return or(this, other);
 	}
-	
+
+    @Deprecated
 	public ComparisonResult orIgnoreEmptyOperand(ComparisonResult other) {
 		return combineIgnoreEmptyOperand(other, this::or);
 	}
-	
+
+    private ComparisonResult orNullSafe(ComparisonResult r1, ComparisonResult r2) {
+        if (r1.isEmptyOperand() && r2.isEmptyOperand()) {
+            return ComparisonResult.ofEmpty();
+        }
+
+        boolean newResult = r1.getOrDefault(false) || r2.getOrDefault(false);
+        String newError = "";
+        newError+=r1.error;
+        newError+=" and ";
+        newError+=r2.error;
+        return new ComparisonResult(newResult, false, newResult?null:newError);
+    }
+
+    @Deprecated
 	private ComparisonResult or(ComparisonResult r1, ComparisonResult r2) {
 		boolean newResult = r1.result || r2.result;
 		String newError = "";
@@ -114,7 +185,8 @@ public class ComparisonResult implements Mapper<Boolean> {
 	}
 	
 	// utils
-	
+
+    @Deprecated
 	private ComparisonResult combineIgnoreEmptyOperand(ComparisonResult other, BinaryOperator<ComparisonResult> combineFunc) {
 		if(this.emptyOperand && other.emptyOperand) {
 			return ComparisonResult.failureEmptyOperand(this.error + " and " + other.error);
@@ -145,11 +217,11 @@ public class ComparisonResult implements Mapper<Boolean> {
 
 	@Override
 	public int resultCount() {
-		return emptyOperand ? 0 : 1;
+		return isEmptyOperand() ? 0 : 1;
 	}
 
 	public MapperS<Boolean> asMapper() {
-		return emptyOperand ? MapperS.ofNull() : MapperS.of(this.get());
+		return isEmptyOperand() ? MapperS.ofNull() : MapperS.of(this.get());
 	}
 	
 	@Override

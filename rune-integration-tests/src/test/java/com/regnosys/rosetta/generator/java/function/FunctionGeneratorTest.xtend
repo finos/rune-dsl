@@ -2171,7 +2171,7 @@ class FunctionGeneratorTest {
 		val classes = code.compileToClasses
 
 		val func1 = classes.createFunc("F1");
-		assertNull(func1.invokeFunc(Boolean))
+		assertTrue(func1.invokeFunc(Boolean))
 
 		val func2 = classes.createFunc("F2");
 		assertEquals(84, func2.invokeFunc(Integer))
@@ -3930,7 +3930,7 @@ class FunctionGeneratorTest {
 				import java.util.ArrayList;
 				import java.util.List;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
 				public abstract class DistinctFunc implements RosettaFunction {
@@ -4000,7 +4000,7 @@ class FunctionGeneratorTest {
 				import java.util.Collections;
 				import java.util.List;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
 				public abstract class DistinctFunc implements RosettaFunction {
@@ -4128,7 +4128,7 @@ class FunctionGeneratorTest {
 				import java.util.stream.Collectors;
 				import javax.inject.Inject;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
 				public abstract class DistinctFunc implements RosettaFunction {
@@ -4231,7 +4231,7 @@ class FunctionGeneratorTest {
 				import java.util.stream.Collectors;
 				import javax.inject.Inject;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
 				public abstract class DistinctFunc implements RosettaFunction {
@@ -4557,7 +4557,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.functions.RosettaFunction;
 				import com.rosetta.model.lib.mapper.MapperS;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
@@ -4630,7 +4630,7 @@ class FunctionGeneratorTest {
 				import java.util.Collections;
 				import java.util.List;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
@@ -4707,7 +4707,7 @@ class FunctionGeneratorTest {
 				import com.rosetta.model.lib.mapper.MapperS;
 				import java.math.BigDecimal;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
@@ -4781,7 +4781,7 @@ class FunctionGeneratorTest {
 				import java.util.Collections;
 				import java.util.List;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
@@ -4864,7 +4864,7 @@ class FunctionGeneratorTest {
 				import java.util.Optional;
 				import javax.inject.Inject;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
@@ -4957,7 +4957,7 @@ class FunctionGeneratorTest {
 				import java.util.stream.Collectors;
 				import javax.inject.Inject;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
@@ -5739,7 +5739,7 @@ class FunctionGeneratorTest {
 				import java.util.List;
 				import javax.inject.Inject;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				/**
 				 * @version test
@@ -5758,7 +5758,7 @@ class FunctionGeneratorTest {
 						@Override
 						public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo foo) {
 							ComparisonResult result = executeDataRule(foo);
-							if (result.get()) {
+							if (result.getOrDefault(true)) {
 								return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION));
 							}
 							
@@ -5772,9 +5772,9 @@ class FunctionGeneratorTest {
 						private ComparisonResult executeDataRule(Foo foo) {
 							try {
 								if (areEqual(MapperS.of(foo).<Boolean>map("getTest", _foo -> _foo.getTest()), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
-									return ComparisonResult.of(MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), "x")));
+									return ComparisonResult.ofNullSafe(MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), "x")));
 								}
-								return ComparisonResult.of(MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), "y")));
+								return ComparisonResult.ofNullSafe(MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), "y")));
 							}
 							catch (Exception ex) {
 								return ComparisonResult.failure(ex.getMessage());
@@ -5898,7 +5898,7 @@ class FunctionGeneratorTest {
                 import com.rosetta.model.lib.records.Date;
                 import java.time.ZonedDateTime;
                 
-                import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+                import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
                 
                 @ImplementedBy(IsDateGreaterThan.IsDateGreaterThanDefault.class)
                 public abstract class IsDateGreaterThan implements RosettaFunction {

@@ -65,7 +65,7 @@ class ListOperationTest {
 				import java.util.stream.Collectors;
 				import javax.inject.Inject;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
@@ -169,7 +169,7 @@ class ListOperationTest {
 				import java.util.stream.Collectors;
 				import javax.inject.Inject;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
@@ -311,7 +311,7 @@ class ListOperationTest {
 				import java.util.stream.Collectors;
 				import javax.inject.Inject;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
@@ -418,7 +418,7 @@ class ListOperationTest {
 				import java.util.stream.Collectors;
 				import javax.inject.Inject;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
@@ -600,7 +600,7 @@ class ListOperationTest {
 				import java.util.Collections;
 				import java.util.List;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
@@ -979,7 +979,7 @@ class ListOperationTest {
 				import java.util.stream.Collectors;
 				import javax.inject.Inject;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
@@ -2270,7 +2270,7 @@ class ListOperationTest {
 				import java.util.Collections;
 				import java.util.List;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
@@ -2747,7 +2747,7 @@ class ListOperationTest {
 				import java.util.Collections;
 				import java.util.List;
 				
-				import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 				
 				@ImplementedBy(FuncFoo.FuncFooDefault.class)
 				public abstract class FuncFoo implements RosettaFunction {
