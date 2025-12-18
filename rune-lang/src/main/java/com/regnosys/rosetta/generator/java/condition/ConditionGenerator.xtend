@@ -53,6 +53,8 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 			[entry|(condition.enclosingType as ParametrizedRosettaType).parameters.findFirst[name == entry.key]],
 			[entry|entry.value]
 		)
+		val scope = condition?.get_enclosingType?.model?.scope
+		val scopeClass = scope?.toScopeJavaClass
 		
 		val getValidationResultsScope = classScope.createMethodScope("getValidationResults")
 		val pathId = getValidationResultsScope.createUniqueIdentifier("path")
@@ -61,8 +63,8 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 		
 		val defaultClass = conditionClass.createNestedClassImplementingInterface("Default", conditionClass)
 		val defaultClassScope = classScope.createNestedClassScopeAndRegisterIdentifier(defaultClass)
-		
-		deps.forEach[defaultClassScope.createIdentifier(it.toDependencyInstance, it.simpleName.toFirstLower)]
+		val contextFactoryId = defaultClassScope.createUniqueIdentifier("contextFactory")
+		val scopeId = defaultClassScope.createUniqueIdentifier("scope")
 		
 		val defaultClassGetValidationResultsScope = defaultClassScope.createMethodScope("getValidationResults")
 		val defaultClassInstanceId = defaultClassGetValidationResultsScope.createIdentifier(implicitVarRepr, conditionClass.instanceType.name.toFirstLower)
@@ -74,8 +76,12 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 		val defaultClassExecuteScope = defaultClassScope.createMethodScope("execute")
 		val defaultClassExecuteInstanceId = defaultClassExecuteScope.createIdentifier(implicitVarRepr, conditionClass.instanceType.name.toFirstLower)
 		params.forEach[param,type|defaultClassExecuteScope.createIdentifier(param)]
+		val defaultClassExecuteContextId = defaultClassExecuteScope.createUniqueIdentifier("context")
 		val defaultClassExecuteBodyScope = defaultClassExecuteScope.bodyScope
+		val defaultClassExecuteScopeId = defaultClassExecuteBodyScope.createUniqueIdentifier("scope")
 		val defaultClassExecuteExceptionId = defaultClassExecuteBodyScope.createUniqueIdentifier("ex")
+		
+		deps.forEach[defaultClassExecuteScope.createIdentifier(it.toDependencyInstance, it.simpleName.toFirstLower)]
 		
 		val noOpClass = conditionClass.createNestedClassImplementingInterface("NoOp", conditionClass)
 		classScope.createNestedClassScopeAndRegisterIdentifier(noOpClass)
@@ -93,13 +99,14 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 				
 				«defaultClass.asClassDeclaration» {
 				
-					«FOR dep : deps»
-						@«javax.inject.Inject» protected «dep» «defaultClassScope.getIdentifierOrThrow(dep.toDependencyInstance)»;
-						
-					«ENDFOR»
+					@«javax.inject.Inject» protected «RUNE_CONTEXT_FACTORY» «contextFactoryId»;
+					«IF scope !== null»
+						@«javax.inject.Inject» protected «scopeClass» «scopeId»;
+					«ENDIF»
+					
 					@Override
 					public «List»<«ValidationResult»<?>> getValidationResults(«RosettaPath» «pathId», «conditionClass.instanceClass» «defaultClassInstanceId»«FOR param : params.keySet», «params.get(param)» «getValidationResultsScope.getIdentifierOrThrow(param)»«ENDFOR») {
-						«ComparisonResult» «defaultClassResultId» = executeDataRule(«defaultClassGetValidationResultsBodyScope.getIdentifierOrThrow(implicitVarRepr)»«FOR param: params.keySet», «defaultClassGetValidationResultsBodyScope.getIdentifierOrThrow(param)»«ENDFOR»);
+						«ComparisonResult» «defaultClassResultId» = executeDataRule(«defaultClassGetValidationResultsBodyScope.getIdentifierOrThrow(implicitVarRepr)»«FOR param: params.keySet», «defaultClassGetValidationResultsBodyScope.getIdentifierOrThrow(param)»«ENDFOR», «contextFactoryId».«IF scope === null»createDefault()«ELSE»withScope(«scopeId»)«ENDIF»);
 						if (result.get()) {
 							return «Arrays».asList(«ValidationResult».success(NAME, ValidationResult.ValidationType.DATA_RULE, "«conditionClass.instanceType.name»", «pathId», DEFINITION));
 						}
@@ -111,8 +118,14 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 						return «Arrays».asList(«ValidationResult».failure(NAME, «ValidationType».DATA_RULE, "«conditionClass.instanceType.name»", «pathId», DEFINITION, «defaultClassFailureMessageId»));
 					}
 					
-					private «ComparisonResult» executeDataRule(«conditionClass.instanceClass» «defaultClassExecuteInstanceId»«FOR param : params.keySet», «params.get(param)» «defaultClassExecuteScope.getIdentifierOrThrow(param)»«ENDFOR») {
-						try «expressionHandler.javaCode(condition.expression, COMPARISON_RESULT, defaultClassExecuteBodyScope)
+					private «ComparisonResult» executeDataRule(«conditionClass.instanceClass» «defaultClassExecuteInstanceId»«FOR param : params.keySet», «params.get(param)» «defaultClassExecuteScope.getIdentifierOrThrow(param)»«ENDFOR», «RUNE_CONTEXT» «defaultClassExecuteContextId») {
+						«IF !deps.isEmpty»
+							«RUNE_SCOPE» «defaultClassExecuteScopeId» = «defaultClassExecuteContextId».getScope();
+							«FOR dep : deps»
+								«dep» «defaultClassExecuteBodyScope.getIdentifierOrThrow(dep.toDependencyInstance)» = «defaultClassExecuteScopeId».getInstance(«dep».class);
+							«ENDFOR»
+						«ENDIF»
+						try «expressionHandler.javaCode(condition.expression, COMPARISON_RESULT, defaultClassExecuteContextId, defaultClassExecuteBodyScope)
 								.completeAsReturn.toBlock»
 						catch («Exception» «defaultClassExecuteExceptionId») {
 							return «ComparisonResult».failure(«defaultClassExecuteExceptionId».getMessage());

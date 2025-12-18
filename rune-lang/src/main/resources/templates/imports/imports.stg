@@ -1,0 +1,9 @@
+delimiters "<", ">"
+
+fullJavaFile(packageName, imports, renderClass) ::= <<
+package <packageName>;
+
+<imports:{import | import <import>;}; separator="\n">
+
+<renderClass>
+>>
