@@ -27,6 +27,7 @@ import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
 import com.rosetta.model.lib.annotations.RuneScopedAttributeKey
+import com.rosetta.model.lib.annotations.RuneIgnore
 import com.rosetta.model.lib.annotations.RosettaIgnore
 import com.regnosys.rosetta.generator.java.RObjectJavaClassGenerator
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
@@ -275,6 +276,7 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 		'''
 		@Override
 		@«RosettaIgnore»
+		@«RuneIgnore»
 		public «parent.type» «opName»() «originalField.addCoercions(parent.type, getterScope.bodyScope).completeAsReturn.toBlock»
 		
 		«derivedIncompatibleGettersForProperty(originalField, parent, implScope)»

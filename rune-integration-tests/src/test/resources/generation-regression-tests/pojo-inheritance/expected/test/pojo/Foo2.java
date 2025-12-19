@@ -8,6 +8,7 @@ import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RosettaIgnore;
 import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.annotations.RuneDataType;
+import com.rosetta.model.lib.annotations.RuneIgnore;
 import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
@@ -171,6 +172,7 @@ public interface Foo2 extends Foo1 {
 		
 		@Override
 		@RosettaIgnore
+		@RuneIgnore
 		public BigDecimal getNumberAttr() {
 			return numberAttr == null ? null : new BigDecimal(numberAttr);
 		}
@@ -191,6 +193,7 @@ public interface Foo2 extends Foo1 {
 		
 		@Override
 		@RosettaIgnore
+		@RuneIgnore
 		public List<? extends Parent> getParentList() {
 			return parentList == null ? Collections.<Parent>emptyList() : Collections.singletonList(parentList.getValue());
 		}
@@ -297,6 +300,7 @@ public interface Foo2 extends Foo1 {
 		
 		@Override
 		@RosettaIgnore
+		@RuneIgnore
 		public BigDecimal getNumberAttr() {
 			return numberAttr == null ? null : new BigDecimal(numberAttr);
 		}
@@ -343,6 +347,7 @@ public interface Foo2 extends Foo1 {
 		
 		@Override
 		@RosettaIgnore
+		@RuneIgnore
 		public List<? extends Parent.ParentBuilder> getParentList() {
 			return parentList == null ? Collections.<Parent.ParentBuilder>emptyList() : Collections.singletonList(parentList.getValue().toBuilder());
 		}
@@ -408,6 +413,7 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@RosettaIgnore
+		@RuneIgnore
 		@Override
 		public Foo2.Foo2Builder setNumberAttr(BigDecimal _numberAttr) {
 			final BigInteger ifThenElseResult;
@@ -428,6 +434,7 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@RosettaIgnore
+		@RuneIgnore
 		@Override
 		public Foo2.Foo2Builder setParent(Parent _parent) {
 			final Child ifThenElseResult;
@@ -454,6 +461,7 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@RosettaIgnore
+		@RuneIgnore
 		@Override
 		public Foo2.Foo2Builder addParentList(Parent _parentList) {
 			final ReferenceWithMetaChild ifThenElseResult;
@@ -489,6 +497,7 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@RosettaIgnore
+		@RuneIgnore
 		@Override
 		public Foo2.Foo2Builder setParentList(List<? extends Parent> parentLists) {
 			final Parent _parent = MapperC.of(parentLists).get();
@@ -541,6 +550,7 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@RosettaIgnore
+		@RuneIgnore
 		@Override
 		public Foo2.Foo2Builder addOtherParentList(Parent _otherParentList) {
 			final Child ifThenElseResult;
@@ -572,6 +582,7 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@RosettaIgnore
+		@RuneIgnore
 		@Override
 		public Foo2.Foo2Builder setOtherParentList(List<? extends Parent> otherParentLists) {
 			return setOtherParentListOverriddenAsChild(otherParentLists.stream()
