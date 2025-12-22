@@ -137,7 +137,7 @@ public abstract class AbstractDeclarativeRosettaValidator extends AbstractDeclar
 			} else {
 				msg = "Deprecated";
 			}
-			warning(msg, owner, ref, index);
+			info(msg, owner, ref, index);
 		} else if (annotated instanceof Attribute) {
 			// Check if deprecated annotation is inherited
 			Attribute parent = ecoreUtil.getParentAttribute((Attribute) annotated);
