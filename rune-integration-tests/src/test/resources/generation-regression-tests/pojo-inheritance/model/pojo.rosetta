@@ -27,3 +27,9 @@ type Child extends Parent:
 	[metadata key]
 
 type GrandChild extends Child:
+
+type Level1:
+    attr int (0..1)
+
+type Level2 extends Level1:
+    override attr int (1..1)

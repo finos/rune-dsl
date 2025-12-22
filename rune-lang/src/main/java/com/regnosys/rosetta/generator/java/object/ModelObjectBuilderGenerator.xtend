@@ -16,6 +16,7 @@ import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.annotations.RosettaAttribute
 import com.rosetta.model.lib.annotations.RuneAttribute
 import com.rosetta.model.lib.annotations.RuneMetaType
+import com.rosetta.model.lib.annotations.RuneIgnore
 import com.rosetta.model.lib.meta.Key
 import com.rosetta.model.lib.process.BuilderMerger
 import com.rosetta.util.types.JavaPrimitiveType
@@ -201,6 +202,7 @@ class ModelObjectBuilderGenerator {
 		
 		@Override
 		@«RosettaIgnore»
+		@«RuneIgnore»
 		public «parent.toBuilderTypeExt» «getterName»() «
 			(if (parent.type.isList) {
 				if (originalProp.type.isList) {
@@ -297,6 +299,7 @@ class ModelObjectBuilderGenerator {
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			«ELSE»
 				@«RosettaIgnore»
+				@«RuneIgnore»
 			«ENDIF»
 			«setterMethod(currentProp, builderType, ADD, builderScope, [scope|
 				val addMethodArg = new JavaVariable(scope.createUniqueIdentifier(currentProp.name.toFirstLower), itemType)
@@ -427,6 +430,7 @@ class ModelObjectBuilderGenerator {
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			«ELSE»
 				@«RosettaIgnore»
+				@«RuneIgnore»
 			«ENDIF»
 			«setterMethod(currentProp, builderType, SET, builderScope, [scope|
 				val setMultiMethodArg = new JavaVariable(scope.createUniqueIdentifier(currentProp.name.toFirstLower + "s"), propType)
@@ -511,6 +515,7 @@ class ModelObjectBuilderGenerator {
 				«IF currentProp.addRuneMetaAnnotation»@«RuneMetaType»«ENDIF»
 			«ELSE»
 				@«RosettaIgnore»
+				@«RuneIgnore»
 			«ENDIF»
 			«setterMethod(currentProp, builderType, SET, builderScope, [scope|
 				val setMethodArg = new JavaVariable(scope.createUniqueIdentifier(currentProp.name.toFirstLower), propType)

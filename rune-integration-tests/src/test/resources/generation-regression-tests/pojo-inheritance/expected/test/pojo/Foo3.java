@@ -8,6 +8,7 @@ import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RosettaIgnore;
 import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.annotations.RuneDataType;
+import com.rosetta.model.lib.annotations.RuneIgnore;
 import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
@@ -173,12 +174,14 @@ public interface Foo3 extends Foo2 {
 		
 		@Override
 		@RosettaIgnore
+		@RuneIgnore
 		public BigInteger getNumberAttrOverriddenAsBigInteger() {
 			return numberAttr == null ? null : BigInteger.valueOf(numberAttr);
 		}
 		
 		@Override
 		@RosettaIgnore
+		@RuneIgnore
 		public BigDecimal getNumberAttr() {
 			return numberAttr == null ? null : BigDecimal.valueOf(numberAttr);
 		}
@@ -199,6 +202,7 @@ public interface Foo3 extends Foo2 {
 		
 		@Override
 		@RosettaIgnore
+		@RuneIgnore
 		public ReferenceWithMetaChild getParentListOverriddenAsSingleReferenceWithMetaChild() {
 			if (parentList == null) {
 				return ReferenceWithMetaChild.builder().build();
@@ -209,6 +213,7 @@ public interface Foo3 extends Foo2 {
 		
 		@Override
 		@RosettaIgnore
+		@RuneIgnore
 		public List<? extends Parent> getParentList() {
 			return parentList == null ? Collections.<Parent>emptyList() : Collections.singletonList(parentList.getValue());
 		}
@@ -315,12 +320,14 @@ public interface Foo3 extends Foo2 {
 		
 		@Override
 		@RosettaIgnore
+		@RuneIgnore
 		public BigInteger getNumberAttrOverriddenAsBigInteger() {
 			return numberAttr == null ? null : BigInteger.valueOf(numberAttr);
 		}
 		
 		@Override
 		@RosettaIgnore
+		@RuneIgnore
 		public BigDecimal getNumberAttr() {
 			return numberAttr == null ? null : BigDecimal.valueOf(numberAttr);
 		}
@@ -367,6 +374,7 @@ public interface Foo3 extends Foo2 {
 		
 		@Override
 		@RosettaIgnore
+		@RuneIgnore
 		public ReferenceWithMetaChild.ReferenceWithMetaChildBuilder getParentListOverriddenAsSingleReferenceWithMetaChild() {
 			if (parentList == null) {
 				return ReferenceWithMetaChild.builder().build().toBuilder();
@@ -387,6 +395,7 @@ public interface Foo3 extends Foo2 {
 		
 		@Override
 		@RosettaIgnore
+		@RuneIgnore
 		public List<? extends Parent.ParentBuilder> getParentList() {
 			return parentList == null ? Collections.<Parent.ParentBuilder>emptyList() : Collections.singletonList(parentList.getValue().toBuilder());
 		}
@@ -452,6 +461,7 @@ public interface Foo3 extends Foo2 {
 		}
 		
 		@RosettaIgnore
+		@RuneIgnore
 		@Override
 		public Foo3.Foo3Builder setNumberAttr(BigInteger _numberAttr) {
 			final Integer ifThenElseResult;
@@ -464,6 +474,7 @@ public interface Foo3 extends Foo2 {
 		}
 		
 		@RosettaIgnore
+		@RuneIgnore
 		@Override
 		public Foo3.Foo3Builder setNumberAttr(BigDecimal _numberAttr) {
 			final Integer ifThenElseResult;
@@ -484,6 +495,7 @@ public interface Foo3 extends Foo2 {
 		}
 		
 		@RosettaIgnore
+		@RuneIgnore
 		@Override
 		public Foo3.Foo3Builder setParent(Parent _parent) {
 			final Child ifThenElseResult;
@@ -510,6 +522,7 @@ public interface Foo3 extends Foo2 {
 		}
 		
 		@RosettaIgnore
+		@RuneIgnore
 		@Override
 		public Foo3.Foo3Builder setParentList(ReferenceWithMetaChild _parentList) {
 			final ReferenceWithMetaGrandChild ifThenElseResult;
@@ -538,6 +551,7 @@ public interface Foo3 extends Foo2 {
 		}
 		
 		@RosettaIgnore
+		@RuneIgnore
 		@Override
 		public Foo3.Foo3Builder addParentList(Parent _parentList) {
 			final ReferenceWithMetaGrandChild ifThenElseResult;
@@ -573,6 +587,7 @@ public interface Foo3 extends Foo2 {
 		}
 		
 		@RosettaIgnore
+		@RuneIgnore
 		@Override
 		public Foo3.Foo3Builder setParentList(List<? extends Parent> parentLists) {
 			final Parent _parent = MapperC.of(parentLists).get();
@@ -625,6 +640,7 @@ public interface Foo3 extends Foo2 {
 		}
 		
 		@RosettaIgnore
+		@RuneIgnore
 		@Override
 		public Foo3.Foo3Builder addOtherParentList(Parent _otherParentList) {
 			final Child ifThenElseResult;
@@ -656,6 +672,7 @@ public interface Foo3 extends Foo2 {
 		}
 		
 		@RosettaIgnore
+		@RuneIgnore
 		@Override
 		public Foo3.Foo3Builder setOtherParentList(List<? extends Parent> otherParentLists) {
 			return setOtherParentListOverriddenAsChild(otherParentLists.stream()
