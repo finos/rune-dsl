@@ -124,10 +124,6 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 		if (op.isAdd() && !isList) {
 			error("`add` must be used with a list", op, OPERATION__ASSIGN_ROOT);
 		}
-		if (!op.isAdd() && isList) {
-			info("`set` used with a list. Any existing list items will be overwritten. Use `add` to append items to existing list",
-				op, OPERATION__ASSIGN_ROOT);
-		}
 		if (!isList) {
 			isSingleCheck(expr, op, OPERATION__EXPRESSION, "Cannot assign a list to a single value");
 		}
