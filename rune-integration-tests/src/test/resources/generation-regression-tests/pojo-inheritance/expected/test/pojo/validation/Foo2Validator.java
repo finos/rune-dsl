@@ -13,7 +13,7 @@ import test.pojo.Foo2;
 import test.pojo.metafields.ReferenceWithMetaChild;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
-import static com.rosetta.model.lib.expression.ExpressionOperators.checkCardinality;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkCardinality;
 import static com.rosetta.model.lib.validation.ValidationResult.failure;
 import static com.rosetta.model.lib.validation.ValidationResult.success;
 import static java.util.stream.Collectors.toList;

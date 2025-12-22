@@ -16,11 +16,11 @@
 
 package com.rosetta.model.lib.expression;
 
-import static com.rosetta.model.lib.expression.ExpressionOperators.exists;
-import static com.rosetta.model.lib.expression.ExpressionOperators.greaterThan;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
+import com.rosetta.model.lib.mapper.MapperS;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.platform.commons.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,18 +28,20 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.platform.commons.util.StringUtils;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.exists;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.greaterThan;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-import com.rosetta.model.lib.mapper.MapperS;
 
-@Deprecated
-public class ExpressionOperatorsParameterizedTest {
+public class ExpressionOperatorsNullSafeParameterizedTest {
 
 	private static final Function<Foo, ComparisonResult> GREATER_THAN = (foo) ->
 			greaterThan(MapperS.of(foo).map("getAttr1", Foo::getAttr1), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All);
+
+    private static final Function<Foo, ComparisonResult> GREATER_THAN_EMPTY = (foo) ->
+            greaterThan(MapperS.of(foo).map("getAttr1", Foo::getAttr1), MapperS.<Integer>of(null), CardinalityOperator.All);
 
 	private static final Function<Foo, ComparisonResult> GREATER_THAN_WITH_OR = (foo) ->
 			greaterThan(MapperS.of(foo).map("getAttr1", Foo::getAttr1), MapperS.of(Integer.valueOf(5)), CardinalityOperator.All)
@@ -78,6 +80,10 @@ public class ExpressionOperatorsParameterizedTest {
 						new Foo(1, 2),
 						GREATER_THAN, false,
 						Collections.singletonList("all elements of paths [Foo->getAttr1] values [1] are not > than all elements of paths [Integer] values [5]")),
+                Arguments.of("fail: ( Foo -> attr1 ) > empty",
+                        new Foo(null, null),
+                        GREATER_THAN_EMPTY, false,
+                        Collections.singletonList("Null operand: [[] : null] > [[] : null]")),
 				Arguments.of("success: ( Foo -> attr1 ) > 5 or ( Foo -> attr2 ) > 5",
 						new Foo(10, 2),
 						GREATER_THAN_WITH_OR, true,

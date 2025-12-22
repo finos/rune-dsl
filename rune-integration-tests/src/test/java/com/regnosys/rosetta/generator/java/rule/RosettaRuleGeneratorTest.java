@@ -1043,7 +1043,7 @@ public class RosettaRuleGeneratorTest {
                 import java.util.Optional;
                 import javax.inject.Inject;
                 
-                import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+                import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
                 
                 @ImplementedBy(SimpleRuleRule.SimpleRuleRuleDefault.class)
                 public abstract class SimpleRuleRule implements ReportFunction<Input, Input> {
@@ -1155,7 +1155,7 @@ public class RosettaRuleGeneratorTest {
                 import com.rosetta.model.lib.reports.ReportFunction;
                 import com.rosetta.test.model.Foo;
                 
-                import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+                import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
                 
                 @ImplementedBy(IsFixedFloatRule.IsFixedFloatRuleDefault.class)
                 public abstract class IsFixedFloatRule implements ReportFunction<Foo, Boolean> {

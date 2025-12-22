@@ -1,31 +1,31 @@
 package com.regnosys.rosetta.generator.java.condition
 
+import com.google.inject.ImplementedBy
+import com.regnosys.rosetta.generator.java.EcoreBasedJavaClassGenerator
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
+import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
+import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
+import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
+import com.regnosys.rosetta.generator.java.types.JavaConditionInterface
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
+import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
 import com.regnosys.rosetta.generator.java.util.RosettaGrammarUtil
+import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
+import com.regnosys.rosetta.rosetta.RosettaModel
+import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 import com.regnosys.rosetta.rosetta.simple.Condition
 import com.rosetta.model.lib.annotations.RosettaDataRule
 import com.rosetta.model.lib.expression.ComparisonResult
 import com.rosetta.model.lib.path.RosettaPath
 import com.rosetta.model.lib.validation.ValidationResult
-
-import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
-import jakarta.inject.Inject
-import com.google.inject.ImplementedBy
 import com.rosetta.model.lib.validation.ValidationResult.ValidationType
-import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
-import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
-import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
+import jakarta.inject.Inject
 import java.util.Arrays
 import java.util.Collections
 import java.util.List
-import com.regnosys.rosetta.generator.java.types.JavaConditionInterface
-import com.regnosys.rosetta.rosetta.ParametrizedRosettaType
-import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
-import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
-import com.regnosys.rosetta.generator.java.EcoreBasedJavaClassGenerator
-import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
+
+import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.CONDITION__EXPRESSION
 
 class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaConditionInterface> {
 	@Inject ExpressionGenerator expressionHandler
@@ -100,7 +100,7 @@ class ConditionGenerator extends EcoreBasedJavaClassGenerator<Condition, JavaCon
 					@Override
 					public «List»<«ValidationResult»<?>> getValidationResults(«RosettaPath» «pathId», «conditionClass.instanceClass» «defaultClassInstanceId»«FOR param : params.keySet», «params.get(param)» «getValidationResultsScope.getIdentifierOrThrow(param)»«ENDFOR») {
 						«ComparisonResult» «defaultClassResultId» = executeDataRule(«defaultClassGetValidationResultsBodyScope.getIdentifierOrThrow(implicitVarRepr)»«FOR param: params.keySet», «defaultClassGetValidationResultsBodyScope.getIdentifierOrThrow(param)»«ENDFOR»);
-						if (result.get()) {
+						if (result.getOrDefault(true)) {
 							return «Arrays».asList(«ValidationResult».success(NAME, ValidationResult.ValidationType.DATA_RULE, "«conditionClass.instanceType.name»", «pathId», DEFINITION));
 						}
 						

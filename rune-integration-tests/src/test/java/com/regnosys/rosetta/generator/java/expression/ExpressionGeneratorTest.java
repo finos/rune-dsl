@@ -146,6 +146,23 @@ public class ExpressionGeneratorTest {
     }
 
     @Test
+    public void testEvaluateEmptyIsFalse() {
+        CharSequence expr = """
+        empty or False
+        """;
+
+        String expected = """
+        import com.rosetta.model.lib.expression.ComparisonResult;
+        import com.rosetta.model.lib.mapper.MapperS;
+
+
+        return ComparisonResult.ofEmpty().orNullSafe(ComparisonResult.ofNullSafe(MapperS.of(false))).get();
+        """;
+
+        assertJavaCode(expected, expr, Boolean.class);
+    }
+
+    @Test
     public void testDefaultWithMetaCoercion() {
         CharSequence expr = """
         foo default bar
@@ -240,7 +257,7 @@ public class ExpressionGeneratorTest {
         import com.rosetta.test.model.Foo;
         import java.math.BigDecimal;
         
-        import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+        import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
         
         {
             Foo foo;
@@ -274,11 +291,11 @@ public class ExpressionGeneratorTest {
         import com.rosetta.test.model.Foo;
         import java.math.BigDecimal;
         
-        import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+        import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
         
         {
             Foo foo;
-            return greaterThan(MapperS.of(foo).<BigDecimal>map("getAttr1", _foo -> _foo.getAttr1()), MapperS.of(BigDecimal.valueOf(5)), CardinalityOperator.All).or(greaterThan(MapperS.of(foo).<BigDecimal>map("getAttr2", _foo -> _foo.getAttr2()), MapperS.of(BigDecimal.valueOf(5)), CardinalityOperator.All));
+            return greaterThan(MapperS.of(foo).<BigDecimal>map("getAttr1", _foo -> _foo.getAttr1()), MapperS.of(BigDecimal.valueOf(5)), CardinalityOperator.All).orNullSafe(greaterThan(MapperS.of(foo).<BigDecimal>map("getAttr2", _foo -> _foo.getAttr2()), MapperS.of(BigDecimal.valueOf(5)), CardinalityOperator.All));
         }
         """;
 
@@ -306,7 +323,7 @@ public class ExpressionGeneratorTest {
         import com.rosetta.test.model.Foo;
         import java.math.BigDecimal;
         
-        import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+        import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
         
         {
             Foo foo;
@@ -339,11 +356,11 @@ public class ExpressionGeneratorTest {
         import com.rosetta.test.model.Foo;
         import java.math.BigDecimal;
         
-        import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+        import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
         
         {
             Foo foo;
-            return areEqual(MapperS.of(foo).<BigDecimal>map("getAttr1", _foo -> _foo.getAttr1()), MapperS.of(foo).<BigDecimal>map("getAttr2", _foo -> _foo.getAttr2()), CardinalityOperator.All).or(areEqual(MapperS.of(foo).<String>map("getAttr3", _foo -> _foo.getAttr3()), MapperS.of(foo).<String>map("getAttr4", _foo -> _foo.getAttr4()), CardinalityOperator.All));
+            return areEqual(MapperS.of(foo).<BigDecimal>map("getAttr1", _foo -> _foo.getAttr1()), MapperS.of(foo).<BigDecimal>map("getAttr2", _foo -> _foo.getAttr2()), CardinalityOperator.All).orNullSafe(areEqual(MapperS.of(foo).<String>map("getAttr3", _foo -> _foo.getAttr3()), MapperS.of(foo).<String>map("getAttr4", _foo -> _foo.getAttr4()), CardinalityOperator.All));
         }
         """;
 
