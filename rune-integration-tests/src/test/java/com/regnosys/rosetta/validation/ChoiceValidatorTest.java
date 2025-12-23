@@ -6,6 +6,8 @@ import com.regnosys.rosetta.rosetta.simple.SimplePackage;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.ModelHelper;
 import javax.inject.Inject;
+
+import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.eclipse.xtext.testing.validation.ValidationTestHelper;
@@ -76,7 +78,6 @@ public class ChoiceValidatorTest implements RosettaIssueCodes {
                     FooDeprecated { string: "My string", ... }
             """);
 
-        validationTestHelper.assertWarning(model, RosettaPackage.Literals.TYPE_CALL, null, 
-            "FooDeprecated is deprecated");
+        validationTestHelper.assertIssue(model, RosettaPackage.Literals.TYPE_CALL, null, Severity.INFO, "FooDeprecated is deprecated");
     }
 }

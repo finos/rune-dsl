@@ -149,8 +149,8 @@ class TypeValidatorTest extends AbstractValidatorTest {
                         TestTypeDeprecated { attr: 42 }
                 """;
         assertIssues(model, """
-                WARNING (null) 'TestTypeDeprecated is deprecated' at 10:16, length 18, on TypeCall
-                WARNING (null) 'TestTypeDeprecated is deprecated' at 13:9, length 18, on TypeCall
+                INFO (null) 'TestTypeDeprecated is deprecated' at 10:16, length 18, on TypeCall
+                INFO (null) 'TestTypeDeprecated is deprecated' at 13:9, length 18, on TypeCall
                 """);
     }
 }

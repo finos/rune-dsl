@@ -6,6 +6,8 @@ import com.regnosys.rosetta.rosetta.expression.ExpressionPackage;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.ModelHelper;
 import javax.inject.Inject;
+
+import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.eclipse.xtext.testing.validation.ValidationTestHelper;
@@ -93,10 +95,8 @@ public class EnumValidatorTest implements RosettaIssueCodes {
                     TestEnumDeprecated -> ONE
             """);
 
-        validationTestHelper.assertWarning(model, RosettaPackage.Literals.TYPE_CALL, null, 
-            "TestEnumDeprecated is deprecated");
-        validationTestHelper.assertWarning(model, ExpressionPackage.Literals.ROSETTA_SYMBOL_REFERENCE, null, 
-            "TestEnumDeprecated is deprecated");
+        validationTestHelper.assertIssue(model, RosettaPackage.Literals.TYPE_CALL, null, Severity.INFO, "TestEnumDeprecated is deprecated");
+        validationTestHelper.assertIssue(model, ExpressionPackage.Literals.ROSETTA_SYMBOL_REFERENCE, null, Severity.INFO, "TestEnumDeprecated is deprecated");
     }
 
     @Test
@@ -115,7 +115,6 @@ public class EnumValidatorTest implements RosettaIssueCodes {
                     TestEnumDeprecated -> ONE
             """);
 
-        validationTestHelper.assertWarning(model, ExpressionPackage.Literals.ROSETTA_FEATURE_CALL, null, 
-            "ONE is deprecated");
+        validationTestHelper.assertIssue(model, ExpressionPackage.Literals.ROSETTA_FEATURE_CALL, null, Severity.INFO, "ONE is deprecated");
     }
 }

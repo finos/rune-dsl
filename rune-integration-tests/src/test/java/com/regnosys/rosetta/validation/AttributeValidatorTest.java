@@ -495,7 +495,7 @@ public class AttributeValidatorTest extends AbstractValidatorTest {
 	            		foo -> attr
 				""",
 				"""
-				WARNING (null) 'attr is deprecated' at 16:19, length 4, on RosettaFeatureCall
+				INFO (null) 'attr is deprecated' at 16:19, length 4, on RosettaFeatureCall
 				"""
 			);
     }
@@ -520,8 +520,8 @@ public class AttributeValidatorTest extends AbstractValidatorTest {
 						bar -> attr
 				""",
 				"""
-				WARNING (null) 'attr is deprecated' at 9:11, length 4, on Attribute
-				WARNING (null) 'attr is deprecated' at 18:10, length 4, on RosettaFeatureCall
+				INFO (null) 'attr is deprecated' at 9:11, length 4, on Attribute
+				INFO (null) 'attr is deprecated' at 18:10, length 4, on RosettaFeatureCall
 				"""
 			);
 	}
