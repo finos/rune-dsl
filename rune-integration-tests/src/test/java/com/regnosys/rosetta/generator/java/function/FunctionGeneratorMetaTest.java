@@ -31,6 +31,39 @@ public class FunctionGeneratorMetaTest {
     private CodeGeneratorTestHelper generatorTestHelper;
 
     @Test
+    void canAddEmptyObjectWithMetaFromFunctionCall() {
+        var model = """
+                    metaType location string
+                
+                    type Foo:
+                        fooField string (1..1)
+                
+                    func MyFunc:
+                        output:
+                            result Foo (0..*)
+                
+                    add result: CreateFoo("someFooFieldValue", "someLocationValue")
+                
+                    func CreateFoo:
+                        inputs:
+                            fooFieldValue string (1..1)
+                            locationValue string (1..1)
+                        output:
+                            result Foo (0..1)
+                            [metadata location]
+                
+                        set result: empty
+                """;
+
+        var code = generatorTestHelper.generateCode(model);
+        var classes = generatorTestHelper.compileToClasses(code);
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, List.class);
+
+    }
+
+    @Test
     void canGetMetaTemplateFromSuperType() {
         var model = """
                 metaType key string
