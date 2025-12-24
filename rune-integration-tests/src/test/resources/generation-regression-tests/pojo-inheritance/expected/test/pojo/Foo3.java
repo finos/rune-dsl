@@ -215,7 +215,7 @@ public interface Foo3 extends Foo2 {
 		@RosettaIgnore
 		@RuneIgnore
 		public List<? extends Parent> getParentList() {
-			return parentList == null ? Collections.<Parent>emptyList() : Collections.singletonList(parentList.getValue());
+			return parentList == null || parentList.getValue() == null ? Collections.<Parent>emptyList() : Collections.singletonList(parentList.getValue());
 		}
 		
 		@Override

@@ -1,8 +1,10 @@
 package com.regnosys.rosetta.generator.java.expression
 
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 import com.regnosys.rosetta.generator.java.statement.builder.JavaConditionalExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder
+import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
@@ -14,6 +16,7 @@ import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.util.types.JavaPrimitiveType
 import com.rosetta.util.types.JavaReferenceType
 import com.rosetta.util.types.JavaType
+import jakarta.inject.Inject
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.util.ArrayList
@@ -21,9 +24,6 @@ import java.util.Collections
 import java.util.Optional
 import java.util.function.Function
 import java.util.stream.Collectors
-import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
-import jakarta.inject.Inject
-import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 
 /**
  * This service is responsible for coercing an expression from its actual Java type to an `expected` Java type.
@@ -120,6 +120,7 @@ class TypeCoercionService {
 					expr,
 					itemConversion,
 					expected,
+					false,
 					scope
 				)
 			].orElse(expr)
@@ -144,10 +145,14 @@ class TypeCoercionService {
 						expr,
 						itemConversion.andThen[mapExpression(wrapConversion)],
 						expected,
+						false,
 						scope
 					)
 				].orElse(expr.mapExpression(wrapConversion))
 		} else {
+			val expectedIsMeta = expected instanceof  RJavaWithMetaValue || expected.itemType instanceof RJavaWithMetaValue
+			val isMetaToItemConversion = actual instanceof RJavaWithMetaValue && !expectedIsMeta
+			
 			val totalConversion = getItemConversion(actual, expectedItemType, throwOnFail, scope)
 				.map[itemConversion|
 					itemConversion.andThen[mapExpression(wrapConversion)] as Function<JavaExpression, ? extends JavaStatementBuilder>
@@ -157,6 +162,7 @@ class TypeCoercionService {
 				expr,
 				totalConversion,
 				expected,
+				isMetaToItemConversion,
 				scope
 			)
 		}
@@ -340,7 +346,7 @@ class TypeCoercionService {
 			}
 		)
 	}
-	private def JavaStatementBuilder convertNullSafe(JavaExpression expr, Function<JavaExpression, ? extends JavaStatementBuilder> conversion, JavaType expected, JavaStatementScope scope) {
+	private def JavaStatementBuilder convertNullSafe(JavaExpression expr, Function<JavaExpression, ? extends JavaStatementBuilder> conversion, JavaType expected, boolean nullCheckMetaValue, JavaStatementScope scope) {
 		val actual = expr.expressionType
 		if (actual instanceof JavaPrimitiveType) {
 			return expr.mapExpression(conversion)
@@ -349,7 +355,7 @@ class TypeCoercionService {
 		expr
 			.declareAsVariable(true, actual.simpleName.toFirstLower, scope)
 			.mapExpression[varExpr|
-				val conditionExpr = JavaExpression.from('''«varExpr» == null''', JavaPrimitiveType.BOOLEAN)
+				val conditionExpr = JavaExpression.from('''«varExpr» == null«IF nullCheckMetaValue» || «varExpr».getValue() == null«ENDIF»''', JavaPrimitiveType.BOOLEAN)
 				val converted = conversion.apply(varExpr)
 				if (converted instanceof JavaExpression) {
 					return new JavaConditionalExpression(
@@ -615,7 +621,7 @@ class TypeCoercionService {
 		val lambdaParam = lambdaScope.createUniqueIdentifier(actualItemType.simpleName.toFirstLower)
 		val inputToItem = new JavaVariable(lambdaParam, actualItemType)
 		val resultType = MAPPER_S.wrap(expectedItemType)
-		val resultItemNullSafe = convertNullSafe(inputToItem, itemConversion, expectedItemType, scope)
+		val resultItemNullSafe = convertNullSafe(inputToItem, itemConversion, expectedItemType, false, scope)
 		JavaExpression.from(
 			'''«expression».<«resultType.itemType»>map("Type coercion", «lambdaParam» -> «resultItemNullSafe.toLambdaBody»)''',
 			resultType
