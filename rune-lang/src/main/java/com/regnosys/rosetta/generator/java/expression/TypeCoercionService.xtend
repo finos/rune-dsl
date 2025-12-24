@@ -151,8 +151,7 @@ class TypeCoercionService {
 				].orElse(expr.mapExpression(wrapConversion))
 		} else {
 			val expectedIsMeta = expected instanceof  RJavaWithMetaValue || expected.itemType instanceof RJavaWithMetaValue
-		
-			val actualIsMetaAndExpectedIsNot = actual instanceof RJavaWithMetaValue && !expectedIsMeta
+			val isMetaToItemConversion = actual instanceof RJavaWithMetaValue && !expectedIsMeta
 			
 			val totalConversion = getItemConversion(actual, expectedItemType, throwOnFail, scope)
 				.map[itemConversion|
@@ -163,7 +162,7 @@ class TypeCoercionService {
 				expr,
 				totalConversion,
 				expected,
-				actualIsMetaAndExpectedIsNot,
+				isMetaToItemConversion,
 				scope
 			)
 		}
