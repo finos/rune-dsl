@@ -30,6 +30,51 @@ public class ReportValidatorTest extends AbstractValidatorTest {
 	}
 	
 	@Test
+	void testRuleReferenceCardinalityMismatch() {
+		assertIssues("""
+				type Foo:
+					bar Bar (1..1)
+						[ruleReference for barAttr RuleReturnsMulti]
+				
+				type Bar:
+					barAttr string (1..1)
+				
+				reporting rule RuleReturnsMulti from number:
+					[ "1", "2" ]
+				""",
+				"""
+				WARNING (null) 'Expected single cardinality for barAttr, but rule has multi cardinality' at 6:3, length 44, on RuleReferenceAnnotation
+				""");
+	}
+	
+	@Test
+	void testRuleReferenceCardinalityMismatch2() {
+		assertIssues("""
+				type Foo:
+					bar Bar (1..1)
+						[ruleReference for barAttr RuleReturnsMulti]
+				
+				type Bar:
+					barAttr string (1..1)
+				
+				reporting rule RuleReturnsMulti from number:
+					FuncReturnsMulti
+				
+				func FuncReturnsMulti:
+					inputs:
+						inNum number (0..1)
+					output:
+						out	string (0..*)
+					
+					set out:
+						[ "1", "2" ]
+				""",
+				"""
+				WARNING (null) 'Expected single cardinality for barAttr, but rule has multi cardinality' at 6:3, length 44, on RuleReferenceAnnotation
+				""");
+	}
+	
+	@Test
 	void testInvalidInputType() {
 		assertIssues("""
 				type Foo:
