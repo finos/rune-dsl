@@ -1110,6 +1110,122 @@ class FunctionGeneratorTest {
 	}
 	
 	@Test
+	def void defaultOperatorEvaluatesToLeftWhenBothSidesPresentMultiCardinalityComplexType() {
+		val code = '''
+		type Bar:
+			attr string (0..1)
+		
+		func Foo:
+			inputs:
+				left Bar (1..*)
+				right Bar (1..*)
+			output: 
+				result Bar (1..*)
+			
+			set result:
+				left default right
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+		val foo = classes.createFunc("Foo");
+		
+		val a1 = classes.createInstanceUsingBuilder("Bar", #{
+				"attr" -> "a1"
+			})
+		val a2 = classes.createInstanceUsingBuilder("Bar", #{
+				"attr" -> "a2"
+			})
+		val b1 = classes.createInstanceUsingBuilder("Bar", #{
+				"attr" -> "b1"
+			})
+		val b2 = classes.createInstanceUsingBuilder("Bar", #{
+				"attr" -> "b2"
+			})
+		
+		assertEquals(#[a1, a2], foo.invokeFunc(String, #[#[a1, a2], #[b1, b2]]))
+	}
+	
+	@Test
+	def void defaultOperatorEvaluatesToLeftWhenBothSidesPresentMultiCardinalityComplexTypeWithIf() {
+		val code = '''
+		type Bar:
+			attr string (0..1)
+		
+		func Foo:
+			inputs:
+				left Bar (1..*)
+				right Bar (1..*)
+				cond boolean (1..1)
+			output: 
+				result Bar (1..*)
+			
+			set result:
+				if cond
+				then left default right
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+		val foo = classes.createFunc("Foo");
+		
+		val a1 = classes.createInstanceUsingBuilder("Bar", #{
+				"attr" -> "a1"
+			})
+		val a2 = classes.createInstanceUsingBuilder("Bar", #{
+				"attr" -> "a2"
+			})
+		val b1 = classes.createInstanceUsingBuilder("Bar", #{
+				"attr" -> "b1"
+			})
+		val b2 = classes.createInstanceUsingBuilder("Bar", #{
+				"attr" -> "b2"
+			})
+		
+		assertEquals(#[a1, a2], foo.invokeFunc(String, #[#[a1, a2], #[b1, b2], true]))
+	}
+	
+	@Test
+	def void defaultOperatorEvaluatesToLeftWhenBothSidesPresentMultiCardinalityComplexType2() {
+		val code = '''
+		type Bar:
+			attr1 string (0..1)
+
+		type Baz extends Bar:
+			attr2 string (0..1)
+		
+		func Foo:
+			inputs:
+				left Bar (1..*)
+				right Baz (1..*)
+			output: 
+				result Bar (1..*)
+			
+			set result:
+				left default right
+		'''.generateCode
+		
+		val classes = code.compileToClasses
+		
+		val foo = classes.createFunc("Foo");
+		
+		val a1 = classes.createInstanceUsingBuilder("Bar", #{
+				"attr1" -> "a1"
+			})
+		val a2 = classes.createInstanceUsingBuilder("Bar", #{
+				"attr1" -> "a2"
+			})
+		val b1 = classes.createInstanceUsingBuilder("Baz", #{
+				"attr2" -> "b1"
+			})
+		val b2 = classes.createInstanceUsingBuilder("Baz", #{
+				"attr2" -> "b2"
+			})
+		
+		assertEquals(#[a1, a2], foo.invokeFunc(String, #[#[a1, a2], #[b1, b2]]))
+	}
+	
+	@Test
 	def void defaultOperatorEvaluatesToRightWhenLeftIsEmptyMultiCardinality() {
 		val code = '''
 		func Foo:
