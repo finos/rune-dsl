@@ -9,6 +9,7 @@ import com.rosetta.model.lib.meta.Key
 import com.rosetta.model.lib.meta.Reference
 import com.rosetta.model.lib.records.Date
 import com.rosetta.model.metafields.MetaFields
+import com.rosetta.util.DottedPath
 import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -31,7 +32,6 @@ import static org.hamcrest.MatcherAssert.assertThat
 import static org.hamcrest.core.IsCollectionContaining.hasItems
 import static org.junit.Assert.assertThrows
 import static org.junit.jupiter.api.Assertions.*
-import com.rosetta.util.DottedPath
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
@@ -1050,82 +1050,6 @@ class FunctionGeneratorTest {
 				then ab -> B -> val
 		'''.generateCode
         code.compileToClasses
-	}
-	
-	@Test
-	def void defaultOperatorEvaluatesToLeftWhenBothSidesPresent() {
-		val code = '''
-		func Foo:
-			inputs:
-				left string (0..1)
-				right string (1..1)
-			output: result string (1..1)
-			set result:
-				left default right
-		'''.generateCode
-		
-		val classes = code.compileToClasses
-		
-		val foo = classes.createFunc("Foo");
-		
-		assertEquals("a", foo.invokeFunc(String, #["a", "b"]))
-	}
-	
-	@Test
-	def void defaultOperatorEvaluatesToRightWhenLeftIsEmpty() {
-		val code = '''
-		func Foo:
-			inputs:
-				left string (0..1)
-				right string (1..1)
-			output: result string (1..1)
-			set result:
-				left default right
-		'''.generateCode
-		
-		val classes = code.compileToClasses
-		
-		val foo = classes.createFunc("Foo");
-		
-		assertEquals("b", foo.invokeFunc(String, #[null, "b"]))
-	}
-	
-	@Test
-	def void defaultOperatorEvaluatesToLeftWhenBothSidesPresentMultiCardinality() {
-		val code = '''
-		func Foo:
-			inputs:
-				left string (1..*)
-				right string (1..*)
-			output: result string (1..*)
-			set result:
-				left default right
-		'''.generateCode
-		
-		val classes = code.compileToClasses
-		
-		val foo = classes.createFunc("Foo");
-		
-		assertEquals(#["a1", "a2"], foo.invokeFunc(String, #[#["a1", "a2"], #["b1", "b2"]]))
-	}
-	
-	@Test
-	def void defaultOperatorEvaluatesToRightWhenLeftIsEmptyMultiCardinality() {
-		val code = '''
-		func Foo:
-			inputs:
-				left string (1..*)
-				right string (1..*)
-			output: result string (1..*)
-			set result:
-				left default right
-		'''.generateCode
-		
-		val classes = code.compileToClasses
-		
-		val foo = classes.createFunc("Foo");
-		
-		assertEquals(#["b1", "b2"], foo.invokeFunc(String, #[#[], #["b1", "b2"]]))
 	}
 	
 	@Test

@@ -326,7 +326,7 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 	
 	@Override
 	protected Boolean caseDefaultOperation(DefaultOperation expr, Map<RosettaSymbol, Boolean> cycleTracker) {
-		return false;
+		return safeIsMulti(expr.getLeft(), cycleTracker) || safeIsMulti(expr.getRight(), cycleTracker);
 	}
 	
 	@Override
