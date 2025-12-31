@@ -413,13 +413,6 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
     }
 
     @Check
-    public void checkFunctionNameStartsWithCapital(com.regnosys.rosetta.rosetta.simple.Function func) {
-        if (Character.isLowerCase(func.getName().charAt(0))) {
-            warning("Function name should start with a capital", RosettaPackage.Literals.ROSETTA_NAMED__NAME, RosettaIssueCodes.INVALID_CASE);
-        }
-    }
-
-    @Check
     public void checkAttributes(Data clazz) {
         HashMultimap<String, RAttribute> name2attr = HashMultimap.create();
         // Collect all non-override attributes from the full type hierarchy
