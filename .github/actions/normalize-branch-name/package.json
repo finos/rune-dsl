@@ -9,6 +9,6 @@
     "author": "",
     "license": "ISC",
     "dependencies": {
-        "@actions/core": "^1.2.7"
+        "@actions/core": "^2.0.0"
     }
 }
