@@ -32,7 +32,7 @@ public class WarningSuppressionHelper {
         }
 
         Optional<Attribute> warningCategoryAttribute = supressWarnings.stream()
-                .flatMap(a -> a.getAttributes().stream())
+                .flatMap(annotation -> annotation.getAttributes().stream())
                 .filter(attribute -> attribute.getName().equals(warningCategory))
                 .findFirst();
 
