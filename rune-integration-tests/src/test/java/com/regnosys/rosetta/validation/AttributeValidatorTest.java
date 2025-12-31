@@ -199,7 +199,26 @@ public class AttributeValidatorTest extends AbstractValidatorTest {
 					item
     			""");
     }
-    
+
+	@Test
+	void testAttributeNameShouldStartWithLowerCaseCanBeSuppressedOnType() {
+		assertNoIssues("""
+				type PartyIdentifier:
+				  [suppressWarnings capitalisation]
+					PartyId string (1..1)
+					PartyName string (1..1)
+				""");
+	}
+
+	@Test
+	void testAttributeNameShouldStartWithLowerCaseCanBeSuppressed() {
+		assertNoIssues("""
+				type PartyIdentifier:
+					PartyId string (1..1)
+						[suppressWarnings capitalisation]
+				""");
+	}
+
     @Test
 	void testAttributeNameShouldStartWithLowerCase() {
 		assertIssues("""
