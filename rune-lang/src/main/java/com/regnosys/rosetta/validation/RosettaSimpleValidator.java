@@ -395,17 +395,6 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
     }
 
     @Check
-    public void checkConditionName(Condition condition) {
-        if (condition.getName() == null && !rosettaEcoreUtil.isConstraintCondition(condition)) {
-            warning("Condition name should be specified", RosettaPackage.Literals.ROSETTA_NAMED__NAME, RosettaIssueCodes.INVALID_NAME);
-        } else {
-            if (condition.getName() != null && Character.isLowerCase(condition.getName().charAt(0))) {
-                warning("Condition name should start with a capital", RosettaPackage.Literals.ROSETTA_NAMED__NAME, RosettaIssueCodes.INVALID_CASE);
-            }
-        }
-    }
-
-    @Check
     public void checkFeatureCallFeature(RosettaFeatureCall fCall) {
         if (fCall.getFeature() == null) {
             error("Attribute is missing after \'->\'", fCall, ExpressionPackage.Literals.ROSETTA_FEATURE_CALL__FEATURE);
