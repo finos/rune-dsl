@@ -36,3 +36,6 @@ annotation projection: <"Marks a function that performs projection operations wi
 	CSV boolean (0..1)
 	
 annotation codeImplementation: <"Marks the function as statically implemented by model internal code, with no body defined in Rune.">
+
+annotation suppressWarnings:
+    capitalisation boolean (0..1)

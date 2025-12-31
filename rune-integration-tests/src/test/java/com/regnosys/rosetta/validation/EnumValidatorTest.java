@@ -24,6 +24,15 @@ public class EnumValidatorTest implements RosettaIssueCodes {
     private ModelHelper modelHelper;
 
     @Test
+    public void testEnumNameShouldBeCapitalizedCanBeSuppressed() {
+        modelHelper.parseRosettaWithNoIssues("""
+            enum quoteRejectReasonEnum:
+              [suppressWarnings capitalisation]
+                Other
+            """);
+    }
+
+    @Test
     public void testEnumNameShouldBeCapitalized() {
         RosettaModel model = modelHelper.parseRosettaWithNoErrors("""
             enum quoteRejectReasonEnum:

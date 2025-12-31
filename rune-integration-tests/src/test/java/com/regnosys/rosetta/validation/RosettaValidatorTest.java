@@ -1569,32 +1569,6 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
-    void shouldGenerateNoConditionNameWarning() {
-        var model = modelHelper.parseRosetta("""
-				type Foo:
-					x string (0..1)
-
-					condition:
-						x exists
-				""");
-        validationTestHelper.assertWarning(model, CONDITION, INVALID_NAME,
-                "Condition name should be specified");
-    }
-
-    @Test
-    void shouldGenerateConditionNameInvalidCaseWarning() {
-        var model = modelHelper.parseRosetta("""
-				type Foo:
-					x string (0..1)
-
-					condition xExists:
-						x exists
-				""");
-        validationTestHelper.assertWarning(model, CONDITION, INVALID_CASE,
-                "Condition name should start with a capital");
-    }
-
-    @Test
     void shouldNoGenerateErrorsForConditionWithInheritedAttributeExists() {
         var model = modelHelper.parseRosetta("""
 				type Foo:

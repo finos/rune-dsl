@@ -43,10 +43,17 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 	private RuleReferenceService ruleService;
 	@Inject
 	private RBuiltinTypeService builtins;
+	@Inject
+	private WarningSuppressionHelper warningSuppressionHelper;
 	
 	@Check
 	public void checkAttributeNameStartsWithLowerCase(Attribute attribute) {
-		if (!(attribute instanceof ChoiceOption)
+		boolean capitalisationSuppressed =
+				warningSuppressionHelper.isCapitalisationSuppressed(attribute)
+				|| warningSuppressionHelper.isCapitalisationSuppressed(attribute.eContainer());
+
+		if (!capitalisationSuppressed
+				&& !(attribute instanceof ChoiceOption)
 				&& !(attribute.eContainer() instanceof Annotation)
 				&& Character.isUpperCase(attribute.getName().charAt(0))) {
 			warning("Attribute name should start with a lower case", attribute, ROSETTA_NAMED__NAME, INVALID_CASE);
