@@ -24,10 +24,13 @@ public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
     private CsvUtil csvUtil;
     @Inject
     private RObjectFactory rObjectFactory;
+    @Inject
+    private WarningSuppressionHelper warningSuppressionHelper;
 
     @Check
     public void checkFunctionNameStartsWithCapital(Function func) {
-        if (Character.isLowerCase(func.getName().charAt(0))) {
+        boolean suppressed = warningSuppressionHelper.isCapitalisationSuppressed(func);
+        if (!suppressed && Character.isLowerCase(func.getName().charAt(0))) {
             warning("Function name should start with a capital", RosettaPackage.Literals.ROSETTA_NAMED__NAME, RosettaIssueCodes.INVALID_CASE);
         }
     }

@@ -11,6 +11,18 @@ import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 @InjectWith(RosettaTestInjectorProvider.class)
 public class FunctionValidatorTest extends AbstractValidatorTest {
     @Test
+    void functionNameShouldStartWithUpperCaseCanBeSuppressed() {
+        assertNoIssues("""
+                func myFunc:
+                  [suppressWarnings capitalisation]
+                   output:
+                       result string (1..1)
+                
+                    set result: "output"
+                """
+        );
+    }
+    @Test
     void functionNameShouldStartWithUpperCase() {
         assertIssues("""
                 func myFunc:
