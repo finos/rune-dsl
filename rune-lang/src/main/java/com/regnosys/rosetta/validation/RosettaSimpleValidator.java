@@ -67,9 +67,6 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
     private RosettaFunctionExtensions rosettaFunctionExtensions;
 
     @Inject
-    private ExpressionHelper exprHelper;
-
-    @Inject
     private CardinalityProvider cardinality;
 
     @Inject
@@ -746,27 +743,7 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         }
     }
 
-    @Check
-    public void checkConditionDontUseOutput(com.regnosys.rosetta.rosetta.simple.Function ele) {
-        for (Condition cond : ele.getConditions()) {
-            if (cond.isPostCondition()) continue;
-            RosettaExpression expr = cond.getExpression();
-            if (expr == null) continue;
 
-            Stack<String> trace = new Stack<>();
-            List<RosettaSymbol> outRef = exprHelper.findOutputRef(expr, trace);
-            if (outRef != null && !outRef.isEmpty()) {
-                RosettaSymbol first = outRef.get(0);
-                StringBuilder msg = new StringBuilder();
-                msg.append("output '").append(first.getName()).append("' or alias on output '")
-                        .append(first.getName()).append("' not allowed in condition blocks.");
-                if (!trace.isEmpty()) {
-                    msg.append("\n").append(String.join(" > ", trace)).append(" > ").append(first.getName());
-                }
-                error(msg.toString(), expr, null);
-            }
-        }
-    }
 
     @Check
     public void checkAssignAnAlias(Operation ele) {
