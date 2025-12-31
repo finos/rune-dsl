@@ -22,11 +22,14 @@ public class EnumValidator extends AbstractDeclarativeRosettaValidator {
 	private RosettaEcoreUtil ecoreUtil;
     @Inject
     private CycleValidationHelper cycleValidationHelper;
+	@Inject
+	private WarningSuppressionHelper warningSuppressionHelper;
 	
 	@Check
 	public void checkEnumNameIsCapitalized(RosettaEnumeration enumeration) {
         String name = enumeration.getName();
-		if (name != null && Character.isLowerCase(name.charAt(0))) {
+		boolean suppressed = warningSuppressionHelper.isCapitalisationSuppressed(enumeration);
+		if (!suppressed && name != null && Character.isLowerCase(name.charAt(0))) {
 			warning("Enumeration name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE);
 		}
 	}
