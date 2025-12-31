@@ -11,6 +11,20 @@ import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 @InjectWith(RosettaTestInjectorProvider.class)
 public class FunctionValidatorTest extends AbstractValidatorTest {
     @Test
+    void functionNameShouldStartWithUpperCase() {
+        assertIssues("""
+                func myFunc:
+                   output:
+                       result string (1..1)
+                
+                    set result: "output"
+                """, """
+                WARNING (RosettaIssueCodes.invalidCase) 'Function name should start with a capital' at 4:6, length 6, on Function
+                """
+        );
+    }
+
+    @Test
     void csvIngestionInputMustBeTabular() {
     	assertIssues("""
                 type Input:
