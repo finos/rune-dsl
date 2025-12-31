@@ -21,13 +21,16 @@ public class TypeValidator extends AbstractDeclarativeRosettaValidator {
 	private RosettaEcoreUtil ecoreUtil;
     @Inject
     private CycleValidationHelper cycleValidationHelper;
+	@Inject
+	private WarningSuppressionHelper warningSuppressionHelper;
 
 	@Check
 	public void checkTypeNameIsCapitalized(Data data) {
 		// TODO: also enforce on Choice's once Choice does not extend Data anymore
 		String name = data.getName();
 		if (name != null) {
-			if (Character.isLowerCase(name.charAt(0))) {
+			boolean suppressed = warningSuppressionHelper.isCapitalisationSuppressed(data);
+			if (!suppressed && Character.isLowerCase(name.charAt(0))) {
 				warning("Type name should start with a capital", ROSETTA_NAMED__NAME, INVALID_CASE);
 			}
 		}

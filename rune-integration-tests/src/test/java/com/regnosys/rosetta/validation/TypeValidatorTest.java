@@ -10,6 +10,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @InjectWith(RosettaTestInjectorProvider.class)
 class TypeValidatorTest extends AbstractValidatorTest {
     @Test
+    void testTypeNameCapitalisationWarningCanBeSuppressed() {
+        assertNoIssues("""
+                type partyIdentifier:
+                  [suppressWarnings capitalisation]
+                    partyId string (1..1)
+                """);
+    }
+
+    @Test
     void testTypeNameShouldBeCapitalized() {
         assertIssues("""
                         type partyIdentifier:
