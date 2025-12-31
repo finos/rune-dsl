@@ -18,13 +18,16 @@ public class ConditionValidator extends AbstractDeclarativeRosettaValidator {
     private RosettaEcoreUtil rosettaEcoreUtil;
     @Inject
     private ExpressionHelper exprHelper;
+    @Inject
+    private WarningSuppressionHelper warningSuppressionHelper;
 
     @Check
     public void checkConditionName(Condition condition) {
         if (condition.getName() == null && !rosettaEcoreUtil.isConstraintCondition(condition)) {
             warning("Condition name should be specified", RosettaPackage.Literals.ROSETTA_NAMED__NAME, RosettaIssueCodes.INVALID_NAME);
         } else {
-            if (condition.getName() != null && Character.isLowerCase(condition.getName().charAt(0))) {
+            boolean suppressed = warningSuppressionHelper.isCapitalisationSuppressed(condition);
+            if (!suppressed && condition.getName() != null && Character.isLowerCase(condition.getName().charAt(0))) {
                 warning("Condition name should start with a capital", RosettaPackage.Literals.ROSETTA_NAMED__NAME, RosettaIssueCodes.INVALID_CASE);
             }
         }

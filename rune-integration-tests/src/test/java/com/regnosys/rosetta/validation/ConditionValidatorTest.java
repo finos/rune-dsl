@@ -34,4 +34,16 @@ public class ConditionValidatorTest extends AbstractValidatorTest {
                 WARNING (RosettaIssueCodes.invalidCase) 'Condition name should start with a capital' at 7:12, length 7, on Condition
                 """);
     }
+
+	@Test
+	void shouldGenerateConditionNameInvalidCaseWarningCanBeSuppressed() {
+		assertNoIssues("""
+				type Foo:
+					x string (0..1)
+
+					condition xExists:
+					  [suppressWarnings capitalisation]
+						x exists
+				""");
+	}
 }
