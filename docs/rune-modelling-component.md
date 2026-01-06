@@ -6,7 +6,7 @@ draft: false
 weight: 2
 ---
 
-# Rune Modelling Components
+# Rune Modelling Components 
 
 **The Rune DSL can express eight types of model components**:
 
