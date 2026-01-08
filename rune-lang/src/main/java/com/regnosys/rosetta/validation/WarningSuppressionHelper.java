@@ -24,7 +24,7 @@ public class WarningSuppressionHelper {
         List<Annotation> supressWarnings = annotated.getAnnotations()
                 .stream()
                 .map(AnnotationRef::getAnnotation)
-                .filter(annotation -> annotation.getName().equals("suppressWarnings"))
+                .filter(annotation -> "suppressWarnings".equals(annotation.getName()))
                 .toList();
 
         if (supressWarnings.isEmpty()) {
@@ -33,7 +33,7 @@ public class WarningSuppressionHelper {
 
         Optional<Attribute> warningCategoryAttribute = supressWarnings.stream()
                 .flatMap(annotation -> annotation.getAttributes().stream())
-                .filter(attribute -> attribute.getName().equals(warningCategory))
+                .filter(attribute -> warningCategory.equals(attribute.getName()))
                 .findFirst();
 
         return warningCategoryAttribute.isPresent();

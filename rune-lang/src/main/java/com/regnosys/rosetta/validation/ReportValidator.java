@@ -16,6 +16,7 @@
 
 package com.regnosys.rosetta.validation;
 
+import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.*;
 import com.regnosys.rosetta.rosetta.simple.*;
 import com.regnosys.rosetta.rules.RulePathMap;
@@ -39,6 +40,9 @@ import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 
 public class ReportValidator extends AbstractDeclarativeRosettaValidator {
+    @Inject
+    private RosettaEcoreUtil ecoreUtil;
+    
     @Inject
     private TypeSystem ts;
 
@@ -72,7 +76,7 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
                 } else {
                     EcoreUtil2.eAllOfType(path, AnnotationPath.class).forEach(p -> {
                         Attribute target = annotationPathUtil.getTargetAttribute(p.getReceiver());
-                        if (target.getCard().isPlural()) {
+                        if (ecoreUtil.isResolved(target) && target.getCard().isPlural()) {
                             error("Paths on multi-cardinality attributes are not allowed", p, ANNOTATION_PATH__OPERATOR);
                         }
                     });
