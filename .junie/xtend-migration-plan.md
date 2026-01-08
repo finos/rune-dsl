@@ -142,7 +142,7 @@ No project files to migrate.
 - [ ] TestResourceAwareFSAFactory
 - [x] RosettaAttributeExtensions
 - [x] RosettaFunctionExtensions
-- [ ] RosettaQualifiedNameProvider
+- [x] RosettaQualifiedNameProvider
 
 ##### Files with usage of string template features (21 files)
 - [ ] RosettaExpressionFormatter
