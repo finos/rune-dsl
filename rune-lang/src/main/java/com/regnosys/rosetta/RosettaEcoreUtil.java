@@ -106,16 +106,14 @@ public class RosettaEcoreUtil {
 	 * 
 	 */
     public List<RosettaFeature> getMetaDescriptions(List<RMetaAttribute> metaAttributes, EObject context) {
-    	Set<String> metaNames = metaAttributes.stream().map(a -> a.getName()).collect(Collectors.toSet());
+    	Set<String> metaNames = metaAttributes.stream().map(RMetaAttribute::getName).collect(Collectors.toSet());
  		if (!metaNames.isEmpty()) {
  			List<RosettaFeature> result = new ArrayList<>();
- 			for (var mt : configs.findMetaTypes(context)) {
- 				if (metaNames.contains(mt.getName().getLastSegment().toString())) {
- 					EObject resolved = EcoreUtil.resolve(mt.getEObjectOrProxy(), context);
- 					if (resolved instanceof RosettaFeature) {
- 						result.add((RosettaFeature) resolved);
- 					}
- 				}
+ 			for (var mt : configs.findMetaTypes(metaNames, context)) {
+				EObject resolved = EcoreUtil.resolve(mt.getEObjectOrProxy(), context);
+				if (resolved instanceof RosettaFeature) {
+					result.add((RosettaFeature) resolved);
+				}
  			}
  			return result;
  		}
