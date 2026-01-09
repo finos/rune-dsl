@@ -38,6 +38,7 @@ public class RDataType extends RType implements RObject {
 	private RDataType superType = null;
 	private ModelSymbolId symbolId = null;
 	private Map<String, RAttribute> ownAttributes = null;
+	private Map<String, RAttribute> allAttributes = null;
 	private List<RMetaAttribute> metaAttributes = null;
 	
 	private final ModelIdProvider modelIdProvider;
@@ -145,9 +146,7 @@ public class RDataType extends RType implements RObject {
 	 * Attribute overrides replace their respective parent attributes, respecting the original order.
 	 */
 	public Collection<RAttribute> getAllAttributes() {
-		Map<String, RAttribute> result = new LinkedHashMap<>();
-		getAllSuperTypes().stream().map(s -> s.getOwnAttributesAsMap()).forEach(attrs -> result.putAll(attrs));
-		return result.values();
+		return getAllAttributesAsMap().values();
 	}
 	
 	/**
@@ -156,19 +155,28 @@ public class RDataType extends RType implements RObject {
 	 * If no attribute with the given name exists, the result is null.
 	 */
 	public RAttribute getAttributeByName(String name) {
-		Set<RDataType> visited = new HashSet<>();
-		RDataType current = this;
-		while (current != null) {
-			if (!visited.add(current)) {
-				return null;
-			}
-			RAttribute found = current.getOwnAttributeByName(name);
-			if (found != null) {
-				return found;
-			}
-			current = current.getSuperType();
+		return getAllAttributesAsMap().get(name);
+	}
+	private Map<String, RAttribute> getAllAttributesAsMap() {
+		if (allAttributes == null) {
+			allAttributes = buildAllAttributesMap(new HashSet<>());
 		}
-		return null;
+		return allAttributes;
+	}
+	private Map<String, RAttribute> buildAllAttributesMap(Set<RDataType> visited) {
+		if (!visited.add(this)) {
+			return Collections.emptyMap();
+		}
+		Map<String, RAttribute> result = new LinkedHashMap<>();
+		RDataType superType = getSuperType();
+		if (superType != null) {
+			if (superType.allAttributes == null) {
+				superType.allAttributes = superType.buildAllAttributesMap(visited);
+			}
+			result.putAll(superType.getAllAttributesAsMap());
+		}
+		result.putAll(getOwnAttributesAsMap());
+		return Collections.unmodifiableMap(result);
 	}
 
 	@Override
