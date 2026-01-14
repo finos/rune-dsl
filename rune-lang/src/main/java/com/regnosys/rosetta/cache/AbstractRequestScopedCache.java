@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.cache;
 
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
@@ -37,13 +38,7 @@ public abstract class AbstractRequestScopedCache<K, V> implements IRequestScoped
 		
 		Object result;
 		try {
-			result = managedCache.get(key, () -> {
-				V value = loader.get();
-				if (value == null) {
-					return NULL_ENTRY;
-				}
-				return value;
-			});
+			result = managedCache.get(key, () -> Objects.requireNonNullElse(loader.get(), NULL_ENTRY));
 		} catch (ExecutionException e) {
 			result = handleLoaderException(e);
 		}
@@ -52,6 +47,16 @@ public abstract class AbstractRequestScopedCache<K, V> implements IRequestScoped
 			return null;
 		}
 		return (V) result;
+	}
+
+	protected boolean has(K key) {
+		return managedCache.getIfPresent(key) != null;
+	}
+	protected void put(K key, V value) {
+		if (!REQUEST_SCOPED_CACHE_ENABLED) {
+			return;
+		}
+        managedCache.put(key, Objects.requireNonNullElse(value, NULL_ENTRY));
 	}
 	
 	@Override
