@@ -40,6 +40,7 @@ public class StandaloneRosettaBuilder {
     @Inject
     private RosettaBuiltinsService builtins;
     
+    // volatile to support asynchronous access
     private volatile BuildRequest currentBuildRequest;
 
     public IncrementalBuilder.Result launch(RosettaBuildRequest request) {
