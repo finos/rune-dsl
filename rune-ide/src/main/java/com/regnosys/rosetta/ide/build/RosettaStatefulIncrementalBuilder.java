@@ -55,6 +55,10 @@ public class RosettaStatefulIncrementalBuilder extends InternalStatefulIncrement
             // Prevent empty builds from cluttering the logs.
             return new IncrementalBuilder.Result(getRequest().getState(), List.of());
         }
+        return doLaunch();
+    }
+    
+    protected IncrementalBuilder.Result doLaunch() {
         if (INCREMENTAL_BUILDER_STATISTICS_ENABLED) {
             resetBuildStatistics();
             IncrementalBuilder.Result buildResult = null;
@@ -68,7 +72,7 @@ public class RosettaStatefulIncrementalBuilder extends InternalStatefulIncrement
         return super.launch();
     }
     
-    private boolean hasAnyChanges() {
+    protected boolean hasAnyChanges() {
         BuildRequest request = getRequest();
         return !request.getDirtyFiles().isEmpty() || !request.getDeletedFiles().isEmpty() || !request.getExternalDeltas().isEmpty();
     }
