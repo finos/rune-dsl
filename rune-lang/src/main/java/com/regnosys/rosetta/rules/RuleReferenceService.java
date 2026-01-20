@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.rules;
 
+import com.regnosys.rosetta.cache.caches.NonReportTypeCache;
 import com.regnosys.rosetta.rosetta.*;
 import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression;
 import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation;
@@ -23,6 +24,8 @@ public class RuleReferenceService {
 
     @Inject
     private AnnotationPathExpressionUtil pathExpressionUtil;
+    @Inject
+    private NonReportTypeCache nonReportTypeCache;
 
     /**
      * Traverse the tree structure defined by the attributes and their nested attributes of a given data type, together with their associated rule references.
@@ -65,14 +68,18 @@ public class RuleReferenceService {
      * @return The end state.
      */
     public <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initialState, BiFunction<T, RuleReferenceContext, T> updateState) {
-        return traverse(source, type, initialState, updateState, new HashMap<>(), new ArrayList<>(), new HashSet<>());
+        return traverse(source, type, initialState, updateState, new HashMap<>(), Collections.emptyList(), new HashSet<>());
     }
     private <T> T traverse(RosettaExternalRuleSource source, RDataType type, T initialState, BiFunction<T, RuleReferenceContext, T> updateState, Map<List<String>, RuleResult> nestedRuleContext, List<RAttribute> path, Set<RDataType> visited) {
         boolean isCycle = !visited.add(type);
-        if (isCycle && nestedRuleContext.isEmpty()) {
+        if ((isCycle || nonReportTypeCache.isMarkedNonReportType(source, type)) && nestedRuleContext.isEmpty()) {
             return initialState;
         }
 
+        // Optimization: mark types that never call updateState
+        // so we can skip traversal in the future.
+        boolean calledUpdateState = false;
+        
         T currentState = initialState;
         for (RAttribute attr : type.getAllAttributes()) {
             String attrName = attr.getName();
@@ -81,28 +88,41 @@ public class RuleReferenceService {
 
             RuleResult ruleResult = nestedRuleContext.get(List.of(attrName));
             if (ruleResult != null) {
-                currentState = updateState.apply(currentState, new RuleReferenceContext(attrPath, ruleResult));
+                currentState = callUpdateState(currentState, attrPath, ruleResult, updateState);
+                calledUpdateState = true;
             } else {
                 RulePathMap pathMap = computeRulePathMapInContext(source, type, attr);
                 ruleResult = pathMap.get(List.of());
                 if (ruleResult != null) {
-                    currentState = updateState.apply(currentState, new RuleReferenceContext(attrPath, ruleResult));
+                    currentState = callUpdateState(currentState, attrPath, ruleResult, updateState);
+                    calledUpdateState = true;
                 } else if (!attr.isMulti()) {
                     RType attrType = attr.getRMetaAnnotatedType().getRType();
-                    if (attrType instanceof RChoiceType) {
-                        attrType = ((RChoiceType) attrType).asRDataType();
+                    if (attrType instanceof RChoiceType attrChoiceType) {
+                        attrType = attrChoiceType.asRDataType();
                     }
-                    if (attrType instanceof RDataType) {
+                    if (attrType instanceof RDataType attrDataType) {
                         Map<List<String>, RuleResult> subcontext = getSubcontextForAttribute(attr, nestedRuleContext);
                         if (!isCycle) {
                             pathMap.addRulesToMapIfNotPresent(subcontext);
                         }
-                        currentState = traverse(source, (RDataType) attrType, currentState, updateState, subcontext, attrPath, new HashSet<>(visited));
+                        currentState = traverse(source, attrDataType, currentState, updateState, subcontext, attrPath, visited);
+                        if (!nonReportTypeCache.isMarkedNonReportType(source, attrDataType)) {
+                            calledUpdateState = true;
+                        }
                     }
                 }
             }
         }
+        if (!calledUpdateState) {
+            nonReportTypeCache.markNonReportType(source, type);
+        }
+        visited.remove(type);
         return currentState;
+    }
+    private <T> T callUpdateState(T state, List<RAttribute> attrPath, RuleResult ruleResult, BiFunction<T, RuleReferenceContext, T> updateState) {
+        RuleReferenceContext context = new RuleReferenceContext(attrPath, ruleResult);
+        return updateState.apply(state, context);
     }
 
     public static class RuleReferenceContext {
