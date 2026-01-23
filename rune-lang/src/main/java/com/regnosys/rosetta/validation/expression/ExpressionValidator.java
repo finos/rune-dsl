@@ -422,7 +422,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 				error("Object must have a parent object", expr, ROSETTA_ONLY_EXISTS_EXPRESSION__ARGS, 0);
 			}
 			
-			RMetaAnnotatedType parentType = null;
+			RMetaAnnotatedType parentType;
 			if (parent != null) {
 				isSingleCheck(parent, parent, null, "The `only exists` operator requires a single cardinality input");
 				parentType = typeProvider.getRMetaAnnotatedType(parent);
@@ -431,6 +431,9 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 					error("Expecting single cardinality input", expr, ROSETTA_ONLY_EXISTS_EXPRESSION__ARGS, 0);
 				}
 				parentType = typeProvider.typeOfImplicitVariable(expr);
+			}
+			if (typeSystem.isSubtypeOf(parentType, builtins.NOTHING_WITH_ANY_META)) {
+				return;
 			}
 			RType parentData = parentType.getRType();
 			if (!mayBeEmpty(parentData)) {
@@ -443,6 +446,9 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	public void checkOneOfOperation(OneOfOperation op) {
 		isSingleCheck(op.getArgument(), op, ROSETTA_UNARY_OPERATION__ARGUMENT, op);
 		RMetaAnnotatedType argType = typeProvider.getRMetaAnnotatedType(op.getArgument());
+		if (typeSystem.isSubtypeOf(argType, builtins.NOTHING_WITH_ANY_META)) {
+			return;
+		}
 		if (!mayBeEmpty(argType.getRType())) {
 			unsupportedTypeError(argType, op.getOperator(), op, ROSETTA_UNARY_OPERATION__ARGUMENT, "All attributes of input type should be optional");
 		}
@@ -452,6 +458,9 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	public void checkChoiceOperation(ChoiceOperation op) {
 		isSingleCheck(op.getArgument(), op, ROSETTA_UNARY_OPERATION__ARGUMENT, op);
 		RMetaAnnotatedType argType = typeProvider.getRMetaAnnotatedType(op.getArgument());
+		if (typeSystem.isSubtypeOf(argType, builtins.NOTHING_WITH_ANY_META)) {
+			return;
+		}
 		if (!(argType.getRType() instanceof RDataType)) {
 			unsupportedTypeError(argType, op.getOperator(), op, ROSETTA_UNARY_OPERATION__ARGUMENT, "Input should be a complex type");
 		}
