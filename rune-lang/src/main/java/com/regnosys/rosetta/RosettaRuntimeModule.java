@@ -3,8 +3,10 @@ package com.regnosys.rosetta;
 import com.regnosys.rosetta.scoping.RosettaLinkingService;
 import com.regnosys.rosetta.validation.names.RosettaNamesAreUniqueValidationHelper;
 import com.regnosys.rosetta.validation.names.RosettaUniqueNamesContextProvider;
+import jakarta.inject.Singleton;
 import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.formatting2.FormatterRequest;
+import org.eclipse.xtext.generator.GeneratorDelegate;
 import org.eclipse.xtext.generator.IOutputConfigurationProvider;
 import org.eclipse.xtext.linking.ILinkingService;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
@@ -76,6 +78,10 @@ public class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	
 	public Class<? extends Provider<FormatterRequest>> provideFormatterRequest() {
 		return FormatterRequestWithDefaultPreferencesProvider.class;
+	}
+	
+	public void configureGeneratorDelegate(Binder binder) {
+		binder.bind(GeneratorDelegate.class).in(Singleton.class);
 	}
 	
 	@Override

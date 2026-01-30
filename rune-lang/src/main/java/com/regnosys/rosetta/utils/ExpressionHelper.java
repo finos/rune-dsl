@@ -16,9 +16,7 @@
 
 package com.regnosys.rosetta.utils;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
@@ -32,37 +30,38 @@ import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
 import com.regnosys.rosetta.rosetta.simple.SimplePackage;
+import org.eclipse.xtext.EcoreUtil2;
 
 public class ExpressionHelper {
 	public boolean usesOutputParameter(RosettaExpression expr) {
-		return !this.findOutputRef(expr, new Stack<String>()).isEmpty();
+		return usesOutputParameter(expr, new HashSet<>());
 	}
-
-	public List<RosettaSymbol> findOutputRef(EObject ele, Stack<String> trace) {
-		if (ele == null) {
-			return Collections.emptyList();
+	private boolean usesOutputParameter(RosettaExpression expr, Set<RosettaExpression> visited) {
+		return findFirstReferenceToOutput(expr, visited) != null;
+	}
+	public RosettaSymbolReference findFirstReferenceToOutput(RosettaExpression expr) {
+		return findFirstReferenceToOutput(expr, new HashSet<>());
+	}
+	private RosettaSymbolReference findFirstReferenceToOutput(RosettaExpression expr, Set<RosettaExpression> visited) {
+		if (!visited.add(expr)) {
+			return null;
 		}
-		if (ele instanceof ShortcutDeclaration) {
-			ShortcutDeclaration sd = (ShortcutDeclaration)ele;
-			trace.push(sd.getName());
-			List<RosettaSymbol> result = findOutputRef(sd.getExpression(), trace);
-			if (result.isEmpty())
-				trace.pop();
-			return result;
-		} else if (ele instanceof RosettaSymbolReference && !(((RosettaSymbolReference)ele).getSymbol() instanceof RosettaCallableWithArgs)) {
-			RosettaSymbolReference cc = (RosettaSymbolReference)ele;
-			if (cc.getSymbol() instanceof Attribute &&
-					cc.getSymbol().eContainingFeature() == SimplePackage.Literals.FUNCTION__OUTPUT)
-				return Collections.singletonList(cc.getSymbol());
-			return findOutputRef(cc.getSymbol(), trace);
-		} else {
-			return Streams.concat(
-						ele.eContents().stream(),
-						ele.eCrossReferences().stream()
-							.filter(ref -> (ref instanceof RosettaExpression) || (ref instanceof ShortcutDeclaration)))
-					.<RosettaSymbol>flatMap(ref -> this.findOutputRef(ref, trace).stream())
-					.collect(Collectors.toList());
-		}
+		return EcoreUtil2.eAllOfType(expr, RosettaSymbolReference.class)
+				.stream().map(ref -> {
+					RosettaSymbol symbol = ref.getSymbol();
+					if (symbolIsOutputParameter(symbol)) {
+						return ref;
+					}
+					if (symbol instanceof ShortcutDeclaration sd) {
+						return findFirstReferenceToOutput(sd.getExpression(), visited);
+					}
+					return null;
+				})
+				.filter(Objects::nonNull)
+				.findFirst().orElse(null);
+	}
+	private boolean symbolIsOutputParameter(RosettaSymbol symbol) {
+		return symbol.eContainingFeature() == SimplePackage.Literals.FUNCTION__OUTPUT;
 	}
 
 	public RosettaExpression getParentExpression(RosettaExpression e) {

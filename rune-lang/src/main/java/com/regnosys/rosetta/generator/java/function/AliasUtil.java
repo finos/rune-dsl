@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.java.function;
 
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 
-import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService;
 import com.regnosys.rosetta.generator.java.scoping.JavaMethodScope;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface;
@@ -15,7 +14,6 @@ import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RShortcut;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.utils.ExpressionHelper;
-import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaGenericTypeDeclaration;
 import com.rosetta.util.types.JavaReferenceType;
 
@@ -32,8 +30,6 @@ public class AliasUtil {
 	private JavaTypeTranslator typeTranslator;
 	@Inject
 	private JavaTypeUtil typeUtil;
-	@Inject
-	private JavaIdentifierRepresentationService identifierService;
 	
 	public JavaReferenceType getReturnType(RShortcut alias) {
 		if (requiresOutput(alias)) {
