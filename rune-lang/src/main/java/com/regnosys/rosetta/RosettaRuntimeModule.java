@@ -81,6 +81,9 @@ public class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	}
 	
 	public void configureGeneratorDelegate(Binder binder) {
+		// Profiling showed that instantiating `GeneratorDelegate` is done many times and takes some time,
+		// whereas it is actually a stateless service. By binding it as a singleton, we ensure that only one instance
+		// is created and reused.
 		binder.bind(GeneratorDelegate.class).in(Singleton.class);
 	}
 	
