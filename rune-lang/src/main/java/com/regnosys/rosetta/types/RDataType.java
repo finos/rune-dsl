@@ -78,13 +78,14 @@ public class RDataType extends RType implements RObject {
 	}
 	
 	public RDataType getSuperType() {
-		if (data.hasSuperType()) {
-			if (superType == null) {
-				superType = new RDataType(data.getSuperType(), modelIdProvider, objectFactory, typeProvider);
-			}
-			return superType;
+		Data resolvedSuperType = data.getSuperType();
+		if (resolvedSuperType == null || resolvedSuperType.eIsProxy()) {
+			return null;
 		}
-		return null;
+		if (superType == null) {
+			superType = new RDataType(resolvedSuperType, modelIdProvider, objectFactory, typeProvider);
+		}
+		return superType;
 	}
 	/**
 	 * Get a list of all super types of this data type, including itself.
