@@ -27,7 +27,6 @@ import com.regnosys.rosetta.generator.java.scoping.JavaPackageName;
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RDataType;
-import com.regnosys.rosetta.types.TypeSystem;
 import com.rosetta.model.lib.process.AttributeMeta;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaType;
@@ -38,16 +37,14 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 	private Map<String, JavaPojoProperty> ownProperties = null;
 	private Map<String, JavaPojoProperty> allProperties = null;
 	
-	private final TypeSystem typeSystem;
 	private final JavaTypeTranslator typeTranslator;
 	private final JavaTypeUtil typeUtil;
 	private final ModelGeneratorUtil generatorUtil;
 
-	public RJavaPojoInterface(RDataType type, TypeSystem typeSystem, JavaTypeTranslator typeTranslator, JavaTypeUtil typeUtil, ModelGeneratorUtil generatorUtil) {
+	public RJavaPojoInterface(RDataType type, JavaTypeTranslator typeTranslator, JavaTypeUtil typeUtil, ModelGeneratorUtil generatorUtil) {
 		super(JavaPackageName.escape(type.getNamespace()), type.getName(), typeUtil);
 		this.type = type;
 		
-		this.typeSystem = typeSystem;
 		this.typeTranslator = typeTranslator;
 		this.typeUtil = typeUtil;
 		this.generatorUtil = generatorUtil;
@@ -192,7 +189,7 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 		if (superPojo == null) {
 			RDataType superType = type.getSuperType();
 			if (superType != null) {
-				superPojo = new RJavaPojoInterface(superType, typeSystem, typeTranslator, typeUtil, generatorUtil);
+				superPojo = typeTranslator.createPojoInterface(superType);
 			}
 		}
 		return superPojo;

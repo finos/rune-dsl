@@ -7,6 +7,7 @@ import com.google.inject.multibindings.Multibinder;
 import com.regnosys.rosetta.cache.caches.RDataTypeCache;
 import com.regnosys.rosetta.cache.caches.RFunctionCache;
 import com.regnosys.rosetta.cache.caches.NonReportTypeCache;
+import com.regnosys.rosetta.cache.caches.RJavaPojoInterfaceCache;
 
 
 public class RequestScopedCacheModule extends AbstractModule {
@@ -19,6 +20,7 @@ public class RequestScopedCacheModule extends AbstractModule {
 		bindCache(RDataTypeCache.class);
 		bindCache(RFunctionCache.class);
 		bindCache(NonReportTypeCache.class);
+		bindCache(RJavaPojoInterfaceCache.class);
     }
 
 	private void bindCache(Class<? extends IRequestScopedCache<?, ?>> cacheClass) {
