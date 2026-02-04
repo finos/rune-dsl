@@ -27,4 +27,6 @@ public @interface RosettaAttribute {
 	
 	String value() default "";
 	boolean isRequired() default false;
+	AccessorType accessorType() default AccessorType.UNKNOWN;
+	boolean isMulti() default false;
 }
