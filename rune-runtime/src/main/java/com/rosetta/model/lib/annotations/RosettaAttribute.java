@@ -35,4 +35,6 @@ public @interface RosettaAttribute {
 	 */
 	@Deprecated
 	boolean isRequired() default false;
+	AccessorType accessorType() default AccessorType.UNKNOWN;
+	boolean isMulti() default false;
 }
