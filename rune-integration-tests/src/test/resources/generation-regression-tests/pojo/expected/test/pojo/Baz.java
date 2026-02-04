@@ -2,6 +2,7 @@ package test.pojo;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.AccessorType;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
@@ -83,7 +84,7 @@ public interface Baz extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute(value="baz", isRequired=true)
+		@RosettaAttribute(value="baz", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute(value="baz", isRequired=true)
 		@RuneScopedAttributeReference
 		public ReferenceWithMetaString getBaz() {
@@ -138,7 +139,7 @@ public interface Baz extends RosettaModelObject {
 		protected ReferenceWithMetaString.ReferenceWithMetaStringBuilder baz;
 		
 		@Override
-		@RosettaAttribute(value="baz", isRequired=true)
+		@RosettaAttribute(value="baz", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute(value="baz", isRequired=true)
 		@RuneScopedAttributeReference
 		public ReferenceWithMetaString.ReferenceWithMetaStringBuilder getBaz() {
@@ -158,7 +159,7 @@ public interface Baz extends RosettaModelObject {
 			return result;
 		}
 		
-		@RosettaAttribute(value="baz", isRequired=true)
+		@RosettaAttribute(value="baz", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
 		@RuneAttribute(value="baz", isRequired=true)
 		@RuneScopedAttributeReference
 		@Override

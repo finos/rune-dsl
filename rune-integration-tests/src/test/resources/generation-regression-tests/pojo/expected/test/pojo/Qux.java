@@ -2,6 +2,7 @@ package test.pojo;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.AccessorType;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
@@ -84,7 +85,7 @@ public interface Qux extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute(value="qux", isRequired=true)
+		@RosettaAttribute(value="qux", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute(value="qux", isRequired=true)
 		@RuneScopedAttributeKey
 		public FieldWithMetaString getQux() {
@@ -139,7 +140,7 @@ public interface Qux extends RosettaModelObject {
 		protected FieldWithMetaString.FieldWithMetaStringBuilder qux;
 		
 		@Override
-		@RosettaAttribute(value="qux", isRequired=true)
+		@RosettaAttribute(value="qux", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute(value="qux", isRequired=true)
 		@RuneScopedAttributeKey
 		public FieldWithMetaString.FieldWithMetaStringBuilder getQux() {
@@ -160,7 +161,7 @@ public interface Qux extends RosettaModelObject {
 			return result;
 		}
 		
-		@RosettaAttribute(value="qux", isRequired=true)
+		@RosettaAttribute(value="qux", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
 		@RuneAttribute(value="qux", isRequired=true)
 		@RuneScopedAttributeKey
 		@Override

@@ -2,6 +2,7 @@ package test.pojo.metafields;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.AccessorType;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
@@ -108,7 +109,7 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 		}
 		
 		@Override
-		@RosettaAttribute("value")
+		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute("@data")
 		@RuneMetaType
 		public Foo getValue() {
@@ -116,21 +117,21 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 		}
 		
 		@Override
-		@RosettaAttribute("globalReference")
+		@RosettaAttribute(value="globalReference", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute("@ref")
 		public String getGlobalReference() {
 			return globalReference;
 		}
 		
 		@Override
-		@RosettaAttribute("externalReference")
+		@RosettaAttribute(value="externalReference", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute("@ref:external")
 		public String getExternalReference() {
 			return externalReference;
 		}
 		
 		@Override
-		@RosettaAttribute("address")
+		@RosettaAttribute(value="address", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute("@ref:scoped")
 		@RuneMetaType
 		public Reference getReference() {
@@ -200,7 +201,7 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 		protected Reference.ReferenceBuilder reference;
 		
 		@Override
-		@RosettaAttribute("value")
+		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute("@data")
 		@RuneMetaType
 		public Foo.FooBuilder getValue() {
@@ -221,21 +222,21 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 		}
 		
 		@Override
-		@RosettaAttribute("globalReference")
+		@RosettaAttribute(value="globalReference", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute("@ref")
 		public String getGlobalReference() {
 			return globalReference;
 		}
 		
 		@Override
-		@RosettaAttribute("externalReference")
+		@RosettaAttribute(value="externalReference", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute("@ref:external")
 		public String getExternalReference() {
 			return externalReference;
 		}
 		
 		@Override
-		@RosettaAttribute("address")
+		@RosettaAttribute(value="address", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute("@ref:scoped")
 		@RuneMetaType
 		public Reference.ReferenceBuilder getReference() {
@@ -255,7 +256,7 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 			return result;
 		}
 		
-		@RosettaAttribute("value")
+		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
 		@RuneAttribute("@data")
 		@RuneMetaType
 		@Override
@@ -264,7 +265,7 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 			return this;
 		}
 		
-		@RosettaAttribute("globalReference")
+		@RosettaAttribute(value="globalReference", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
 		@RuneAttribute("@ref")
 		@Override
 		public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setGlobalReference(String _globalReference) {
@@ -272,7 +273,7 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 			return this;
 		}
 		
-		@RosettaAttribute("externalReference")
+		@RosettaAttribute(value="externalReference", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
 		@RuneAttribute("@ref:external")
 		@Override
 		public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder setExternalReference(String _externalReference) {
@@ -280,7 +281,7 @@ public interface ReferenceWithMetaFoo extends RosettaModelObject, ReferenceWithM
 			return this;
 		}
 		
-		@RosettaAttribute("address")
+		@RosettaAttribute(value="address", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
 		@RuneAttribute("@ref:scoped")
 		@RuneMetaType
 		@Override

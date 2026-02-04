@@ -2,6 +2,7 @@ package test.pojo;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.AccessorType;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
@@ -118,7 +119,7 @@ public interface GrandChild extends Child {
 	class GrandChildBuilderImpl extends Child.ChildBuilderImpl implements GrandChild.GrandChildBuilder {
 	
 		
-		@RosettaAttribute("meta")
+		@RosettaAttribute(value="meta", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
 		@RuneAttribute("meta")
 		@RuneMetaType
 		@Override
