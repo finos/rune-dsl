@@ -3,6 +3,7 @@ package test.pojo;
 import com.rosetta.model.lib.GlobalKey;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.AccessorType;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
@@ -84,7 +85,7 @@ public interface Child extends Parent, GlobalKey {
 		}
 		
 		@Override
-		@RosettaAttribute("meta")
+		@RosettaAttribute(value="meta", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute("meta")
 		@RuneMetaType
 		public MetaFields getMeta() {
@@ -141,7 +142,7 @@ public interface Child extends Parent, GlobalKey {
 		protected MetaFields.MetaFieldsBuilder meta;
 		
 		@Override
-		@RosettaAttribute("meta")
+		@RosettaAttribute(value="meta", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute("meta")
 		@RuneMetaType
 		public MetaFields.MetaFieldsBuilder getMeta() {
@@ -161,7 +162,7 @@ public interface Child extends Parent, GlobalKey {
 			return result;
 		}
 		
-		@RosettaAttribute("meta")
+		@RosettaAttribute(value="meta", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
 		@RuneAttribute("meta")
 		@RuneMetaType
 		@Override

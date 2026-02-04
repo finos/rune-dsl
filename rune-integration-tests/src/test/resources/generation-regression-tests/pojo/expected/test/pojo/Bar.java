@@ -2,6 +2,7 @@ package test.pojo;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.AccessorType;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
@@ -80,7 +81,7 @@ public interface Bar extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute(value="bar", isRequired=true)
+		@RosettaAttribute(value="bar", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute(value="bar", isRequired=true)
 		public Qux getBar() {
 			return bar;
@@ -134,7 +135,7 @@ public interface Bar extends RosettaModelObject {
 		protected Qux.QuxBuilder bar;
 		
 		@Override
-		@RosettaAttribute(value="bar", isRequired=true)
+		@RosettaAttribute(value="bar", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute(value="bar", isRequired=true)
 		public Qux.QuxBuilder getBar() {
 			return bar;
@@ -153,7 +154,7 @@ public interface Bar extends RosettaModelObject {
 			return result;
 		}
 		
-		@RosettaAttribute(value="bar", isRequired=true)
+		@RosettaAttribute(value="bar", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
 		@RuneAttribute(value="bar", isRequired=true)
 		@Override
 		public Bar.BarBuilder setBar(Qux _bar) {

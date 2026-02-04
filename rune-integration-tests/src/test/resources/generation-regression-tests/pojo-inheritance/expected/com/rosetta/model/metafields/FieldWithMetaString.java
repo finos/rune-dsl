@@ -3,6 +3,7 @@ package com.rosetta.model.metafields;
 import com.rosetta.model.lib.GlobalKey;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.AccessorType;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
@@ -91,14 +92,14 @@ public interface FieldWithMetaString extends RosettaModelObject, FieldWithMeta<S
 		}
 		
 		@Override
-		@RosettaAttribute("value")
+		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute("@data")
 		public String getValue() {
 			return value;
 		}
 		
 		@Override
-		@RosettaAttribute("meta")
+		@RosettaAttribute(value="meta", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute("meta")
 		@RuneMetaType
 		public MetaFields getMeta() {
@@ -158,14 +159,14 @@ public interface FieldWithMetaString extends RosettaModelObject, FieldWithMeta<S
 		protected MetaFields.MetaFieldsBuilder meta;
 		
 		@Override
-		@RosettaAttribute("value")
+		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute("@data")
 		public String getValue() {
 			return value;
 		}
 		
 		@Override
-		@RosettaAttribute("meta")
+		@RosettaAttribute(value="meta", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute("meta")
 		@RuneMetaType
 		public MetaFields.MetaFieldsBuilder getMeta() {
@@ -185,7 +186,7 @@ public interface FieldWithMetaString extends RosettaModelObject, FieldWithMeta<S
 			return result;
 		}
 		
-		@RosettaAttribute("value")
+		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
 		@RuneAttribute("@data")
 		@Override
 		public FieldWithMetaString.FieldWithMetaStringBuilder setValue(String _value) {
@@ -193,7 +194,7 @@ public interface FieldWithMetaString extends RosettaModelObject, FieldWithMeta<S
 			return this;
 		}
 		
-		@RosettaAttribute("meta")
+		@RosettaAttribute(value="meta", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
 		@RuneAttribute("meta")
 		@RuneMetaType
 		@Override

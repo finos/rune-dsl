@@ -18,10 +18,7 @@ package com.rosetta.model.lib.meta;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
-import com.rosetta.model.lib.annotations.RosettaAttribute;
-import com.rosetta.model.lib.annotations.RosettaDataType;
-import com.rosetta.model.lib.annotations.RuneAttribute;
-import com.rosetta.model.lib.annotations.RuneDataType;
+import com.rosetta.model.lib.annotations.*;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.AttributeMeta;
 import com.rosetta.model.lib.process.BuilderMerger;
@@ -102,7 +99,7 @@ public interface Reference extends RosettaModelObject {
 			this.reference = reference;
 		}
 
-		@RosettaAttribute("scope")
+		@RosettaAttribute(value="scope", isRequired=false, isMulti=false, accessorType= AccessorType.GETTER)
 		public String getScope() {
 			return scope;
 		}
@@ -111,7 +108,7 @@ public interface Reference extends RosettaModelObject {
 			return pointsTo;
 		}
 
-		@RosettaAttribute("value")
+		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType= AccessorType.GETTER)
 		@RuneAttribute("@ref:scoped")
 		public String getReference() {
 			return reference;
@@ -171,7 +168,7 @@ public interface Reference extends RosettaModelObject {
 		private String pointsTo;
 		private String reference;
 
-		@RosettaAttribute("scope")
+		@RosettaAttribute(value="scope", isRequired=false, isMulti=false, accessorType= AccessorType.GETTER)
 		public String getScope() {
 			return scope;
 		}
@@ -180,7 +177,7 @@ public interface Reference extends RosettaModelObject {
 			return pointsTo;
 		}
 
-		@RosettaAttribute("value")
+		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType= AccessorType.GETTER)
 		@RuneAttribute("@ref:scoped")
 		public String getReference() {
 			return reference;
@@ -191,7 +188,7 @@ public interface Reference extends RosettaModelObject {
 			return new ReferenceImpl(scope, pointsTo, reference);
 		}
 
-		@RosettaAttribute("value")
+		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType= AccessorType.SETTER)
 		@RuneAttribute("@ref:scoped")
 		public ReferenceBuilder setReference(String reference) {
 			this.reference = reference;
@@ -203,7 +200,7 @@ public interface Reference extends RosettaModelObject {
 			return this;
 		}
 
-		@RosettaAttribute("scope")
+		@RosettaAttribute(value="scope", isRequired=false, isMulti=false, accessorType= AccessorType.SETTER)
 		public ReferenceBuilder setScope(String scope) {
 			this.scope = scope;
 			return this;

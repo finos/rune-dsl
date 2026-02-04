@@ -2,6 +2,7 @@ package test.escaping.index;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.AccessorType;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
@@ -80,7 +81,7 @@ public interface ResultEscaping extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute(value="result", isRequired=true)
+		@RosettaAttribute(value="result", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute(value="result", isRequired=true)
 		public Foo getResult() {
 			return result;
@@ -134,7 +135,7 @@ public interface ResultEscaping extends RosettaModelObject {
 		protected Foo.FooBuilder result;
 		
 		@Override
-		@RosettaAttribute(value="result", isRequired=true)
+		@RosettaAttribute(value="result", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
 		@RuneAttribute(value="result", isRequired=true)
 		public Foo.FooBuilder getResult() {
 			return result;
@@ -153,7 +154,7 @@ public interface ResultEscaping extends RosettaModelObject {
 			return _result;
 		}
 		
-		@RosettaAttribute(value="result", isRequired=true)
+		@RosettaAttribute(value="result", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
 		@RuneAttribute(value="result", isRequired=true)
 		@Override
 		public ResultEscaping.ResultEscapingBuilder setResult(Foo _result) {
