@@ -18,6 +18,7 @@ package com.rosetta.model.lib.meta;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.AccessorType;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.path.RosettaPath;
@@ -92,12 +93,12 @@ public interface Key extends RosettaModelObject{
 			this.keyValue = builder.getKeyValue();
 		}
 		
-		@RosettaAttribute("scope")
+		@RosettaAttribute(value="scope", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		public String getScope() {
 			return scope;
 		}
 		
-		@RosettaAttribute("value")
+		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		public String getKeyValue() {
 			return keyValue;
 		}
@@ -151,23 +152,23 @@ public interface Key extends RosettaModelObject{
 			return new KeyImpl(this);
 		}
 
-		@RosettaAttribute("scope")
+		@RosettaAttribute(value="scope", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		public String getScope() {
 			return scope;
 		}
 
-		@RosettaAttribute("scope")
+		@RosettaAttribute(value="scope", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
 		public KeyBuilder setScope(String scope) {
 			this.scope = scope;
 			return this;
 		}
 
-		@RosettaAttribute("value")
+		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
 		public String getKeyValue() {
 			return keyValue;
 		}
 
-		@RosettaAttribute("value")
+		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
 		public KeyBuilder setKeyValue(String keyValue) {
 			this.keyValue = keyValue;
 			return this;
