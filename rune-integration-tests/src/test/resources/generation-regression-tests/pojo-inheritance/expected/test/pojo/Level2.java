@@ -2,7 +2,9 @@ package test.pojo;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.Accessor;
 import com.rosetta.model.lib.annotations.AccessorType;
+import com.rosetta.model.lib.annotations.IsRequired;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RosettaIgnore;
@@ -84,8 +86,10 @@ public interface Level2 extends Level1 {
 		}
 		
 		@Override
-		@RosettaAttribute(value="attr", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="attr", isRequired=true)
+		@RosettaAttribute("attr")
+		@Accessor(AccessorType.GETTER)
+		@IsRequired
+		@RuneAttribute("attr")
 		public Integer getAttr() {
 			return attr;
 		}
@@ -140,14 +144,18 @@ public interface Level2 extends Level1 {
 		protected Integer attr;
 		
 		@Override
-		@RosettaAttribute(value="attr", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="attr", isRequired=true)
+		@RosettaAttribute("attr")
+		@Accessor(AccessorType.GETTER)
+		@IsRequired
+		@RuneAttribute("attr")
 		public Integer getAttr() {
 			return attr;
 		}
 		
-		@RosettaAttribute(value="attr", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
-		@RuneAttribute(value="attr", isRequired=true)
+		@RosettaAttribute("attr")
+		@Accessor(AccessorType.SETTER)
+		@IsRequired
+		@RuneAttribute("attr")
 		@Override
 		public Level2.Level2Builder setAttrOverriddenAsInteger(Integer _attr) {
 			this.attr = _attr == null ? null : _attr;

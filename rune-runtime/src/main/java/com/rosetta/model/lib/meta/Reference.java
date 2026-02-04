@@ -99,7 +99,8 @@ public interface Reference extends RosettaModelObject {
 			this.reference = reference;
 		}
 
-		@RosettaAttribute(value="scope", isRequired=false, isMulti=false, accessorType= AccessorType.GETTER)
+		@RosettaAttribute("scope")
+		@Accessor(AccessorType.GETTER)
 		public String getScope() {
 			return scope;
 		}
@@ -108,7 +109,8 @@ public interface Reference extends RosettaModelObject {
 			return pointsTo;
 		}
 
-		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType= AccessorType.GETTER)
+		@RosettaAttribute("value")
+		@Accessor(AccessorType.GETTER)
 		@RuneAttribute("@ref:scoped")
 		public String getReference() {
 			return reference;
@@ -168,7 +170,8 @@ public interface Reference extends RosettaModelObject {
 		private String pointsTo;
 		private String reference;
 
-		@RosettaAttribute(value="scope", isRequired=false, isMulti=false, accessorType= AccessorType.GETTER)
+		@RosettaAttribute("scope")
+		@Accessor(AccessorType.GETTER)
 		public String getScope() {
 			return scope;
 		}
@@ -177,7 +180,8 @@ public interface Reference extends RosettaModelObject {
 			return pointsTo;
 		}
 
-		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType= AccessorType.GETTER)
+		@RosettaAttribute("value")
+		@Accessor(AccessorType.GETTER)
 		@RuneAttribute("@ref:scoped")
 		public String getReference() {
 			return reference;
@@ -188,7 +192,8 @@ public interface Reference extends RosettaModelObject {
 			return new ReferenceImpl(scope, pointsTo, reference);
 		}
 
-		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType= AccessorType.SETTER)
+		@RosettaAttribute("value")
+		@Accessor(AccessorType.SETTER)
 		@RuneAttribute("@ref:scoped")
 		public ReferenceBuilder setReference(String reference) {
 			this.reference = reference;
@@ -200,7 +205,8 @@ public interface Reference extends RosettaModelObject {
 			return this;
 		}
 
-		@RosettaAttribute(value="scope", isRequired=false, isMulti=false, accessorType= AccessorType.SETTER)
+		@RosettaAttribute("scope")
+		@Accessor(AccessorType.SETTER)
 		public ReferenceBuilder setScope(String scope) {
 			this.scope = scope;
 			return this;

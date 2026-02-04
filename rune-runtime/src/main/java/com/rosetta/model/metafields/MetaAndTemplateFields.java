@@ -9,6 +9,8 @@ import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.annotations.RuneDataType;
+import com.rosetta.model.lib.annotations.Accessor;
+import com.rosetta.model.lib.annotations.IsMulti;
 import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 import com.rosetta.model.lib.meta.GlobalKeyFields;
 import com.rosetta.model.lib.meta.Key;
@@ -148,53 +150,62 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		}
 		
 		@Override
-		@RosettaAttribute(value="scheme", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("scheme")
+		@Accessor(AccessorType.GETTER)
 		@RuneAttribute(SCHEME)
 		public String getScheme() {
 			return scheme;
 		}
 		
 		@Override
-		@RosettaAttribute(value="template", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("template")
+		@Accessor(AccessorType.GETTER)
 		public String getTemplate() {
 			return template;
 		}
 		
 		@Override
-		@RosettaAttribute(value="scopedLocation", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("scopedLocation")
+		@Accessor(AccessorType.GETTER)
 		public String getLocation() {
 			return location;
 		}
 		
 		@Override
-		@RosettaAttribute(value="address", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("address")
+		@Accessor(AccessorType.GETTER)
 		@RuneAttribute(SCOPED_REFERENCE)
 		public String getAddress() {
 			return address;
 		}
 		
 		@Override
-		@RosettaAttribute(value="templateGlobalReference", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("templateGlobalReference")
+		@Accessor(AccessorType.GETTER)
 		public String getTemplateGlobalReference() {
 			return templateGlobalReference;
 		}
 		
 		@Override
-		@RosettaAttribute(value="globalKey", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("globalKey")
+		@Accessor(AccessorType.GETTER)
 		@RuneAttribute(KEY)
 		public String getGlobalKey() {
 			return globalKey;
 		}
 		
 		@Override
-		@RosettaAttribute(value="externalKey", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("externalKey")
+		@Accessor(AccessorType.GETTER)
 		@RuneAttribute(EXTERNAL_KEY)
 		public String getExternalKey() {
 			return externalKey;
 		}
 		
 		@Override
-		@RosettaAttribute(value="location", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("location")
+		@Accessor(AccessorType.GETTER)
+		@IsMulti
 		public List<? extends Key> getKey() {
 			return key;
 		}
@@ -294,53 +305,62 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		}
 	
 		@Override
-		@RosettaAttribute(value="scheme", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("scheme")
+		@Accessor(AccessorType.GETTER)
 		@RuneAttribute(SCHEME)
 		public String getScheme() {
 			return scheme;
 		}
 		
 		@Override
-		@RosettaAttribute(value="template", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("template")
+		@Accessor(AccessorType.GETTER)
 		public String getTemplate() {
 			return template;
 		}
 		
 		@Override
-		@RosettaAttribute(value="scopedLocation", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("scopedLocation")
+		@Accessor(AccessorType.GETTER)
 		public String getLocation() {
 			return location;
 		}
 		
 		@Override
-		@RosettaAttribute(value="address", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("address")
+		@Accessor(AccessorType.GETTER)
 		@RuneAttribute(SCOPED_REFERENCE)
 		public String getAddress() {
 			return address;
 		}
 		
 		@Override
-		@RosettaAttribute(value="templateGlobalReference", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("templateGlobalReference")
+		@Accessor(AccessorType.GETTER)
 		public String getTemplateGlobalReference() {
 			return templateGlobalReference;
 		}
 		
 		@Override
-		@RosettaAttribute(value="globalKey", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("globalKey")
+		@Accessor(AccessorType.GETTER)
 		@RuneAttribute(KEY)
 		public String getGlobalKey() {
 			return globalKey;
 		}
 		
 		@Override
-		@RosettaAttribute(value="externalKey", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("externalKey")
+		@Accessor(AccessorType.GETTER)
 		@RuneAttribute(EXTERNAL_KEY)
 		public String getExternalKey() {
 			return externalKey;
 		}
 		
 		@Override
-		@RosettaAttribute(value="location", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("location")
+		@Accessor(AccessorType.GETTER)
+		@IsMulti
 		public List<? extends Key.KeyBuilder> getKey() {
 			return key;
 		}
@@ -367,46 +387,53 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
         }
 		
 		@Override
-		@RosettaAttribute(value="scheme", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("scheme")
+		@Accessor(AccessorType.SETTER)
 		@RuneAttribute(SCHEME)
 		public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setScheme(String scheme) {
 			this.scheme = scheme==null?null:scheme;
 			return this;
 		}
 		@Override
-		@RosettaAttribute(value="template", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("template")
+		@Accessor(AccessorType.SETTER)
 		public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setTemplate(String template) {
 			this.template = template==null?null:template;
 			return this;
 		}
 		@Override
-		@RosettaAttribute(value="scopedLocation", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("scopedLocation")
+		@Accessor(AccessorType.SETTER)
 		public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setLocation(String location) {
 			this.location = location==null?null:location;
 			return this;
 		}
 		@Override
-		@RosettaAttribute(value="address", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("address")
+		@Accessor(AccessorType.SETTER)
 		@RuneAttribute(SCOPED_REFERENCE)
 		public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setAddress(String address) {
 			this.address = address==null?null:address;
 			return this;
 		}
 		@Override
-		@RosettaAttribute(value="templateGlobalReference", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("templateGlobalReference")
+		@Accessor(AccessorType.SETTER)
 		public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setTemplateGlobalReference(String templateGlobalReference) {
 			this.templateGlobalReference = templateGlobalReference==null?null:templateGlobalReference;
 			return this;
 		}
 		@Override
-		@RosettaAttribute(value="globalKey", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("globalKey")
+		@Accessor(AccessorType.SETTER)
 		@RuneAttribute(KEY)
 		public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setGlobalKey(String globalKey) {
 			this.globalKey = globalKey==null?null:globalKey;
 			return this;
 		}
 		@Override
-		@RosettaAttribute(value="externalKey", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("externalKey")
+		@Accessor(AccessorType.SETTER)
 		@RuneAttribute(EXTERNAL_KEY)
 		public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setExternalKey(String externalKey) {
 			this.externalKey = externalKey==null?null:externalKey;
@@ -434,7 +461,9 @@ public interface MetaAndTemplateFields extends RosettaModelObject, GlobalKeyFiel
 		}
 		
 		@Override 
-		@RosettaAttribute(value="location", isRequired=false, isMulti=true, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("location")
+		@Accessor(AccessorType.SETTER)
+		@IsMulti
 		public MetaAndTemplateFields.MetaAndTemplateFieldsBuilder setKey(List<? extends Key> keys) {
 			if (keys == null)  {
 				this.key = new ArrayList<>();

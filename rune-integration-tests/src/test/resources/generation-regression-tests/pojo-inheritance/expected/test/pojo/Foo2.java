@@ -3,7 +3,10 @@ package test.pojo;
 import com.google.common.collect.ImmutableList;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.Accessor;
 import com.rosetta.model.lib.annotations.AccessorType;
+import com.rosetta.model.lib.annotations.IsMulti;
+import com.rosetta.model.lib.annotations.IsRequired;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RosettaIgnore;
@@ -158,15 +161,19 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@Override
-		@RosettaAttribute(value="attr", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="attr", isRequired=true)
+		@RosettaAttribute("attr")
+		@Accessor(AccessorType.GETTER)
+		@IsRequired
+		@RuneAttribute("attr")
 		public Integer getAttr() {
 			return attr;
 		}
 		
 		@Override
-		@RosettaAttribute(value="numberAttr", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="numberAttr", isRequired=true)
+		@RosettaAttribute("numberAttr")
+		@Accessor(AccessorType.GETTER)
+		@IsRequired
+		@RuneAttribute("numberAttr")
 		public BigInteger getNumberAttrOverriddenAsBigInteger() {
 			return numberAttr;
 		}
@@ -179,15 +186,19 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@Override
-		@RosettaAttribute(value="parent", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="parent", isRequired=true)
+		@RosettaAttribute("parent")
+		@Accessor(AccessorType.GETTER)
+		@IsRequired
+		@RuneAttribute("parent")
 		public Child getParent() {
 			return parent;
 		}
 		
 		@Override
-		@RosettaAttribute(value="parentList", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="parentList", isRequired=true)
+		@RosettaAttribute("parentList")
+		@Accessor(AccessorType.GETTER)
+		@IsRequired
+		@RuneAttribute("parentList")
 		public ReferenceWithMetaChild getParentListOverriddenAsSingleReferenceWithMetaChild() {
 			return parentList;
 		}
@@ -200,15 +211,19 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@Override
-		@RosettaAttribute(value="otherParentList", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("otherParentList")
+		@Accessor(AccessorType.GETTER)
+		@IsMulti
 		@RuneAttribute("otherParentList")
 		public List<? extends Child> getOtherParentList() {
 			return otherParentList;
 		}
 		
 		@Override
-		@RosettaAttribute(value="stringAttr", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="stringAttr", isRequired=true)
+		@RosettaAttribute("stringAttr")
+		@Accessor(AccessorType.GETTER)
+		@IsRequired
+		@RuneAttribute("stringAttr")
 		public FieldWithMetaString getStringAttr() {
 			return stringAttr;
 		}
@@ -286,15 +301,19 @@ public interface Foo2 extends Foo1 {
 		protected FieldWithMetaString.FieldWithMetaStringBuilder stringAttr;
 		
 		@Override
-		@RosettaAttribute(value="attr", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="attr", isRequired=true)
+		@RosettaAttribute("attr")
+		@Accessor(AccessorType.GETTER)
+		@IsRequired
+		@RuneAttribute("attr")
 		public Integer getAttr() {
 			return attr;
 		}
 		
 		@Override
-		@RosettaAttribute(value="numberAttr", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="numberAttr", isRequired=true)
+		@RosettaAttribute("numberAttr")
+		@Accessor(AccessorType.GETTER)
+		@IsRequired
+		@RuneAttribute("numberAttr")
 		public BigInteger getNumberAttrOverriddenAsBigInteger() {
 			return numberAttr;
 		}
@@ -307,8 +326,10 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@Override
-		@RosettaAttribute(value="parent", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="parent", isRequired=true)
+		@RosettaAttribute("parent")
+		@Accessor(AccessorType.GETTER)
+		@IsRequired
+		@RuneAttribute("parent")
 		public Child.ChildBuilder getParent() {
 			return parent;
 		}
@@ -327,8 +348,10 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@Override
-		@RosettaAttribute(value="parentList", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="parentList", isRequired=true)
+		@RosettaAttribute("parentList")
+		@Accessor(AccessorType.GETTER)
+		@IsRequired
+		@RuneAttribute("parentList")
 		public ReferenceWithMetaChild.ReferenceWithMetaChildBuilder getParentListOverriddenAsSingleReferenceWithMetaChild() {
 			return parentList;
 		}
@@ -360,7 +383,9 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@Override
-		@RosettaAttribute(value="otherParentList", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("otherParentList")
+		@Accessor(AccessorType.GETTER)
+		@IsMulti
 		@RuneAttribute("otherParentList")
 		public List<? extends Child.ChildBuilder> getOtherParentList() {
 			return otherParentList;
@@ -378,8 +403,10 @@ public interface Foo2 extends Foo1 {
 		}
 		
 		@Override
-		@RosettaAttribute(value="stringAttr", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="stringAttr", isRequired=true)
+		@RosettaAttribute("stringAttr")
+		@Accessor(AccessorType.GETTER)
+		@IsRequired
+		@RuneAttribute("stringAttr")
 		public FieldWithMetaString.FieldWithMetaStringBuilder getStringAttr() {
 			return stringAttr;
 		}
@@ -397,16 +424,20 @@ public interface Foo2 extends Foo1 {
 			return result;
 		}
 		
-		@RosettaAttribute(value="attr", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
-		@RuneAttribute(value="attr", isRequired=true)
+		@RosettaAttribute("attr")
+		@Accessor(AccessorType.SETTER)
+		@IsRequired
+		@RuneAttribute("attr")
 		@Override
 		public Foo2.Foo2Builder setAttr(Integer _attr) {
 			this.attr = _attr == null ? null : _attr;
 			return this;
 		}
 		
-		@RosettaAttribute(value="numberAttr", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
-		@RuneAttribute(value="numberAttr", isRequired=true)
+		@RosettaAttribute("numberAttr")
+		@Accessor(AccessorType.SETTER)
+		@IsRequired
+		@RuneAttribute("numberAttr")
 		@Override
 		public Foo2.Foo2Builder setNumberAttr(BigInteger _numberAttr) {
 			this.numberAttr = _numberAttr == null ? null : _numberAttr;
@@ -426,8 +457,10 @@ public interface Foo2 extends Foo1 {
 			return setNumberAttr(ifThenElseResult);
 		}
 		
-		@RosettaAttribute(value="parent", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
-		@RuneAttribute(value="parent", isRequired=true)
+		@RosettaAttribute("parent")
+		@Accessor(AccessorType.SETTER)
+		@IsRequired
+		@RuneAttribute("parent")
 		@Override
 		public Foo2.Foo2Builder setParent(Child _parent) {
 			this.parent = _parent == null ? null : _parent.toBuilder();
@@ -447,8 +480,10 @@ public interface Foo2 extends Foo1 {
 			return setParent(ifThenElseResult);
 		}
 		
-		@RosettaAttribute(value="parentList", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
-		@RuneAttribute(value="parentList", isRequired=true)
+		@RosettaAttribute("parentList")
+		@Accessor(AccessorType.SETTER)
+		@IsRequired
+		@RuneAttribute("parentList")
 		@Override
 		public Foo2.Foo2Builder setParentList(ReferenceWithMetaChild _parentList) {
 			this.parentList = _parentList == null ? null : _parentList.toBuilder();
@@ -511,7 +546,9 @@ public interface Foo2 extends Foo1 {
 			return setParentList(ifThenElseResult);
 		}
 		
-		@RosettaAttribute(value="otherParentList", isRequired=false, isMulti=true, accessorType=AccessorType.ADDER)
+		@RosettaAttribute("otherParentList")
+		@Accessor(AccessorType.ADDER)
+		@IsMulti
 		@RuneAttribute("otherParentList")
 		@Override
 		public Foo2.Foo2Builder addOtherParentListOverriddenAsChild(Child _otherParentList) {
@@ -537,7 +574,9 @@ public interface Foo2 extends Foo1 {
 			return this;
 		}
 		
-		@RosettaAttribute(value="otherParentList", isRequired=false, isMulti=true, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("otherParentList")
+		@Accessor(AccessorType.SETTER)
+		@IsMulti
 		@RuneAttribute("otherParentList")
 		@Override
 		public Foo2.Foo2Builder setOtherParentListOverriddenAsChild(List<? extends Child> otherParentLists) {
@@ -593,8 +632,10 @@ public interface Foo2 extends Foo1 {
 			);
 		}
 		
-		@RosettaAttribute(value="stringAttr", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
-		@RuneAttribute(value="stringAttr", isRequired=true)
+		@RosettaAttribute("stringAttr")
+		@Accessor(AccessorType.SETTER)
+		@IsRequired
+		@RuneAttribute("stringAttr")
 		@Override
 		public Foo2.Foo2Builder setStringAttr(FieldWithMetaString _stringAttr) {
 			this.stringAttr = _stringAttr == null ? null : _stringAttr.toBuilder();

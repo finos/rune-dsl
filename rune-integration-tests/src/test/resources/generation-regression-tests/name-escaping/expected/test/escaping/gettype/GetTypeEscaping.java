@@ -2,7 +2,9 @@ package test.escaping.gettype;
 
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.Accessor;
 import com.rosetta.model.lib.annotations.AccessorType;
+import com.rosetta.model.lib.annotations.IsRequired;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
@@ -78,8 +80,10 @@ public interface GetTypeEscaping extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute(value="type", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="type", isRequired=true)
+		@RosettaAttribute("type")
+		@Accessor(AccessorType.GETTER)
+		@IsRequired
+		@RuneAttribute("type")
 		public Integer _getType() {
 			return type;
 		}
@@ -132,14 +136,18 @@ public interface GetTypeEscaping extends RosettaModelObject {
 		protected Integer type;
 		
 		@Override
-		@RosettaAttribute(value="type", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="type", isRequired=true)
+		@RosettaAttribute("type")
+		@Accessor(AccessorType.GETTER)
+		@IsRequired
+		@RuneAttribute("type")
 		public Integer _getType() {
 			return type;
 		}
 		
-		@RosettaAttribute(value="type", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
-		@RuneAttribute(value="type", isRequired=true)
+		@RosettaAttribute("type")
+		@Accessor(AccessorType.SETTER)
+		@IsRequired
+		@RuneAttribute("type")
 		@Override
 		public GetTypeEscaping.GetTypeEscapingBuilder setType(Integer _type) {
 			this.type = _type == null ? null : _type;

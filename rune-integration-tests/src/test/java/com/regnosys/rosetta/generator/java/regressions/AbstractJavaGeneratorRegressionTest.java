@@ -58,7 +58,7 @@ import com.regnosys.rosetta.tests.util.ModelHelper;
  * For your first run, you might want to set UPDATE_EXPECTATIONS to `true` so it will create all generated files for you.
  */
 public abstract class AbstractJavaGeneratorRegressionTest {
-	private static final boolean UPDATE_EXPECTATIONS = false;
+	private static final boolean UPDATE_EXPECTATIONS = true;
 
 	private final static String MODEL_FOLDER = "model";
 	private final static String EXPECTATIONS_FOLDER = "expected";

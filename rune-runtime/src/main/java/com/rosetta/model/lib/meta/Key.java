@@ -21,6 +21,7 @@ import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.AccessorType;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
+import com.rosetta.model.lib.annotations.Accessor;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
@@ -93,12 +94,14 @@ public interface Key extends RosettaModelObject{
 			this.keyValue = builder.getKeyValue();
 		}
 		
-		@RosettaAttribute(value="scope", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("scope")
+		@Accessor(AccessorType.GETTER)
 		public String getScope() {
 			return scope;
 		}
 		
-		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("value")
+		@Accessor(AccessorType.GETTER)
 		public String getKeyValue() {
 			return keyValue;
 		}
@@ -152,23 +155,27 @@ public interface Key extends RosettaModelObject{
 			return new KeyImpl(this);
 		}
 
-		@RosettaAttribute(value="scope", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("scope")
+		@Accessor(AccessorType.GETTER)
 		public String getScope() {
 			return scope;
 		}
 
-		@RosettaAttribute(value="scope", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("scope")
+		@Accessor(AccessorType.SETTER)
 		public KeyBuilder setScope(String scope) {
 			this.scope = scope;
 			return this;
 		}
 
-		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("value")
+		@Accessor(AccessorType.GETTER)
 		public String getKeyValue() {
 			return keyValue;
 		}
 
-		@RosettaAttribute(value="value", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("value")
+		@Accessor(AccessorType.SETTER)
 		public KeyBuilder setKeyValue(String keyValue) {
 			this.keyValue = keyValue;
 			return this;
