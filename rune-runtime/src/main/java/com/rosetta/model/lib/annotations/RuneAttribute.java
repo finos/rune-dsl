@@ -9,5 +9,9 @@ import java.lang.annotation.RetentionPolicy;
 public @interface RuneAttribute {
 
 	String value() default "";
+	/**
+	 * @deprecated use @Required annotation instead. Deprecated since 9.76.1.
+	 */
+	@Deprecated
 	boolean isRequired() default false;
 }

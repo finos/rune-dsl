@@ -4,7 +4,10 @@ import com.google.common.collect.ImmutableList;
 import com.rosetta.model.lib.GlobalKey;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.Accessor;
 import com.rosetta.model.lib.annotations.AccessorType;
+import com.rosetta.model.lib.annotations.Multi;
+import com.rosetta.model.lib.annotations.Required;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
@@ -207,77 +210,98 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		@RosettaAttribute(value="simpleAttr", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="simpleAttr", isRequired=true)
+		@RosettaAttribute("simpleAttr")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("simpleAttr")
 		public String getSimpleAttr() {
 			return simpleAttr;
 		}
 		
 		@Override
-		@RosettaAttribute(value="multiSimpleAttr", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("multiSimpleAttr")
+		@Accessor(AccessorType.GETTER)
+		@Multi
 		@RuneAttribute("multiSimpleAttr")
 		public List<String> getMultiSimpleAttr() {
 			return multiSimpleAttr;
 		}
 		
 		@Override
-		@RosettaAttribute(value="simpleAttrWithMeta", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="simpleAttrWithMeta", isRequired=true)
+		@RosettaAttribute("simpleAttrWithMeta")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("simpleAttrWithMeta")
 		public FieldWithMetaString getSimpleAttrWithMeta() {
 			return simpleAttrWithMeta;
 		}
 		
 		@Override
-		@RosettaAttribute(value="multiSimpleAttrWithMeta", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("multiSimpleAttrWithMeta")
+		@Accessor(AccessorType.GETTER)
+		@Multi
 		@RuneAttribute("multiSimpleAttrWithMeta")
 		public List<? extends FieldWithMetaString> getMultiSimpleAttrWithMeta() {
 			return multiSimpleAttrWithMeta;
 		}
 		
 		@Override
-		@RosettaAttribute(value="simpleAttrWithId", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="simpleAttrWithId", isRequired=true)
+		@RosettaAttribute("simpleAttrWithId")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("simpleAttrWithId")
 		public FieldWithMetaString getSimpleAttrWithId() {
 			return simpleAttrWithId;
 		}
 		
 		@Override
-		@RosettaAttribute(value="multiSimpleAttrWithId", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("multiSimpleAttrWithId")
+		@Accessor(AccessorType.GETTER)
+		@Multi
 		@RuneAttribute("multiSimpleAttrWithId")
 		public List<? extends FieldWithMetaString> getMultiSimpleAttrWithId() {
 			return multiSimpleAttrWithId;
 		}
 		
 		@Override
-		@RosettaAttribute(value="complexAttr", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="complexAttr", isRequired=true)
+		@RosettaAttribute("complexAttr")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("complexAttr")
 		public Foo getComplexAttr() {
 			return complexAttr;
 		}
 		
 		@Override
-		@RosettaAttribute(value="multiComplexAttr", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("multiComplexAttr")
+		@Accessor(AccessorType.GETTER)
+		@Multi
 		@RuneAttribute("multiComplexAttr")
 		public List<? extends Foo> getMultiComplexAttr() {
 			return multiComplexAttr;
 		}
 		
 		@Override
-		@RosettaAttribute(value="complexAttrWithRef", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="complexAttrWithRef", isRequired=true)
+		@RosettaAttribute("complexAttrWithRef")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("complexAttrWithRef")
 		public ReferenceWithMetaFoo getComplexAttrWithRef() {
 			return complexAttrWithRef;
 		}
 		
 		@Override
-		@RosettaAttribute(value="multiComplexAttrWithRef", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("multiComplexAttrWithRef")
+		@Accessor(AccessorType.GETTER)
+		@Multi
 		@RuneAttribute("multiComplexAttrWithRef")
 		public List<? extends ReferenceWithMetaFoo> getMultiComplexAttrWithRef() {
 			return multiComplexAttrWithRef;
 		}
 		
 		@Override
-		@RosettaAttribute(value="meta", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("meta")
+		@Accessor(AccessorType.GETTER)
 		@RuneAttribute("meta")
 		@RuneMetaType
 		public MetaFields getMeta() {
@@ -382,22 +406,28 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		protected MetaFields.MetaFieldsBuilder meta;
 		
 		@Override
-		@RosettaAttribute(value="simpleAttr", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="simpleAttr", isRequired=true)
+		@RosettaAttribute("simpleAttr")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("simpleAttr")
 		public String getSimpleAttr() {
 			return simpleAttr;
 		}
 		
 		@Override
-		@RosettaAttribute(value="multiSimpleAttr", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("multiSimpleAttr")
+		@Accessor(AccessorType.GETTER)
+		@Multi
 		@RuneAttribute("multiSimpleAttr")
 		public List<String> getMultiSimpleAttr() {
 			return multiSimpleAttr;
 		}
 		
 		@Override
-		@RosettaAttribute(value="simpleAttrWithMeta", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="simpleAttrWithMeta", isRequired=true)
+		@RosettaAttribute("simpleAttrWithMeta")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("simpleAttrWithMeta")
 		public FieldWithMetaString.FieldWithMetaStringBuilder getSimpleAttrWithMeta() {
 			return simpleAttrWithMeta;
 		}
@@ -416,7 +446,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		@RosettaAttribute(value="multiSimpleAttrWithMeta", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("multiSimpleAttrWithMeta")
+		@Accessor(AccessorType.GETTER)
+		@Multi
 		@RuneAttribute("multiSimpleAttrWithMeta")
 		public List<? extends FieldWithMetaString.FieldWithMetaStringBuilder> getMultiSimpleAttrWithMeta() {
 			return multiSimpleAttrWithMeta;
@@ -434,8 +466,10 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		@RosettaAttribute(value="simpleAttrWithId", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="simpleAttrWithId", isRequired=true)
+		@RosettaAttribute("simpleAttrWithId")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("simpleAttrWithId")
 		public FieldWithMetaString.FieldWithMetaStringBuilder getSimpleAttrWithId() {
 			return simpleAttrWithId;
 		}
@@ -454,7 +488,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		@RosettaAttribute(value="multiSimpleAttrWithId", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("multiSimpleAttrWithId")
+		@Accessor(AccessorType.GETTER)
+		@Multi
 		@RuneAttribute("multiSimpleAttrWithId")
 		public List<? extends FieldWithMetaString.FieldWithMetaStringBuilder> getMultiSimpleAttrWithId() {
 			return multiSimpleAttrWithId;
@@ -472,8 +508,10 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		@RosettaAttribute(value="complexAttr", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="complexAttr", isRequired=true)
+		@RosettaAttribute("complexAttr")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("complexAttr")
 		public Foo.FooBuilder getComplexAttr() {
 			return complexAttr;
 		}
@@ -492,7 +530,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		@RosettaAttribute(value="multiComplexAttr", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("multiComplexAttr")
+		@Accessor(AccessorType.GETTER)
+		@Multi
 		@RuneAttribute("multiComplexAttr")
 		public List<? extends Foo.FooBuilder> getMultiComplexAttr() {
 			return multiComplexAttr;
@@ -510,8 +550,10 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		@RosettaAttribute(value="complexAttrWithRef", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="complexAttrWithRef", isRequired=true)
+		@RosettaAttribute("complexAttrWithRef")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("complexAttrWithRef")
 		public ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder getComplexAttrWithRef() {
 			return complexAttrWithRef;
 		}
@@ -530,7 +572,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		@RosettaAttribute(value="multiComplexAttrWithRef", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("multiComplexAttrWithRef")
+		@Accessor(AccessorType.GETTER)
+		@Multi
 		@RuneAttribute("multiComplexAttrWithRef")
 		public List<? extends ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder> getMultiComplexAttrWithRef() {
 			return multiComplexAttrWithRef;
@@ -548,7 +592,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
-		@RosettaAttribute(value="meta", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("meta")
+		@Accessor(AccessorType.GETTER)
 		@RuneAttribute("meta")
 		@RuneMetaType
 		public MetaFields.MetaFieldsBuilder getMeta() {
@@ -568,15 +613,19 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return result;
 		}
 		
-		@RosettaAttribute(value="simpleAttr", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
-		@RuneAttribute(value="simpleAttr", isRequired=true)
+		@RosettaAttribute("simpleAttr")
+		@Accessor(AccessorType.SETTER)
+		@Required
+		@RuneAttribute("simpleAttr")
 		@Override
 		public Pojo.PojoBuilder setSimpleAttr(String _simpleAttr) {
 			this.simpleAttr = _simpleAttr == null ? null : _simpleAttr;
 			return this;
 		}
 		
-		@RosettaAttribute(value="multiSimpleAttr", isRequired=false, isMulti=true, accessorType=AccessorType.ADDER)
+		@RosettaAttribute("multiSimpleAttr")
+		@Accessor(AccessorType.ADDER)
+		@Multi
 		@RuneAttribute("multiSimpleAttr")
 		@Override
 		public Pojo.PojoBuilder addMultiSimpleAttr(String _multiSimpleAttr) {
@@ -602,7 +651,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@RosettaAttribute(value="multiSimpleAttr", isRequired=false, isMulti=true, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("multiSimpleAttr")
+		@Accessor(AccessorType.SETTER)
+		@Multi
 		@RuneAttribute("multiSimpleAttr")
 		@Override
 		public Pojo.PojoBuilder setMultiSimpleAttr(List<String> multiSimpleAttrs) {
@@ -615,8 +666,10 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@RosettaAttribute(value="simpleAttrWithMeta", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
-		@RuneAttribute(value="simpleAttrWithMeta", isRequired=true)
+		@RosettaAttribute("simpleAttrWithMeta")
+		@Accessor(AccessorType.SETTER)
+		@Required
+		@RuneAttribute("simpleAttrWithMeta")
 		@Override
 		public Pojo.PojoBuilder setSimpleAttrWithMeta(FieldWithMetaString _simpleAttrWithMeta) {
 			this.simpleAttrWithMeta = _simpleAttrWithMeta == null ? null : _simpleAttrWithMeta.toBuilder();
@@ -629,7 +682,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@RosettaAttribute(value="multiSimpleAttrWithMeta", isRequired=false, isMulti=true, accessorType=AccessorType.ADDER)
+		@RosettaAttribute("multiSimpleAttrWithMeta")
+		@Accessor(AccessorType.ADDER)
+		@Multi
 		@RuneAttribute("multiSimpleAttrWithMeta")
 		@Override
 		public Pojo.PojoBuilder addMultiSimpleAttrWithMeta(FieldWithMetaString _multiSimpleAttrWithMeta) {
@@ -667,7 +722,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@RosettaAttribute(value="multiSimpleAttrWithMeta", isRequired=false, isMulti=true, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("multiSimpleAttrWithMeta")
+		@Accessor(AccessorType.SETTER)
+		@Multi
 		@RuneAttribute("multiSimpleAttrWithMeta")
 		@Override
 		public Pojo.PojoBuilder setMultiSimpleAttrWithMeta(List<? extends FieldWithMetaString> multiSimpleAttrWithMetas) {
@@ -700,8 +757,10 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@RosettaAttribute(value="simpleAttrWithId", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
-		@RuneAttribute(value="simpleAttrWithId", isRequired=true)
+		@RosettaAttribute("simpleAttrWithId")
+		@Accessor(AccessorType.SETTER)
+		@Required
+		@RuneAttribute("simpleAttrWithId")
 		@Override
 		public Pojo.PojoBuilder setSimpleAttrWithId(FieldWithMetaString _simpleAttrWithId) {
 			this.simpleAttrWithId = _simpleAttrWithId == null ? null : _simpleAttrWithId.toBuilder();
@@ -714,7 +773,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@RosettaAttribute(value="multiSimpleAttrWithId", isRequired=false, isMulti=true, accessorType=AccessorType.ADDER)
+		@RosettaAttribute("multiSimpleAttrWithId")
+		@Accessor(AccessorType.ADDER)
+		@Multi
 		@RuneAttribute("multiSimpleAttrWithId")
 		@Override
 		public Pojo.PojoBuilder addMultiSimpleAttrWithId(FieldWithMetaString _multiSimpleAttrWithId) {
@@ -752,7 +813,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@RosettaAttribute(value="multiSimpleAttrWithId", isRequired=false, isMulti=true, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("multiSimpleAttrWithId")
+		@Accessor(AccessorType.SETTER)
+		@Multi
 		@RuneAttribute("multiSimpleAttrWithId")
 		@Override
 		public Pojo.PojoBuilder setMultiSimpleAttrWithId(List<? extends FieldWithMetaString> multiSimpleAttrWithIds) {
@@ -785,15 +848,19 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@RosettaAttribute(value="complexAttr", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
-		@RuneAttribute(value="complexAttr", isRequired=true)
+		@RosettaAttribute("complexAttr")
+		@Accessor(AccessorType.SETTER)
+		@Required
+		@RuneAttribute("complexAttr")
 		@Override
 		public Pojo.PojoBuilder setComplexAttr(Foo _complexAttr) {
 			this.complexAttr = _complexAttr == null ? null : _complexAttr.toBuilder();
 			return this;
 		}
 		
-		@RosettaAttribute(value="multiComplexAttr", isRequired=false, isMulti=true, accessorType=AccessorType.ADDER)
+		@RosettaAttribute("multiComplexAttr")
+		@Accessor(AccessorType.ADDER)
+		@Multi
 		@RuneAttribute("multiComplexAttr")
 		@Override
 		public Pojo.PojoBuilder addMultiComplexAttr(Foo _multiComplexAttr) {
@@ -819,7 +886,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@RosettaAttribute(value="multiComplexAttr", isRequired=false, isMulti=true, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("multiComplexAttr")
+		@Accessor(AccessorType.SETTER)
+		@Multi
 		@RuneAttribute("multiComplexAttr")
 		@Override
 		public Pojo.PojoBuilder setMultiComplexAttr(List<? extends Foo> multiComplexAttrs) {
@@ -833,8 +902,10 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@RosettaAttribute(value="complexAttrWithRef", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
-		@RuneAttribute(value="complexAttrWithRef", isRequired=true)
+		@RosettaAttribute("complexAttrWithRef")
+		@Accessor(AccessorType.SETTER)
+		@Required
+		@RuneAttribute("complexAttrWithRef")
 		@Override
 		public Pojo.PojoBuilder setComplexAttrWithRef(ReferenceWithMetaFoo _complexAttrWithRef) {
 			this.complexAttrWithRef = _complexAttrWithRef == null ? null : _complexAttrWithRef.toBuilder();
@@ -847,7 +918,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@RosettaAttribute(value="multiComplexAttrWithRef", isRequired=false, isMulti=true, accessorType=AccessorType.ADDER)
+		@RosettaAttribute("multiComplexAttrWithRef")
+		@Accessor(AccessorType.ADDER)
+		@Multi
 		@RuneAttribute("multiComplexAttrWithRef")
 		@Override
 		public Pojo.PojoBuilder addMultiComplexAttrWithRef(ReferenceWithMetaFoo _multiComplexAttrWithRef) {
@@ -885,7 +958,9 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@RosettaAttribute(value="multiComplexAttrWithRef", isRequired=false, isMulti=true, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("multiComplexAttrWithRef")
+		@Accessor(AccessorType.SETTER)
+		@Multi
 		@RuneAttribute("multiComplexAttrWithRef")
 		@Override
 		public Pojo.PojoBuilder setMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRefs) {
@@ -918,7 +993,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
-		@RosettaAttribute(value="meta", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("meta")
+		@Accessor(AccessorType.SETTER)
 		@RuneAttribute("meta")
 		@RuneMetaType
 		@Override

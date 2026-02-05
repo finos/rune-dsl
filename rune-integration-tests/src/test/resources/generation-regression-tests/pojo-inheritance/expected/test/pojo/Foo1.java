@@ -3,7 +3,10 @@ package test.pojo;
 import com.google.common.collect.ImmutableList;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
+import com.rosetta.model.lib.annotations.Accessor;
 import com.rosetta.model.lib.annotations.AccessorType;
+import com.rosetta.model.lib.annotations.Multi;
+import com.rosetta.model.lib.annotations.Required;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
@@ -134,43 +137,54 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute(value="attr", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="attr", isRequired=true)
+		@RosettaAttribute("attr")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("attr")
 		public Integer getAttr() {
 			return attr;
 		}
 		
 		@Override
-		@RosettaAttribute(value="numberAttr", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("numberAttr")
+		@Accessor(AccessorType.GETTER)
 		@RuneAttribute("numberAttr")
 		public BigDecimal getNumberAttr() {
 			return numberAttr;
 		}
 		
 		@Override
-		@RosettaAttribute(value="parent", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="parent", isRequired=true)
+		@RosettaAttribute("parent")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("parent")
 		public Parent getParent() {
 			return parent;
 		}
 		
 		@Override
-		@RosettaAttribute(value="parentList", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("parentList")
+		@Accessor(AccessorType.GETTER)
+		@Multi
 		@RuneAttribute("parentList")
 		public List<? extends Parent> getParentList() {
 			return parentList;
 		}
 		
 		@Override
-		@RosettaAttribute(value="otherParentList", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("otherParentList")
+		@Accessor(AccessorType.GETTER)
+		@Multi
 		@RuneAttribute("otherParentList")
 		public List<? extends Parent> getOtherParentList() {
 			return otherParentList;
 		}
 		
 		@Override
-		@RosettaAttribute(value="stringAttr", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="stringAttr", isRequired=true)
+		@RosettaAttribute("stringAttr")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("stringAttr")
 		public FieldWithMetaString getStringAttr() {
 			return stringAttr;
 		}
@@ -248,22 +262,27 @@ public interface Foo1 extends RosettaModelObject {
 		protected FieldWithMetaString.FieldWithMetaStringBuilder stringAttr;
 		
 		@Override
-		@RosettaAttribute(value="attr", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="attr", isRequired=true)
+		@RosettaAttribute("attr")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("attr")
 		public Integer getAttr() {
 			return attr;
 		}
 		
 		@Override
-		@RosettaAttribute(value="numberAttr", isRequired=false, isMulti=false, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("numberAttr")
+		@Accessor(AccessorType.GETTER)
 		@RuneAttribute("numberAttr")
 		public BigDecimal getNumberAttr() {
 			return numberAttr;
 		}
 		
 		@Override
-		@RosettaAttribute(value="parent", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="parent", isRequired=true)
+		@RosettaAttribute("parent")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("parent")
 		public Parent.ParentBuilder getParent() {
 			return parent;
 		}
@@ -282,7 +301,9 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute(value="parentList", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("parentList")
+		@Accessor(AccessorType.GETTER)
+		@Multi
 		@RuneAttribute("parentList")
 		public List<? extends Parent.ParentBuilder> getParentList() {
 			return parentList;
@@ -300,7 +321,9 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute(value="otherParentList", isRequired=false, isMulti=true, accessorType=AccessorType.GETTER)
+		@RosettaAttribute("otherParentList")
+		@Accessor(AccessorType.GETTER)
+		@Multi
 		@RuneAttribute("otherParentList")
 		public List<? extends Parent.ParentBuilder> getOtherParentList() {
 			return otherParentList;
@@ -318,8 +341,10 @@ public interface Foo1 extends RosettaModelObject {
 		}
 		
 		@Override
-		@RosettaAttribute(value="stringAttr", isRequired=true, isMulti=false, accessorType=AccessorType.GETTER)
-		@RuneAttribute(value="stringAttr", isRequired=true)
+		@RosettaAttribute("stringAttr")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("stringAttr")
 		public FieldWithMetaString.FieldWithMetaStringBuilder getStringAttr() {
 			return stringAttr;
 		}
@@ -337,15 +362,18 @@ public interface Foo1 extends RosettaModelObject {
 			return result;
 		}
 		
-		@RosettaAttribute(value="attr", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
-		@RuneAttribute(value="attr", isRequired=true)
+		@RosettaAttribute("attr")
+		@Accessor(AccessorType.SETTER)
+		@Required
+		@RuneAttribute("attr")
 		@Override
 		public Foo1.Foo1Builder setAttr(Integer _attr) {
 			this.attr = _attr == null ? null : _attr;
 			return this;
 		}
 		
-		@RosettaAttribute(value="numberAttr", isRequired=false, isMulti=false, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("numberAttr")
+		@Accessor(AccessorType.SETTER)
 		@RuneAttribute("numberAttr")
 		@Override
 		public Foo1.Foo1Builder setNumberAttr(BigDecimal _numberAttr) {
@@ -353,15 +381,19 @@ public interface Foo1 extends RosettaModelObject {
 			return this;
 		}
 		
-		@RosettaAttribute(value="parent", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
-		@RuneAttribute(value="parent", isRequired=true)
+		@RosettaAttribute("parent")
+		@Accessor(AccessorType.SETTER)
+		@Required
+		@RuneAttribute("parent")
 		@Override
 		public Foo1.Foo1Builder setParent(Parent _parent) {
 			this.parent = _parent == null ? null : _parent.toBuilder();
 			return this;
 		}
 		
-		@RosettaAttribute(value="parentList", isRequired=false, isMulti=true, accessorType=AccessorType.ADDER)
+		@RosettaAttribute("parentList")
+		@Accessor(AccessorType.ADDER)
+		@Multi
 		@RuneAttribute("parentList")
 		@Override
 		public Foo1.Foo1Builder addParentList(Parent _parentList) {
@@ -387,7 +419,9 @@ public interface Foo1 extends RosettaModelObject {
 			return this;
 		}
 		
-		@RosettaAttribute(value="parentList", isRequired=false, isMulti=true, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("parentList")
+		@Accessor(AccessorType.SETTER)
+		@Multi
 		@RuneAttribute("parentList")
 		@Override
 		public Foo1.Foo1Builder setParentList(List<? extends Parent> parentLists) {
@@ -401,7 +435,9 @@ public interface Foo1 extends RosettaModelObject {
 			return this;
 		}
 		
-		@RosettaAttribute(value="otherParentList", isRequired=false, isMulti=true, accessorType=AccessorType.ADDER)
+		@RosettaAttribute("otherParentList")
+		@Accessor(AccessorType.ADDER)
+		@Multi
 		@RuneAttribute("otherParentList")
 		@Override
 		public Foo1.Foo1Builder addOtherParentList(Parent _otherParentList) {
@@ -427,7 +463,9 @@ public interface Foo1 extends RosettaModelObject {
 			return this;
 		}
 		
-		@RosettaAttribute(value="otherParentList", isRequired=false, isMulti=true, accessorType=AccessorType.SETTER)
+		@RosettaAttribute("otherParentList")
+		@Accessor(AccessorType.SETTER)
+		@Multi
 		@RuneAttribute("otherParentList")
 		@Override
 		public Foo1.Foo1Builder setOtherParentList(List<? extends Parent> otherParentLists) {
@@ -441,8 +479,10 @@ public interface Foo1 extends RosettaModelObject {
 			return this;
 		}
 		
-		@RosettaAttribute(value="stringAttr", isRequired=true, isMulti=false, accessorType=AccessorType.SETTER)
-		@RuneAttribute(value="stringAttr", isRequired=true)
+		@RosettaAttribute("stringAttr")
+		@Accessor(AccessorType.SETTER)
+		@Required
+		@RuneAttribute("stringAttr")
 		@Override
 		public Foo1.Foo1Builder setStringAttr(FieldWithMetaString _stringAttr) {
 			this.stringAttr = _stringAttr == null ? null : _stringAttr.toBuilder();
