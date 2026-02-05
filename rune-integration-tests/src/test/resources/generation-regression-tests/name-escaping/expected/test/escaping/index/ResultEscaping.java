@@ -4,7 +4,7 @@ import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.Accessor;
 import com.rosetta.model.lib.annotations.AccessorType;
-import com.rosetta.model.lib.annotations.IsRequired;
+import com.rosetta.model.lib.annotations.Required;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
@@ -85,7 +85,7 @@ public interface ResultEscaping extends RosettaModelObject {
 		@Override
 		@RosettaAttribute("result")
 		@Accessor(AccessorType.GETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("result")
 		public Foo getResult() {
 			return result;
@@ -141,7 +141,7 @@ public interface ResultEscaping extends RosettaModelObject {
 		@Override
 		@RosettaAttribute("result")
 		@Accessor(AccessorType.GETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("result")
 		public Foo.FooBuilder getResult() {
 			return result;
@@ -162,7 +162,7 @@ public interface ResultEscaping extends RosettaModelObject {
 		
 		@RosettaAttribute("result")
 		@Accessor(AccessorType.SETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("result")
 		@Override
 		public ResultEscaping.ResultEscapingBuilder setResult(Foo _result) {

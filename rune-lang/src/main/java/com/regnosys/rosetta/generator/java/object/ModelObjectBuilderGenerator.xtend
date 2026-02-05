@@ -39,8 +39,8 @@ import com.regnosys.rosetta.generator.java.types.JavaPojoBuilderInterface
 import com.regnosys.rosetta.generator.java.types.JavaPojoBuilderImpl
 import com.rosetta.model.lib.annotations.Accessor
 import com.rosetta.model.lib.annotations.AccessorType
-import com.rosetta.model.lib.annotations.IsMulti
-import com.rosetta.model.lib.annotations.IsRequired
+import com.rosetta.model.lib.annotations.Multi
+import com.rosetta.model.lib.annotations.Required
 
 class ModelObjectBuilderGenerator {
 	
@@ -144,8 +144,8 @@ class ModelObjectBuilderGenerator {
 			@Override
 			@«RosettaAttribute»("«prop.javaAnnotation»")
 			@«Accessor»(«AccessorType».GETTER)
-			«IF prop.isRequired»@«IsRequired»«ENDIF»
-			«IF prop.type.isList»@«IsMulti»«ENDIF»
+			«IF prop.isRequired»@«Required»«ENDIF»
+			«IF prop.type.isList»@«Multi»«ENDIF»
 			@«RuneAttribute»("«prop.javaRuneAnnotation»")
 			«IF prop.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 			«IF prop.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
@@ -301,8 +301,8 @@ class ModelObjectBuilderGenerator {
 			«IF isMainProp»
 				@«RosettaAttribute»("«currentProp.javaAnnotation»")
 				@«Accessor»(«AccessorType».ADDER)
-				«IF currentProp.isRequired»@«IsRequired»«ENDIF»
-				@«IsMulti»
+				«IF currentProp.isRequired»@«Required»«ENDIF»
+				@«Multi»
 				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
@@ -436,8 +436,8 @@ class ModelObjectBuilderGenerator {
 			«IF isMainProp»
 				@«RosettaAttribute»("«currentProp.javaAnnotation»")
 				@«Accessor»(«AccessorType».SETTER)
-				«IF currentProp.isRequired»@«IsRequired»«ENDIF»
-				@«IsMulti»
+				«IF currentProp.isRequired»@«Required»«ENDIF»
+				@«Multi»
 				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»
@@ -524,7 +524,7 @@ class ModelObjectBuilderGenerator {
 			«IF isMainProp»
 				@«RosettaAttribute»("«currentProp.javaAnnotation»")
 				@«Accessor»(«AccessorType».SETTER)
-				«IF currentProp.isRequired»@«IsRequired»«ENDIF»
+				«IF currentProp.isRequired»@«Required»«ENDIF»
 				@«RuneAttribute»("«currentProp.javaRuneAnnotation»")
 				«IF currentProp.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 				«IF currentProp.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»

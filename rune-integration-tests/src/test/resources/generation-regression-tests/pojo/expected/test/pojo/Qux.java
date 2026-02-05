@@ -4,7 +4,7 @@ import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.Accessor;
 import com.rosetta.model.lib.annotations.AccessorType;
-import com.rosetta.model.lib.annotations.IsRequired;
+import com.rosetta.model.lib.annotations.Required;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
@@ -89,7 +89,7 @@ public interface Qux extends RosettaModelObject {
 		@Override
 		@RosettaAttribute("qux")
 		@Accessor(AccessorType.GETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("qux")
 		@RuneScopedAttributeKey
 		public FieldWithMetaString getQux() {
@@ -146,7 +146,7 @@ public interface Qux extends RosettaModelObject {
 		@Override
 		@RosettaAttribute("qux")
 		@Accessor(AccessorType.GETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("qux")
 		@RuneScopedAttributeKey
 		public FieldWithMetaString.FieldWithMetaStringBuilder getQux() {
@@ -169,7 +169,7 @@ public interface Qux extends RosettaModelObject {
 		
 		@RosettaAttribute("qux")
 		@Accessor(AccessorType.SETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("qux")
 		@RuneScopedAttributeKey
 		@Override

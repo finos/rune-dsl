@@ -56,27 +56,27 @@ class RosettaTypeProviderXtendTest {
 		SCHEME = new RMetaAttribute("scheme", UNCONSTRAINED_STRING)
 	}
 	
-	private def void assertIsValidWithType(CharSequence expr, RMetaAnnotatedType expectedType, boolean expectedIsMulti, List<RosettaModel> context, String... attributes) {
-		assertIsValidWithType(expr.parseExpression(context, attributes), expr, expectedType, expectedIsMulti)
+	private def void assertIsValidWithType(CharSequence expr, RMetaAnnotatedType expectedType, boolean expectedMulti, List<RosettaModel> context, String... attributes) {
+		assertIsValidWithType(expr.parseExpression(context, attributes), expr, expectedType, expectedMulti)
 	}
-	private def void assertIsValidWithType(CharSequence expr, RMetaAnnotatedType expectedType, boolean expectedIsMulti, List<RosettaModel> context) {
-		assertIsValidWithType(expr.parseExpression(context), expr, expectedType, expectedIsMulti)
+	private def void assertIsValidWithType(CharSequence expr, RMetaAnnotatedType expectedType, boolean expectedMulti, List<RosettaModel> context) {
+		assertIsValidWithType(expr.parseExpression(context), expr, expectedType, expectedMulti)
 	}
-	private def void assertIsValidWithType(CharSequence expr, RMetaAnnotatedType expectedType, boolean expectedIsMulti, String... attributes) {
-		assertIsValidWithType(expr.parseExpression(attributes), expr, expectedType, expectedIsMulti)
+	private def void assertIsValidWithType(CharSequence expr, RMetaAnnotatedType expectedType, boolean expectedMulti, String... attributes) {
+		assertIsValidWithType(expr.parseExpression(attributes), expr, expectedType, expectedMulti)
 	}
-	private def void assertIsValidWithType(CharSequence expr, RMetaAnnotatedType expectedType, boolean expectedIsMulti) {
-		assertIsValidWithType(expr.parseExpression, expr, expectedType, expectedIsMulti)
+	private def void assertIsValidWithType(CharSequence expr, RMetaAnnotatedType expectedType, boolean expectedMulti) {
+		assertIsValidWithType(expr.parseExpression, expr, expectedType, expectedMulti)
 	}
-	private def void assertIsValidWithType(RosettaExpression expr, RMetaAnnotatedType expectedType, boolean expectedIsMulti) {
-		assertIsValidWithType(expr, NodeModelUtils.findActualNodeFor(expr).text, expectedType, expectedIsMulti)
+	private def void assertIsValidWithType(RosettaExpression expr, RMetaAnnotatedType expectedType, boolean expectedMulti) {
+		assertIsValidWithType(expr, NodeModelUtils.findActualNodeFor(expr).text, expectedType, expectedMulti)
 	}
-	private def void assertIsValidWithType(RosettaExpression expr, CharSequence originalExpression, RMetaAnnotatedType expectedType, boolean expectedIsMulti) {
+	private def void assertIsValidWithType(RosettaExpression expr, CharSequence originalExpression, RMetaAnnotatedType expectedType, boolean expectedMulti) {
 		expr.assertNoIssues
 		val actual = expr.RMetaAnnotatedType
 		
 		assertEquals(expectedType, actual, "Expression: " + originalExpression)
-		if (expectedIsMulti) {
+		if (expectedMulti) {
 			assertTrue(expr.isMulti, "Expected multi cardinality. Expression: " + originalExpression)
 		} else {
 			assertFalse(expr.isMulti, "Expected single cardinality. Expression: " + originalExpression)

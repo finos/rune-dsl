@@ -4,7 +4,7 @@ import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.Accessor;
 import com.rosetta.model.lib.annotations.AccessorType;
-import com.rosetta.model.lib.annotations.IsRequired;
+import com.rosetta.model.lib.annotations.Required;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
@@ -82,7 +82,7 @@ public interface GetTypeEscaping extends RosettaModelObject {
 		@Override
 		@RosettaAttribute("type")
 		@Accessor(AccessorType.GETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("type")
 		public Integer _getType() {
 			return type;
@@ -138,7 +138,7 @@ public interface GetTypeEscaping extends RosettaModelObject {
 		@Override
 		@RosettaAttribute("type")
 		@Accessor(AccessorType.GETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("type")
 		public Integer _getType() {
 			return type;
@@ -146,7 +146,7 @@ public interface GetTypeEscaping extends RosettaModelObject {
 		
 		@RosettaAttribute("type")
 		@Accessor(AccessorType.SETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("type")
 		@Override
 		public GetTypeEscaping.GetTypeEscapingBuilder setType(Integer _type) {

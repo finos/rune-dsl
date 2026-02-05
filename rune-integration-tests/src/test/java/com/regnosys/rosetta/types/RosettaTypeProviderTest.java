@@ -30,21 +30,21 @@ public class RosettaTypeProviderTest {
 	@Inject 
 	private RBuiltinTypeService builtins;
 	
-	private void assertIsValidWithType(RosettaExpression expr, RMetaAnnotatedType expectedType, boolean expectedIsMulti) {
-		assertIsValidWithType(expr, NodeModelUtils.findActualNodeFor(expr).getText(), expectedType, expectedIsMulti);
+	private void assertIsValidWithType(RosettaExpression expr, RMetaAnnotatedType expectedType, boolean expectedMulti) {
+		assertIsValidWithType(expr, NodeModelUtils.findActualNodeFor(expr).getText(), expectedType, expectedMulti);
 	}
-	private void assertIsValidWithType(RosettaExpression expr, CharSequence originalExpression, RMetaAnnotatedType expectedType, boolean expectedIsMulti) {
+	private void assertIsValidWithType(RosettaExpression expr, CharSequence originalExpression, RMetaAnnotatedType expectedType, boolean expectedMulti) {
 		validationTestHelper.assertNoIssues(expr);
 		RMetaAnnotatedType actualType = typeProvider.getRMetaAnnotatedType(expr);
-		boolean actualIsMulti = cardinalityProvider.isMulti(expr);
+		boolean actualMulti = cardinalityProvider.isMulti(expr);
 		
 		Assertions.assertAll(
 				() -> Assertions.assertEquals(expectedType, actualType, "Expression: " + originalExpression),
 				() -> {
-					if (expectedIsMulti) {
-						Assertions.assertTrue(actualIsMulti, "Expected multi cardinality. Expression: " + originalExpression);
+					if (expectedMulti) {
+						Assertions.assertTrue(actualMulti, "Expected multi cardinality. Expression: " + originalExpression);
 					} else {
-						Assertions.assertFalse(actualIsMulti, "Expected single cardinality. Expression: " + originalExpression);
+						Assertions.assertFalse(actualMulti, "Expected single cardinality. Expression: " + originalExpression);
 					}
 				}
 			);

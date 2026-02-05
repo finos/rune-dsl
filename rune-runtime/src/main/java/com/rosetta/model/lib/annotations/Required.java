@@ -22,5 +22,5 @@ import java.lang.annotation.RetentionPolicy;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-public @interface IsMulti {
+public @interface Required {
 }

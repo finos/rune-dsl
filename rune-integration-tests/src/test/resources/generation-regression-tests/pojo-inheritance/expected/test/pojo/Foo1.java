@@ -5,8 +5,8 @@ import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.Accessor;
 import com.rosetta.model.lib.annotations.AccessorType;
-import com.rosetta.model.lib.annotations.IsMulti;
-import com.rosetta.model.lib.annotations.IsRequired;
+import com.rosetta.model.lib.annotations.Multi;
+import com.rosetta.model.lib.annotations.Required;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
@@ -139,7 +139,7 @@ public interface Foo1 extends RosettaModelObject {
 		@Override
 		@RosettaAttribute("attr")
 		@Accessor(AccessorType.GETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("attr")
 		public Integer getAttr() {
 			return attr;
@@ -156,7 +156,7 @@ public interface Foo1 extends RosettaModelObject {
 		@Override
 		@RosettaAttribute("parent")
 		@Accessor(AccessorType.GETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("parent")
 		public Parent getParent() {
 			return parent;
@@ -165,7 +165,7 @@ public interface Foo1 extends RosettaModelObject {
 		@Override
 		@RosettaAttribute("parentList")
 		@Accessor(AccessorType.GETTER)
-		@IsMulti
+		@Multi
 		@RuneAttribute("parentList")
 		public List<? extends Parent> getParentList() {
 			return parentList;
@@ -174,7 +174,7 @@ public interface Foo1 extends RosettaModelObject {
 		@Override
 		@RosettaAttribute("otherParentList")
 		@Accessor(AccessorType.GETTER)
-		@IsMulti
+		@Multi
 		@RuneAttribute("otherParentList")
 		public List<? extends Parent> getOtherParentList() {
 			return otherParentList;
@@ -183,7 +183,7 @@ public interface Foo1 extends RosettaModelObject {
 		@Override
 		@RosettaAttribute("stringAttr")
 		@Accessor(AccessorType.GETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("stringAttr")
 		public FieldWithMetaString getStringAttr() {
 			return stringAttr;
@@ -264,7 +264,7 @@ public interface Foo1 extends RosettaModelObject {
 		@Override
 		@RosettaAttribute("attr")
 		@Accessor(AccessorType.GETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("attr")
 		public Integer getAttr() {
 			return attr;
@@ -281,7 +281,7 @@ public interface Foo1 extends RosettaModelObject {
 		@Override
 		@RosettaAttribute("parent")
 		@Accessor(AccessorType.GETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("parent")
 		public Parent.ParentBuilder getParent() {
 			return parent;
@@ -303,7 +303,7 @@ public interface Foo1 extends RosettaModelObject {
 		@Override
 		@RosettaAttribute("parentList")
 		@Accessor(AccessorType.GETTER)
-		@IsMulti
+		@Multi
 		@RuneAttribute("parentList")
 		public List<? extends Parent.ParentBuilder> getParentList() {
 			return parentList;
@@ -323,7 +323,7 @@ public interface Foo1 extends RosettaModelObject {
 		@Override
 		@RosettaAttribute("otherParentList")
 		@Accessor(AccessorType.GETTER)
-		@IsMulti
+		@Multi
 		@RuneAttribute("otherParentList")
 		public List<? extends Parent.ParentBuilder> getOtherParentList() {
 			return otherParentList;
@@ -343,7 +343,7 @@ public interface Foo1 extends RosettaModelObject {
 		@Override
 		@RosettaAttribute("stringAttr")
 		@Accessor(AccessorType.GETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("stringAttr")
 		public FieldWithMetaString.FieldWithMetaStringBuilder getStringAttr() {
 			return stringAttr;
@@ -364,7 +364,7 @@ public interface Foo1 extends RosettaModelObject {
 		
 		@RosettaAttribute("attr")
 		@Accessor(AccessorType.SETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("attr")
 		@Override
 		public Foo1.Foo1Builder setAttr(Integer _attr) {
@@ -383,7 +383,7 @@ public interface Foo1 extends RosettaModelObject {
 		
 		@RosettaAttribute("parent")
 		@Accessor(AccessorType.SETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("parent")
 		@Override
 		public Foo1.Foo1Builder setParent(Parent _parent) {
@@ -393,7 +393,7 @@ public interface Foo1 extends RosettaModelObject {
 		
 		@RosettaAttribute("parentList")
 		@Accessor(AccessorType.ADDER)
-		@IsMulti
+		@Multi
 		@RuneAttribute("parentList")
 		@Override
 		public Foo1.Foo1Builder addParentList(Parent _parentList) {
@@ -421,7 +421,7 @@ public interface Foo1 extends RosettaModelObject {
 		
 		@RosettaAttribute("parentList")
 		@Accessor(AccessorType.SETTER)
-		@IsMulti
+		@Multi
 		@RuneAttribute("parentList")
 		@Override
 		public Foo1.Foo1Builder setParentList(List<? extends Parent> parentLists) {
@@ -437,7 +437,7 @@ public interface Foo1 extends RosettaModelObject {
 		
 		@RosettaAttribute("otherParentList")
 		@Accessor(AccessorType.ADDER)
-		@IsMulti
+		@Multi
 		@RuneAttribute("otherParentList")
 		@Override
 		public Foo1.Foo1Builder addOtherParentList(Parent _otherParentList) {
@@ -465,7 +465,7 @@ public interface Foo1 extends RosettaModelObject {
 		
 		@RosettaAttribute("otherParentList")
 		@Accessor(AccessorType.SETTER)
-		@IsMulti
+		@Multi
 		@RuneAttribute("otherParentList")
 		@Override
 		public Foo1.Foo1Builder setOtherParentList(List<? extends Parent> otherParentLists) {
@@ -481,7 +481,7 @@ public interface Foo1 extends RosettaModelObject {
 		
 		@RosettaAttribute("stringAttr")
 		@Accessor(AccessorType.SETTER)
-		@IsRequired
+		@Required
 		@RuneAttribute("stringAttr")
 		@Override
 		public Foo1.Foo1Builder setStringAttr(FieldWithMetaString _stringAttr) {

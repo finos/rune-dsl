@@ -206,9 +206,9 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 		if (op.getCardMod() != CardinalityModifier.NONE) {
 			checkModifiedBinaryOperation(op);
 		} else {
-			boolean leftIsMulti = cardinalityProvider.isMulti(op.getLeft());
-			boolean rightIsMulti = cardinalityProvider.isMulti(op.getRight());
-			if (leftIsMulti != rightIsMulti) {
+			boolean leftMulti = cardinalityProvider.isMulti(op.getLeft());
+			boolean rightMulti = cardinalityProvider.isMulti(op.getRight());
+			if (leftMulti != rightMulti) {
 				error("Operator `" + op.getOperator() + "` should specify `all` or `any` when comparing a list to a single value", op, null);
 			}
 		}

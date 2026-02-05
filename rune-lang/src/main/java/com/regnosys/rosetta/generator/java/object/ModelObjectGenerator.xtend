@@ -20,8 +20,8 @@ import com.rosetta.model.lib.annotations.RuneDataType
 import com.rosetta.model.lib.annotations.RuneMetaType
 import com.rosetta.model.lib.annotations.Accessor
 import com.rosetta.model.lib.annotations.AccessorType
-import com.rosetta.model.lib.annotations.IsMulti
-import com.rosetta.model.lib.annotations.IsRequired
+import com.rosetta.model.lib.annotations.Multi
+import com.rosetta.model.lib.annotations.Required
 import com.rosetta.model.lib.meta.RosettaMetaData
 import com.rosetta.util.types.JavaClass
 import java.util.List
@@ -240,8 +240,8 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 			@Override
 			@«RosettaAttribute»("«prop.javaAnnotation»")
 			@«Accessor»(«AccessorType».GETTER)
-			«IF prop.isRequired»@«IsRequired»«ENDIF»
-			«IF prop.type.isList»@«IsMulti»«ENDIF»
+			«IF prop.isRequired»@«Required»«ENDIF»
+			«IF prop.type.isList»@«Multi»«ENDIF»
 			@«RuneAttribute»("«prop.javaRuneAnnotation»")
 			«IF prop.isScopedReference»@«RuneScopedAttributeReference»«ENDIF»
 			«IF prop.isScopedKey»@«RuneScopedAttributeKey»«ENDIF»

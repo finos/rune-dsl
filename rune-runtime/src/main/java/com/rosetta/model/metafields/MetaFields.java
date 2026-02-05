@@ -10,7 +10,7 @@ import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.annotations.Accessor;
-import com.rosetta.model.lib.annotations.IsMulti;
+import com.rosetta.model.lib.annotations.Multi;
 import com.rosetta.model.lib.meta.*;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.AttributeMeta;
@@ -189,7 +189,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		@Override
 		@RosettaAttribute("location")
 		@Accessor(AccessorType.GETTER)
-		@IsMulti
+		@Multi
         @Deprecated
 		public List<? extends Key> getKey() {
 			return key;
@@ -333,7 +333,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		@Override
 		@RosettaAttribute("location")
 		@Accessor(AccessorType.GETTER)
-		@IsMulti
+		@Multi
         @Deprecated
 		public List<? extends Key.KeyBuilder> getKey() {
 			return key;
@@ -430,7 +430,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		@Override 
 		@RosettaAttribute("location")
 		@Accessor(AccessorType.SETTER)
-		@IsMulti
+		@Multi
         @Deprecated
 		public MetaFields.MetaFieldsBuilder setKey(List<? extends Key> keys) {
 			if (keys == null)  {

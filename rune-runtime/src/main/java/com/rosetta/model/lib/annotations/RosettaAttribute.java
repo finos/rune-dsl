@@ -31,7 +31,7 @@ public @interface RosettaAttribute {
 	String value() default "";
 
 	/**
-	 * @deprecated use @IsRequired annotation instead. Deprecated since 9.76.1.
+	 * @deprecated use @Required annotation instead. Deprecated since 9.76.1.
 	 */
 	@Deprecated
 	boolean isRequired() default false;
