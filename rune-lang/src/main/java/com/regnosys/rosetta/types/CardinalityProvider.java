@@ -97,9 +97,9 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 	private RosettaEcoreUtil ecoreUtil;
 	
 	public boolean isMulti(RosettaExpression expr) {
-		return safeMulti(expr, new HashMap<>());
+		return safeIsMulti(expr, new HashMap<>());
 	}
-	private boolean safeMulti(RosettaExpression expr, Map<RosettaSymbol, Boolean> cycleTracker) {
+	private boolean safeIsMulti(RosettaExpression expr, Map<RosettaSymbol, Boolean> cycleTracker) {
 		if (expr == null) {
 			return false;
 		}
@@ -147,14 +147,14 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 	        }
 	    } else if (symbol instanceof RosettaRule) {
 	        if (((RosettaRule) symbol).getExpression() != null) {
-	            result = safeMulti(((RosettaRule) symbol).getExpression(), cycleTracker);
+	            result = safeIsMulti(((RosettaRule) symbol).getExpression(), cycleTracker);
 	        } else {
 	            result = false;
 	        }
 	    } else if (symbol instanceof RosettaExternalFunction) {
 	        result = false;
 	    } else if (symbol instanceof ShortcutDeclaration) {
-	        result = safeMulti(((ShortcutDeclaration) symbol).getExpression(), cycleTracker);
+	        result = safeIsMulti(((ShortcutDeclaration) symbol).getExpression(), cycleTracker);
 	    } else if (symbol instanceof TypeParameter) {
 	        result = false;
 	    } else {
@@ -195,7 +195,7 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
         EObject op = obj.eContainer();
         if (op instanceof RosettaFunctionalOperation) {
             if (op instanceof ThenOperation) {
-                return safeMulti(((ThenOperation) op).getArgument(), cycleTracker);
+                return safeIsMulti(((ThenOperation) op).getArgument(), cycleTracker);
             }
             return isOutputListOfLists(((RosettaFunctionalOperation) op).getArgument());
         }
@@ -257,14 +257,14 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 		return safeIsPreviousOperationMulti(op, new HashMap<>());
 	}
 	private boolean safeIsPreviousOperationMulti(RosettaUnaryOperation op, Map<RosettaSymbol, Boolean> cycleTracker) {
-		return safeMulti(op.getArgument(), cycleTracker);
+		return safeIsMulti(op.getArgument(), cycleTracker);
 	}
 	
 	public boolean isBodyExpressionMulti(InlineFunction op) {
 		return safeIsBodyExpressionMulti(op, new HashMap<>());
 	}
 	private boolean safeIsBodyExpressionMulti(InlineFunction op, Map<RosettaSymbol, Boolean> cycleTracker) {
-		return op.getBody() != null && safeMulti(op.getBody(), cycleTracker);
+		return op.getBody() != null && safeIsMulti(op.getBody(), cycleTracker);
 	}
 
 	/**
@@ -291,7 +291,7 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 	
 	@Override
 	protected Boolean caseAsKeyOperation(AsKeyOperation expr, Map<RosettaSymbol, Boolean> cycleTracker) {
-		return safeMulti(expr.getArgument(), cycleTracker);
+		return safeIsMulti(expr.getArgument(), cycleTracker);
 	}
 	
 	@Override
@@ -306,7 +306,7 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 	
 	@Override
 	protected Boolean caseConditionalExpression(RosettaConditionalExpression expr, Map<RosettaSymbol, Boolean> cycleTracker) {
-		return safeMulti(expr.getIfthen(), cycleTracker) || safeMulti(expr.getElsethen(), cycleTracker);
+		return safeIsMulti(expr.getIfthen(), cycleTracker) || safeIsMulti(expr.getElsethen(), cycleTracker);
 	}
 	
 	@Override
@@ -326,12 +326,12 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 	
 	@Override
 	protected Boolean caseDefaultOperation(DefaultOperation expr, Map<RosettaSymbol, Boolean> cycleTracker) {
-		return safeMulti(expr.getLeft(), cycleTracker) || safeMulti(expr.getRight(), cycleTracker);
+		return safeIsMulti(expr.getLeft(), cycleTracker) || safeIsMulti(expr.getRight(), cycleTracker);
 	}
 	
 	@Override
 	protected Boolean caseDistinctOperation(DistinctOperation expr, Map<RosettaSymbol, Boolean> cycleTracker) {
-		return safeMulti(expr.getArgument(), cycleTracker);
+		return safeIsMulti(expr.getArgument(), cycleTracker);
 	}
 	
 	@Override
@@ -354,7 +354,7 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 		if (isFeatureMulti(expr.getFeature())) 
 			return true; 
 		else 
-			return safeMulti(expr.getReceiver(), cycleTracker);
+			return safeIsMulti(expr.getReceiver(), cycleTracker);
 	}
 	
 	@Override
@@ -362,12 +362,12 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 		if (isFeatureMulti(expr.getFeature())) 
 			return true; 
 		else 
-			return safeMulti(expr.getReceiver(), cycleTracker);
+			return safeIsMulti(expr.getReceiver(), cycleTracker);
 	}
 	
 	@Override
 	protected Boolean caseFilterOperation(FilterOperation expr, Map<RosettaSymbol, Boolean> cycleTracker) {
-		return safeMulti(expr.getArgument(), cycleTracker);
+		return safeIsMulti(expr.getArgument(), cycleTracker);
 	}
 	
 	@Override
@@ -427,10 +427,10 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 	
 	@Override
 	protected Boolean caseMapOperation(MapOperation expr, Map<RosettaSymbol, Boolean> cycleTracker) {
-		if (expr.getFunction() != null && safeMulti(expr.getFunction().getBody(), cycleTracker)) {
+		if (expr.getFunction() != null && safeIsMulti(expr.getFunction().getBody(), cycleTracker)) {
 			return true;
 		} else {
-			return safeMulti(expr.getArgument(), cycleTracker);
+			return safeIsMulti(expr.getArgument(), cycleTracker);
 		}
 	}
 	
@@ -523,7 +523,7 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 	@Override
 	protected Boolean caseThenOperation(ThenOperation expr, Map<RosettaSymbol, Boolean> cycleTracker) {
 		if (expr.getFunction() != null) {
-			return safeMulti(expr.getFunction().getBody(), cycleTracker);
+			return safeIsMulti(expr.getFunction().getBody(), cycleTracker);
 		} else {
 			return false;
 		}
@@ -577,7 +577,7 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 	@Override
 	protected Boolean caseSwitchOperation(SwitchOperation expr, Map<RosettaSymbol, Boolean> cycleTracker) {
 		for (SwitchCaseOrDefault switchCase : expr.getCases()) {
-			if (safeMulti(switchCase.getExpression(), cycleTracker)) {
+			if (safeIsMulti(switchCase.getExpression(), cycleTracker)) {
 				return true;
 			}
 		}

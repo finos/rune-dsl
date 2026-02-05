@@ -103,8 +103,8 @@ public class RObjectFactory {
 	public RFunction buildRFunction(RosettaRule rule) {		
 		RType inputRType = typeSystem.getRuleInputType(rule);
 		RType outputRType = typeProvider.getRMetaAnnotatedType(rule.getExpression()).getRType();
-		boolean outputMulti = cardinalityProvider.isMulti(rule.getExpression());
-		RAttribute outputAttribute = createArtificialAttribute("output", outputRType, outputMulti);
+		boolean outputIsMulti = cardinalityProvider.isMulti(rule.getExpression());
+		RAttribute outputAttribute = createArtificialAttribute("output", outputRType, outputIsMulti);
 		
 		return new RFunction(
 				rule,
