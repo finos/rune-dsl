@@ -46,6 +46,9 @@ public class ExpressionValidator extends AbstractExpressionValidator {
     @Check
     public void checkThenOperation(ThenOperation operation) {
         InlineFunction inlineFunction = operation.getFunction();
+		if (inlineFunction == null) {
+			return;
+		}
 
         /*
          *  Look at all symbol references and check if they reference an attribute.
