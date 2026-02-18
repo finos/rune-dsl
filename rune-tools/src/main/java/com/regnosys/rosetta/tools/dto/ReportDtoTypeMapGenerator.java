@@ -64,10 +64,43 @@ public class ReportDtoTypeMapGenerator {
                 (acc, context) -> {
                     if (!context.isExplicitlyEmpty()) {
                         acc.addAll(context.getPath());
+                        if (context.getTargetAttribute().getRMetaAnnotatedType().getRType() instanceof RDataType rDataType) {
+                            Set<RAttribute> leafAttributes = traverseLeafDataType(rDataType, new HashSet<>());
+                            acc.addAll(leafAttributes);
+                        }
                     }
                     return acc;
                 }
         );
+    }
+
+    private Set<RAttribute> traverseLeafDataType(RDataType rDataType, Set<String> visitedAttributeNames) {
+        Set<RAttribute> result = new HashSet<>();
+
+        for (RAttribute attribute : rDataType.getAllAttributes()) {
+            String attributeName = attribute.getName();
+
+            // Check for cycle - if we've seen this attribute name before, skip it
+            if (visitedAttributeNames.contains(attributeName)) {
+                continue;
+            }
+
+            result.add(attribute);
+
+            // If the attribute type is a data type, recurse
+            RType attributeType = attribute.getRMetaAnnotatedType().getRType();
+            if (attributeType instanceof RDataType childDataType) {
+                // Mark this attribute as visited
+                Set<String> newVisitedNames = new HashSet<>(visitedAttributeNames);
+                newVisitedNames.add(attributeName);
+
+                // Recursively collect attributes from the child data type
+                Set<RAttribute> childAttributes = traverseLeafDataType(childDataType, newVisitedNames);
+                result.addAll(childAttributes);
+            }
+        }
+
+        return result;
     }
 
     private Set<RosettaReport> findReports(List<RosettaModel> models, DottedPath namespace) {

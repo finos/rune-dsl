@@ -74,6 +74,10 @@ class ReportDtoTypeMapGeneratorTest {
                 extendedNestedField1 string (0..1)
                 extendedNestedField2 string (0..1)
             
+            type ExtendedNestedType2:
+                extendedNested2Field1 string (0..1)
+                extendedNested2Field2 string (0..1)
+            
             type BaseTypeReport:
                 baseFieldWithNoRuleReference string (0..1)
                 baseFieldWithNoRuleReference2 string (0..1)
@@ -94,6 +98,8 @@ class ReportDtoTypeMapGeneratorTest {
                  [ruleReference SomeRule]
                 extendedNestedType ExtendedNestedType (0..1)
                   [ruleReference for extendedNestedField2 SomeRule]
+                extendedNestedType2 ExtendedNestedType2 (0..1)
+                  [ruleReference SomeRule]
             """, resourceSet);
 
         Multimap<RType, RAttribute> dtoTypeMap = generator.generateReportDtoTypeMap(List.of(model), DottedPath.of("test"));
@@ -101,13 +107,13 @@ class ReportDtoTypeMapGeneratorTest {
         assertFalse(dtoTypeMap.isEmpty());
 
         Set<RType> dtoTypes = dtoTypeMap.keySet();
-        assertEquals(3, dtoTypes.size());
+        assertEquals(4, dtoTypes.size());
 
         List<String> dtoTypeNames = dtoTypes.stream()
                 .map(RType::getName)
                 .toList();
 
-        assertThat(dtoTypeNames, hasItems("ExtendedTypeReport", "BaseNestedType", "ExtendedNestedType"));
+        assertThat(dtoTypeNames, hasItems("ExtendedTypeReport", "BaseNestedType", "ExtendedNestedType", "ExtendedNestedType2"));
 
         dtoTypeMap.keySet().forEach(type -> {
             if (type.getName().equals("BaseNestedType")) {
@@ -124,8 +130,8 @@ class ReportDtoTypeMapGeneratorTest {
 
             if (type.getName().equals("ExtendedTypeReport")) {
                 Set<RAttribute> rAttributes = new HashSet<>(dtoTypeMap.get(type));
-                assertEquals(5, rAttributes.size());
-                assertThat(rAttributes.stream().map(RAttribute::getName).toList(), hasItems("baseFieldWithRuleReference2", "baseNestedType", "baseFieldWithNoRuleReference2", "extendedFieldWithRuleReference", "extendedNestedType"));
+                assertEquals(6, rAttributes.size());
+                assertThat(rAttributes.stream().map(RAttribute::getName).toList(), hasItems("baseFieldWithRuleReference2", "baseNestedType", "baseFieldWithNoRuleReference2", "extendedFieldWithRuleReference", "extendedNestedType", "extendedNestedType2"));
             }
         });
     }
