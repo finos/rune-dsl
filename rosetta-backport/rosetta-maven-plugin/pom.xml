@@ -17,7 +17,7 @@
 
     <properties>
         <maven.compiler.release>17</maven.compiler.release>
-        <xtext.version>2.38.0</xtext.version>
+        <xtext.version>2.41.0</xtext.version>
 
         <maven-plugin-api.version>3.9.8</maven-plugin-api.version>
         <maven-core.version>3.9.8</maven-core.version>

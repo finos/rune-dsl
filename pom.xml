@@ -94,11 +94,11 @@
         <organization.logo>https://regnosys.com/assets/images/common/logo.png</organization.logo>
 
         <!-- Dependency management -->
-        <xtext.version>2.38.0</xtext.version>
+        <xtext.version>2.41.0</xtext.version>
         <commons-lang3.version>3.14.0</commons-lang3.version>
         <commons-text.version>1.12.0</commons-text.version>
         <snakeyaml.version>2.2</snakeyaml.version>
-        <org.eclipse.emf.ecore.xcore.lib.version>1.7.0</org.eclipse.emf.ecore.xcore.lib.version>
+        <org.eclipse.emf.ecore.xcore.lib.version>1.7.1</org.eclipse.emf.ecore.xcore.lib.version>
         <maven-plugin-api.version>3.9.8</maven-plugin-api.version>
         <maven-core.version>3.9.8</maven-core.version>
         <maven-plugin-annotations.version>3.13.1</maven-plugin-annotations.version>
@@ -113,7 +113,7 @@
         <mockito-core.version>5.12.0</mockito-core.version>
 
         <!-- Plugin and plugin dependency management -->
-        <org.eclipse.emf.ecore.xcore.version>1.32.0</org.eclipse.emf.ecore.xcore.version>
+        <org.eclipse.emf.ecore.xcore.version>1.35.0</org.eclipse.emf.ecore.xcore.version>
         <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
         <maven-checkstyle-plugin.version>3.4.0</maven-checkstyle-plugin.version>
         <exec-maven-plugin.version>3.3.0</exec-maven-plugin.version>
