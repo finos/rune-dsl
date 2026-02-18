@@ -65,7 +65,7 @@ public class ReportDtoTypeMapGenerator {
                     if (!context.isExplicitlyEmpty()) {
                         acc.addAll(context.getPath());
                         if (context.getTargetAttribute().getRMetaAnnotatedType().getRType() instanceof RDataType rDataType) {
-                            Set<RAttribute> leafAttributes = traverseLeafDataType(rDataType, new HashSet<>());
+                            Set<RAttribute> leafAttributes = traversAllAttributes(rDataType, new HashSet<>());
                             acc.addAll(leafAttributes);
                         }
                     }
@@ -74,7 +74,7 @@ public class ReportDtoTypeMapGenerator {
         );
     }
 
-    private Set<RAttribute> traverseLeafDataType(RDataType rDataType, Set<RAttribute> visitedAttributes) {
+    private Set<RAttribute> traversAllAttributes(RDataType rDataType, Set<RAttribute> visitedAttributes) {
         Set<RAttribute> result = new HashSet<>();
 
         for (RAttribute attribute : rDataType.getAllAttributes()) {
@@ -89,11 +89,10 @@ public class ReportDtoTypeMapGenerator {
             RType attributeType = attribute.getRMetaAnnotatedType().getRType();
             if (attributeType instanceof RDataType childDataType) {
                 // Mark this attribute as visited
-                Set<RAttribute> newVisitedAttributes = new HashSet<>(visitedAttributes);
-                newVisitedAttributes.add(attribute);
+                visitedAttributes.add(attribute);
 
                 // Recursively collect attributes from the child data type
-                Set<RAttribute> childAttributes = traverseLeafDataType(childDataType, newVisitedAttributes);
+                Set<RAttribute> childAttributes = traversAllAttributes(childDataType, visitedAttributes);
                 result.addAll(childAttributes);
             }
         }
