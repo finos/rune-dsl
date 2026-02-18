@@ -16,7 +16,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Set;
 
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @ExtendWith(InjectionExtension.class)
@@ -62,13 +66,13 @@ class ReportDtoGeneratorTest {
                 extract inputField
         
             type BaseNestedType:
-                baseField1 string (0..1)
-                baseField2 string (0..1)
-        
+                baseNestedField1 string (0..1)
+                baseNestedField2 string (0..1)
+            
             type ExtendedNestedType:
-                extendedField1 string (0..1)
-                extendedField2 string (0..1)
-        
+                extendedNestedField1 string (0..1)
+                extendedNestedField2 string (0..1)
+            
             type BaseTypeReport:
                 baseFieldWithNoRuleReference string (0..1)
                 baseFieldWithNoRuleReference2 string (0..1)
@@ -77,8 +81,8 @@ class ReportDtoGeneratorTest {
                 baseFieldWithRuleReference2 string (0..1)
                  [ruleReference SomeRule]
                 baseNestedType BaseNestedType (0..1)
-                  [ruleReference for baseField1 SomeRule]
-        
+                  [ruleReference for baseNestedField1 SomeRule]
+            
             type ExtendedTypeReport extends BaseTypeReport:
                 override baseFieldWithNoRuleReference2 string (0..1)
                   [ruleReference SomeRule]
@@ -88,11 +92,20 @@ class ReportDtoGeneratorTest {
                 extendedFieldWithRuleReference string (0..1)
                  [ruleReference SomeRule]
                 extendedNestedType ExtendedNestedType (0..1)
-                  [ruleReference for extendedField2 SomeRule]
+                  [ruleReference for extendedNestedField2 SomeRule]
             """, resourceSet);
 
-        Multimap<RType, RAttribute> test = generator.generateReportDtos(List.of(model), DottedPath.of("test"));
+        Multimap<RType, RAttribute> test = generator.generateReportDtoTypeMap(List.of(model), DottedPath.of("test"));
 
         assertFalse(test.isEmpty());
+
+        Set<RType> dtoTypes = test.keySet();
+        assertEquals(3, dtoTypes.size());
+
+        List<String> dtoTypeNames = dtoTypes.stream()
+                .map(RType::getName)
+                .toList();
+
+        assertThat(dtoTypeNames, hasItems("ExtendedTypeReport", "BaseNestedType", "ExtendedNestedType"));
     }
 }

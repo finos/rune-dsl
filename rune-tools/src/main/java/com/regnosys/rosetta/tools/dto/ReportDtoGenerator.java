@@ -5,15 +5,22 @@ import com.google.common.collect.Multimap;
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaReport;
+import com.regnosys.rosetta.rules.RuleReferenceService;
 import com.regnosys.rosetta.transgest.ModelLoader;
-import com.regnosys.rosetta.types.*;
+import com.regnosys.rosetta.types.RAttribute;
+import com.regnosys.rosetta.types.RDataType;
+import com.regnosys.rosetta.types.RObjectFactory;
+import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.util.DottedPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ReportDtoGenerator {
@@ -22,25 +29,29 @@ public class ReportDtoGenerator {
     private final ModelLoader modelLoader;
     private final RObjectFactory rObjectFactory;
     private final JavaTypeTranslator javaTypeTranslator;
+    private final RuleReferenceService ruleService;
     private final ModelIdProvider modelIdProvider;
 
     @Inject
-    public ReportDtoGenerator(ModelLoader modelLoader, RObjectFactory rObjectFactory, JavaTypeTranslator javaTypeTranslator) {
+    public ReportDtoGenerator(ModelLoader modelLoader, RObjectFactory rObjectFactory, JavaTypeTranslator javaTypeTranslator, RuleReferenceService ruleService) {
         this.modelLoader = modelLoader;
         this.rObjectFactory = rObjectFactory;
         this.javaTypeTranslator = javaTypeTranslator;
+        this.ruleService = ruleService;
         this.modelIdProvider = new ModelIdProvider();
     }
 
-    public Multimap<RType, RAttribute> generateReportDtos(List<RosettaModel> models, DottedPath namespace) {
+    public Multimap<RType, RAttribute> generateReportDtoTypeMap(List<RosettaModel> models, DottedPath namespace) {
         List<Multimap<RType, RAttribute>> collectedReportAttributes = findReports(models, namespace)
                 .stream()
                 .map(report -> {
                     //Need to provide a unique visitor storage for each report otherwise the reports have a side effect on each other as some reports have fields labeled and some don't
-                    Multimap<RType, RAttribute> collectedTypeAttributes = HashMultimap.create();
                     LOGGER.info("Collecting types and attributes for report {}", modelIdProvider.getReportId(report));
                     RDataType rReportType = rObjectFactory.buildRDataType(report.getReportType());
-                    collectTypeAttributes(rReportType, rReportType, collectedTypeAttributes);
+
+                    Set<RAttribute> includedAttributes = traverse(report, rReportType);
+                    Multimap<RType, RAttribute> collectedTypeAttributes = HashMultimap.create();
+                    collectTypeAttributes(rReportType, includedAttributes, collectedTypeAttributes);
                     return collectedTypeAttributes;
                 }).toList();
 
@@ -49,6 +60,20 @@ public class ReportDtoGenerator {
             aggregatedTypeAttributes.putAll(multimap);
         }
         return aggregatedTypeAttributes;
+    }
+
+    private Set<RAttribute> traverse(RosettaReport report, RDataType rReportType) {
+        return ruleService.<Set<RAttribute>>traverse(
+                report.getRuleSource(),
+                rReportType,
+                new HashSet<>(),
+                (acc, context) -> {
+                    if (!context.isExplicitlyEmpty()) {
+                        acc.addAll(context.getPath());
+                    }
+                    return acc;
+                }
+        );
     }
 
     private Set<RosettaReport> findReports(List<RosettaModel> models, DottedPath namespace) {
@@ -61,8 +86,28 @@ public class ReportDtoGenerator {
                 .collect(Collectors.toSet());
     }
 
-    private void collectTypeAttributes(RDataType topLevelReportType, RDataType parentDataType, Multimap<RType, RAttribute> visitor) {
+    private void collectTypeAttributes(RDataType parentDataType, Set<RAttribute> includedAttributes,  Multimap<RType, RAttribute> visitor) {
+        parentDataType.getAllAttributes()
+                .forEach(attribute -> {
+                    RType attributeType = attribute.getRMetaAnnotatedType().getRType();
+                    if (attributeType instanceof RDataType childDataType) {
+                        // collect attributes for child type
+                        collectTypeAttributes(childDataType, includedAttributes, visitor);
+                        // if the child has reported attributes, then add parent attribute
+                        Collection<RAttribute> collectedChildAttributes = visitor.get(childDataType);
+                        if (!collectedChildAttributes.isEmpty()) {
+                            visitor.put(parentDataType, attribute);
+                        }
+                    } else {
+                        if (canAddAttribute(includedAttributes, attribute)) {
+                            visitor.put(parentDataType, attribute);
+                        }
+                    }
+                });
+    }
 
+    private boolean canAddAttribute(Set<RAttribute> includedAttributes, RAttribute attribute) {
+        return includedAttributes.contains(attribute);
     }
 
 }
