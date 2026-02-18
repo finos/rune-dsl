@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ReportDtoGenerator {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReportDtoGenerator.class);
+public class ReportDtoTypeMapGenerator {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReportDtoTypeMapGenerator.class);
 
     private final ModelLoader modelLoader;
     private final RObjectFactory rObjectFactory;
@@ -33,7 +33,7 @@ public class ReportDtoGenerator {
     private final ModelIdProvider modelIdProvider;
 
     @Inject
-    public ReportDtoGenerator(ModelLoader modelLoader, RObjectFactory rObjectFactory, JavaTypeTranslator javaTypeTranslator, RuleReferenceService ruleService) {
+    public ReportDtoTypeMapGenerator(ModelLoader modelLoader, RObjectFactory rObjectFactory, JavaTypeTranslator javaTypeTranslator, RuleReferenceService ruleService) {
         this.modelLoader = modelLoader;
         this.rObjectFactory = rObjectFactory;
         this.javaTypeTranslator = javaTypeTranslator;

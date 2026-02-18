@@ -26,10 +26,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
-class ReportDtoGeneratorTest {
+class ReportDtoTypeMapGeneratorTest {
 
     @Inject
-    private ReportDtoGenerator generator;
+    private ReportDtoTypeMapGenerator generator;
 
     @Inject
     private XtextResourceSet resourceSet;
