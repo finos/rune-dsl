@@ -2,11 +2,9 @@ package com.regnosys.rosetta.tools.dto;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaReport;
 import com.regnosys.rosetta.rules.RuleReferenceService;
-import com.regnosys.rosetta.transgest.ModelLoader;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RObjectFactory;
@@ -26,17 +24,13 @@ import java.util.stream.Collectors;
 public class ReportDtoTypeMapGenerator {
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportDtoTypeMapGenerator.class);
 
-    private final ModelLoader modelLoader;
     private final RObjectFactory rObjectFactory;
-    private final JavaTypeTranslator javaTypeTranslator;
     private final RuleReferenceService ruleService;
     private final ModelIdProvider modelIdProvider;
 
     @Inject
-    public ReportDtoTypeMapGenerator(ModelLoader modelLoader, RObjectFactory rObjectFactory, JavaTypeTranslator javaTypeTranslator, RuleReferenceService ruleService) {
-        this.modelLoader = modelLoader;
+    public ReportDtoTypeMapGenerator(RObjectFactory rObjectFactory, RuleReferenceService ruleService) {
         this.rObjectFactory = rObjectFactory;
-        this.javaTypeTranslator = javaTypeTranslator;
         this.ruleService = ruleService;
         this.modelIdProvider = new ModelIdProvider();
     }
