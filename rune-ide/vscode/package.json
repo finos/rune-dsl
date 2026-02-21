@@ -123,7 +123,7 @@
   "devDependencies": {
     "@types/node": "^24.0.0",
     "@types/vscode": "^1.73.1",
-    "shx": "^0.3.4",
+    "shx": "^0.4.0",
     "typescript": "^5.0.0",
     "vscode-test": "^1.6.1"
   },
