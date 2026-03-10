@@ -8,12 +8,12 @@ import org.eclipse.xtext.resource.EObjectDescription;
 
 import com.regnosys.rosetta.rosetta.RosettaRule;
 
-public class RuleDescription extends EObjectDescription {
+public class RuleDescription extends RosettaDescription {
 	public static final String INPUT = "INPUT";
 	public static final String EXPRESSION = "EXPRESSION";
 
-	public RuleDescription(QualifiedName qualifiedName, RosettaRule rule, String input, String expression) {
-		super(qualifiedName, rule, createUserData(input, expression));
+	public RuleDescription(QualifiedName qualifiedName, RosettaRule rule, String input, String expression, boolean isInOverriddenNamespace) {
+		super(qualifiedName, rule, createUserData(input, expression), isInOverriddenNamespace);
 	}
 	
 	private static Map<String, String> createUserData(String input, String expression) {

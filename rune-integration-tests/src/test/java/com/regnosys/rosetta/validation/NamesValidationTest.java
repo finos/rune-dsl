@@ -62,7 +62,7 @@ public class NamesValidationTest {
     }
     
     @Test
-    void testNamespaceOverrideDoesNotCauseDuplicateError() {
+    void testNamespaceOverrideDoesNotCauseDuplicateErrorForTypes() {
         var models = modelHelper.parseRosetta("""
                 namespace test
                 
@@ -75,6 +75,29 @@ public class NamesValidationTest {
                     attr string (1..1)
                 """);
         
+        models.forEach(validationTestHelper::assertNoIssues);
+    }
+
+    @Test
+    void testNamespaceOverrideDoesNotCauseDuplicateErrorForRules() {
+        var models = modelHelper.parseRosetta("""
+                namespace test
+                
+                type Foo:
+                    attr int (1..1)
+                
+                eligibility rule FooRule from Foo:
+                   extract True
+                """, """
+                override namespace test
+                
+                type Foo:
+                    attr string (1..1)
+                
+                eligibility rule FooRule from Foo:
+                   extract True
+                """);
+
         models.forEach(validationTestHelper::assertNoIssues);
     }
 
