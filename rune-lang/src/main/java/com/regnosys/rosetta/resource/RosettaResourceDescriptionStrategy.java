@@ -13,7 +13,6 @@ import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.util.IAcceptor;
@@ -54,49 +53,49 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
         if (eObject instanceof RosettaExpression) {
             return false;
         } else if (eObject instanceof RosettaModel model) {
-            return createRosettaModelDescription(model, acceptor);
+            return createRosettaModelDescription(model, isInOverriddenNamespace, acceptor);
         } else if (eObject instanceof Attribute attribute) {
-            return createAttributeDescription(attribute, acceptor);
+            return createAttributeDescription(attribute, isInOverriddenNamespace, acceptor);
         } else if (eObject instanceof RosettaRule rule) {
-            return createRosettaRuleDescription(rule, acceptor);
+            return createRosettaRuleDescription(rule, isInOverriddenNamespace, acceptor);
         } else if (eObject instanceof ExternalAnnotationSource) {
-            defaultCreateEObjectDescriptions(eObject, isInOverriddenNamespace, acceptor);
+            defaultCreateRosettaDescriptions(eObject, isInOverriddenNamespace, acceptor);
             return false; // Do not traverse down annotation sources
         } else {
-            defaultCreateEObjectDescriptions(eObject, isInOverriddenNamespace, acceptor);
+            defaultCreateRosettaDescriptions(eObject, isInOverriddenNamespace, acceptor);
             return true;
         }
     }
     
-    private void defaultCreateEObjectDescriptions(EObject eObject, boolean isInOverriddenNamespace, IAcceptor<IEObjectDescription> acceptor) {
+    private void defaultCreateRosettaDescriptions(EObject eObject, boolean isInOverriddenNamespace, IAcceptor<IEObjectDescription> acceptor) {
         QualifiedName qualifiedName = getQualifiedNameProvider().getFullyQualifiedName(eObject);
         if (qualifiedName != null) {
-            acceptor.accept(EObjectDescription.create(qualifiedName, eObject, isInOverriddenNamespace ? Map.of(IN_OVERRIDDEN_NAMESPACE, "true") : Map.of()));
+            acceptor.accept(new RosettaDescription(qualifiedName, eObject, Map.of(), isInOverriddenNamespace));
         }
     }
 
-    private boolean createRosettaModelDescription(RosettaModel model, IAcceptor<IEObjectDescription> acceptor) {
+    private boolean createRosettaModelDescription(RosettaModel model, boolean isInOverriddenNamespace, IAcceptor<IEObjectDescription> acceptor) {
         QualifiedName qualifiedName = getQualifiedNameProvider().getFullyQualifiedName(model);
-        acceptor.accept(new RosettaModelDescription(qualifiedName, model));
+        acceptor.accept(new RosettaModelDescription(qualifiedName, model, isInOverriddenNamespace));
         return true;
     }
 
-    private boolean createAttributeDescription(Attribute attr, IAcceptor<IEObjectDescription> acceptor) {
+    private boolean createAttributeDescription(Attribute attr, boolean isInOverriddenNamespace, IAcceptor<IEObjectDescription> acceptor) {
         QualifiedName qualifiedName = getQualifiedNameProvider().getFullyQualifiedName(attr);
         String typeCall = serialize(attr.getTypeCall());
         String cardinality = serialize(attr.getCard());
         String ruleReferences = serialize(attr.getRuleReferences());
         String labels = serialize(attr.getLabels());
-        acceptor.accept(new AttributeDescription(qualifiedName, attr, typeCall, cardinality, ruleReferences, labels));
+        acceptor.accept(new AttributeDescription(qualifiedName, attr, typeCall, cardinality, ruleReferences, labels, isInOverriddenNamespace));
         return false;
     }
 
-    private boolean createRosettaRuleDescription(RosettaRule rule, IAcceptor<IEObjectDescription> acceptor) {
+    private boolean createRosettaRuleDescription(RosettaRule rule, boolean isInOverriddenNamespace, IAcceptor<IEObjectDescription> acceptor) {
         QualifiedName qualifiedName = getQualifiedNameProvider().getFullyQualifiedName(rule);
         String input = serialize(rule.getInput());
         String expression = serialize(rule.getExpression());
         if (qualifiedName != null) {
-            acceptor.accept(new RuleDescription(qualifiedName, rule, input, expression));
+            acceptor.accept(new RuleDescription(qualifiedName, rule, input, expression, isInOverriddenNamespace));
         }
         return false;
     }
@@ -120,4 +119,5 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
         		.filter(Objects::nonNull)
         		.collect(Collectors.joining(","));
     }
+
 }
