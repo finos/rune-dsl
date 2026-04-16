@@ -1,13 +1,14 @@
 {
     "compilerOptions": {
-        "target": "es6",
+        "target": "es2018",
         "module": "node16",
         "moduleResolution": "node16",
         "sourceMap": false,
         "inlineSources": false,
         "declaration": true,
         "stripInternal": true,
-        "lib": [ "es6" ],
+        "lib": [ "es2018" ],
+        "types": [ "node", "vscode" ],
         "outDir": "../out"
     }
 }
