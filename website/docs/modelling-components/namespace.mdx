@@ -1,0 +1,65 @@
+---
+title: Namespace
+sidebar_label: Namespace
+description: "Namespaces act as containers to help to organise model artefacts into logical groups."
+---
+
+Namespaces help organise model artefacts into logical groups. Think of a namespace as a **container** that groups related components so the model is easier to understand, navigate and maintain.
+
+
+Namespaces also:
+- Make the model structure clearer for users.
+- Allow teams to adopt only the parts they need.
+- Reduce disruption when parts of the model are restructured.
+- Map directly to the namespaces’ Group and Artefact directory structure (a.k.a. ‘GAV coordinates’), which is visible in the model editor.
+
+
+Namespaces are arranged in a **hierarchy**, from inner layers to outer layers. Key points about this hierarchy:
+- Each layer can access (import) the layer outside it.
+- Outer layers can be used independently of inner layers.
+- A layer may contain multiple sibling namespaces, which can reference each other.
+
+### Namespace syntax
+A `namespace` is defined using the namespace keyword followed by its directory path:
+`namespace cdm.product.common`
+Naming rules:
+- All component names must be **unique within the same namespace**.
+- Components inside the same namespace can refer to each other by **name only**.
+
+To reference components in another namespace, you must either:
+- Use the fully qualified name, e.g. `cdm.base.datetime.AdjustableDate`, or 
+- Import the namespace.
+
+### Importing namespaces
+To access components from another namespace, use the import keyword: `import cdm.product.asset.*`
+This imports **all components** in the `cdm.product.asset` namespace.
+Important details:
+- Only the components in the **specific layer** you import are included.
+- If you need components from deeper nested namespaces, you must import each one individually.
+
+**Example:** importing multiple namespaces. This brings in all components from the various layers under `cdm.base`:
+```haskell
+import cdm.base.math.*
+import cdm.base.datetime.*
+import cdm.base.staticdata.party.*
+import cdm.base.staticdata.asset.common.*
+import cdm.base.staticdata.asset.rates.*
+import cdm.base.staticdata.asset.credit.*
+```
+You can also reference a namespace is by using an `import ... as ...` alias.
+
+### Using namespace aliases
+You can assign an alias to an imported namespace to make references shorter and clearer:
+
+`import cdm.base.staticdata.party.* as cdmParty`
+
+Now you can reference types from that namespace using the alias:
+```haskell
+type MyContainer:
+  party cdmParty.Party (1..1)
+```
+#### Rules for aliases
+- You can only alias imports that use the `*` wildcard (i.e. full namespace imports).
+- When using an alias, you must prefix all referenced types with that alias.
+
+

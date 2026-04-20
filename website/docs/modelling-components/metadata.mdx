@@ -1,0 +1,323 @@
+---
+title: Metadata
+sidebar_label: Metadata
+description: "Add extra information to model elements like data types, attributes, and functions, usually with a plain text description."
+---
+
+Metadata components add extra information to model elements like data types, attributes and functions. 
+Most components can include a plain text description. These descriptions don’t produce code, but they can provide important metadata and should be included for every model component, written clearly and completely. 
+ 
+To add a text description to a model component, place the text in double quote marks inside angle brackets: `<"This is a metadata description">`. 
+ 
+You can attach descriptions to almost any model component, including:
+- Data types, with their attributes and conditions
+- Functions, their inputs and output, conditions and business logic
+- Reporting rules
+- Namespaces
+
+There are three main elements to consider with metadata:
+1. [Annotations](#1-annotations)
+2. [Document reference](#2-document-reference)
+3. [Cross-referencing](#3-cross-referencing)
+
+## 1. Annotations
+Annotations add extra metadata to model components beyond plain descriptions. They can: 
+- Enforce constraints during validation.
+- Change how the model behaves in generated code.
+- Provide guidance when navigating the model.
+
+### 1.1 `Annotation`
+Annotations are defined with the `annotation` keyword:
+
+```haskell
+annotation <annotationName>: <"Description">
+    <attribute1>
+    <attribute2>
+    <...>
+```
+
+Annotation names use **lower camelCase** and must be unique within a model. Attributes are optional – many annotations won’t need any.
+```haskell
+annotation rootType: <"Mark a type as a root of the rune model">
+```
+
+Rune includes some built-in annotations, but you can define your own as needed. 
+Once defined, you can apply an annotation to any model component using its name and any chosen attributes.
+```haskell
+[<annotationName> (optional: <annotationAttribute>)]
+```
+
+### 1.2 `codeimplementation`
+The `codeImplementation` annotation tells users that a function’s logic is implemented elsewhere in the codebase – for example, in a static, handwritten Java class. 
+Functions marked with this annotation should not include any Rune implementation – their behaviour is provided by the external code.
+
+**Example**
+```haskell
+func MyFunc:
+  [codeImplementation]
+  inputs:
+    myInput string (1..1)
+  output:
+    myOutput string (1..1)
+```
+
+### 1.3 `metadata`
+The `metadata` annotation defines qualifiers that can be applied to a data type or attribute. 
+
+Rune provides several built-in `metadata` fields:
+```haskell
+annotation metadata:
+  id string (0..1)
+  key string (0..1)
+  scheme string (0..1)
+  reference string (0..1)
+  template string (0..1)
+  location string (0..1) <"Specifies this is the target of an internal reference">
+  address string (0..1) <"Specified that this is an internal reference to an object that appears elsewhere">
+```
+
+Each `metadata` field represents a different qualifier:
+- `scheme` – controls the allowed values for an attribute without needing an enumeration. The attribute is usually a simple `string`, and the annotation tells the system where to source the scheme values.
+- `template` – marks that a data type can be used as a data template, allowing shared data to be stored once and referenced by multiple objects.
+- **Other fields** – used for [cross referencing](#3-cross-referencing) between objects.
+
+### 1.4 Using metadata in functions and expressions
+You can access metadata values through function inputs or expression outputs that have metadata annotations. 
+
+
+Example: How a function can use metadata passed into it.
+```haskell
+func MyFunc:
+    inputs:
+        myInput string (1..1)
+            [metadata scheme]
+    output:
+        myResult string (1..1)
+
+    set myResult: myInput -> scheme
+```
+
+Example: How to work with metadata that is the output of an expression.
+```haskell
+func MyFunc:
+    inputs:
+        myInput string (1..*)
+            [metadata scheme]
+    output:
+        myResult string (1..*)
+    set myResult: myInput extract scheme
+```
+
+## 2. Document reference
+A document reference is an annotation that links model components to information stored in an external document. In Rune, you can define these external documents – who owns them and key parts of their content – as model components, and then associate them with other elements like data types or functions.
+
+If the external information is plain text, this creates a built-in documentation trail for model behavior. When that behavior is later turned into software, the document reference acts as a form of self documentation.
+
+Document references consist of two parts: **hierarchy** and **content**.
+
+### 2.1 Document hierarchy
+Document hierarchy uses three keywords to structure document references:
+- `body` – the author, publisher, or owner of the document
+- `corpus` – the document set containing the referenced material
+- `segment` – the specific section within a document
+
+Syntax: To define a body, corpus and segment.
+```haskell
+body <BodyType> <BodyName> (optional: <"Description">)
+corpus <CorpusType> (optional: <Body>) (optional: <"Alias">) <CorpusName> (optional: <"Description">)
+segment <segmentType>
+```
+
+**Bodies** may include regulatory authorities or trade associations.
+```haskell
+body Authority EuropeanCommission <"European Commission (ec.europa.eu).">
+```
+
+**Corpuses** represent document sets such as directives, laws, regulatory texts, technical standards or best practise guidance. 
+A corpus may also include an **alias**, which provides an alternative identifier such as an official document number.
+```haskell
+corpus Directive "93/59/EC" StandardEmissionsEuro1
+    <"COUNCIL DIRECTIVE 93 /59/EEC of 28 June 1993 amending Directive 70/220/EEC on the approximation of the laws of the Member States relating to measures to be taken against air pollution by emissions from motor vehicles https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX%3A31993L0059">
+```
+
+**Segments** refer to a specific section in a document (as opposed to corpuses, which are typically large document sets with many provisions, clauses etc).
+```haskell
+segment article
+segment whereas
+segment annex
+segment table
+```
+
+A segment is referenced by giving it a free text name or number.
+```haskell
+<segmentType> <"SegmentID">
+```
+
+Multiple segments can be chained to point to an exact location in a document.
+```haskell
+article "26" paragraph "2"
+```
+
+### 2.2 Document content
+**Document content** is referenced using the `docReference` keyword. Each reference must point to a **corpus** and one or more **segments** defined in the document hierarchy. Document references can be attached to any type, attribute, function or rule.
+
+You can use the `provision` keyword to include the specific text being referenced.
+```haskell
+[docReference <Body> <Corpus>
+  <segment1> <segment2> <...>
+  provision <"ProvisionText">]
+```
+
+Sometimes a data type may use a different name depending on context – for example, a legal definition may refer to the same concept using another term. 
+You can define a special segment such as `namingConvention`:
+```haskell
+segment namingConvention
+
+type PayerReceiver: <"Specifies the parties responsible for making and receiving payments defined by this structure.">
+     payer CounterpartyRoleEnum (1..1)
+       [docReference ICMA GMRA
+         namingConvention "seller"
+         provision "As defined in the GRMA Seller party ..."]
+     <...>
+```
+
+
+### 2.3 Document reference on a path
+You cannot attach a document reference directly to an attribute. Instead, you’ll need to define it on a root type using an annotation path. 
+
+For example, the `payer` attribute under `Report -> leg1 -> payerReceiver` can be annotated like this:
+```haskell
+type Report:
+  leg1 Leg (1..1)
+    [docReference for payerReceiver -> payer ICMA GMRA
+         namingConvention "seller"
+         provision "As defined in the GRMA Seller party ..."]
+    <...>
+```
+
+In general, the path must start with the keyword `for`, followed by one of these:
+
+
+- An attribute name e.g. `payerReceiver`.
+- A path to an attribute e.g. `payerReceiver -> payer`.
+- The keyword `item` to refer to the attribute itself.
+- A deep path in a choice type e.g. `item ->> dayCountConvention`. See the [deep path operator](./expressions#22-deep-paths-for-choice-types). 
+
+
+### 2.4 Data template
+When a data type is marked as a **template**, it can reference a separate template object. Both the template and any object that uses it are usually incomplete and should not be validated on their own. After resolving the template reference, the template data must be merged into the object to create a fully populated object. Validation should only happen after this merge.
+
+Aside from the annotation itself, templates do not change the model – they do not add new types, attributes or conditions.
+
+Template designation also applies to all encapsulated types within the annotated type. 
+
+In this example, marking `NonTransferableProduct` as a template also makes `EconomicTerms` (and all types inside it) eligible for the template:
+```haskell
+type NonTransferableProduct:
+  [metadata key]
+  [metadata template]
+  identifier ProductIdentifier (0..*)
+  taxonomy ProductTaxonomy (0..*)
+  economicTerms EconomicTerms (1..1)
+```
+
+
+## 3. Cross-referencing
+**Cross-referencing** lets an attribute point to an object located elsewhere in the model. The source object carries a metadata identifier, and the target attribute stores that identifier instead of a normal value.
+
+**Syntax**
+
+Cross referencing uses the `key` (or `id`) and `reference` metadata pair.
+- `Key` or `id` marks the source object.
+- `id` is used when annotating built in types, since they have no data type to attach a key to.
+
+An attribute annotated with reference metadata can either hold a normal value or a key that points to the source. 
+Any attribute marked as a reference must refer to a type annotated with a key.
+```haskell
+<SourceType>
+  [metadata key]
+
+// For built-in types only:
+<sourceAttribute>
+  [metadata id]
+
+<targetAttribute>
+  [metadata reference]
+```
+
+**Example**
+
+`Party` and `Identifier` types show how cross reference annotations work. Marking `Party` with a key makes it referenceable. In `Identifier`, the reference annotation on `issuerReference` means this attribute can point to a `Party` using its key instead of duplicating the full object.
+```haskell
+type Party:
+  [metadata key]
+  partyId string (1..*)
+    [metadata scheme]
+  name string (0..1)
+    [metadata scheme]
+  person NaturalPerson (0..*)
+  account Account (0..1)
+
+type Identifier:
+  [metadata key]
+  issuerReference Party (0..1)
+    [metadata reference]
+  issuer string (0..1)
+    [metadata scheme]
+  assignedIdentifier AssignedIdentifier (1..*)
+```
+
+
+### 3.1 Reference types
+Rune currently supports three different reference types, each with a different scope.
+
+#### 3.1.1 Global reference
+A **global reference** uses the `key` or `id` metadata annotations to generate a globally unique identifier for a type. This identifier is a hash created by the model implementation. An attribute marked with reference can then use that key, even if the referenced object is defined elsewhere.
+In Rune’s default implementation, these fields are named `globalKey` and `globalReference`. The global key is a *deep hash* built from all attribute values of the data type, including nested attributes.
+
+#### 3.1.2 External reference
+Objects annotated with `key` or `id` can also carry an identifier taken from an external source – for example, an FpML `id`. Attributes marked with `reference` can then store these external identifiers. A reference resolver process can link the external reference back to the correct object.
+
+In this example, the party object has both a `globalKey` (its internal unique identifier) and an `externalKey` taken from another system. It also includes a `globalReference` that would resolve to that same party.
+```haskell
+"party" : {
+  "meta" : {
+    "globalKey" : "3fa8e998",
+    "externalKey" : "f845ge"
+  },
+  "name" : {
+    "value" : "XYZ Bank"
+  },
+  "partyId" : [ {
+    "value" : "XYZBICXXX",
+    "meta" : {
+      "scheme" : "http://www.fpml.org/coding-scheme/external/iso9362"
+    }
+  } ]
+}
+
+"partyReference" : {
+        "globalReference" : "3fa8e998"
+  }
+```
+
+
+#### 3.1.3 Address and location reference
+Sometimes an attribute acts as a variable while the rest of an object stays the same. This avoids duplicating large objects that differ only in a few values. Instead, you define one parameterised object, and each instance only provides the variable values rather than copying the whole structure.
+Rune supports this pattern using an `address` / `location` cross reference.
+- **address** marks the placeholder where the variable value belongs (the target).
+- **location** marks where the actual value is defined (the source).
+
+The syntax uses the address and location metadata pair as shown below.
+
+**Note:** The global referencing mechanism doesn’t work here because a global key is tied to an object’s full set of attribute values. Here, however, the same key (the variable’s address) must stay the same no matter what value the variable takes.
+```haskell
+<targetAttribute>
+  [metadata address "pointsTo"=<sourceAttribute>]
+
+<sourceAttribute>
+  [metadata location]
+```
+
+
+

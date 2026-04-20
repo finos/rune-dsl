@@ -1,0 +1,143 @@
+{
+  "description": "A collection of technical terms and their definitions",
+  "terms": [
+    {
+      "term": "API",
+      "abbreviation": "Application Programming Interface",
+      "definition": "Application Programming Interface –bridges that let different software systems talk to each other.",
+      "relatedTerms": []
+    },
+    {
+      "term": "Boolean",
+      "abbreviation": "",
+      "definition": "Data type with only two values (yes/no, on/off etc).",
+      "relatedTerms": []
+    },
+    {
+      "term": "Cardinality",
+      "abbreviation": "",
+      "definition": "The number of elements in a set or other grouping, as a property of that grouping.",
+      "relatedTerms": []
+    },
+    {
+      "term": "CSV",
+      "abbreviation": "Comma-Separated Values",
+      "definition": "Comma-Separated Values. Simple file format used to store tabular data (like spreadsheets or databases) in plain text.",
+      "relatedTerms": []
+    },
+    {
+      "term": "CDE",
+      "abbreviation": "Critical Data Element",
+      "definition": "Critical Data Element",
+      "relatedTerms": []
+    },
+    {
+      "term": "CDM",
+      "abbreviation": "Common Domain Model",
+      "definition": "A standardised, machine-readable and machine-executable blueprint for how financial products are traded and managed across the transaction lifecycle. It is represented as a domain model and distributed in open source.",
+      "relatedTerms": []
+    },
+    {
+      "term": "deep hash",
+      "abbreviation": "",
+      "definition": "A hash value computed from all attributes of an object, including every nested or encapsulated attribute, recursively. Instead of hashing only the top‑level fields, a deep hash covers the entire object structure and incorporates every value into the final hash.",
+      "relatedTerms": []
+    },
+    {
+      "term": "deep path",
+      "abbreviation": "",
+      "definition": "A way to access a shared attribute across all options of a choice type, without needing to know which option is present.",
+      "relatedTerms": []
+    },
+    {
+      "term": "DSL",
+      "abbreviation": "Domain-Specific Language",
+      "definition": "A programming language for a narrow purpose e.g. for financial regulatory reporting.",
+      "relatedTerms": []
+    },
+    {
+      "term": "E-notation",
+      "abbreviation": "Exponential notation",
+      "definition": "Exponential notation is a shorthand way to write very large or very small numbers, representing them as a number multiplied by a power of 10, with the \"E\" standing for \"times ten to the power of\" (e.g. 2.5 times 10 to the power of 6 becomes 2.5E6).",
+      "relatedTerms": []
+    },
+    {
+      "term": "FINOS",
+      "abbreviation": "Fintech Open Source Foundation",
+      "definition": "A nonprofit organization that brings together the global financial services industry to collaboratively build open‑source software, standards, and best practices.",
+      "relatedTerms": []
+    },
+    {
+      "term": "FpML",
+      "abbreviation": "Financial Products Markup Language",
+      "definition": "Financial Products Markup Language",
+      "relatedTerms": []
+    },
+    {
+      "term": "I/O",
+      "abbreviation": "input/output",
+      "definition": "input/output",
+      "relatedTerms": []
+    },
+    {
+      "term": "ISDA",
+      "abbreviation": "International Swaps and Derivatives Association",
+      "definition": "The global trade association for participants in the derivatives markets.",
+      "relatedTerms": []
+    },
+    {
+      "term": "JSON",
+      "abbreviation": "JavaScript Object Notation",
+      "definition": "Text-based, language-independent format with key-value pairs (eg Name: Dave).",
+      "relatedTerms": []
+    },
+    {
+      "term": "PR",
+      "abbreviation": "Pull request",
+      "definition": "Pull request",
+      "relatedTerms": []
+    },
+    {
+      "term": "PRG",
+      "abbreviation": "Peer review group",
+      "definition": "Peer review group",
+      "relatedTerms": []
+    },
+    {
+      "term": "Recursion",
+      "abbreviation": "",
+      "definition": "A method of solving a computational problem where the solution depends on solutions to smaller instances of the same problem.",
+      "relatedTerms": []
+    },
+    {
+      "term": "root type",
+      "abbreviation": "",
+      "definition": "A root type is the top level entity (parent) from which all other entities (child types) descend. It’s the entry point and highest node in a model’s structure and acts as a container that defines the scope of the dataset.",
+      "relatedTerms": []
+    },
+    {
+      "term": "Rosetta",
+      "abbreviation": "",
+      "definition": "REGnosys’ proprietary platform for building and sharing financial models.",
+      "relatedTerms": []
+    },
+    {
+      "term": "Rune DSL",
+      "abbreviation": "Domain Specific Language",
+      "definition": "A Domain Specific Language for defining business rules, data structures, and calculations in financial and regulatory contexts. Used in Rosetta.",
+      "relatedTerms": []
+    },
+    {
+      "term": "SDK",
+      "abbreviation": "Software Development Kit",
+      "definition": "A set of tools for building software.",
+      "relatedTerms": []
+    },
+    {
+      "term": "XML",
+      "abbreviation": "Extensible Markup Language",
+      "definition": "Text-based format used to store and transport data in a structured way that both humans and machines can read.",
+      "relatedTerms": []
+    }
+  ]
+}

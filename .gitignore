@@ -4,11 +4,11 @@ test-data/
 build.acceleo
 *~
 *.java._trace
-.idea/
 .*.xtendbin
 .metadata/
 *.class
 .DS_Store
+Thumbs.db
 plugin.xml_gen
 **/*.iml
 .classpath
@@ -27,3 +27,13 @@ com.regnosys.rosetta.web/
 
 # CVE scan reports
 ./reports/
+
+# Editors/IDE
+.idea/
+.vscode/
+*.swp
+
+# Docusaurus website
+website/.docusaurus
+website/build
+website/node_modules
