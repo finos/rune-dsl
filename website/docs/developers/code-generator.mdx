@@ -1,0 +1,121 @@
+---
+title: Code generator
+sidebar_label: Code generator
+description: "How to adopt a technical standard expressed as a domain model in Rune, but in a language other than the default (Java) distribution."
+slug: /developers/code-generator
+---
+
+# Code generators
+Our code generators allow you to take a technical standard written in **Rune DSL** and generate executable code in **any programming language**, not just Java.
+If you want to adopt a Rune-based domain model in another language, this guide explains how to build your own generator.
+
+## 1. Prerequisites
+First, you need these installed:
+- [JDK 21](https://openjdk.org/projects/jdk/21/)
+- [Maven](https://maven.apache.org/)
+- [Git](https://git-scm.com/)
+
+JAVA_HOME must point to your Java 21 installation.
+
+## 2. Why code generation?
+The traditional approach tends to be slow and prone to error:
+- Domain experts interpret the standard
+- Business analysts convert it into requirements
+- Engineers implement those requirements manually
+
+Each step introduces:
+- interpretation risk
+- duplicated effort across firms
+- high long term maintenance cost
+
+The code generation approach, on the other hand, offers a solution that is generally faster and more consistent:
+- The technical standard is expressed once in Rune DSL
+- Code generators automatically produce executable code in any language
+- No re implementation required
+- Updates to the model automatically propagate to all supported languages
+- Version control ensures predictable adoption of updates
+
+## 3. Available code generators
+Rune includes one built in generator: **Java** (Java 8+ compatible)
+
+Our code generators repository adds community supported generators:
+- [DAML]( https://docs.digitalasset.com/)
+- [Scala]( https://www.scala-lang.org/)
+- [TypeScript]( https://www.typescriptlang.org/)
+- [C# (8.0 and 9.0)]( https://learn.microsoft.com/en-gb/dotnet/csharp/)
+- [Go]( https://go.dev/)
+- [Kotlin]( https://kotlinlang.org/)
+
+You can contribute your own generator in any language.
+
+## 4. How code generation works
+High level process:
+- Rune DSL files (.rosetta) are parsed using an **ANTLR-generated parser**.
+- The parser produces an **Ecore model** (a syntax tree representation).
+- Your generator receives this Ecore model through an API hook.
+- You translate the model into your target programming language.
+
+Key technologies:
+
+- Ecore: the internal representation of the Rune model
+- Xtext: used to define the Rune DSL grammar
+- Eclipse Modeling Framework (EMF): provides the underlying model structure
+Ecore acts as the pivot between Rune DSL and your target language.
+
+
+## 5. Quick start guide
+Step 1 – Clone and build
+```
+/path/to/workspace/rosetta-code-generators > mvn clean install
+```
+Step 2 – Create your generator module
+Use Maven to generate a new module:
+```
+> mvn archetype:generate -DgroupId=com.regnosys.rosetta.code-generators  -DartifactId=my-language
+```
+
+This:
+- creates a new module named after your `artifactId`
+- sets up the correct Maven structure
+- updates the parent `pom.xml`
+
+
+## 6. Writing your generator
+A sample generator is provided:
+``` Haskell
+sample/src/main/java/com/regnosys/rosetta/generators/sample/SampleCodeGenerator.java
+```
+
+Create your own generator
+1.	Add a new package under: `com/regnosys/rosetta/generators/`
+2.	Create a class that extends `AbstractExternalGenerator`
+3.	Implement the generate method:
+``` Haskell
+public abstract Map<String, ? extends CharSequence> generate(RosettaJavaPackages packages, List<RosettaRootElement> elements, String version);
+```
+
+Your implementation should:
+- iterate over the model elements
+- generate source code strings
+- return a map of filenames → file contents
+
+## 7. Testing your generator
+A working example test is provided:
+`sample/src/test/java/com/regnosys/rosetta/generators/sample/SampleCodeGeneratorTest.java`
+
+**Test resources**
+- sample.rosetta
+Located in: `sample/src/test/resources/rosetta`
+Contains a simple Rune model used as input.
+- Foo.groovy.sample
+Located in: `sample/src/test/resources/sample`
+Contains the expected output for comparison.
+
+**Test infrastructure**
+The ‘test-helper’ module:
+- sets up a Rosetta-enabled environment using **Google Guice**
+- parses .rosetta files into Ecore objects
+- provides basic Rune types (string, int, time, etc.) from: `test-helper/src/main/resources/rosetta/types.rosetta`
+These types bootstrap the model so your generator can run.
+
+
