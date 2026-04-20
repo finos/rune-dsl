@@ -19,8 +19,10 @@
         <maven.compiler.release>17</maven.compiler.release>
         <xtext.version>2.38.0</xtext.version>
 
-        <maven-plugin-api.version>3.9.8</maven-plugin-api.version>
-        <maven-core.version>3.9.8</maven-core.version>
+        <maven-plugin-api.version>3.9.14</maven-plugin-api.version>
+        <maven-core.version>3.9.14</maven-core.version>
+        <!-- Used by maven-plugin-api - bumped from 3.6.0 to 3.6.1 for CVE -->
+        <plexus-utils.version>3.6.1</plexus-utils.version>
         <maven-plugin-annotations.version>3.13.1</maven-plugin-annotations.version>
     </properties>
 
@@ -49,6 +51,11 @@
                 <artifactId>maven-plugin-api</artifactId>
                 <version>${maven-plugin-api.version}</version>
             </dependency>
+            <dependency>
+			    <groupId>org.codehaus.plexus</groupId>
+			    <artifactId>plexus-utils</artifactId>
+			    <version>${plexus-utils.version}</version>
+			</dependency>
             <dependency>
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-core</artifactId>
