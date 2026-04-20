@@ -82,7 +82,7 @@ Workflow {
 				generateStub = true
 			}
 			junitSupport = {
-				junitVersion = "5"
+				generateStub = false
 			}
 			formatter = {
 				generateStub = true
