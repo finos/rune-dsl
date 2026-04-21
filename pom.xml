@@ -127,7 +127,7 @@
         <maven-plugin-plugin.version>3.15.2</maven-plugin-plugin.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <appassembler-maven-plugin.version>2.1.0</appassembler-maven-plugin.version>
-        <frontend-maven-plugin.version>1.15.4</frontend-maven-plugin.version>
+        <frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
         <node.version>24.15.0</node.version>
     </properties>
 
