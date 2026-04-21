@@ -46,8 +46,10 @@ env:
     not(contains(licenses/license/url, '://openjdk.java.net/legal/gplv2+ce.html')) and
     
     licenses/license/name!='The MIT License' and
+    licenses/license/name!='MIT' and
     not(contains(licenses/license/url, '://opensource.org/licenses/MIT')) and
     not(contains(licenses/license/url, '://www.opensource.org/licenses/mit-license.php')) and
+    not(contains(licenses/license/url, '://opensource.org/license/mit')) and
     
     licenses/license/name!='CDDL + GPLv2 with classpath exception' and
     not(contains(licenses/license/url, '://github.com/javaee/javax.annotation/blob/master/LICENSE')) and
