@@ -15,10 +15,10 @@ public class ReportValidatorTest extends AbstractValidatorTest {
 	void testDocReferenceIsSupported() {
 		assertNoIssues("""
 				body Organisation FooOrg
-				corpus Group FooCorpus
+				corpus Group FooGroup
 				
 				reporting rule StringInput from string:
-					[docReference FooOrg FooCorpus]
+					[docReference FooOrg FooGroup]
 							empty
 				""");
 	}
@@ -27,14 +27,14 @@ public class ReportValidatorTest extends AbstractValidatorTest {
 	void testRegulatoryReferenceIsDeprecated() {
 		assertIssues("""
 				body Organisation FooOrg
-				corpus Group FooCorpus
+				corpus Group FooGroup
 				
 				reporting rule StringInput from string:
-					[regulatoryReference FooOrg FooCorpus]
+					[regulatoryReference FooOrg FooGroup]
 							empty
 				""",
 				"""
-				WARNING (null) 'Using `regulatoryReference` is deprecated. Use `docReference` instead' at 8:2, length 38, on RosettaDocReference
+				WARNING (null) 'Using `regulatoryReference` is deprecated. Use `docReference` instead' at 8:2, length 37, on RosettaDocReference
 				""");
 	}
 
