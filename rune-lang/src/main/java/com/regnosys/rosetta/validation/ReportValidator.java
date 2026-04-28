@@ -23,6 +23,7 @@ import com.regnosys.rosetta.rules.RulePathMap;
 import com.regnosys.rosetta.rules.RuleReferenceService;
 import com.regnosys.rosetta.rules.RuleReferenceService.RuleReferenceContext;
 import com.regnosys.rosetta.rules.RuleResult;
+import com.regnosys.rosetta.services.RosettaGrammarAccess;
 import com.regnosys.rosetta.types.*;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil;
@@ -33,7 +34,6 @@ import org.eclipse.xtext.validation.Check;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
@@ -58,10 +58,13 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
     @Inject
     private AnnotationPathExpressionUtil annotationPathUtil;
 
+    @Inject
+    private RosettaGrammarAccess grammar;
+
     @Check
     public void checkRegulatoryReferenceAnnotation(RosettaDocReference rosettaDocReference) {
         if ("regulatoryReference".equals(rosettaDocReference.getName())) {
-            warning("Using `regulatoryReference` is deprecated. Use `docReference` instead", rosettaDocReference, null);
+            warningKeyword("Using `regulatoryReference` is deprecated. Use `docReference` instead", rosettaDocReference, grammar.getRosettaDocReferenceAccess().getNameRegulatoryReferenceKeyword_1_0_0());
         }
     }
 

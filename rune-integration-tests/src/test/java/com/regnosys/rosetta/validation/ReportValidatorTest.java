@@ -34,7 +34,7 @@ public class ReportValidatorTest extends AbstractValidatorTest {
 							empty
 				""",
 				"""
-				WARNING (null) 'Using `regulatoryReference` is deprecated. Use `docReference` instead' at 8:2, length 37, on RosettaDocReference
+				WARNING (null) 'Using `regulatoryReference` is deprecated. Use `docReference` instead' at 8:3, length 19, on RosettaDocReference
 				""");
 	}
 
