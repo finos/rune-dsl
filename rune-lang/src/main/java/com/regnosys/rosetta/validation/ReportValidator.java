@@ -59,6 +59,13 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
     private AnnotationPathExpressionUtil annotationPathUtil;
 
     @Check
+    public void checkRegulatoryReferenceAnnotation(RosettaDocReference rosettaDocReference) {
+        if ("regulatoryReference".equals(rosettaDocReference.getName())) {
+            warning("Using `regulatoryReference` is deprecated. Use `docReference` instead", rosettaDocReference, null);
+        }
+    }
+
+    @Check
     public void checkRuleReferenceAnnotation(RuleReferenceAnnotation ann) {
         AnnotationPathExpression path = ann.getPath();
         if (path != null) {

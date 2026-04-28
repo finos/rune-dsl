@@ -10,6 +10,22 @@ import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
 public class ReportValidatorTest extends AbstractValidatorTest {
+
+	@Test
+	void testRegulatoryReferenceIsDeprecated() {
+		assertIssues("""
+				body Organisation FooOrg
+				corpus Group FooCorpus
+				
+				reporting rule StringInput from string:
+					[regulatoryReference FooOrg FooCorpus]
+							empty
+				""",
+				"""
+				WARNING (null) 'Using `regulatoryReference` is deprecated. Use `docReference` instead' at 8:2, length 38, on RosettaDocReference
+				""");
+	}
+
 	@Test
 	void testRuleReferenceToRuleWithLabelIsDeprecated() {
 		assertIssues("""
