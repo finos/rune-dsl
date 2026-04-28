@@ -43,7 +43,7 @@ public class ExpressionValidatorTest {
                     foo -> OptionB
                 """, "foo Foo (1..1)");
 
-        validationTestHelper.assertIssue(expr, ROSETTA_FEATURE_CALL, null, Severity.WARNING,
+        validationTestHelper.assertWarning(expr, ROSETTA_FEATURE_CALL, null,
                 "Using the path operator on a choice type is deprecated. Use the switch operator instead");
     }
 
