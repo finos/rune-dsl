@@ -24,6 +24,30 @@ public class ExpressionValidatorTest {
     private RosettaTestModelService modelService;
 
     @Test
+    void pathUsageOnChoiceTypesShouldWarn() {
+        RosettaExpression expr = modelService.toTestModel("""
+                    type OptionA:
+                        a string (1..1)
+                
+                    type OptionB:
+                        b string (1..1)
+                
+                    type OptionC:
+                        c string (1..1)
+                
+                    choice Foo:
+                        OptionA
+                        OptionB
+                        OptionC
+                """).parseExpression("""
+                    foo -> OptionB
+                """, "foo Foo (1..1)");
+
+        validationTestHelper.assertIssue(expr, ROSETTA_FEATURE_CALL, null, Severity.WARNING,
+                "Using the path operator on a choice type is deprecated. Use the switch operator instead");
+    }
+
+    @Test
     void thenExpressionUsingNestedImplicitVariableShouldHaveError() {
         RosettaExpression expr = modelService.toTestModel("""
                 type Foo:

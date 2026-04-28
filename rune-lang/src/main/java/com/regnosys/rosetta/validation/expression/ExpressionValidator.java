@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.validation.expression;
 
+import com.regnosys.rosetta.rosetta.simple.*;
 import com.regnosys.rosetta.types.*;
 import jakarta.inject.Inject;
 
@@ -15,10 +16,6 @@ import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
 import com.regnosys.rosetta.rosetta.*;
 import com.regnosys.rosetta.rosetta.expression.*;
-import com.regnosys.rosetta.rosetta.simple.Attribute;
-import com.regnosys.rosetta.rosetta.simple.Condition;
-import com.regnosys.rosetta.rosetta.simple.Function;
-import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.utils.ExpressionHelper;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 
@@ -26,7 +23,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.ROSETTA_NAMED__NAME;
+import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.*;
 import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 import static com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta;
@@ -42,6 +39,15 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	private RosettaEcoreUtil ecoreUtil;
 	@Inject
 	private RosettaFunctionExtensions functionExtensions;
+
+	@Check
+	public void checkPathOperatorOnChoice(RosettaFeatureCall rosettaFeatureCall) {
+		RosettaExpression receiver = rosettaFeatureCall.getReceiver();
+		RMetaAnnotatedType rMetaAnnotatedType = typeProvider.getRMetaAnnotatedType(receiver);
+		if (rMetaAnnotatedType.getRType() instanceof RChoiceType) {
+			warning("Using the path operator on a choice type is deprecated. Use the switch operator instead", rosettaFeatureCall, ROSETTA_FEATURE_CALL__RECEIVER);
+		}
+	}
 
     @Check
     public void checkThenOperation(ThenOperation operation) {
