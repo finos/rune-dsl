@@ -12,6 +12,18 @@ import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 public class ReportValidatorTest extends AbstractValidatorTest {
 
 	@Test
+	void testDocReferenceIsSupported() {
+		assertNoIssues("""
+				body Organisation FooOrg
+				corpus Group FooCorpus
+				
+				reporting rule StringInput from string:
+					[docReference FooOrg FooCorpus]
+							empty
+				""");
+	}
+
+	@Test
 	void testRegulatoryReferenceIsDeprecated() {
 		assertIssues("""
 				body Organisation FooOrg
