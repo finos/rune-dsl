@@ -5,6 +5,7 @@ import com.regnosys.rosetta.types.*;
 import jakarta.inject.Inject;
 
 import jakarta.inject.Provider;
+import org.checkerframework.checker.units.qual.C;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.EcoreUtil2;
@@ -447,6 +448,9 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 			RType parentData = parentType.getRType();
 			if (!mayBeEmpty(parentData)) {
 				unsupportedTypeError(parentType, "only exists", first, null, "All attributes of input type should be optional");
+			}
+			if (parentData instanceof RChoiceType) {
+				warning("Using only exist on an attribute of a choice type is deprecated", expr, ROSETTA_ONLY_EXISTS_EXPRESSION__ARGS);
 			}
 		}
 	}

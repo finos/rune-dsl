@@ -24,6 +24,30 @@ public class ExpressionValidatorTest {
     private RosettaTestModelService modelService;
 
     @Test
+    void onlyExistOnChoiceTypeShouldWarn() {
+        RosettaExpression expr = modelService.toTestModel("""
+                    type OptionA:
+                        a string (1..1)
+                
+                    type OptionB:
+                        b string (1..1)
+                
+                    type OptionC:
+                        c string (1..1)
+                
+                    choice Foo:
+                        OptionA
+                        OptionB
+                        OptionC
+                """).parseExpression("""
+                    foo -> OptionB only exists
+                """, "foo Foo (1..1)");
+
+        validationTestHelper.assertWarning(expr, ROSETTA_ONLY_EXISTS_EXPRESSION, null,
+                "Using only exist on an attribute of a choice type is deprecated");
+    }
+
+    @Test
     void pathUsageOnChoiceTypesShouldWarn() {
         RosettaExpression expr = modelService.toTestModel("""
                     type OptionA:
