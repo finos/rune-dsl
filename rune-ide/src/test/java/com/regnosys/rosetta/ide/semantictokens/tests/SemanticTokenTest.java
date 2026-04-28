@@ -93,7 +93,7 @@ public class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 				segment field
 
 				reporting rule Cleared from number:
-					[regulatoryReference CFTC Part45 appendix "1" dataElement "1" field "Cleared"
+					[docReference CFTC Part45 appendix "1" dataElement "1" field "Cleared"
 						provision "Indicator of whether the transaction has been cleared, or is intended to be cleared, by a central counterparty."]
 					"Y"
 				""";
@@ -101,10 +101,10 @@ public class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 			cfg.setExpectedSemanticTokenItems("""
 				rule.singleCardinality: 10:15:7
 				basicType: 10:28:6
-				documentCorpus: 11:27:6
-				documentSegment: 11:34:8
-				documentSegment: 11:47:11
-				documentSegment: 11:63:5
+				documentCorpus: 11:20:6
+				documentSegment: 11:27:8
+				documentSegment: 11:40:11
+				documentSegment: 11:56:5
 				""");
 		});
 	}
