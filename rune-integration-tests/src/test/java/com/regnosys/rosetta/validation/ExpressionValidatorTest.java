@@ -44,7 +44,7 @@ public class ExpressionValidatorTest {
                 """, "foo Foo (1..1)");
 
         validationTestHelper.assertWarning(expr, ROSETTA_ONLY_EXISTS_EXPRESSION, null,
-                "Using only exist on an attribute of a choice type is deprecated");
+                "Using only exist on a choice option is deprecated");
     }
 
     @Test

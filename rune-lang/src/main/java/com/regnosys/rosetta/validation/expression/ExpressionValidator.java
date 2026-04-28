@@ -450,7 +450,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 				unsupportedTypeError(parentType, "only exists", first, null, "All attributes of input type should be optional");
 			}
 			if (parentData instanceof RChoiceType) {
-				warning("Using only exist on an attribute of a choice type is deprecated", expr, ROSETTA_ONLY_EXISTS_EXPRESSION__ARGS);
+				warning("Using only exist on a choice option is deprecated", expr, ROSETTA_ONLY_EXISTS_EXPRESSION__ARGS);
 			}
 		}
 	}
