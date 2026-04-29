@@ -62,13 +62,6 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
     private RosettaGrammarAccess grammar;
 
     @Check
-    public void checkRegulatoryReferenceAnnotation(RosettaDocReference rosettaDocReference) {
-        if ("regulatoryReference".equals(rosettaDocReference.getName())) {
-            warningKeyword("Using `regulatoryReference` is deprecated. Use `docReference` instead", rosettaDocReference, grammar.getRosettaDocReferenceAccess().getNameRegulatoryReferenceKeyword_1_0_0());
-        }
-    }
-
-    @Check
     public void checkRuleReferenceAnnotation(RuleReferenceAnnotation ann) {
         AnnotationPathExpression path = ann.getPath();
         if (path != null) {
