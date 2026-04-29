@@ -1986,7 +1986,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				aa string (1..1)
 					[ruleReference Aa]
 				""");
-        validationTestHelper.assertWarning(model, RULE_REFERENCE_ANNOTATION, null, "Expected single cardinality, but rule has multi cardinality");
+        validationTestHelper.assertError(model, RULE_REFERENCE_ANNOTATION, null, "Expected single cardinality, but rule has multi cardinality");
     }
 
     @Test
