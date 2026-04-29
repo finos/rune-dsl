@@ -214,7 +214,7 @@ public class SwitchValidatorTest extends AbstractValidatorTest {
                 	"C" then "cValue",
                 	default "someOtherValue"
                 """, "inp string (1..*)");
-        validationTestHelper.assertWarning(expression, ROSETTA_EXPRESSION, null, "Expecting single cardinality. The `switch` operator requires a single cardinality input");
+        validationTestHelper.assertError(expression, ROSETTA_EXPRESSION, null, "Expecting single cardinality. The `switch` operator requires a single cardinality input");
     }
 
     @Test

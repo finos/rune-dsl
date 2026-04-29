@@ -114,7 +114,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 						[True, False]
 				""");
 
-        validationTestHelper.assertWarning(model, CONDITION, null, "Expecting single cardinality. A condition should be single cardinality");
+        validationTestHelper.assertError(model, CONDITION, null, "Expecting single cardinality. A condition should be single cardinality");
     }
 
     @Test
@@ -556,7 +556,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 						ins then val
 				""");
 
-        validationTestHelper.assertWarning(model, OPERATION, null,
+        validationTestHelper.assertError(model, OPERATION, null,
                 "Expecting single cardinality. Cannot assign a list to a single value");
     }
 
