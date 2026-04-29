@@ -394,7 +394,7 @@ class ModelObjectGeneratorTest {
 				b string (0..1)
 			
 			type Bar extends Foo:
-				a string (0..1)
+				override a string (0..1)
 		'''.generateCode
 		//code.writeClasses('shouldExtendATypeWithSameAttribute')
 		code.compileToClasses

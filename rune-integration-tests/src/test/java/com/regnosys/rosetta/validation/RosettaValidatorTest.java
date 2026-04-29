@@ -1498,7 +1498,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 					i int (1..1)
 
 				type Bar extends Foo:
-					i int (1..1)
+					override i int (1..1)
 				""");
         validationTestHelper.assertNoErrors(model);
     }
@@ -1512,7 +1512,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				type Bar extends Foo:
 					i int (0..1)
 				""");
-        validationTestHelper.assertWarning(model, ATTRIBUTE, null, "Attribute 'i' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`");
+        validationTestHelper.assertError(model, ATTRIBUTE, null, "Attribute 'i' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`");
     }
 
     @Test
@@ -1524,7 +1524,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				type Bar extends Foo:
 					i int (1..*)
 				""");
-        validationTestHelper.assertWarning(model, ATTRIBUTE, null, "Attribute 'i' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`");
+        validationTestHelper.assertError(model, ATTRIBUTE, null, "Attribute 'i' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`");
     }
 
     @Test
@@ -1536,7 +1536,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				type Bar extends Foo:
 					i string (1..1)
 				""");
-        validationTestHelper.assertWarning(model, ATTRIBUTE, null, "Attribute 'i' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`");
+        validationTestHelper.assertError(model, ATTRIBUTE, null, "Attribute 'i' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`");
     }
 
     @Test
