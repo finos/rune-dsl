@@ -120,21 +120,6 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
     }
 
     @Check
-    public void deprecatedLabelAsWarning(LabelAnnotation labelAnnotation) {
-        if (labelAnnotation.isDeprecatedAs()) {
-            if (labelAnnotation.getPath() == null) {
-                warning("The `as` keyword without a path is deprecated",
-                        labelAnnotation,
-                        SimplePackage.Literals.LABEL_ANNOTATION__DEPRECATED_AS);
-            } else {
-                warning("The `as` keyword after a path is deprecated. Add the keyword `for` before the path instead",
-                        labelAnnotation,
-                        SimplePackage.Literals.LABEL_ANNOTATION__DEPRECATED_AS);
-            }
-        }
-    }
-
-    @Check
     public void ruleMustHaveInputTypeDeclared(RosettaRule rule) {
         if (rule.getInput() == null) {
             error("A rule must declare its input type: `rule " + rule.getName() + " from <input type>: ...`",

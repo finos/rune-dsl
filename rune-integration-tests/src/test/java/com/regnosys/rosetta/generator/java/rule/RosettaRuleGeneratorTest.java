@@ -67,29 +67,29 @@ public class RosettaRuleGeneratorTest {
             filter bar1 exists
             
             reporting rule BarBarOne from Bar:
-            extract bar1 as "1 BarOne"
+            extract bar1
             
             reporting rule BarBarTwo from Bar:
-            extract bar2 as "2 BarTwo"
+            extract bar2
             
             reporting rule BarBaz from Bar:
-            extract baz->baz1 as "3 BarBaz"
+            extract baz->baz1
             
             reporting rule BarQuxList from Bar:
             extract quxList
             then extract BarQuxReport {
                 bazQux1: QuxQux1,
                         bazQux2: QuxQux2
-            } as "4 BarQuxList"
+            }
             
             reporting rule QuxQux1 from Qux:
-            extract qux1 as "5 QuxQux1"
+            extract qux1
             
             reporting rule QuxQux2 from Qux:
-            extract qux2 as "6 QuxQux2"
+            extract qux2
             
             reporting rule BarQuux from Bar:
-            extract Create_Quux( baz ) as "7 BarQuux"
+            extract Create_Quux( baz )
             
             func Create_Quux:
             inputs:
@@ -416,7 +416,7 @@ public class RosettaRuleGeneratorTest {
                         [ruleReference QuxQux2]
                         
                          reporting rule New_BarBarOne from Bar:
-                         extract bar1 + "NEW" as "1 New BarOne"
+                         extract bar1 + "NEW"
                         
                          rule source RuleSource {
                         
@@ -654,11 +654,9 @@ public class RosettaRuleGeneratorTest {
                                 attr: item -> bar1
                             }
                         }
-                        as "Label 1"
                         
                         reporting rule EmptyWithAs from Bar:
                         empty
-                        as "Label 2"
                         
                         """,
                 """
@@ -1246,26 +1244,6 @@ public class RosettaRuleGeneratorTest {
     }
 
     @Test
-    void callRuleWithAs() {
-        var model = """
-                
-                
-                type TestObject: <"">
-                        fieldOne string (0..1)
-                
-                reporting rule Rule1 from TestObject:
-                extract fieldOne
-                
-                reporting rule Rule2 from TestObject:
-                Rule1 as "BLAH"
-                
-                """;
-        var code = codeGeneratorTestHelper.generateCode(model);
-        //code.writeClasses("callRuleWithAs")
-        codeGeneratorTestHelper.compileToClasses(code);
-    }
-
-    @Test
     void brokenRuleTypes() {
         var model = """
                 type Foo: <"">
@@ -1447,22 +1425,22 @@ public class RosettaRuleGeneratorTest {
                    filter barA exists
                 
                    reporting rule Aa from Bar:
-                   extract barA as "A"
+                   extract barA
                 
                    reporting rule Bb from Bar:
-                   extract barB as "B"
+                   extract barB
                 
                    reporting rule Cc from Bar:
-                   extract barC as "C"
+                   extract barC
                 
                    reporting rule Dd from Bar:
-                   extract barD as "D"
+                   extract barD
                 
                    reporting rule Ee from Bar:
-                   extract barE as "E"
+                   extract barE
                 
                    reporting rule Ff from Bar:
-                   extract barF as "F"
+                   extract barF
                 
                    type Bar:
                    barA date (0..1)

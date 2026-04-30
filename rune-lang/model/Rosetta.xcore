@@ -511,11 +511,9 @@ class RosettaReport extends RosettaRootElement {
 				+ getRegulatoryBody.corpusList.stream.map[RosettaCorpus man | man.name.toFirstUpper].collect(Collectors.joining()))
 	}
 }
-
 class RosettaRule extends RosettaRootElement, RosettaCallableWithArgs, RosettaDefinable, References {
 	boolean eligibility
 	contains RosettaExpression expression
-	String identifier
 	contains TypeCall input
 	
 	op int numberOfParameters() {

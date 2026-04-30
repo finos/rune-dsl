@@ -910,8 +910,7 @@ RosettaRule:
  	('reporting'|eligibility?='eligibility') 'rule' RosettaNamed ('from' input=TypeCall)? ':' =>RosettaDefinable? // Predicate necessary because of conflict between `<` as the start of documentation and as an operator.
  	(
 		References*
-		(expression = Expression
-		('as' identifier=STRING)?)
+		(expression = Expression)
  	)
 ;
 
@@ -919,7 +918,7 @@ RosettaRule:
  * Labels
  */
 LabelAnnotation:
-	'[' name='label' ('for' path=AnnotationPathExpression | path=AnnotationPathExpression? deprecatedAs?='as')? label=STRING ']'
+	'[' name='label' ('for' path=AnnotationPathExpression)? label=STRING ']'
 ;
 AnnotationPathExpression:
 	NestedAnnotationPath

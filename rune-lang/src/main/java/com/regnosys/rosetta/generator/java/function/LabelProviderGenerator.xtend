@@ -63,14 +63,6 @@ class LabelProviderGenerator extends RObjectJavaClassGenerator<RFunction, RGener
 				function.output.RMetaAnnotatedType.RType as RDataType,
 				newHashMap,
 				[map,context|
-					if (context.rule !== null && context.rule.identifier !== null) {
-						val origin = context.ruleOrigin
-						if (origin instanceof RuleReferenceAnnotation) {
-							if (origin.path === null) {
-								map.put(context.targetAttribute, context.rule)
-							}
-						}
-					}
 					map
 				]
 			)
@@ -158,13 +150,7 @@ class LabelProviderGenerator extends RObjectJavaClassGenerator<RFunction, RGener
 				buildLabelGraph(t, labelsPerNode, edgesPerNode, attributeToRuleMap)
 			}
 			
-			// 2. Register legacy `as` annotations from rule references
-			val ruleRef = attributeToRuleMap.get(attr)
-			if (ruleRef !== null) {
-				registerLegacyRuleAsLabel(ruleRef, attrPath, labels)
-			}
-			
-			// 3. Register label annotations
+			// 2. Register label annotations
 			attr.allLabelAnnotations.forEach[
 				registerLabelAnnotation(it, attrPath, labels)
 			]
@@ -211,11 +197,6 @@ class LabelProviderGenerator extends RObjectJavaClassGenerator<RFunction, RGener
 			.forEach[
 				labels.put(it, ann.label)
 			]
-	}
-	private def void registerLegacyRuleAsLabel(RosettaRule rule, DottedPath attrPath, Map<DottedPath, String> labels) {
-		if (rule.identifier !== null) {
-			labels.put(attrPath, rule.identifier)
-		}
 	}
 	
 	private def List<DottedPath> evaluateAnnotationPathExpression(DottedPath root, AnnotationPathExpression expr) {

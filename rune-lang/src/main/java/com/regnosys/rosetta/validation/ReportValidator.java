@@ -85,12 +85,6 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
                     });
                 }
             }
-
-            // Deprecate rules with a label if a path is used
-            RosettaRule rule = ann.getReportingRule();
-            if (rule != null && rule.getIdentifier() != null) {
-                warning("Specifying a label in a reporting rule is deprecated. Add a `label` annotation instead", ann, RULE_REFERENCE_ANNOTATION__REPORTING_RULE);
-            }
         }
     }
 

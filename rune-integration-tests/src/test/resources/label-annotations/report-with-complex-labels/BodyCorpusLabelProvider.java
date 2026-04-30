@@ -23,7 +23,7 @@ public class BodyCorpusLabelProvider extends GraphBasedLabelProvider {
 		opt1Node.addLabel(Arrays.asList("opt1Attr"), "Option 1 Attribute");
 		
 		LabelNode barNode = new LabelNode();
-		barNode.addLabel(Arrays.asList("barAttr"), "Bar attribute from rule");
+		barNode.addLabel(Arrays.asList("barAttr"), "Nested Bar attribute");
 		
 		startNode.addOutgoingEdge("qux", quxNode);
 		startNode.addOutgoingEdge("bar", barNode);
