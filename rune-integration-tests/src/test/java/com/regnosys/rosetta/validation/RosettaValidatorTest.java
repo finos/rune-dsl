@@ -1055,7 +1055,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 						+ foo
 				}
 				""");
-        validationTestHelper.assertWarning(model, ROSETTA_EXTERNAL_CLASS, null,
+        validationTestHelper.assertError(model, ROSETTA_EXTERNAL_CLASS, null,
                 "Duplicate type `Foo`.");
     }
 
