@@ -336,11 +336,10 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
 
     @Check
     public void checkAnnotationSource(ExternalAnnotationSource source) {
-        // NOTE: Should be error, but kept as warning for backward compatibility
         Set<RosettaType> visited = new HashSet<>();
         for (RosettaExternalRef t : source.getExternalRefs()) {
             if (!visited.add(t.getTypeRef())) {
-                warning("Duplicate type `" + t.getTypeRef().getName() + "`.", t, null);
+                error("Duplicate type `" + t.getTypeRef().getName() + "`.", t, null);
             }
         }
     }

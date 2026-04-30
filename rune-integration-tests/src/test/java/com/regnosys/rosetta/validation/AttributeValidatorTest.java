@@ -241,7 +241,7 @@ public class AttributeValidatorTest extends AbstractValidatorTest {
 						[metadata reference]
 				""",
 				"""
-				WARNING (null) 'WithKey must be annotated with [metadata key] as reference annotation is used' at 7:7, length 7, on Attribute
+				ERROR (null) 'WithKey must be annotated with [metadata key] as reference annotation is used' at 7:7, length 7, on Attribute
 				"""
 			);
 	}
