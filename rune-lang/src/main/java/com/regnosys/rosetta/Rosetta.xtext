@@ -431,7 +431,7 @@ RosettaMapTestFunc:
  */ 
  
 RosettaDocReference:
-	'[' name=('regulatoryReference'|'docReference') ('for' path=AnnotationPathExpression)? docReference=RegulatoryDocumentReference
+	'[' name=('docReference') ('for' path=AnnotationPathExpression)? docReference=RegulatoryDocumentReference
 		(rationales+=DocumentRationale)*
 		('structured_provision' structuredProvision=STRING)?
 		('provision' provision=STRING)?

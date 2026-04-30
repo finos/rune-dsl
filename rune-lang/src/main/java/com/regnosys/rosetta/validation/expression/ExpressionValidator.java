@@ -93,7 +93,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	@Check
 	public void checkWithMetaOperation(WithMetaOperation operation) {
 		RosettaExpression argument = operation.getArgument();
-		isSingleCheckError(argument, operation, ROSETTA_UNARY_OPERATION__ARGUMENT, "The with-meta operator can only be used with single cardinality arguments");
+		isSingleCheck(argument, operation, ROSETTA_UNARY_OPERATION__ARGUMENT, "The with-meta operator can only be used with single cardinality arguments");
 	}
 
 	@Check
@@ -101,7 +101,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 		RosettaFeature metaType = entry.getKey();
 
 		RMetaAnnotatedType expectedType = typeProvider.getRTypeOfFeature(metaType, null);
-		isSingleCheckError(entry.getValue(), entry, WITH_META_ENTRY__VALUE, String.format("Meta attribute '%s' was multi cardinality", metaType.getName()));
+		isSingleCheck(entry.getValue(), entry, WITH_META_ENTRY__VALUE, String.format("Meta attribute '%s' was multi cardinality", metaType.getName()));
 		subtypeCheck(expectedType, entry.getValue(), entry, WITH_META_ENTRY__VALUE, actual -> String.format("Meta attribute '%s' should be of type '%s'", metaType.getName(), expectedType.getRType().getName()));
 	}
 

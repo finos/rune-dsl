@@ -24,21 +24,6 @@ public class ReportValidatorTest extends AbstractValidatorTest {
 	}
 
 	@Test
-	void testRegulatoryReferenceIsDeprecated() {
-		assertIssues("""
-				body Organisation FooOrg
-				corpus Group FooGroup
-				
-				reporting rule StringInput from string:
-					[regulatoryReference FooOrg FooGroup]
-							empty
-				""",
-				"""
-				WARNING (null) 'Using `regulatoryReference` is deprecated. Use `docReference` instead' at 8:3, length 19, on RosettaDocReference
-				""");
-	}
-
-	@Test
 	void testRuleReferenceToRuleWithLabelIsDeprecated() {
 		assertIssues("""
 				type Foo:

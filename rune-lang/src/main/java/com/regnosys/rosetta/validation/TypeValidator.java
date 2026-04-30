@@ -62,8 +62,7 @@ public class TypeValidator extends AbstractDeclarativeRosettaValidator {
 		}
 		for (Attribute attr: data.getAttributes()) {
 			if (!attr.isOverride() && usedNamesInSuperType.contains(attr.getName())) {
-				// TODO: make this an error once `override` keyword is mandatory
-				warning("Attribute '" + attr.getName() + "' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`", attr, ROSETTA_NAMED__NAME);
+				error("Attribute '" + attr.getName() + "' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`", attr, ROSETTA_NAMED__NAME);
 			}
 		}
 	}

@@ -136,8 +136,8 @@ class RosettaProcessorTest {
 			attr3 string (1..1)
 		
 		type Bar extends Foo:
-			attr1 int (0..1)
-			attr2 A (0..2)
+			override attr1 int (0..1)
+			override attr2 A (0..2)
 			attr4 int (1..1)
 		'''.generateCode
 		val classes = code.compileToClasses

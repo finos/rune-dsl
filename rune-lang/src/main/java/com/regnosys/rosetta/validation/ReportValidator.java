@@ -62,13 +62,6 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
     private RosettaGrammarAccess grammar;
 
     @Check
-    public void checkRegulatoryReferenceAnnotation(RosettaDocReference rosettaDocReference) {
-        if ("regulatoryReference".equals(rosettaDocReference.getName())) {
-            warningKeyword("Using `regulatoryReference` is deprecated. Use `docReference` instead", rosettaDocReference, grammar.getRosettaDocReferenceAccess().getNameRegulatoryReferenceKeyword_1_0_0());
-        }
-    }
-
-    @Check
     public void checkRuleReferenceAnnotation(RuleReferenceAnnotation ann) {
         AnnotationPathExpression path = ann.getPath();
         if (path != null) {
@@ -198,8 +191,7 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
 
                     // check cardinality
                     if (!target.isMulti() && ruleFunc.getOutput().isMulti()) {
-                        // TODO: make an error
-                        warning("Expected single cardinality" + toPathMessage(path) + ", but rule has multi cardinality", ruleResult.getOrigin(), RULE_REFERENCE_ANNOTATION__EMPTY);
+                        error("Expected single cardinality" + toPathMessage(path) + ", but rule has multi cardinality", ruleResult.getOrigin(), RULE_REFERENCE_ANNOTATION__EMPTY);
                     }
                 }
             }
