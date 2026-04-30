@@ -132,10 +132,6 @@ public class AbstractExpressionValidator extends AbstractDeclarativeRosettaValid
 		return isSingleCheck(expr, sourceObject, feature, INSIGNIFICANT_INDEX, suggestion);
 	}
 
-	protected boolean isSingleCheckError(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, String suggestion) {
-		return isSingleCheckError(expr, sourceObject, feature, INSIGNIFICANT_INDEX, suggestion);
-	}
-
 	protected boolean isSingleCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, int featureIndex, String suggestion) {
 		if (cardinalityProvider.isMulti(expr)) {
 			String msg = "Expecting single cardinality";
@@ -148,18 +144,6 @@ public class AbstractExpressionValidator extends AbstractDeclarativeRosettaValid
 		return true;
 	}
 
-	protected boolean isSingleCheckError(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, int featureIndex, String suggestion) {
-		if (cardinalityProvider.isMulti(expr)) {
-			String msg = "Expecting single cardinality";
-			if (suggestion != null) {
-				msg += ". " + suggestion;
-			}
-			error(msg, sourceObject, feature, featureIndex);
-			return false;
-		}
-		return true;
-	}
-	
 	protected boolean commonTypeCheck(RosettaExpression expr1, RosettaExpression expr2, EObject sourceObject, EStructuralFeature feature) {
 		if (expr1 == null || expr2 == null) {
 			return true;
