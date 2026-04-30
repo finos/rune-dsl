@@ -898,7 +898,6 @@ RosettaReport:
 	'from' inputType=TypeCall
 	'when'
 	eligibilityRules+=[RosettaRule|QualifiedName] ('and' eligibilityRules+=[RosettaRule|QualifiedName])*
-	('using' 'standard' reportingStandard=[RosettaCorpus|QualifiedName])? // @Compat: this attribute is unnecessary
 	'with' 'type' reportType=[Data|QualifiedName]
 	('with' 'source' ruleSource=[RosettaExternalRuleSource|QualifiedName])?
 ;
