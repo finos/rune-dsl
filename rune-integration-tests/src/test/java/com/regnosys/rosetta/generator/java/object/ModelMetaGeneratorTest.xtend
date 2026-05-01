@@ -25,6 +25,7 @@ import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
+import com.rosetta.model.lib.validation.ValidationResult
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
@@ -218,8 +219,8 @@ class ModelMetaGeneratorTest {
 			'd', new BigDecimal("0"),
 			'f', List.of("abcde", "")
 		))
-		assertThat(validator.validate(null, validFoo).success, is(true))
-		assertThat(typeFormatValidator.validate(null, validFoo).success, is(true))
+		assertThat((validator.getValidationResults(null, validFoo).get(0) as ValidationResult<?>).success , is(true))
+		assertThat((typeFormatValidator.getValidationResults(null, validFoo).get(0) as ValidationResult<?>).success, is(true))
 		
 		val invalidFoo1 = classes.createInstanceUsingBuilder('Foo', of(
 			'a', List.of("a", "b", "c"),
@@ -228,13 +229,15 @@ class ModelMetaGeneratorTest {
 			// 'd', null,
 			'f', List.of()
 		))
-		val res1 = validator.validate(null, invalidFoo1)
-		assertThat(res1.success, is(false))
-		assertEquals("Maximum of 2 'a' are expected but found 3.; 'b' is a required field but does not exist.; 'c' is a required field but does not exist.",
-			res1.failureReason.get
-		)
-		assertThat(res1.validationType, is(ValidationType.CARDINALITY))
-		assertThat(typeFormatValidator.validate(null, invalidFoo1).success, is(true))
+		val res1 = (validator.getValidationResults(null, invalidFoo1) as List<ValidationResult<?>>).filter[success===false]
+		assertThat(res1.map[failureReason.get()], hasItem(equalTo("Maximum of 2 'a' are expected but found 3.")))
+		assertThat(res1.map[failureReason.get()], hasItem(equalTo("'b' is a required field but does not exist.")))
+		assertThat(res1.map[failureReason.get()], hasItem(equalTo("'c' is a required field but does not exist.")))
+		
+		
+		assertThat(res1.map[validationType], everyItem(is(ValidationType.CARDINALITY)))
+		assertThat((typeFormatValidator.getValidationResults(null, invalidFoo1).get(0) as ValidationResult<?>).success, is(true))
+		
 		
 		val invalidFoo2 = classes.createInstanceUsingBuilder('Foo', of(
 			'a', List.of("a", "b"),
@@ -243,13 +246,11 @@ class ModelMetaGeneratorTest {
 			'd', new BigDecimal("-1.1"),
 			'f', List.of("aaaaaa", "bb", "ccccccc")
 		))
-		assertThat(validator.validate(null, invalidFoo2).success, is(true))
-		val res2 = typeFormatValidator.validate(null, invalidFoo2)
-		assertThat(res2.success, is(false))
-		assertEquals("Expected a number greater than or equal to -1 for 'd', but found -1.1.; Field 'f' must have a value with maximum length of 5 characters but value 'aaaaaa' has length of 6 characters. - Field 'f' must have a value with maximum length of 5 characters but value 'ccccccc' has length of 7 characters.",
-			res2.failureReason.get
-		)
-		assertThat(res2.validationType, is(ValidationType.TYPE_FORMAT))
+		assertThat((validator.getValidationResults(null, invalidFoo2).get(0) as ValidationResult<?>).success, is(true))
+		val res2 = (typeFormatValidator.getValidationResults(null, invalidFoo2) as List<ValidationResult<?>>).filter[success===false]
+		assertThat(res2.map[failureReason.get()], hasItem(equalTo("Expected a number greater than or equal to -1 for 'd', but found -1.1.")))
+		assertThat(res2.map[failureReason.get()], hasItem(equalTo("Field 'f' must have a value with maximum length of 5 characters but value 'aaaaaa' has length of 6 characters. - Field 'f' must have a value with maximum length of 5 characters but value 'ccccccc' has length of 7 characters.")))
+		assertThat(res2.map[validationType], everyItem(is(ValidationType.TYPE_FORMAT)))
 	}
 	
 	@Test
@@ -272,11 +273,10 @@ class ModelMetaGeneratorTest {
 			'a', List.of("AZ", "ABZ", "AA"),
 			'b', "AAAAAA"
 		))
-		val resA1 = aTypeFormatValidator.validate(null, invalidA1)
-		assertThat(resA1.success, is(false))
-        assertEquals("Field 'a' requires a value with minimum length of 3 characters but value 'AZ' has length of 2 characters. - Field 'a' requires a value with minimum length of 3 characters but value 'AA' has length of 2 characters. Field 'a' with value 'AA' does not match the pattern /A.*Z/.; Field 'b' must have a value with maximum length of 5 characters but value 'AAAAAA' has length of 6 characters.",
-            resA1.failureReason.get
-		)
+		val resA1 = (aTypeFormatValidator.getValidationResults(null, invalidA1) as List<ValidationResult<?>>).filter[success===false]
+		
+		assertThat(resA1.map[failureReason.get()], hasItem(equalTo("Field 'a' requires a value with minimum length of 3 characters but value 'AZ' has length of 2 characters. - Field 'a' requires a value with minimum length of 3 characters but value 'AA' has length of 2 characters. Field 'a' with value 'AA' does not match the pattern /A.*Z/.")))
+		assertThat(resA1.map[failureReason.get()], hasItem(equalTo("Field 'b' must have a value with maximum length of 5 characters but value 'AAAAAA' has length of 6 characters.")))
 		
 		val bMeta = RosettaMetaData.cast(classes.get(rootPackage.child("meta") + '.BMeta').declaredConstructor.newInstance)
 		val bTypeFormatValidator = bMeta.typeFormatValidator
@@ -286,27 +286,26 @@ class ModelMetaGeneratorTest {
 			'b', new BigDecimal('13.1415'),
 			'c', new BigDecimal('-1')
 		))
-		val resB1 = bTypeFormatValidator.validate(null, invalidB1)
-		assertThat(resB1.success, is(false))
-		assertEquals("Expected a maximum of 3 digits for 'a', but the number -1000 has 4.; Expected a maximum of 2 fractional digits for 'b', but the number 13.1415 has 4.; Expected a number greater than or equal to 0 for 'c', but found -1.",
-			resB1.failureReason.get
-		)
+		val resB1 = (bTypeFormatValidator.getValidationResults(null, invalidB1) as List<ValidationResult<?>>).filter[success===false]
+		assertThat(resB1.map[failureReason.get()], hasItem(equalTo("Expected a maximum of 3 digits for 'a', but the number -1000 has 4.")))
+		assertThat(resB1.map[failureReason.get()], hasItem(equalTo("Expected a maximum of 2 fractional digits for 'b', but the number 13.1415 has 4.")))
+		assertThat(resB1.map[failureReason.get()], hasItem(equalTo("Expected a number greater than or equal to 0 for 'c', but found -1.")))
+		
 		val invalidB2 = classes.createInstanceUsingBuilder('B', of(
 			'a', new BigDecimal('10.01'),
 			'b', new BigDecimal('-123.14'),
 			'c', new BigDecimal('11')
 		))
-		val resB2 = bTypeFormatValidator.validate(null, invalidB2)
-		assertThat(resB2.success, is(false))
-		assertEquals("Expected a maximum of 3 digits for 'a', but the number 10.01 has 4.; Expected a number less than or equal to 10 for 'c', but found 11.",
-			resB2.failureReason.get
-		)
+		val resB2 = (bTypeFormatValidator.getValidationResults(null, invalidB2) as List<ValidationResult<?>>).filter[success===false]
+		assertThat(resB2.map[failureReason.get()], hasItem(equalTo("Expected a maximum of 3 digits for 'a', but the number 10.01 has 4.")))
+		assertThat(resB2.map[failureReason.get()], hasItem(equalTo("Expected a number less than or equal to 10 for 'c', but found 11.")))
+		
 		val invalidB3 = classes.createInstanceUsingBuilder('B', of(
 			'a', new BigDecimal('0.001'),
 			'b', new BigDecimal('0'),
 			'c', new BigDecimal('0')
 		))
-		val resB3 = bTypeFormatValidator.validate(null, invalidB3)
+		val resB3 = bTypeFormatValidator.getValidationResults(null, invalidB3).get(0) as ValidationResult<?>
 		assertThat(resB3.success, is(false))
 		assertEquals("Expected a maximum of 3 digits for 'a', but the number 0.001 has 4.",
 			resB3.failureReason.get
@@ -330,7 +329,7 @@ class ModelMetaGeneratorTest {
 			'long', 4l,
 			'bigInteger', BigInteger.valueOf(5)
 		))
-		val resA1 = aTypeFormatValidator.validate(null, invalidA1)
+		val resA1 = aTypeFormatValidator.getValidationResults(null, invalidA1).get(0) as ValidationResult<?>
 		assertThat(resA1.success, is(true))
 	}
 }

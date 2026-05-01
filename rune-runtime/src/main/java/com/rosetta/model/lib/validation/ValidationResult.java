@@ -16,10 +16,9 @@
 
 package com.rosetta.model.lib.validation;
 
-import java.util.Optional;
-import java.util.function.Function;
-
 import com.rosetta.model.lib.path.RosettaPath;
+
+import java.util.Optional;
 
 public interface ValidationResult<T> {
 
@@ -126,29 +125,6 @@ public interface ValidationResult<T> {
 			failReason = failReason.replaceAll("^\\s+", "");
 
 			return Optional.of(conditionName + ":- " + failReason);
-		}
-	}
-	
-	@Deprecated // Since 9.7.0
-	enum ChoiceRuleValidationMethod {
-
-		OPTIONAL("Zero or one field must be set", fieldCount -> fieldCount == 1 || fieldCount == 0),
-		REQUIRED("One and only one field must be set", fieldCount -> fieldCount == 1);
-
-		private final String desc;
-		private final Function<Integer, Boolean> check;
-
-		ChoiceRuleValidationMethod(String desc, Function<Integer, Boolean> check) {
-			this.desc = desc;
-			this.check = check;
-		}
-
-		public boolean check(int fields) {
-			return check.apply(fields);
-		}
-		
-		public String getDescription() {
-			return this.desc;
 		}
 	}
 	

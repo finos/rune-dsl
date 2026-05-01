@@ -485,10 +485,6 @@ public class ExpressionOperators {
 
 	// one-of and choice
 
-	@Deprecated // Since 9.7.0
-	public static <T> ComparisonResult choice(Mapper<T> mapper, List<String> choiceFieldNames, ValidationResult.ChoiceRuleValidationMethod necessity) {
-		return choice(mapper, choiceFieldNames, necessity == ValidationResult.ChoiceRuleValidationMethod.OPTIONAL ? ChoiceRuleValidationMethod.OPTIONAL : ChoiceRuleValidationMethod.REQUIRED);
-	}
 	public static <T> ComparisonResult choice(Mapper<T> mapper, List<String> choiceFieldNames, ChoiceRuleValidationMethod necessity) {
 		T object = mapper.get();
 		List<String> populatedFieldNames = new LinkedList<>();

@@ -1,20 +1,17 @@
 package com.regnosys.rosetta.generator.java.condition;
 
-import java.util.stream.Stream;
-
-import javax.inject.Inject;
-
-import com.rosetta.model.lib.validation.Validator;
-import org.eclipse.xtext.testing.InjectWith;
-import org.eclipse.xtext.testing.extensions.InjectionExtension;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.testmodel.JavaTestModel;
 import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.path.RosettaPath;
+import org.eclipse.xtext.testing.InjectWith;
+import org.eclipse.xtext.testing.extensions.InjectionExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import javax.inject.Inject;
+import java.util.stream.Stream;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
@@ -122,7 +119,7 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 		
 		var validator = getTypeFormatValidator(t);
 		
-		var results = ((Validator<?>)validator).getValidationResults(RosettaPath.valueOf("T"), t);
+		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
 		
 		assertResults(
 			results,
@@ -158,7 +155,7 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 		
 		var validator = getTypeFormatValidator(t);
 		
-		var results = ((Validator<?>)validator).getValidationResults(RosettaPath.valueOf("T"), t);
+		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
 		
 		assertResults(
 			results,
@@ -193,7 +190,7 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 		
 		var validator = getTypeFormatValidator(t);
 		
-		var results = ((Validator<?>)validator).getValidationResults(RosettaPath.valueOf("T"), t);
+		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
 		
 		assertResults(
 			results,
@@ -225,7 +222,7 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 		
 		var validator = getTypeFormatValidator(t);
 		
-		var results = ((Validator<?>)validator).getValidationResults(RosettaPath.valueOf("T"), t);
+		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
 		
 		assertResults(
 			results,
@@ -263,7 +260,7 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 		
 		var validator = getTypeFormatValidator(t);
 		
-		var results = ((Validator<?>)validator).getValidationResults(RosettaPath.valueOf("T"), t);
+		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
 		
 		assertResults(
 			results,
@@ -298,7 +295,7 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 		
 		var validator = getTypeFormatValidator(t);
 		
-		var results = ((Validator<?>)validator).getValidationResults(RosettaPath.valueOf("T"), t);
+		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
 		
 		assertResults(
 			results,
@@ -333,7 +330,7 @@ public class TypeAliasConditionTest extends AbstractConditionTest {
 		
 		var validator = getTypeFormatValidator(t);
 		
-		var results = ((Validator<?>)validator).getValidationResults(RosettaPath.valueOf("T"), t);
+		var results = validator.getValidationResults(RosettaPath.valueOf("T"), t);
 		
 		assertResults(
 			results,
