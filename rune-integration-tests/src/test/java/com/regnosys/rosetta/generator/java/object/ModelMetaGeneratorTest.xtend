@@ -26,6 +26,7 @@ import static org.hamcrest.MatcherAssert.*
 import static org.junit.jupiter.api.Assertions.*
 import javax.inject.Inject
 import com.rosetta.model.lib.validation.ValidationResult
+import com.rosetta.model.lib.validation.ValidatorFactory
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
@@ -33,6 +34,7 @@ class ModelMetaGeneratorTest {
 	
 	@Inject extension ModelHelper
 	@Inject extension CodeGeneratorTestHelper
+	@Inject ValidatorFactory validatorFactory
 	
 	final QualifyFunctionFactory funcFactory
 	
@@ -209,8 +211,8 @@ class ModelMetaGeneratorTest {
 		val classes = code.compileToClasses
 
 		val fooMeta = RosettaMetaData.cast(classes.get(rootPackage.child("meta") + '.FooMeta').declaredConstructor.newInstance)
-		val validator = fooMeta.validator
-		val typeFormatValidator = fooMeta.typeFormatValidator
+		val validator = fooMeta.validator(validatorFactory)
+		val typeFormatValidator = fooMeta.typeFormatValidator(validatorFactory)
 		
 		val validFoo = classes.createInstanceUsingBuilder('Foo', of(
 			'a', List.of("test"),
@@ -267,7 +269,7 @@ class ModelMetaGeneratorTest {
 		'''.generateCode.compileToClasses
 		
 		val aMeta = RosettaMetaData.cast(classes.get(rootPackage.child("meta") + '.AMeta').declaredConstructor.newInstance)
-		val aTypeFormatValidator = aMeta.typeFormatValidator
+		val aTypeFormatValidator = aMeta.typeFormatValidator(validatorFactory)
 		
 		val invalidA1 = classes.createInstanceUsingBuilder('A', of(
 			'a', List.of("AZ", "ABZ", "AA"),
@@ -279,7 +281,7 @@ class ModelMetaGeneratorTest {
 		assertThat(resA1.map[failureReason.get()], hasItem(equalTo("Field 'b' must have a value with maximum length of 5 characters but value 'AAAAAA' has length of 6 characters.")))
 		
 		val bMeta = RosettaMetaData.cast(classes.get(rootPackage.child("meta") + '.BMeta').declaredConstructor.newInstance)
-		val bTypeFormatValidator = bMeta.typeFormatValidator
+		val bTypeFormatValidator = bMeta.typeFormatValidator(validatorFactory)
 		
 		val invalidB1 = classes.createInstanceUsingBuilder('B', of(
 			'a', new BigDecimal('-1000'),
@@ -322,7 +324,7 @@ class ModelMetaGeneratorTest {
 		'''.generateCode.compileToClasses
 		
 		val aMeta = RosettaMetaData.cast(classes.get(rootPackage.child("meta") + '.AMeta').declaredConstructor.newInstance)
-		val aTypeFormatValidator = aMeta.typeFormatValidator
+		val aTypeFormatValidator = aMeta.typeFormatValidator(validatorFactory)
 		
 		val invalidA1 = classes.createInstanceUsingBuilder('A', of(
 			'integers', List.of(1, 2, 3),

@@ -45,18 +45,6 @@ public class QuxMeta implements RosettaMetaData<Qux> {
 		return factory.<Qux>create(QuxTypeFormatValidator.class);
 	}
 
-	@Deprecated
-	@Override
-	public Validator<? super Qux> validator() {
-		return new QuxValidator();
-	}
-
-	@Deprecated
-	@Override
-	public Validator<? super Qux> typeFormatValidator() {
-		return new QuxTypeFormatValidator();
-	}
-	
 	@Override
 	public ValidatorWithArg<? super Qux, Set<String>> onlyExistsValidator() {
 		return new QuxOnlyExistsValidator();

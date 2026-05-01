@@ -45,18 +45,6 @@ public class GetTypeEscapingMeta implements RosettaMetaData<GetTypeEscaping> {
 		return factory.<GetTypeEscaping>create(GetTypeEscapingTypeFormatValidator.class);
 	}
 
-	@Deprecated
-	@Override
-	public Validator<? super GetTypeEscaping> validator() {
-		return new GetTypeEscapingValidator();
-	}
-
-	@Deprecated
-	@Override
-	public Validator<? super GetTypeEscaping> typeFormatValidator() {
-		return new GetTypeEscapingTypeFormatValidator();
-	}
-	
 	@Override
 	public ValidatorWithArg<? super GetTypeEscaping, Set<String>> onlyExistsValidator() {
 		return new GetTypeEscapingOnlyExistsValidator();

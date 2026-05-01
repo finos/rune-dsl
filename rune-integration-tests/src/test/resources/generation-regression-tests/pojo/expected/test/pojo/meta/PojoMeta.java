@@ -45,18 +45,6 @@ public class PojoMeta implements RosettaMetaData<Pojo> {
 		return factory.<Pojo>create(PojoTypeFormatValidator.class);
 	}
 
-	@Deprecated
-	@Override
-	public Validator<? super Pojo> validator() {
-		return new PojoValidator();
-	}
-
-	@Deprecated
-	@Override
-	public Validator<? super Pojo> typeFormatValidator() {
-		return new PojoTypeFormatValidator();
-	}
-	
 	@Override
 	public ValidatorWithArg<? super Pojo, Set<String>> onlyExistsValidator() {
 		return new PojoOnlyExistsValidator();

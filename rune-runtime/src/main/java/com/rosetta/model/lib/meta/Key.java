@@ -251,7 +251,7 @@ public interface Key extends RosettaModelObject{
 		}
 
 		@Override
-		public Validator<? super Key> validator() {
+		public Validator<? super Key> validator(ValidatorFactory factory) {
 			return new Validator<Key>() {
 
 				private ValidationResult<Key> getResult(RosettaPath path, Key key) {
@@ -263,16 +263,16 @@ public interface Key extends RosettaModelObject{
 					}
 					return ValidationResult.success("Key", ValidationType.KEY, "Key", path, "");
 				}
-				
+
 				@Override
 				public List<ValidationResult<?>> getValidationResults(RosettaPath path, Key key) {
 					return Arrays.asList(getResult(path, key));
 				}
 			};
 		}
-		
+
 		@Override
-		public Validator<? super Key> typeFormatValidator() {
+		public Validator<? super Key> typeFormatValidator(ValidatorFactory factory) {
 			return null;
 		}
 

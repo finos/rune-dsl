@@ -45,18 +45,6 @@ public class BazMeta implements RosettaMetaData<Baz> {
 		return factory.<Baz>create(BazTypeFormatValidator.class);
 	}
 
-	@Deprecated
-	@Override
-	public Validator<? super Baz> validator() {
-		return new BazValidator();
-	}
-
-	@Deprecated
-	@Override
-	public Validator<? super Baz> typeFormatValidator() {
-		return new BazTypeFormatValidator();
-	}
-	
 	@Override
 	public ValidatorWithArg<? super Baz, Set<String>> onlyExistsValidator() {
 		return new BazOnlyExistsValidator();
