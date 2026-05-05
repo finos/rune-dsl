@@ -1977,7 +1977,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				filter bar1 exists
 
 				reporting rule Aa from Bar:
-				extract bar1 as "A"
+				extract bar1
 
 				type Bar:
 				bar1 string (0..*)
@@ -2004,22 +2004,22 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				filter barA exists
 
 				reporting rule Aa from Bar:
-				extract barA as "A"
+				extract barA
 
 				reporting rule Bb from Bar:
-				extract barB as "B"
+				extract barB
 
 				reporting rule Cc from Bar:
-				extract barC as "C"
+				extract barC
 
 				reporting rule Dd from Bar:
-				extract barD as "D"
+				extract barD
 
 				reporting rule Ee from Bar:
-				extract barE as "E"
+				extract barE
 
 				reporting rule Ff from Bar:
-				extract barF as "F"
+				extract barF
 
 				type Bar:
 				barA date (0..1)
@@ -2072,7 +2072,6 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 
 				reporting rule A from Bar:
 				"Not Modelled"
-				as "A"
 
 				type Bar:
 				bar1 string (0..1)

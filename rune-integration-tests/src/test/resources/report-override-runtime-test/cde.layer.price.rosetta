@@ -9,4 +9,3 @@ enum NotationEnum:
 
 reporting rule PriceNotationBase from Instruction:
     extract NotationEnum -> Y
-        as "The notation"

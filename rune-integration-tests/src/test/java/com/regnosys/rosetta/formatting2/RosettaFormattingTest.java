@@ -105,14 +105,12 @@ public class RosettaFormattingTest {
 				namespace drr.regulation.techsprint.g20.mas
 
 
-				reporting rule OptionPremium from number: <"Option premium">
-				    "N/A" as "I.6.3 Option Premium"
+				reporting rule OptionPremium from number: <"Option premium"> "N/A"
 				""", """
 				namespace drr.regulation.techsprint.g20.mas
 
 				reporting rule OptionPremium from number: <"Option premium">
 					"N/A"
-						as "I.6.3 Option Premium"
 				""");
 	}
 
@@ -165,7 +163,6 @@ public class RosettaFormattingTest {
 							structured_provision "MiFIR.ReportStatus is by definition 'NEWT' unless the report is a Cancellation when MiFIR.ReportStatus is by definition 'CANC'"
 							provision "Indication as to whether the transaction report is new or a cancellation."]
 					"Not Modelled"
-						as "Report Status"
 				""", """
 				namespace "com.regnosys.rosetta.model"
 				version "test"
@@ -189,7 +186,6 @@ public class RosettaFormattingTest {
 						structured_provision "MiFIR.ReportStatus is by definition 'NEWT' unless the report is a Cancellation when MiFIR.ReportStatus is by definition 'CANC'"
 						provision "Indication as to whether the transaction report is new or a cancellation."]
 					"Not Modelled"
-						as "Report Status"
 				""");
 	}
 
