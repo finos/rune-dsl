@@ -123,7 +123,7 @@ class TypeValidatorTest extends AbstractValidatorTest {
                         type Foo extends StringOrNumber:
                         """,
                 """
-                        WARNING (null) 'Extending a choice type is deprecated' at 8:18, length 14, on Data
+                        ERROR (null) 'Extending a choice type is not allowed' at 8:18, length 14, on Data
                         """);
     }
 
