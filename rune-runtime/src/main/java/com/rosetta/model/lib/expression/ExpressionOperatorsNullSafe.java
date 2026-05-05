@@ -21,11 +21,8 @@ import com.rosetta.model.lib.mapper.Mapper;
 import com.rosetta.model.lib.mapper.Mapper.Path;
 import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.mapper.MapperS;
-import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.validation.ChoiceRuleValidationMethod;
 import com.rosetta.model.lib.validation.ExistenceChecker;
-import com.rosetta.model.lib.validation.ValidationResult;
-import com.rosetta.model.lib.validation.ValidatorWithArg;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -37,7 +34,6 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ExpressionOperatorsNullSafe {
 	
@@ -89,36 +85,6 @@ public class ExpressionOperatorsNullSafe {
 	
 	// onlyExists
 	
-	@Deprecated // Since 9.11.3
-	public static ComparisonResult onlyExists(List<? extends Mapper<?>> o) {
-		// Validation rule checks that all parents match
-		Set<RosettaModelObject> parents = o.stream()
-				.map(Mapper::getParentMulti)
-				.flatMap(Collection::stream)
-				.map(RosettaModelObject.class::cast)
-			    .collect(Collectors.toSet());
-		
-		if (parents.size() == 0) {
-			return ComparisonResult.failure("No fields set.");
-		}
-
-		// Find attributes to check
-		Set<String> fields = o.stream()
-				.flatMap(m -> Stream.concat(m.getPaths().stream(), m.getErrorPaths().stream()))
-				.map(ExpressionOperatorsNullSafe::getAttributeName)
-				.collect(Collectors.toSet());
-		
-		// The number of attributes to check, should equal the number of mappers
-		if (fields.size() != o.size()) {
-			return ComparisonResult.failure("All required fields not set.");
-		}
-		
-		// Run validation then and results together 
-		return parents.stream()
-			.map(p -> validateOnlyExists(p, fields))
-			.reduce(ComparisonResult.success(), (a, b) -> a.andNullSafe(b));
-	}
-	
 	public static <T> ComparisonResult onlyExists(Mapper<T> mapper, List<String> allFieldNames, List<String> requiredFields) {
 		List<T> objects = mapper.getMulti();
 		
@@ -168,22 +134,6 @@ public class ExpressionOperatorsNullSafe {
 		return "value".equals(attr) || "reference".equals(attr) || "globalReference".equals(attr) ? 
 				p.getNames().get(p.getNames().size() - 2) : 
 				attr;
-	}
-	
-	@Deprecated // Since 9.11.3
-	private static <T extends RosettaModelObject> ComparisonResult validateOnlyExists(T parent, Set<String> fields) {
-		@SuppressWarnings("unchecked")
-		RosettaMetaData<T> meta = (RosettaMetaData<T>) parent.metaData();
-		ValidatorWithArg<? super T, Set<String>> onlyExistsValidator = meta.onlyExistsValidator();
-		if (onlyExistsValidator != null) {
-			ValidationResult<? extends RosettaModelObject> validationResult = onlyExistsValidator.validate(null, parent, fields);
-			// Translate validationResult into comparisonResult
-			return validationResult.isSuccess() ?
-					ComparisonResult.success() : 
-					ComparisonResult.failure(validationResult.getFailureReason().orElse(""));
-		} else {
-			return ComparisonResult.success();
-		}
 	}
 	
 	/**
@@ -473,10 +423,6 @@ public class ExpressionOperatorsNullSafe {
 	
 	// one-of and choice
 
-	@Deprecated // Since 9.7.0
-	public static <T> ComparisonResult choice(Mapper<T> mapper, List<String> choiceFieldNames, ValidationResult.ChoiceRuleValidationMethod necessity) {
-		return choice(mapper, choiceFieldNames, necessity == ValidationResult.ChoiceRuleValidationMethod.OPTIONAL ? ChoiceRuleValidationMethod.OPTIONAL : ChoiceRuleValidationMethod.REQUIRED);
-	}
 	public static <T> ComparisonResult choice(Mapper<T> mapper, List<String> choiceFieldNames, ChoiceRuleValidationMethod necessity) {
 		T object = mapper.get();
 		List<String> populatedFieldNames = new LinkedList<>();

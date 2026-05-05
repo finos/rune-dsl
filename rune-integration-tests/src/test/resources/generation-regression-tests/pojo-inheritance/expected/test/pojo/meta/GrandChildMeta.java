@@ -45,18 +45,6 @@ public class GrandChildMeta implements RosettaMetaData<GrandChild> {
 		return factory.<GrandChild>create(GrandChildTypeFormatValidator.class);
 	}
 
-	@Deprecated
-	@Override
-	public Validator<? super GrandChild> validator() {
-		return new GrandChildValidator();
-	}
-
-	@Deprecated
-	@Override
-	public Validator<? super GrandChild> typeFormatValidator() {
-		return new GrandChildTypeFormatValidator();
-	}
-	
 	@Override
 	public ValidatorWithArg<? super GrandChild, Set<String>> onlyExistsValidator() {
 		return new GrandChildOnlyExistsValidator();

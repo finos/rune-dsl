@@ -45,18 +45,6 @@ public class Level1Meta implements RosettaMetaData<Level1> {
 		return factory.<Level1>create(Level1TypeFormatValidator.class);
 	}
 
-	@Deprecated
-	@Override
-	public Validator<? super Level1> validator() {
-		return new Level1Validator();
-	}
-
-	@Deprecated
-	@Override
-	public Validator<? super Level1> typeFormatValidator() {
-		return new Level1TypeFormatValidator();
-	}
-	
 	@Override
 	public ValidatorWithArg<? super Level1, Set<String>> onlyExistsValidator() {
 		return new Level1OnlyExistsValidator();

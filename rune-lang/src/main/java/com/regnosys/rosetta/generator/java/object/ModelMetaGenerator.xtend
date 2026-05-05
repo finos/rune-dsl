@@ -84,18 +84,6 @@ class ModelMetaGenerator extends RObjectJavaClassGenerator<RDataType, RGenerated
 					return factory.<«dataClass»>create(«typeFormatValidator».class);
 				}
 
-				@Deprecated
-				@Override
-				public «Validator»<? super «dataClass»> validator() {
-					return new «validator»();
-				}
-
-				@Deprecated
-				@Override
-				public «Validator»<? super «dataClass»> typeFormatValidator() {
-					return new «typeFormatValidator»();
-				}
-				
 				@Override
 				public «ValidatorWithArg»<? super «dataClass», «Set»<String>> onlyExistsValidator() {
 					return new «onlyExistsValidator»();

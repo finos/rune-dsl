@@ -35,14 +35,4 @@ public class ExistenceChecker {
 		}
 		return true;
 	}
-	
-	// @Compat. Older models are compiled against these method overloads.
-	public static boolean isSet(RosettaModelObjectBuilder field) {
-		return isSet((Object)field);
-	}
-	
-	// @Compat. Older models are compiled against these method overloads.
-	public static boolean isSet(List<? extends Object> field) {
-		return isSet((Object)field);
-	}
 }

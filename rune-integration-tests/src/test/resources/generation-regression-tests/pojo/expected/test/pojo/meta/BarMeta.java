@@ -45,18 +45,6 @@ public class BarMeta implements RosettaMetaData<Bar> {
 		return factory.<Bar>create(BarTypeFormatValidator.class);
 	}
 
-	@Deprecated
-	@Override
-	public Validator<? super Bar> validator() {
-		return new BarValidator();
-	}
-
-	@Deprecated
-	@Override
-	public Validator<? super Bar> typeFormatValidator() {
-		return new BarTypeFormatValidator();
-	}
-	
 	@Override
 	public ValidatorWithArg<? super Bar, Set<String>> onlyExistsValidator() {
 		return new BarOnlyExistsValidator();

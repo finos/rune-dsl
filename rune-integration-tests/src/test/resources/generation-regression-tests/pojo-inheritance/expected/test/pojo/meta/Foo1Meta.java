@@ -45,18 +45,6 @@ public class Foo1Meta implements RosettaMetaData<Foo1> {
 		return factory.<Foo1>create(Foo1TypeFormatValidator.class);
 	}
 
-	@Deprecated
-	@Override
-	public Validator<? super Foo1> validator() {
-		return new Foo1Validator();
-	}
-
-	@Deprecated
-	@Override
-	public Validator<? super Foo1> typeFormatValidator() {
-		return new Foo1TypeFormatValidator();
-	}
-	
 	@Override
 	public ValidatorWithArg<? super Foo1, Set<String>> onlyExistsValidator() {
 		return new Foo1OnlyExistsValidator();
