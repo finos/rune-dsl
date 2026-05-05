@@ -83,7 +83,6 @@
   ],
   "ignoreDeps": [
     "org.eclipse.m2e:lifecycle-mapping",
-    "org.finos.rune:org.finos.rune.parent",
-    "com.regnosys.rosetta:rosetta-backport-parent"
+    "org.finos.rune:org.finos.rune.parent"
   ]
 }
