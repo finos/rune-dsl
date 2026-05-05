@@ -30,8 +30,9 @@ com.regnosys.rosetta.web/
 
 # Editors/IDE
 .idea/
-.vscode/
 *.swp
+.vscode/
+/rosetta-ide/vscode/node_modules/
 
 # Docusaurus website
 website/.docusaurus
