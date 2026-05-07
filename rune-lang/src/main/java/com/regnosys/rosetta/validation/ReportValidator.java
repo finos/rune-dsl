@@ -23,6 +23,7 @@ import com.regnosys.rosetta.rules.RulePathMap;
 import com.regnosys.rosetta.rules.RuleReferenceService;
 import com.regnosys.rosetta.rules.RuleReferenceService.RuleReferenceContext;
 import com.regnosys.rosetta.rules.RuleResult;
+import com.regnosys.rosetta.services.RosettaGrammarAccess;
 import com.regnosys.rosetta.types.*;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil;
@@ -33,7 +34,6 @@ import org.eclipse.xtext.validation.Check;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
@@ -58,6 +58,9 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
     @Inject
     private AnnotationPathExpressionUtil annotationPathUtil;
 
+    @Inject
+    private RosettaGrammarAccess grammar;
+
     @Check
     public void checkRuleReferenceAnnotation(RuleReferenceAnnotation ann) {
         AnnotationPathExpression path = ann.getPath();
@@ -81,12 +84,6 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
                         }
                     });
                 }
-            }
-
-            // Deprecate rules with a label if a path is used
-            RosettaRule rule = ann.getReportingRule();
-            if (rule != null && rule.getIdentifier() != null) {
-                warning("Specifying a label in a reporting rule is deprecated. Add a `label` annotation instead", ann, RULE_REFERENCE_ANNOTATION__REPORTING_RULE);
             }
         }
     }
@@ -188,8 +185,7 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
 
                     // check cardinality
                     if (!target.isMulti() && ruleFunc.getOutput().isMulti()) {
-                        // TODO: make an error
-                        warning("Expected single cardinality" + toPathMessage(path) + ", but rule has multi cardinality", ruleResult.getOrigin(), RULE_REFERENCE_ANNOTATION__EMPTY);
+                        error("Expected single cardinality" + toPathMessage(path) + ", but rule has multi cardinality", ruleResult.getOrigin(), RULE_REFERENCE_ANNOTATION__EMPTY);
                     }
                 }
             }

@@ -45,18 +45,6 @@ public class ResultEscapingMeta implements RosettaMetaData<ResultEscaping> {
 		return factory.<ResultEscaping>create(ResultEscapingTypeFormatValidator.class);
 	}
 
-	@Deprecated
-	@Override
-	public Validator<? super ResultEscaping> validator() {
-		return new ResultEscapingValidator();
-	}
-
-	@Deprecated
-	@Override
-	public Validator<? super ResultEscaping> typeFormatValidator() {
-		return new ResultEscapingTypeFormatValidator();
-	}
-	
 	@Override
 	public ValidatorWithArg<? super ResultEscaping, Set<String>> onlyExistsValidator() {
 		return new ResultEscapingOnlyExistsValidator();

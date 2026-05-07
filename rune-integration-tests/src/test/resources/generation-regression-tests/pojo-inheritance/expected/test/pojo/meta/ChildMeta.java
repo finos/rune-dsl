@@ -45,18 +45,6 @@ public class ChildMeta implements RosettaMetaData<Child> {
 		return factory.<Child>create(ChildTypeFormatValidator.class);
 	}
 
-	@Deprecated
-	@Override
-	public Validator<? super Child> validator() {
-		return new ChildValidator();
-	}
-
-	@Deprecated
-	@Override
-	public Validator<? super Child> typeFormatValidator() {
-		return new ChildTypeFormatValidator();
-	}
-	
 	@Override
 	public ValidatorWithArg<? super Child, Set<String>> onlyExistsValidator() {
 		return new ChildOnlyExistsValidator();

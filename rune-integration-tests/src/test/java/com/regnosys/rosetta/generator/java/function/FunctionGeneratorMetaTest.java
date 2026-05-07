@@ -1014,6 +1014,7 @@ public class FunctionGeneratorMetaTest {
                 metaType reference string
                 
                 type Foo:
+                  [metadata key]
                    someField string (1..1)
                 
                 func MyFunc:
@@ -1102,6 +1103,7 @@ public class FunctionGeneratorMetaTest {
                 metaType reference string
                 
                 type Foo:
+                  [metadata key]
                    someField string (1..1)
                 
                 func MyFunc:

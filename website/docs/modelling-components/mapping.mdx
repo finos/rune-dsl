@@ -1,0 +1,304 @@
+---
+title: Mapping
+sidebar_label: Mapping
+description: "Defines how external documents are converted into Rune documents using synonyms.
+"
+---
+
+Mapping in Rune defines **how external documents** (such as FpML or ISDACreate) are **converted into Rune documents**.
+This is done using **synonyms**, which are annotations placed on:
+- Attributes of data types
+- Values of enum types
+
+All synonyms across the model work together to map the structure of the input document into the final Rune document. These mappings can be used to generate an **Ingestion Environment** – a Java library that reads an input document and produces the corresponding Rune document.
+
+
+There are two types of mapping:
+1. [Basic mapping](#1-basic-mapping)
+2. [Advanced mapping](#2-advanced-mapping)
+
+## 1. Basic mapping
+Basic mappings describe how a value in the input document maps directly to a value in the Rune document.
+
+### 1.1. Synonym source
+A **synonym source** defines a set of synonyms used for a specific type of input document.
+
+Example: `synonym source FpML_5_10 extends FpML`
+
+This means:
+- `FpML_5_10` inherits all synonyms from FpML.
+- It can add new synonyms or remove existing ones.
+
+### 1.2. Extending a synonym source
+A synonym source can extend another one. The new source:
+- Inherits all synonyms from the parent.
+- Can add or remove synonyms.
+
+### 1.3. Basic synonyms
+Synonyms can be written in two ways. The location does not affect behaviour.
+
+#### Inline (next to the attribute) 
+`[synonym <SynonymSource> <SynonymBody>]`
+
+**Example**
+
+```haskell
+    engineSpecification EngineSpecification(1..1)
+        [synonym CONDITIONAL_SET_TO_EXAMPLE_1 value "engineDetail"]
+``` 
+
+#### Externally (defined inside a separate synonym source block) 
+
+External synonyms are defined inside a synonym source block:
+
+**Example**
+
+This removes all existing synonyms on fuel and adds a new one.
+```haskell
+synonym source EXTERNAL_SYNONYM_EXAMPLE_8 extends EXTERNAL_SYNONYM_EXAMPLE_8_BASE_2
+{
+	EngineSpecification:
+		- fuel
+		+ fuel
+			[value "combustible"]
+}
+```
+
+### 1.4. Synonym body
+A synonym body defines how the input value maps to the Rune attribute.
+
+#### `Value`
+The simplest form: `[value "combustible"]`
+
+Meaning:
+- Input value `combustible` maps to this Rune attribute.
+- If both sides are basic types (string, number, date etc), then value is copied.
+- If both sides are complex types (with child attributes of their own), then child attributes are matched using synonyms.
+- If one side is basic and the other complex, this results in a mapping error.
+
+#### `Path`
+A synonym can include a path: `[synonym MULTI_CARDINALITY_EXAMPLE_2 value "combustible" path "engineDetail"]` 
+
+This maps `engineDetail.combustible` to the Rune attribute.
+
+#### `Maps 2`
+Normally, one input value must map to one Rune value. If the same input value should map to multiple Rune values, use the `maps 2` keyword.
+
+#### `Meta`
+The `meta` keyword inside a synonym is used to map metadata. 
+
+**Example**
+```haskell
+type EngineSpecification:
+    fuelType string (1..*)
+        [metadata scheme]
+        [synonym META_SCHEME_EXAMPLE_1 value "combustible" meta "fuelTypeScheme"]
+```
+
+This maps:
+- The input value ‘combustible’ is mapped to `fuelType`.
+- The metadata ‘fuelTypeScheme’ associated to ‘combustible’ is mapped to `scheme`.
+
+### 1.5 Enumeration mapping
+Synonyms can map input strings to Rune enum values.
+
+**Example**
+
+```haskell
+enum EngineEnum: <"The enumerated values for the natural person's role.">
+    Hybrid
+        [synonym CONDITIONAL_SET_TO_EXAMPLE_8 value "hybrid"]
+```
+
+#### External enumeration synonyms
+These are defined in a separate block preceded by the keyword `enums`:
+```haskell
+enums
+
+	EngineEnum:
+		+ Hybrid
+        		[value "Hybrid"]
+```
+
+## 2. Advanced mapping 
+The mapping algorithm:
+1. Binds the root of the input document to a predefined Rune root type.
+2. Recursively walks through the input document.
+
+At each step:
+- The current input attribute is linked to one or more Rune objects.
+- For each child input attribute:
+- Rune attributes are checked for matching synonyms.
+- For each match, a new Rune object is created.
+- The algorithm recurses into that child.
+
+When an input attribute has a value, that value is assigned to all bound Rune objects
+
+
+### 2.1. Hints
+Hints allow the algorithm to **skip a layer** in the Rune structure without consuming the input attribute.
+
+**Example**
+```haskell
+type EngineSpecification:
+    engineMetric EngineMetric (0..*)
+        [synonym MULTI_CARDINALITY_EXAMPLE_12 value "capacityDetail"]
+        [synonym MULTI_CARDINALITY_EXAMPLE_12 hint "combustible"]
+
+
+type EngineMetric:
+    fuel string (0..1)
+        [synonym MULTI_CARDINALITY_EXAMPLE_12 value "combustible"]
+```
+In this example:
+- `capacityDetail` maps to `engineMetric`.
+- `combustible` is matched to `EngineMetric` but can also be matched against the synonyms of `EngineMetric`.
+
+
+### 2.2. Merging inputs
+If a Rune attribute has multiple cardinality, multiple input elements may map to it.
+
+#### Without merging
+Two synonyms produces **two** `EngineSpecification` objects:
+```haskell
+engineSpecification EngineSpecification (0..*)
+  [synonym MULTI_CARDINALITY_EXAMPLE_20 value "fuelDetail"]
+  [synonym MULTI_CARDINALITY_EXAMPLE_20 value "capacityDetail"]
+```
+
+#### With merging
+Use a single synonym with multiple values to produce **one** `EngineSpecification` object containing both sets of data.
+```haskell
+engineSpecification EngineSpecification (0..*)
+  [synonym FpML_5_10 value fuelDetail, capacityDetail]
+```
+
+### 2.3. Conditional mappings 
+Conditional mappings let you create more advanced mapping rules. There are **two types**:
+
+**1. Set to** – assign a constant value
+
+**2. Set when** – assign a value from the input document only when a condition is met
+
+#### Set to 
+A **set to** mapping assigns a **constant value** to an attribute.
+- It does **not** use any value from the input document.
+- You must **not** provide a synonym value.
+- The constant must be convertible to the attribute’s type (string, enum, etc).
+
+**Example: Set to a constant enum**
+
+```haskell
+engineEnum EngineEnum (0..1)
+  [synonym CONDITIONAL_SET_TO_EXAMPLE_13 set to EngineEnum->Hybrid]
+```
+**Conditional set to**
+
+You can add a **when** clause to make the assignment conditional:
+```haskell
+engineEnum EngineEnum (0..1)
+  [synonym CONDITIONAL_SET_TO_EXAMPLE_13 set to EngineEnum->Hybrid when "alternativeFuelDetail" exists and "fuelDetail" exists]
+```
+
+#### Multiple set to rules
+You can list several **set to** rules in order. They’ll be evaluated in the order specified with the **first matching value** used:
+```haskell
+engineSystem string (1..1)
+  [synonym CONDITIONAL_SET_TO_EXAMPLE_6
+    set to "Combustion" when "engineDetail->fuelDetail->combustible" = "Gasoline",
+    set to "Electric" when "engineDetail->fuelDetail->combustible" = "Electricity",
+    set to "Default"]
+```
+
+#### Set when mapping
+A **set when** mapping assigns a value **from the input document** if a condition is met.
+```haskell
+alternativeFuelType string (0..1) [synonym CONDITIONAL_SET_EXAMPLE_5 value "complementaryEnergy" path "engineType->engineDetail" set when "engineType->engineDetail->complementaryEnergy" exists] 
+```
+You can also provide a fallback constant if no conditions match:
+```haskell
+capacityUnit string (0..1)
+  [synonym CONDITIONAL_DEFAULT_EXAMPLE_1 value "volumeCapacityUnit" path "engineType->engineDetail" default to "UK Gallon"]
+```
+
+### 2.4. When clauses
+A **when clause** controls when a mapping applies. There are **three types**:
+1. Test expression
+2. Input path expression
+3. Output path expression
+
+#### Test expression
+A test expression checks the input document using:
+- exists – value is present
+- absent – value is not present
+- `=` or `<>` – value equals or does not equal a constant
+
+**Examples**
+```haskell
+capacityUnit string (0..1)	    
+  [synonym CONDITIONAL_SET_EXAMPLE_2 value "volumeCapacityUnit" path "engineType->engineDetail" set when "engineType->engineDetail->powerUnit" exists]
+capacityUnit string (0..1)
+  [synonym CONDITIONAL_SET_EXAMPLE_3 value "volumeCapacityUnit" path "engineType->engineDetail" set when "engineType->engineDetail->powerUnit" is absent]
+capacityUnit string (0..1)
+  [synonym CONDITIONAL_SET_EXAMPLE_1 value "volumeCapacityUnit" path "engineType->engineDetail" set when "engineType->engineDetail->powerUnit" = "Cylinder"]
+```
+
+#### Input path expression
+Checks the **exact path** in the input document that led to the current value.
+
+**Example**
+```haskell
+volume string (0..1)
+  [synonym CONDITIONAL_SET_EXAMPLE_6 value "capacity" set when path = "ukEngineVersion->terminology"]
+```
+
+#### Output path expression
+Checks the **path in the Rune output object**.
+The condition is true when the current output path **ends with** the given path.
+
+**Example**
+```haskell
+fuelType string (1..1)
+  [metadata scheme]
+  [synonym CONDITIONAL_SET_EXAMPLE_16 value "combustible" path "engineDetail" set when "engineDetail->combustible->scheme"="petrolScheme" and rosettaPath = Root->engineSpecification->fuel->fuelType meta "scheme"]
+```
+
+### 2.5. Mapper
+If Rune’s mapping syntax cannot express the required transformation, you can call a **mapper**.
+
+**Example:**
+```haskell
+fuelType string (0..1)
+  // value updated by mapper
+  [synonym MAPPERS_EXAMPLE_1 value "combustible" path "engineDetail->metric" mapper "Example1"]
+```
+During ingestion:
+- A class named `Example1MappingProcessor` is loaded.
+- Its mapping method updates the Rune object.
+
+Mappers allow full programming language flexibility.
+
+#### Format
+For date/time values, you can specify a format. The keyword `format` should be followed by a string. The string should follow a standardised [date format](https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html).
+```haskell
+fabricationDate date (1..1)
+	[synonym FORMAT_EXAMPLE_1 value "fabricationDate" dateFormat "MM/dd/yyyy"]
+```
+
+#### Pattern
+Patterns apply to enums and basic types (except dates). They let you:
+1. Match the input using a [regular expression]( https://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html)
+2. Transform it using a replacement expression
+
+The keyword `pattern` is followed by two quoted strings. The first string is a regular expression used to match against the input value. The second string is a replacement expression used to reformat the matched input before it’s processed as usual for the basictype/enum.
+
+**Example**
+
+Extract only the digits from a value:
+```haskell
+type EngineSpecification:
+	guaranteePeriod int (1..1)
+		[synonym FORMAT_EXAMPLE_1 value "guaranteePeriod" maps 2 pattern "([0-9])*.*" "$1"]
+```
+
+

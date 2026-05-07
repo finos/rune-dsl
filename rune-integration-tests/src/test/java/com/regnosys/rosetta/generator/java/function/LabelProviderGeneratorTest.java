@@ -159,110 +159,6 @@ public class LabelProviderGeneratorTest {
 	}
 	
 	@Test
-	void testReportLabelOverridesRuleReferenceLabel() throws IOException {
-		RosettaTestModel model = loadModel("""
-				namespace test
-				
-				body Authority Body
-				corpus Regulation "Description" Corpus
-				
-				report Body Corpus in T+1
-					from int
-					when IsEligible
-					with type Foo
-				
-				eligibility rule IsEligible from int:
-					item
-				
-				type Foo:
-					attr string (1..1)
-						[ruleReference FooAttr]
-						[label "My attribute"]
-					other int (1..1)
-						[ruleReference FooOther]
-				
-				
-				reporting rule FooAttr from int:
-					to-string
-					as "My attribute from rule"
-				
-				reporting rule FooOther from int:
-					item
-					as "Other from rule"
-				""");
-		
-		generateLabelProvider(model);
-		
-		assertSingleGeneratedFile("report-with-rule-references/BodyCorpusLabelProvider.java", "/test/labels/BodyCorpusLabelProvider.java");
-		assertLabels(
-			"attr:My attribute",
-			"other:Other from rule"
-		);
-	}
-	
-	@Test
-	void testReportLabelOverridesExternalRuleSourceRuleReferenceLabel() throws IOException {
-		RosettaTestModel model = loadModel("""
-				namespace test
-				
-				body Authority Body
-				corpus Regulation "Description" Corpus
-				
-				report Body Corpus in T+1
-					from int
-					when IsEligible
-					with type Foo
-					with source Source
-				
-				eligibility rule IsEligible from int:
-					item
-				
-				type Foo:
-					attr string (1..1)
-						[label "My attribute"]
-					bar Bar (1..1)
-						[label for barAttr1 "Bar Attribute 1 label"]
-				
-				type Bar:
-					barAttr1 int (1..1)
-					barAttr2 int (1..1)
-				
-				reporting rule FooAttr from int:
-					to-string
-					as "My attribute from rule"
-				
-				reporting rule BarAttr1 from int:
-					item
-					as "My Bar Attribute 1 from rule"
-				
-				reporting rule BarAttr2 from int:
-					item
-					as "My Bar Attribute 2 from rule"
-				
-				rule source Source {
-					Foo:
-						+ attr
-							[ruleReference FooAttr]
-					
-					Bar:
-						+ barAttr1
-							[ruleReference BarAttr1]
-						+ barAttr2
-							[ruleReference BarAttr2]
-				}
-				""");
-		
-		generateLabelProvider(model);
-		
-		assertSingleGeneratedFile("report-with-external-source/BodyCorpusLabelProvider.java", "/test/labels/BodyCorpusLabelProvider.java");
-		assertLabels(
-			"attr:My attribute",
-			"bar.barAttr1:Bar Attribute 1 label",
-			"bar.barAttr2:My Bar Attribute 2 from rule"
-		);
-	}
-	
-	@Test
 	void testComplexReportLabels() throws IOException {
 		RosettaTestModel model = loadModel("""
 				namespace test
@@ -299,6 +195,7 @@ public class LabelProviderGeneratorTest {
 				
 				type Bar:
 					barAttr string (1..1)
+					  [label for item "Nested Bar attribute"]
 						[ruleReference BarAttr]
 					nestedBarList NestedBar (0..*)
 				
@@ -321,7 +218,6 @@ public class LabelProviderGeneratorTest {
 				
 				reporting rule BarAttr from int:
 					to-string
-					as "Bar attribute from rule"
 				""");
 		
 		generateLabelProvider(model);

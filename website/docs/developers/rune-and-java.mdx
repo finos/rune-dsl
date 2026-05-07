@@ -1,0 +1,233 @@
+---
+title: Rune and Java
+sidebar_label: Rune and Java
+description: "How Rune DSL models are translated into Java classes, including structure, builders, pruning behavior, and how to generate reports and rules."
+slug: /developers/rune-and-java
+---
+
+
+# Rune and Java
+
+## 1. Types and Enums in Rune
+When you compile a Rune model, each *type* becomes a Java class that implements `RosettaModelObject`. These generated classes follow a predictable structure.
+
+### 1.1. Structure of generated model classes
+Key characteristics:
+- Immutable objects
+Once created, the object cannot be modified.
+- Builder pattern
+Each class has a nested Builder implementing `RosettaModelObjectBuilder`.
+Builders are the only way to construct instances.
+- Attributes → Getters
+Every field in the Rune model becomes a getter in Java.
+- Metadata support
+Classes may include metadata fields for additional context.
+- Utility methods
+Common generated methods include:
+-	`toString()` – debugging
+-	`prune()` – remove empty nested objects
+-	`process(...)` – visitor pattern for walking the object graph
+
+**Example: Generated Java Interface**
+For a Rune model like this:
+``` Haskell
+type Vehicle:
+    registrationID string (1..1)
+    vehicleClassification VehicleClassificationEnum (1..1)
+```
+
+The generated Java interface would include:
+``` Haskell
+@RuneDataType(value="Vehicle", builder=Vehicle.VehicleBuilderImpl.class, version="x.y.z")
+public interface Vehicle extends RosettaModelObject {
+    // Getters
+    String getRegistrationID();
+    VehicleClassificationEnum getVehicleClassification();
+    
+    // Create a new builder instance
+    public static VehicleBuilder builder() { ... }
+    
+    // Visitor pattern to traverse the object graph
+    void process(RosettaPath path, Processor processor);
+
+    // Builder interface
+    interface VehicleBuilder extends Vehicle, RosettaModelObjectBuilder {
+        // Setter methods
+        VehicleBuilder setRegistrationID(String registrationID);
+        VehicleBuilder setVehicleClassification(VehicleClassificationEnum vehicleClassification);
+
+        // Build method
+        Vehicle build();
+
+        // Pruning method
+        VehicleBuilder prune();
+
+        // Other methods
+        boolean hasData();
+    }
+}
+```
+
+
+### 1.2. Pruning
+Pruning removes empty nested objects from a builder.
+This is useful for:
+- reducing serialized size
+- simplifying comparisons
+- avoiding storing empty structures
+
+#### How pruning works
+An attribute is considered empty if:
+- it’s null, or
+- it’s an empty list, or
+- it’s optional and all its fields are empty
+Required fields are **never** considered empty.
+
+#### Pruning steps
+1.	Recursively call `prune()` on all nested `RosettaModelObjects`
+2.	Remove null items from lists
+3.	If an optional object has no data after pruning → set it to null
+
+**Example**
+A simple object graph before pruning:
+``` Haskell
+Vehicle vehicle = Vehicle.builder()
+    .setRegistrationID("ABC123")
+    .setOwner(Person.builder()
+        .setAddress(Address.builder().build())  // Empty address
+        .build())
+    .build();
+```
+After pruning:
+``` Haskell
+Vehicle.VehicleBuilder builder = vehicle.toBuilder();
+builder.prune();
+Vehicle prunedVehicle = builder.build();
+
+// The empty Address object has been pruned (set to null)
+assert prunedVehicle.getOwner().getAddress() == null;
+```
+
+## 2. Functions 
+Coming soon.
+
+## 3. Validation
+Coming soon.
+
+
+## 4. Reports and rules
+Reports and rules behave like functions. They implement the `ReportFunction<IN, OUT>` interface, which extends from `RosettaFunction`, and additionally exposes an `evaluate` method that takes in a single parameter of type `IN` (the input of a report, e.g., a `ReportableEvent`) and has a result of type `OUT` (the report output, e.g. a `CFTCPart43TransactionReport`).
+
+**Example: European emission report**
+A simple report definition 
+``` Haskell
+report EuropeanParliament EmissionPerformanceStandardsEU in real-time
+    from VehicleOwnership
+    when IsEuroStandardsCoverage
+    with type EuropeanParliamentReport
+
+// Definition for regulatory references:
+body Authority EuropeanParliament
+corpus Regulation "Regulation (EU) 2019/631" EmissionPerformanceStandardsEU
+```
+This report takes an input of type `VehicleOwnership`, and returns an instance of type `EuropeanParliamentReport`, defined as:
+``` Haskell
+type VehicleOwnership:
+    drivingLicence DrivingLicence (1..1)
+    vehicle Vehicle (1..1)
+
+type EuropeanParliamentReport:
+    vehicleRegistrationID string (1..1)
+        [label as "Vehicle Registration ID"]
+        [ruleReference VehicleRegistrationID]
+    vehicleClassificationType VehicleClassificationEnum (1..1)
+        [label as "Vehicle Classification Type"]
+        [ruleReference VehicleClassificationType]
+
+type Vehicle:
+    registrationID string (1..1)
+    vehicleClassification VehicleClassificationEnum (1..1)
+
+enum VehicleClassificationEnum:
+    M1_Passengers
+    M2_Passengers
+    M3_Passengers
+    N1I_Commercial
+    ...
+
+type Person:
+    name string (1..1)
+
+type DrivingLicence:
+    owner Person (1..1)
+    countryofIssuance string (1..1)
+    dateofIssuance date (1..1)
+    dateOfRenewal date (0..1)
+    vehicleEntitlement VehicleClassificationEnum (0..*)
+```
+The report is supported by these rules:
+``` Haskell
+eligibility rule IsEuroStandardsCoverage from VehicleOwnership:
+    filter
+        vehicle -> vehicleClassification = VehicleClassificationEnum -> M1_Passengers
+            or vehicle -> vehicleClassification = VehicleClassificationEnum -> M2_Passengers
+            or vehicle -> vehicleClassification = VehicleClassificationEnum -> M3_Passengers
+            or vehicle -> vehicleClassification = VehicleClassificationEnum -> N1I_Commercial
+            or ...
+
+reporting rule VehicleRegistrationID from VehicleOwnership:
+    extract vehicle -> registrationID
+
+reporting rule VehicleClassificationType from VehicleOwnership: <"Classification type of the vehicle">
+    extract vehicle -> vehicleClassification
+```
+
+#### Generated Java code for the report
+The report becomes an abstract Java class:
+``` Haskell
+@RosettaReport(namespace="test.reg", body="EuropeanParliament", corpusList={"EmissionPerformanceStandardsEU"})
+@RuneLabelProvider(labelProvider=EuropeanParliamentEmissionPerformanceStandardsEULabelProvider.class)
+@ImplementedBy(EuropeanParliamentEmissionPerformanceStandardsEUReportFunction.EuropeanParliamentEmissionPerformanceStandardsEUReportFunctionDefault.class)
+public abstract class EuropeanParliamentEmissionPerformanceStandardsEUReportFunction implements ReportFunction<VehicleOwnership, EuropeanParliamentReport> {
+    @Override
+    public EuropeanParliamentReport evaluate(VehicleOwnership input) {
+        EuropeanParliamentReport.EuropeanParliamentReportBuilder outputBuilder = doEvaluate(input);
+
+        ... // build the output and perform validation
+
+        return output;
+    }
+
+    protected abstract EuropeanParliamentReport.EuropeanParliamentReportBuilder doEvaluate(VehicleOwnership input);
+
+    public static class EuropeanParliamentEmissionPerformanceStandardsEUReportFunctionDefault extends EuropeanParliamentEmissionPerformanceStandardsEUReportFunction {
+        @Override
+        protected EuropeanParliamentReport.EuropeanParliamentReportBuilder doEvaluate(VehicleOwnership input) { ... }
+    }
+}
+```
+
+#### Dependency injection
+Guice is used to separate specification (`EuropeanParliamentEmissionPerformanceStandardsEUReportFunction`) from implementation (`EuropeanParliamentEmissionPerformanceStandardsEUReportFunctionDefault`). The default implementation will delegate to the `VehicleRegistrationID` and `VehicleClassificationType` reporting rules, as specified in the Rune model.
+
+
+#### Running a report
+To run the report, we first need to inject a report function instance using any conventional method delivered by Guice. 
+
+**Example**
+``` Haskell
+@Inject
+private EuropeanParliamentEmissionPerformanceStandardsEUReportFunction reportFunction;
+
+@Test
+private void testReportFunction() {
+    VehicleOwnership input = ... // create or read a vehicle ownership instance
+    EuropeanParliamentReport reportOutput = reportFunction.evaluate(input);
+
+    assertEquals(input.getVehicle().getRegistrationID(), reportOutput.getVehicleRegistrationID());
+}
+```
+
+
+
+

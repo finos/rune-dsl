@@ -79,7 +79,7 @@ class TypeValidatorTest extends AbstractValidatorTest {
                             attr string (1..1)
                         """,
                 """
-                        WARNING (null) 'Attribute 'attr' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`' at 8:5, length 4, on Attribute
+                        ERROR (null) 'Attribute 'attr' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`' at 8:5, length 4, on Attribute
                         """);
     }
 
@@ -108,7 +108,7 @@ class TypeValidatorTest extends AbstractValidatorTest {
                         """,
                 """
                         ERROR (null) 'Duplicate attribute 'attr' in type 'Bar'' at 8:14, length 4, on Attribute
-                        WARNING (null) 'Attribute 'attr' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`' at 9:5, length 4, on Attribute
+                        ERROR (null) 'Attribute 'attr' already defined in super type. To override the type, cardinality or annotations of this attribute, use the keyword `override`' at 9:5, length 4, on Attribute
                         ERROR (null) 'Duplicate attribute 'attr' in type 'Bar'' at 9:5, length 4, on Attribute
                         """);
     }
@@ -123,7 +123,7 @@ class TypeValidatorTest extends AbstractValidatorTest {
                         type Foo extends StringOrNumber:
                         """,
                 """
-                        WARNING (null) 'Extending a choice type is deprecated' at 8:18, length 14, on Data
+                        ERROR (null) 'Extending a choice type is not allowed' at 8:18, length 14, on Data
                         """);
     }
 

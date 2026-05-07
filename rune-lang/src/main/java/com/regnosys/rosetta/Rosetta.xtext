@@ -431,7 +431,7 @@ RosettaMapTestFunc:
  */ 
  
 RosettaDocReference:
-	'[' name=('regulatoryReference'|'docReference') ('for' path=AnnotationPathExpression)? docReference=RegulatoryDocumentReference
+	'[' name=('docReference') ('for' path=AnnotationPathExpression)? docReference=RegulatoryDocumentReference
 		(rationales+=DocumentRationale)*
 		('structured_provision' structuredProvision=STRING)?
 		('provision' provision=STRING)?
@@ -456,7 +456,7 @@ RosettaCorpus:
 ;
 
 RosettaSegment:
-	'segment' name=(ValidID | 'rationale' | 'rationale_author' | 'structured_provision') // @Compat. These were previously used as `segment`s, but are now considered keywords.
+	'segment' name=ValidID
 ;
 
 
@@ -898,7 +898,6 @@ RosettaReport:
 	'from' inputType=TypeCall
 	'when'
 	eligibilityRules+=[RosettaRule|QualifiedName] ('and' eligibilityRules+=[RosettaRule|QualifiedName])*
-	('using' 'standard' reportingStandard=[RosettaCorpus|QualifiedName])? // @Compat: this attribute is unnecessary
 	'with' 'type' reportType=[Data|QualifiedName]
 	('with' 'source' ruleSource=[RosettaExternalRuleSource|QualifiedName])?
 ;
@@ -911,8 +910,7 @@ RosettaRule:
  	('reporting'|eligibility?='eligibility') 'rule' RosettaNamed ('from' input=TypeCall)? ':' =>RosettaDefinable? // Predicate necessary because of conflict between `<` as the start of documentation and as an operator.
  	(
 		References*
-		(expression = Expression
-		('as' identifier=STRING)?)
+		(expression = Expression)
  	)
 ;
 
@@ -920,7 +918,7 @@ RosettaRule:
  * Labels
  */
 LabelAnnotation:
-	'[' name='label' ('for' path=AnnotationPathExpression | path=AnnotationPathExpression? deprecatedAs?='as')? label=STRING ']'
+	'[' name='label' ('for' path=AnnotationPathExpression)? label=STRING ']'
 ;
 AnnotationPathExpression:
 	NestedAnnotationPath

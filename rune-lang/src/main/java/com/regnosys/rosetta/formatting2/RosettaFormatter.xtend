@@ -705,16 +705,6 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		ele.expression
 			.prepend[newLine]
 			.format
-		if (ele.identifier !== null) {
-			set(
-				ele.regionFor.keyword(asKeyword_6_1_1_0)
-					.prepend[newLine]
-					.append[oneSpace]
-					.previousHiddenRegion,
-				ele.regionFor.assignment(identifierAssignment_6_1_1_1).nextHiddenRegion,
-				[indent]
-			)
-		}
 	}
 	
 	def dispatch void format(RosettaSynonymSource synonymSource, extension IFormattableDocument document) {

@@ -39,14 +39,14 @@ public class BasicRosettaMetaData<T extends RosettaModelObject> implements Roset
 	public List<Function<? super T, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
 		return Collections.emptyList();
 	}
-	
+
 	@Override
-	public Validator<T> validator() {
+	public Validator<? super T> validator(ValidatorFactory factory) {
 		return null;
 	}
-	
+
 	@Override
-	public Validator<T> typeFormatValidator() {
+	public Validator<? super T> typeFormatValidator(ValidatorFactory factory) {
 		return null;
 	}
 

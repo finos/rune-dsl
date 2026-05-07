@@ -66,11 +66,23 @@
         "mvn (?<depName>[^\\s:]+:[^\\s:]+):(?<currentValue>[^\\s:]+):[^\\s:]+"
       ],
       "datasourceTemplate": "maven"
+    },
+    {
+      "customType": "regex",
+      "description": "Detect OWASP Dependency-Check Docker image tags in workflow shell steps.",
+      "managerFilePatterns": [
+        "/(^|/)(workflow-templates|\\.(?:github|gitea|forgejo)/(?:workflows|actions))/.+\\.ya?ml$/",
+        "/(^|/)action\\.ya?ml$/"
+      ],
+      "matchStrings": [
+        "owasp\\/dependency-check:(?<currentValue>[^\\s\"'\\\\]+)"
+      ],
+      "depNameTemplate": "owasp/dependency-check",
+      "datasourceTemplate": "docker"
     }
   ],
   "ignoreDeps": [
     "org.eclipse.m2e:lifecycle-mapping",
-    "org.finos.rune:org.finos.rune.parent",
-    "com.regnosys.rosetta:rosetta-backport-parent"
+    "org.finos.rune:org.finos.rune.parent"
   ]
 }

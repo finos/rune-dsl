@@ -1,0 +1,518 @@
+/**
+ * Any CSS included here will be global. The classic template
+ * bundles Infima by default. Infima is a CSS framework designed to
+ * work well for content-centric websites.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+/* You can override the default Infima variables here. */
+:root {
+  /*  PINK - Light to Dark */
+  --ifm-color-primary: #E94591;
+  --ifm-color-primary-dark: #E03E8C;
+  --ifm-color-primary-darker: #CD3082;
+  --ifm-color-primary-darkest: #C4297D;
+
+  --ifm-color-secondary: #96CCA6;
+  --ifm-color-secondary-dark: #A3CE8E;
+  --ifm-color-secondary-darker: #BCD45E;
+  --ifm-color-secondary-darkest: #C9D646;
+
+  --ifm-background-color: #FCFCFC;
+
+  /*  GREEN - Dark to Light */
+
+  --ifm-color-primary-light: #C9D646;
+  --ifm-color-primary-lighter: #B0D176;
+  --ifm-color-primary-lightest: #96CCA6;
+  --ifm-code-font-size: 95%;
+
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.1);
+  --ifm-font-family-base: Inter, Helvetica, Arial;
+
+  /* Sidebar design variables */
+  --ifm-menu-color: #475569;
+  --ifm-menu-color-active: var(--ifm-color-primary);
+  --ifm-menu-link-padding-vertical: 0.75rem;
+  --ifm-menu-link-padding-horizontal: 1rem;
+}
+
+/* For readability concerns, you should choose a lighter palette in dark mode. */
+[data-theme='dark'] {
+
+  /*  GREEN - Light to dark */
+  --ifm-color-primary: #96CCA6;
+  --ifm-color-primary-dark: #A3CE8E;
+  --ifm-color-primary-darker: #BCD45E;
+  --ifm-color-primary-darkest: #C9D646;
+
+  --ifm-background-color: #121212;
+  --ifm-color-gray-800: #1E1E1E;
+
+
+  --ifm-color-secondary: #E94591;
+  --ifm-color-secondary-dark: #D63787;
+  --ifm-color-secondary-darker: #E03E8C;
+  --ifm-color-secondary-darkest: #C4297D;
+
+
+  /*  PINK - Dark to Light */
+
+  --ifm-color-primary-light: #C4297D;
+  --ifm-color-primary-lighter: #D63787;
+  --ifm-color-primary-lightest: #E94591;
+
+
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
+}
+
+/* -------------------
+ * COMPONENTS
+ * ------------------- */
+
+/* Buttons */
+.button--secondary,
+button--secondary {
+  background-color: var(--ifm-color-secondary-dark);
+  border-color: var(--ifm-color-secondary-dark);
+}
+
+.button--secondary:hover,
+button--secondary:hover {
+  background-color: #414141;
+  border-color: #414141;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+[data-theme='dark'] .button--secondary {
+  color: #ffffff;
+}
+
+/* Hide color mode toggle and search on homepage */
+body.homepage .navbar [class*="colorModeToggle"],
+body.homepage .navbar [class*="toggle_"],
+body.homepage .navbar [class*="searchBox"] {
+  display: none !important;
+}
+
+/* Footer */
+.footer {
+  background-color: #3D3D3D;
+  color: #FFFFFF;
+  padding: 1.5rem 0;
+}
+
+/* Footer layout - logo on same plane as columns */
+.footer .container {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 2rem;
+}
+
+.footer__bottom {
+  display: contents; /* Allows children to be siblings of footer__links in the container flexbox */
+}
+
+/* Logo container inside footer__bottom */
+.footer__bottom > div:first-child {
+  order: 1;
+  margin-right: 3rem;
+  margin-bottom: 0 !important;
+}
+
+.footer__links {
+  order: 2;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: row;
+}
+
+.footer__copyright {
+  order: 3;
+  width: 100%;
+  margin-top: 1rem;
+  opacity: 0.6;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.footer h4,
+.footer .footer__title {
+  color: var(--ifm-color-primary-dark);
+}
+
+.footer a {
+  color: #FFFFFF;
+}
+
+.footer a:hover {
+  color: var(--ifm-color-secondary-dark);
+  text-decoration-color: var(--ifm-color-secondary-dark);
+}
+
+/* Layout */
+.two-column {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.two-column>* {
+  flex: 1;
+}
+
+/* Hide Pagination Navigation on hub pages (generated-index pages) */
+.generated-index-page .pagination-nav {
+  display: none !important;
+}
+
+/* Hide right-hand TOC */
+/* .theme-doc-toc-desktop {
+  display: none !important;
+} */
+
+
+/* Force full width for the content column, overriding the theme's 75% limit */
+/* @media (min-width: 997px) {
+  @layer docusaurus.theme-classic {
+    html [class*='docItemCol'],
+    html .docItemCol_VOVn {
+      max-width: 100% !important;
+      width: 100% !important;
+      flex: 1 0 auto !important;
+    }
+  }
+} */
+
+/* Allow tile descriptions to wrap instead of truncating */
+[class*='cardDescription'] {
+  white-space: normal !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  -webkit-line-clamp: unset !important;
+  line-clamp: unset !important;
+  display: block !important;
+}
+
+/* 
+
+Dark Pink: #C4297D
+Light Pink: #E94591
+
+Computed 5-color scale:
+	1.	#C4297D (Dark Pink)
+	2.	#CD3082
+	3.	#D63787
+	4.	#E03E8C
+	5.	#E94591 (Light Pink)
+
+
+Light Green: #96CCA6
+Dark Green: #C9D646
+
+Computed 5-color scale:
+	1.	#96CCA6 (Light Green)
+	2.	#A3CE8E
+	3.	#B0D176
+	4.	#BCD45E
+	5.	#C9D646 (Dark Green)
+
+*/
+
+/* -------------------
+ * Sidebar Redesign (Inspired by Hasura)
+ * ------------------- */
+
+.theme-doc-sidebar-container {
+  background-color: #f8fafc !important;
+  border-right: 1px solid #e2e8f0;
+}
+
+[data-theme='dark'] .theme-doc-sidebar-container {
+  background-color: #0f172a !important;
+  border-right: 1px solid #1e2d1f;
+}
+
+.menu__list-item {
+  margin-top: 4px;
+}
+
+/* Top-level sidebar items - card style */
+.menu__list > .menu__list-item > .menu__list-item-collapsible,
+.menu__list > .menu__list-item > .menu__link {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 4px;
+  transition: all 0.2s ease;
+}
+
+.menu__list > .menu__list-item > .menu__list-item-collapsible:hover,
+.menu__list > .menu__list-item > .menu__link:hover {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 2px 8px rgba(233, 69, 145, 0.15);
+}
+
+[data-theme='dark'] .menu__list > .menu__list-item > .menu__list-item-collapsible,
+[data-theme='dark'] .menu__list > .menu__list-item > .menu__link {
+  background: #132015;
+  border-color: #1e2d1f;
+}
+
+[data-theme='dark'] .menu__list > .menu__list-item > .menu__list-item-collapsible:hover,
+[data-theme='dark'] .menu__list > .menu__list-item > .menu__link:hover {
+  border-color: var(--ifm-color-primary);
+  box-shadow: 0 2px 8px rgba(150, 204, 166, 0.15);
+}
+
+.menu__link--sublist {
+  font-weight: 600;
+}
+
+.menu__link {
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex !important;
+  align-items: center;
+}
+
+.menu__link:hover {
+  background-color: #f1f5f9;
+}
+
+[data-theme='dark'] .menu__link:hover {
+  background-color: #1a2d1d;
+}
+
+.menu__link--active {
+  background-color: rgba(233, 69, 145, 0.08) !important;
+  color: var(--ifm-color-primary) !important;
+  font-weight: 600;
+  border-left: 3px solid var(--ifm-color-primary) !important;
+}
+
+[data-theme='dark'] .menu__link--active {
+  background-color: rgba(150, 204, 166, 0.15) !important;
+  color: var(--ifm-color-primary) !important;
+}
+
+.menu__list-item-collapsible {
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.menu__list-item-collapsible:hover {
+  background-color: transparent;
+}
+
+/* Caret alignment */
+.menu__caret,
+.menu__link--sublist-caret::after {
+  margin-left: auto !important;
+}
+
+/* Sidebar list padding */
+.menu__list {
+  padding-left: 0.5rem;
+}
+
+/* -------------------
+ * Sidebar icons (only on top-level items)
+ * ------------------- */
+/* Shared icon style */
+.theme-doc-sidebar-menu > .theme-doc-sidebar-item-category > .menu__list-item-collapsible > .menu__link::before,
+.theme-doc-sidebar-menu > .theme-doc-sidebar-item-link > .menu__link::before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 1;
+  flex-shrink: 0;
+}
+
+/* Hub page icons */
+.theme-doc-sidebar-menu .menu__link[href="/docs/get-started/introducing-rune"]::before {
+  background-image: url('/img/rune/icon/2024_Rune_Icon.png');
+}
+/* Light theme (pink) */
+.theme-doc-sidebar-menu .menu__link[href="/docs/get-started"]::before {
+  background-image: url('/img/rune/icon/Rune-icon-get-started-pink.png');
+}
+.theme-doc-sidebar-menu .menu__link[href="/docs/modelling-components"]::before {
+  background-image: url('/img/rune/icon/Rune-icon-components-pink.png');
+}
+.theme-doc-sidebar-menu .menu__link[href="/docs/developers"]::before {
+  background-image: url('/img/rune/icon/Rune-icon-developers-pink.png');
+}
+.theme-doc-sidebar-menu .menu__link[href="/docs/resources"]::before {
+  background-image: url('/img/rune/icon/Rune-icon-resources-pink.png');
+}
+/* Dark theme (green) overrides */
+[data-theme='dark'] .theme-doc-sidebar-menu .menu__link[href="/docs/get-started"]::before {
+  background-image: url('/img/rune/icon/Rune-icon-get-started-green.png');
+}
+[data-theme='dark'] .theme-doc-sidebar-menu .menu__link[href="/docs/modelling-components"]::before {
+  background-image: url('/img/rune/icon/Rune-icon-components-green.png');
+}
+[data-theme='dark'] .theme-doc-sidebar-menu .menu__link[href="/docs/developers"]::before {
+  background-image: url('/img/rune/icon/Rune-icon-developers-green.png');
+}
+[data-theme='dark'] .theme-doc-sidebar-menu .menu__link[href="/docs/resources"]::before {
+  background-image: url('/img/rune/icon/Rune-icon-resources-green.png');
+}
+
+/* -------------------
+ * Page Heading Icons
+ * ------------------- */
+.page-docs-get-started h1::before,
+.page-docs-modelling-components h1::before,
+.page-docs-developers h1::before,
+.page-docs-resources h1::before,
+.page-docs-get-started-introducing-rune h1::before {
+  content: '';
+  display: inline-block;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-right: 1rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  vertical-align: middle;
+}
+
+/* Specific icons for Light theme (pink) */
+.page-docs-get-started h1::before {
+  background-image: url('/img/rune/icon/Rune-icon-get-started-pink.png');
+}
+.page-docs-modelling-components h1::before {
+  background-image: url('/img/rune/icon/Rune-icon-components-pink.png');
+}
+.page-docs-developers h1::before {
+  background-image: url('/img/rune/icon/Rune-icon-developers-pink.png');
+}
+.page-docs-resources h1::before {
+  background-image: url('/img/rune/icon/Rune-icon-resources-pink.png');
+}
+.page-docs-get-started-introducing-rune h1::before {
+  background-image: url('/img/rune/icon/2024_Rune_Icon.png');
+}
+
+/* Specific icons for Dark theme (green) */
+[data-theme='dark'] .page-docs-get-started h1::before {
+  background-image: url('/img/rune/icon/Rune-icon-get-started-green.png');
+}
+[data-theme='dark'] .page-docs-modelling-components h1::before {
+  background-image: url('/img/rune/icon/Rune-icon-components-green.png');
+}
+[data-theme='dark'] .page-docs-developers h1::before {
+  background-image: url('/img/rune/icon/Rune-icon-developers-green.png');
+}
+[data-theme='dark'] .page-docs-resources h1::before {
+  background-image: url('/img/rune/icon/Rune-icon-resources-green.png');
+}
+/* No green variant for introducing-rune icon mentioned, keeping same as light */
+[data-theme='dark'] .page-docs-get-started-introducing-rune h1::before {
+  background-image: url('/img/rune/icon/2024_Rune_Icon.png');
+}
+
+/* Documentation tiles - clearer with border and shadow */
+.card {
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 4px 4px 0 rgba(29, 52, 85, 0.15) !important;
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  border-color: var(--ifm-color-primary) !important;
+  box-shadow: 6px 6px 0 rgba(29, 52, 85, 0.25) !important;
+  transform: translate(-2px, -2px);
+}
+
+[data-theme='dark'] .card {
+  background-color: #132015 !important;
+  border-color: #1e2d1f !important;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme='dark'] .card:hover {
+  border-color: var(--ifm-color-primary) !important;
+  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.45) !important;
+}
+
+/* -------------------
+ * Table of Contents (TOC) Styling
+ * ------------------- */
+/* TOC text should be bold */
+.table-of-contents__link {
+  font-weight: 700;
+}
+
+/* TOC banner background - light pinkish/gray in light theme */
+.theme-doc-toc-desktop .table-of-contents {
+  background-color: #F9F9F9;
+  border-left: 5px solid var(--ifm-color-primary);
+  border-radius: 0 8px 8px 0;
+  padding: 1rem;
+}
+
+.theme-doc-toc-desktop .table-of-contents__link {
+  color: var(--ifm-color-content);
+}
+
+.theme-doc-toc-desktop .table-of-contents__link:hover {
+  color: var(--ifm-color-primary);
+  opacity: 0.8;
+}
+
+.theme-doc-toc-desktop .table-of-contents__link--active {
+  color: var(--ifm-color-primary);
+  font-weight: 800;
+}
+
+/* TOC banner background - dark gray/green in dark theme */
+[data-theme='dark'] .theme-doc-toc-desktop .table-of-contents {
+  background-color: #1E1E1E;
+  border-left-color: var(--ifm-color-primary);
+}
+
+[data-theme='dark'] .theme-doc-toc-desktop .table-of-contents__link {
+  color: #E3E3E3;
+}
+
+[data-theme='dark'] .theme-doc-toc-desktop .table-of-contents__link:hover {
+  color: var(--ifm-color-primary);
+}
+
+[data-theme='dark'] .theme-doc-toc-desktop .table-of-contents__link--active {
+  color: var(--ifm-color-primary);
+}
+
+/* Code block soft wrap */
+.prism-code {
+  white-space: pre-wrap !important;
+}
+
+code {
+  word-break: break-word;
+}
+
+/* Hide pagination buttons (prev/next) */
+.pagination-nav {
+  display: none !important;
+}
+
+/* Hide edit this page button */
+.theme-doc-footer-edit-meta-row {
+  display: none !important;
+}

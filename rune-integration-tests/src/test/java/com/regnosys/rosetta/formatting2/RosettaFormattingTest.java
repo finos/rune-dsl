@@ -105,14 +105,12 @@ public class RosettaFormattingTest {
 				namespace drr.regulation.techsprint.g20.mas
 
 
-				reporting rule OptionPremium from number: <"Option premium">
-				    "N/A" as "I.6.3 Option Premium"
+				reporting rule OptionPremium from number: <"Option premium"> "N/A"
 				""", """
 				namespace drr.regulation.techsprint.g20.mas
 
 				reporting rule OptionPremium from number: <"Option premium">
 					"N/A"
-						as "I.6.3 Option Premium"
 				""");
 	}
 
@@ -155,17 +153,16 @@ public class RosettaFormattingTest {
 				segment article
 
 				reporting rule ReportStatus from number: <"Indication as to whether the transaction report is new or a cancellation">
-					[regulatoryReference ESMA MiFIR RTS_22
+					[docReference ESMA MiFIR RTS_22
 							annex "I" table "2" field "1"
 							provision "Indication as to whether the transaction report is new or a cancellation."]
-					[regulatoryReference ESMA MiFIR RTS_22
+					[docReference ESMA MiFIR RTS_22
 							article "2"
 							rationale_author "DRR"
 							rationale "Article 2 means that each reportable event is treated as an independent transaction. The practical implementation of corrections is: A New event is a NEWT, A new, non-reportable version of a previously-reported event, that renders the previous version of the same event non-reportable, is a CANC, A new, non-reportable version of a non-reportable event is not reported, A new, reportable version of a previously-reported event, that supersedes the previous version of the same event is a CANC followed by a NEWT"
 							structured_provision "MiFIR.ReportStatus is by definition 'NEWT' unless the report is a Cancellation when MiFIR.ReportStatus is by definition 'CANC'"
 							provision "Indication as to whether the transaction report is new or a cancellation."]
 					"Not Modelled"
-						as "Report Status"
 				""", """
 				namespace "com.regnosys.rosetta.model"
 				version "test"
@@ -181,15 +178,14 @@ public class RosettaFormattingTest {
 				segment article
 
 				reporting rule ReportStatus from number: <"Indication as to whether the transaction report is new or a cancellation">
-					[regulatoryReference ESMA MiFIR RTS_22 annex "I" table "2" field "1"
+					[docReference ESMA MiFIR RTS_22 annex "I" table "2" field "1"
 						provision "Indication as to whether the transaction report is new or a cancellation."]
-					[regulatoryReference ESMA MiFIR RTS_22 article "2"
+					[docReference ESMA MiFIR RTS_22 article "2"
 						rationale_author "DRR"
 						rationale "Article 2 means that each reportable event is treated as an independent transaction. The practical implementation of corrections is: A New event is a NEWT, A new, non-reportable version of a previously-reported event, that renders the previous version of the same event non-reportable, is a CANC, A new, non-reportable version of a non-reportable event is not reported, A new, reportable version of a previously-reported event, that supersedes the previous version of the same event is a CANC followed by a NEWT"
 						structured_provision "MiFIR.ReportStatus is by definition 'NEWT' unless the report is a Cancellation when MiFIR.ReportStatus is by definition 'CANC'"
 						provision "Indication as to whether the transaction report is new or a cancellation."]
 					"Not Modelled"
-						as "Report Status"
 				""");
 	}
 

@@ -62,7 +62,6 @@ interface BuiltinAnnotationWithPath extends BuiltinAnnotation {
 	contains AnnotationPathExpression path
 }
 class LabelAnnotation extends BuiltinAnnotationWithPath {
-	boolean deprecatedAs
 	String label
 }
 class RuleReferenceAnnotation extends BuiltinAnnotationWithPath {

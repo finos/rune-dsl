@@ -1,0 +1,330 @@
+---
+title: Function
+sidebar_label: Function
+description: "Sets of instructions that can take multiple inputs and produce a single output."
+---
+
+A function is a set of instructions that takes inputs (called arguments) and produces an output. When you call a function, you provide the input values and the function runs its instructions to generate a result.
+In Rune, all such components are represented using a single unified function construct.
+
+### Using functions to build complex processes
+Functions are essential for automation. You can run the same instructions repeatedly with different inputs and always get a predictable result. This makes functions powerful building blocks for modelling processes.
+Just like spreadsheets let you create formulas and reuse them, Rune lets you build complex processes by combining smaller, reusable function components.
+ - A large process is usually made up of smaller sub processes.
+ - Each sub process is represented as a function.
+ - Functions can call other functions, allowing you to build multi layered logic (process → sub process → sub sub process, etc).
+
+#### When to reuse existing industry processes
+If a process is already well defined and widely used, it should be reused rather than recreated. You can do this with:
+- **Mathematical functions**, such as sum, absolute value, or average.
+- **Reference data lookups**, which are typically provided by industry-standard utilities.
+- **Quantitative finance components**, such as generating coupon schedules from parameters, or adjusting dates based on holiday calendars.
+
+#### Benefits of reusing small, modular functions
+- **Consistency:** If a sub process changes, every process that uses it automatically benefits from the update.
+- **Flexibility:** You don’t need to define every process from scratch. You can assemble new processes by reusing existing building blocks.
+
+The concept of building systems from small, reusable components fits naturally with a modular modelling approach. It keeps models clean, maintainable, and scalable.
+
+There are three main things to consider with functions:
+1. [Function specification](#1-function-specification)
+2. [Function definition](#2-function-definition)
+3. [Function call](#3-function-call)
+
+## 1. Function specification
+Function specifications define the processes used in a Rune domain model. They describe:
+- What inputs a function takes.
+- What output it must produce.
+- The types associated with those inputs and outputs.
+
+**Function syntax**
+
+A function in Rune includes:
+ - A **name**.
+ - A **plain text description**.
+ - **Inputs and output attributes** (mandatory for output).
+ - **Inputs and output condition statements**.
+ - **Output construction statements**.
+
+**Example**
+
+```haskell
+func <FunctionName>: (optional: <"Description">)
+  inputs:
+    <attribute1> (0..1)
+    <attribute2> (0..1)
+    <...>
+  output:
+    <returnAttribute>
+```
+
+### 1.1 Naming rules
+ - Function names use **PascalCase** (UpperCamelCase).
+ - Names must be **unique** across the entire model.
+ - Syntax mirrors type definitions for consistency.
+
+### 1.2 Descriptions
+Descriptions help you to understand the purpose and behavior of a function. This improves clarity and communication.
+
+You can add descriptions to:
+ - The function itself.
+ - Any input.
+ - The output.
+ - Any statement block (e.g. conditions).
+
+### 1.3 Inputs and output
+Inputs and output behave like attributes in type definitions. Each has:
+ - A name.
+ - A type.
+ - A cardinality (e.g. 1..1, 0..*).
+
+`inputs` is plural whereas `output` is singular, because a function may take several inputs but may only return one output. The minimum requirement is that a function **must** define an output. Inputs are optional.
+
+**Example:** Output only
+
+```haskell
+func GetBusinessDate: <"Provides the business date from the underlying system implementation.">
+   output:
+     businessDate date (1..1) <"The provided business date.">
+```
+
+**Example:** Inputs and output
+```haskell
+func UpdateAmountForEachQuantity:
+  inputs:
+     priceQuantity PriceQuantity (0..*)
+     amount number (1..1)
+  output:
+     updatedPriceQuantity PriceQuantity (0..*)
+```
+
+**Example:** Multiple cardinality
+
+Inputs and outputs may be lists:
+```haskell
+func UpdateAmountForEachQuantity:
+  inputs:
+     priceQuantity PriceQuantity (0..*)
+     amount number (1..1)
+  output:
+     updatedPriceQuantity PriceQuantity (0..*)
+```
+
+### 1.4 Conditions
+Conditions restrict what values are allowed for inputs and outputs. They ensure the function is used safely and correctly and define the rules you need to satisfy. There are two types:
+1. Pre conditions – `condition`
+ - Apply to **inputs only**
+ - Checked **before** the function runs
+2. Post conditions – post-condition
+ - Apply to **inputs and output**
+ - Checked **after** the function runs
+
+**Example:**
+```haskell
+func Create_VehicleOwnership: <"Creation of a vehicle ownership record file">
+    inputs:
+        drivingLicence DrivingLicence (0..*)
+        vehicle Vehicle (1..1)
+        dateOfPurchase date (1..1)
+        isFirstHand boolean (1..1)
+    output:
+        vehicleOwnership VehicleOwnership (1..1)
+
+    condition: <"Driving licence must not be expired">
+        drivingLicence -> dateOfRenewal all > dateOfPurchase
+    condition: <"Vehicle classification allowed by the driving licence needs to encompass the vehicle classification of the considered vehicle">
+        drivingLicence->vehicleEntitlement contains vehicle-> vehicleClassification
+    post-condition: <"The owner's driving license(s) must be contained in the vehicle ownership records.">
+        vehicleOwnership -> drivingLicence contains drivingLicence
+```
+
+## 2. Function definition
+In Rune, you can do more than just declare a function’s inputs and output – you can also define **how the output is built**.
+
+However, because Rune has limited language features, not all logic can always be fully expressed. This leads to two types of functions:
+
+#### Fully defined function
+ - All validation rules for the output are satisfied within Rune.
+ - The generated code is complete and ready to use.
+ - No extra coding is required.
+
+#### Partially defined function
+ - Only some validation rules are satisfied in Rune.
+ - You must extend the generated code (e.g. in Java) to finish building the output.
+ - The output must still be fully valid when the function is executed.
+
+**Note:** Whether a function is fully or partially defined depends on the specific use case. 
+
+### 2.1. Output construction
+Sometimes a function only checks the output (using `post condition`) but does not actually build it. In that case, you’ll need to construct the output manually. A `post condition` checks that the output contains the driving licenses, but the function does not populate them.
+This means the function is only specified but **not fully defined**.
+
+You can fully define a function by assigning values to the output using the `set` keyword:
+```haskell
+set <PathExpression>: <Expression>
+```
+
+- **Left side:** which attribute of the output to set
+- **Right side:** how to compute the value from inputs
+
+```haskell
+func Create_VehicleOwnership: <"Creation of a vehicle ownership record file">
+    inputs:
+        drivingLicence DrivingLicence (0..*)
+        vehicle Vehicle (1..1)
+        dateOfPurchase date (1..1)
+        isFirstHand boolean (1..1)
+    output:
+        vehicleOwnership VehicleOwnership (1..1)
+
+    set vehicleOwnership -> drivingLicence:
+        drivingLicence
+    set vehicleOwnership -> vehicle:
+        vehicle
+    set vehicleOwnership -> dateOfPurchase:
+        dateOfPurchase
+    set vehicleOwnership -> isFirstHand:
+        isFirstHand
+```
+
+#### Working with lists: `set` vs `add`
+`set`
+- Replaces the entire list.
+- The expression must return a list.
+
+`add`
+- Appends a single element or a list to an existing list.
+
+**Example**
+```haskell
+func AddDrivingLicenceToVehicleOwnership: <"Add new driving licence to vehicle owner.">
+    inputs:
+        vehicleOwnership VehicleOwnership (1..1)
+        newDrivingLicence DrivingLicence (1..1)
+    output:
+        updatedVehicleOwnership VehicleOwnership (1..1)
+
+    set updatedVehicleOwnership:
+        vehicleOwnership
+    add updatedVehicleOwnership -> drivingLicence: <"Add newDrivingLicence to existing list of driving licences">
+        newDrivingLicence
+```
+Another example using filtering and mapping:
+```haskell
+func GetDrivingLicenceNames: <"Get driver's names from given list of licences.">
+    inputs:
+        drivingLicences DrivingLicence (0..*)
+    output:
+        ownersName string (0..*)
+
+    add ownersName: <"Filter lists to only include drivers with first and last names, then use 'map' to convert driving licences into list of names.">
+        drivingLicences
+            filter firstName exists and surname exists
+            then extract firstName + " " + surname
+```
+Rune supports two function cases where the output is fully defined:
+1. Object qualification functions
+2. Shorthand functions
+
+These often use annotations to guide code generation.
+
+### 2.2 Object qualification functions
+These functions classify an object based on a set of rules.
+- They return `true` if the object meets all criteria for a specific classification.
+- They use a **qualification name** (a string from that classification) to specify what type of object is being classified (e.g. `Product, BusinessEvent`) and returns a Boolean.
+
+**Example**
+```haskell
+annotation qualification: <"Annotation that describes a func that is used for event and product Qualification">
+  [prefix Qualify]
+  Product Boolean (0..1)
+  BusinessEvent Boolean (0..1)
+```
+Naming convention: `Qualify_(QualificationName` uses PascalCase; spaces/colons become underscores.
+
+### 2.3 Shorthand functions
+Shorthand functions provide a compact way to express frequently used or long path expressions.
+
+**Example**
+```haskell
+func PaymentDate:
+  inputs: economicTerms EconomicTerms (1..1)
+  output: result date (0..1)
+  set result: economicTerms -> payout -> interestRatePayout only-element -> paymentDate -> adjustedDate
+```
+Instead of writing the long path for the `EconomicTerms` object repeatedly, you can simply call:
+`PaymentDate(EconomicTerms)`.
+
+### 2.4 Aliases
+Aliases act like temporary variables inside a function. They make complex logic easier to read and maintain.
+
+**Example**
+```haskell
+func FixedAmount:
+  inputs:
+    interestRatePayout InterestRatePayout (1..1)
+    fixedRate FixedInterestRate (1..1)
+    quantity NonNegativeQuantity (1..1)
+    date date (1..1)
+  output:
+    fixedAmount number (1..1)
+
+  alias calculationAmount: quantity -> amount
+  alias fixedRateAmount: fixedRate -> rate
+  alias dayCountFraction: DayCountFraction(interestRatePayout, interestRatePayout -> dayCountFraction, date)
+
+  set fixedAmount:
+    calculationAmount * fixedRateAmount * dayCountFraction
+```
+
+## 3. Function call 
+A function call in Rune lets you **execute a function** and use the **output it returns**.
+
+### Syntax
+A function call uses consists of the function name, followed by a comma-separated list of arguments enclosed within round brackets `(...)`:
+
+`<FunctionName>( <Argument1>, <Argument2>, ...)`
+
+**Key rules:**
+ - Arguments must be **expressions**.
+ - The **number** and **types** of arguments must match the function’s input definition.
+ - The **type** of the function call expression is the **type of the function’s output**.
+ - The syntax validator ensures correct usage.
+
+**Example**
+
+**Function 1:** `Max`
+
+This function returns the larger of two numbers.
+```haskell
+func Max:
+    inputs:
+        a number (1..1)
+        b number (1..1)
+    output:
+        r number (1..1)
+    set r:
+        if a >= b then a
+        else b
+```
+
+**Function 2:** `WhichIsBigger`
+
+This function uses Max(a, b) to determine which input is larger and returns "A" or "B". 
+ - Max(a, b) is called inside `WhichIsBigger`.
+ - The result is compared to a.
+ - If a is the larger number, the function returns "A".
+ - Otherwise, it returns "B".
+```haskell
+func WhichIsBigger:
+    inputs:
+        a number (1..1)
+        b number (1..1)
+    output:
+        r string (1..1)
+    set r:
+        if Max(a,b)=a then "A" else "B"
+```
+
+
+

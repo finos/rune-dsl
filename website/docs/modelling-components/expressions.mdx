@@ -1,0 +1,751 @@
+---
+title: Expressions
+sidebar_label: Expressions
+description: "Rune’s small, controlled set of features for expressing basic operations and comparisons into larger expressions."
+---
+
+Rune provides a small, controlled set of features for expressing simple logic – basic operations, comparisons and combinations of these into larger expressions. It’s intentionally limited so domain experts who are not software engineers can read it easily and avoid unintended behavior. Simple expressions can be built up using operators to form more complex expressions.
+
+Logical expressions appear in:
+- [Functions](./function.mdx)
+- [Validation conditions](./data-validation.mdx)
+- [Conditional mappings](./mapping#23-conditional-mappings)
+- [Reporting rules](./reporting.mdx)
+
+
+Expressions are evaluated against a Rune object and return either:
+- a **single value** (built in, complex, or enumeration), or
+- a **list of values** of the same type
+
+The type of an expression is simply the type of the value it produces – for example, a Boolean expression returns a `Boolean`, and an expression that produces a `Party` is of type `Party`.
+
+There are two main types of expressions, and these can be amended with standard operators and list operators:
+1. [Constant expressions](#1-constant-expressions)
+2. [Path expressions](#2-path-expressions)
+3. [Operators](#3-operators)
+4. [List operators](#4-list-operators)
+5. [Conversion operators](#5-conversion-operators)
+
+
+## 1. Constant expressions 
+There are three types of constant expression.
+
+### 1.1 Basic type constant
+Expressions can be simple literal values. These are useful for comparisons to more complex expressions:
+- number 2.0 
+- Boolean `True`
+- string “USD”
+
+### 1.2 Enumeration constant
+An expression can refer to an enumeration value.
+
+**Syntax**
+`<EnumName> -> <EnumValue>`
+
+**Example**
+`DayOfWeekEnum -> SAT`
+
+
+### 1.3 List constant
+Or they can be declared as lists.
+
+**Syntax**
+```haskell
+[ <item1>, <item2>, <...>]
+```
+
+**Example**
+```haskell
+[1,2]
+["A",B"]
+[DayOfWeekEnum->SAT, DayOfWeekEnum->SUN]
+```
+
+### 1.4 Constructing data types and records
+Data types and records can be constructed using a syntax similar to JSON.
+
+**Syntax**
+```haskell
+<type name> {
+  <field name 1>: <field value 1>,
+  <field name 2>: <field value 2>,
+  etc
+}
+```
+
+**Example:** A person might look something like this:
+```haskell
+type Person:
+  honorific string (0..1) <"An honorific title, such as Mr., Ms., Dr. etc.">
+  firstName string (0..1) <"The natural person's first name.">
+  middleName string (0..*)
+  initial string (0..*)
+  surname string (0..1) <"The natural person's surname.">
+  suffix string (0..1) <"Name suffix, such as Jr., III, etc.">
+  dateOfBirth date (0..1) <"The person's date of birth.">
+```
+
+**Example:** Simple literals can be used to construct a person called “Dwight Schrute”.
+```haskell
+Person {
+  firstName: "Dwight",
+  initial: ["D", "S"],
+  surname: "Schrute",
+  honorific: empty,
+  middleName: empty,
+  suffix: empty,
+  dateOfBirth: empty
+}
+```
+
+**Example:** Or the values could be any arbitrary Rune expression.
+```haskell
+Person {
+  firstName: "Dwight",
+  initial: ComputeInitials("Dwight Schrute"),
+  surname: "Schr" + "ute",
+  honorific: GetDefaultHonorificTitle(),
+  middleName: empty,
+  suffix: variable -> suffixOfDwight,
+  dateOfBirth: date {
+    year: 1998,
+    month: 11,
+    day: 4
+  }
+}
+```
+
+### 1.5 Triple-dot syntax
+Many Rune types – like those in the CDM – have lots of optional fields. Manually setting each unused field to `empty` can be tedious. The triple dot syntax `...` solves this by automatically assigning `empty` to any attribute you don’t specify.
+
+```haskell
+Person {
+  firstName: "Dwight",
+  initial: ["D", "S"],
+  surname: "Schrute",
+  ...
+}
+```
+
+### 1.6 Constructing record types
+The same syntax can be used to construct a record such as `date` or `zonedDateTime`.
+```haskell
+date {
+  year: 1998,
+  month: 11,
+  day: 4
+}
+```
+
+## 2. Path expressions
+A path expression retrieves the value of an attribute inside an object. Paths can be chained to access nested attributes.
+
+**Syntax**
+The simplest path is just an attribute name.
+```haskell
+type ContractFormationPrimitive:
+
+  before ExecutionState (0..1)
+  after PostContractFormationState (1..1)
+
+  condition: <"The quantity should be unchanged.">
+      if before exists ....
+```
+
+Use `->` to access nested attributes:
+`<attribute1> -> <attribute2> -> <...>`
+
+**Example:** The penalty points of a vehicle owner’s driving license is being extracted:
+```haskell
+owner -> drivingLicence -> penaltyPoints
+```
+
+The path operator can also be used to extract the field of a built-in record type such as `date`. 
+
+**Example:** We define a function that checks whether a date falls before the year 2000.
+```haskell
+ func FallsBefore2000:
+  inputs:
+    d date (1..1)
+  output:
+    result boolean (1..1)
+  
+  set result:
+    d -> year < 2000
+```
+
+### 2.1 Null
+If a path refers to a missing attribute, the result is null. In this case, chaining will continue to return null. For multi-valued expressions, null behaves as an empty '[list](#4-list-operators)'.
+
+**Example:** When `drivingLicense` is null, the final `penaltyPoints` attribute also evaluates to `null`.
+```haskell 
+owner -> drivingLicence -> penaltyPoints
+```
+
+
+### 2.2 Deep paths for choice types
+Use deep path operator `->>` to access common attributes across all options of a choice type. 
+With a choice type called `Vehicle`, each of its options exposing an attribute `vehicleId`, this identifier can be accessed directly using `vehicle ->> vehicleId`.
+
+
+## 3. Operators
+Rune provides a set of operators that let you combine expressions into more complex logic. These operators mirror the basics found in most programming languages:
+1. Conditional statements: `if, then, else`
+2. Comparison operators: `=, <>, <, <=, >=, >`
+3. Boolean operators: `and, or`
+4. Arithmetic operators: `+, -, *, /`  
+5. Default operator: `default`
+6. Switch operator: `switch`
+7. With-meta operator: `with-meta`
+
+
+### 3.1. Conditional statements
+A conditional expression consists of:
+- `if` – followed by a Boolean expression.
+- `then` – followed by any expression.
+- `else` (optional) – followed by any expression.
+
+#### Behaviour
+- If the `if` condition is **True**, the `then` value is returned.
+- If it’s **False**, the `else` value is returned (or `null` if no `else` is provided).
+
+#### Type rules
+- The type and cardinality of the whole conditional expression comes from the `then` clause.
+- The `else` clause must match the type of the `then` clause.
+- You can chain multiple conditions using `else if` statements ending with a final `else`.
+
+### 3.2. Comparison operators
+Comparison operators always return a **Boolean**.
+
+#### Equality
+- `=` – true if both sides are equal.
+- `<>` – true if both sides are not equal.
+
+#### Equality rules
+- Built-in types compare by value.
+- Complex types compare by recursively comparing all attributes.
+
+#### Mathematical comparisons
+`<, <=, >=, >` work on '[comparable types](#comparable-types)':
+- `int`
+- `number`
+- `date`
+- `string`
+
+Both sides must be the same type.
+
+#### Existence checks
+- `exists` – true if the expression has a value.
+- `is absent` – true if it does not.
+
+Modifiers:
+
+- `only` – this attribute exists, and no other attribute in the parent object does.
+- `single` – the expression has exactly one value.
+- `multiple` – the expression has more than one value
+
+`only exists` replaces long conditions like:
+- A exists.
+- B is absent.
+- C is absent.
+
+…and so on.
+
+It also stays correct even if new attributes are added later.
+
+The `only exists` operator can apply to a composite set of attributes enclosed within brackets `(..)`.
+
+This condition is usually used on types that already enforce a `one-of` rule, meaning only one attribute can exist at a time. In those cases, `only` is technically redundant, but it makes the logic clearer and keeps the condition correct even if the `one-of` rule is removed in the future.
+
+```haskell
+economicTerms -> payout -> interestRatePayout only exists
+or (economicTerms -> payout -> interestRatePayout, economicTerms -> payout -> cashflow) only exists
+```
+
+#### Comparable types
+These built-in types can be compared using mathematical comparison operators, as long as both sides have the same type.
+- `int`
+- `number`
+- `date`
+- `string`
+
+
+#### Comparisons and null
+When a single value expression is null, comparisons behave like this.
+- `null = value` – False
+- `null <> value` – True
+- `null > value` – False
+- `null >= value` – False
+
+This applies even when the other value is also null. The behavior is symmetric – null `<` value works the same as value `<` null.
+
+
+### 3.3. Boolean operators
+- Use `and` and `or` to combine Boolean expressions.
+- Use parentheses `( )` to group expressions.
+
+Expressions inside parentheses are evaluated first.
+
+
+### 3.4. Arithmetic operators
+Rune supports basic arithmetic:
+
+`+` adds two numbers, or concatenates two strings.
+
+`-, *, /` subtracts, multiplies, divides two numeric values and always returns a number.
+
+
+### 3.5. `Default` operators
+The `default` operator returns the first value unless it’s empty:
+- If **left** has a value – return **left**.
+- If **left** is empty – return **right**.
+
+Both sides must have the **same type and cardinality**.
+
+
+### 3.6. `Switch` operators
+The `switch` operator performs case analysis on a value.
+
+**Syntax**
+
+The right side lists case statements that specify what value to return when the input matches each case.
+```haskell
+   "valueB" switch
+      "valueA" then "resultA",
+      "valueB" then "resultB",
+      default "resultC"
+```
+
+#### Enumerations
+You must cover **all** enumeration values or provide a default:
+
+```haskell
+  enumInput switch 
+    A then "result A",
+    B then "result B",
+    C then "result C",
+    default "other"
+```
+The `default` case is optional. But if no case matches and no default is provided, the result is `empty`. 
+
+
+#### Using `switch` for `choice` types
+You can use `switch` on `choice` types by matching the active option.
+
+**Example**
+
+Model for a powered vehicle.
+```haskell
+choice PoweredVehicle:
+  PetrolCar
+  ElectricCar
+  Motorcycle
+
+type PetrolCar:
+  fuelCapacity number (1..1)
+
+type ElectricCar:
+  batteryCapacity number (1..1)
+
+type Motorcycle:
+  fuelCapacity number (1..1)
+```
+
+**Example**
+
+Inside each case, you can directly access attributes of that specific type.
+Use `item` to refer to the actual object in the case.
+```haskell
+func ComputeMileage:
+  inputs:
+    vehicle PoweredVehicle (1..1)
+  output:
+    mileage number (1..1)
+  
+  set mileage:
+    vehicle switch
+      PetrolCar   then 15 * fuelCapacity,   // assume 15 kilometres per litre of fuel
+      ElectricCar then 5 * batteryCapacity, // assume 5 kilometres per kWh of battery
+      default          80                   // for any other powered vehicle, assume a mileage of 80 kilometres
+```
+
+#### Nested choice types
+Using `switch` also works when a case appears indirectly through another choice type.
+
+**Extended model**
+
+From the previous example we could extend our mileage computation to support all possible types of `Vehicle`.
+```haskell
+choice Vehicle:
+  PoweredVehicle // as defined above
+  Bicycle
+
+type Bicycle:
+  weight number (1..1)
+```
+
+**Extended switch**
+
+Even though the `Vehicle` choice type does not list `PetrolCar` directly, it's included through `PoweredVehicle`, so it can be used as a case.
+As with enumerations, all cases must be covered or a default must be provided. For example, leaving out the `Bicycle` case in this example will result in the `switch` operation being highlighted in red.
+
+
+```haskell
+func ComputeMileage:
+  inputs:
+    vehicle Vehicle (1..1)
+  output:
+    mileage number (1..1)
+        
+  set mileage:
+    vehicle switch
+      PetrolCar      then 15 * fuelCapacity,   // assume 15 kilometres per litre of fuel
+      ElectricCar    then 5 * batteryCapacity, // assume 5 kilometres per kWh of battery
+      PoweredVehicle then 80,                  // for any other powered vehicle, assume a mileage of 80 kilometres
+      Bicycle        then 30                   // assume a mileage of 30 kilometres for a bicycle
+```
+
+#### Switch for complex types
+You can also use `switch` on complex types.
+By switching over a person, we can perform case analysis to compute a monthly wage.
+```haskell
+type Person:
+  name string (1..1)
+
+type Employee extends Person:
+  salary number (1..1)
+
+type Contractor extends Person:
+  hourlyRate number (1..1)
+```
+
+Within each case, you can access attributes specific to that case directly. Use the keyword `item` to refer to the actual specific person inside each case.
+Because complex types can be extended, a default case is required.
+```haskell
+func ComputeMonthlyWage:
+  inputs:
+    person Person (1..1)
+  output:
+    monthlyWage number (1..1)
+  
+  set monthlyWage:
+    person switch
+      Employee then salary,
+      Contractor then hourlyRate * 8 * 5 * 20,
+      default 0
+```
+
+
+### 3.7. `With-meta` operator
+The `with-meta` operator lets you attach metadata to an expression using a constructor style block.
+- `key` – metadata is applied to the alias value, `someType`.
+- `scheme` – metadata is applied to the output attribute.
+- Works with both `key` and `reference` metadata.
+
+**Note**
+
+- The expression to which you apply `with-meta` must have **single cardinality**.
+- Metadata values you assign (e.g. `"someKey"`, `"someScheme"`) must also have **single cardinality**.
+```haskell
+type SomeType:
+  [metadata key]
+   someField string (1..1)
+
+func MyFunc:
+    output:
+        result SomeType (1..1)
+          [metadata scheme]
+     
+     alias someType: SomeType {
+        someField: "someValue"
+     }
+     
+    set result: someType with-meta {
+                                key: "someKey",
+                                scheme: "someScheme"
+                            }
+```
+
+
+### 3.8. Operator precedence
+Rune evaluates expressions in a fixed order, from highest to lowest priority:
+1. RosettaPathExpressions: e.g. `Lineage -> executionReference`
+2. Brackets: e.g. `(1+2)`
+3. if-then-else: e.g. `if (1=2) then 3`
+4. Constructor expressions: e.g `MyType {attr1: "value 1"}`
+5. Unary operators: `>, ->>, exists, is absent, only-element, flatten, distinct, reverse, first, last, sum, one-of, choice, to-string, to-number, to-int, to-time, to-enum, to-date, to-date-time, to-zoned-date-time, switch, sort, min, max, reduce, filter, map, extract, with-meta`
+6. Binary operators:  `contains, disjoint, default, join`
+7. Multiplicative operators: `*, /`
+8. Additive operators: `+, -`
+9. Comparison operators: `>=, <=, >, <`
+10. Equality operators: `=, <>`
+11. and – e.g. `5>6 and True`
+12. or – e.g. `5>6 or True`
+
+
+## 4. List operators
+A list is an ordered collection of items of the same type (basic, complex, or enumeration).
+
+Key behaviors:
+- A path expression pointing to a multiple cardinality attribute returns a list.
+- Any expression expected to return multiple values always evaluates to a list, even if it contains zero or just one element.
+- If such an expression returns null, Rune treats it as an empty list.
+- Chained paths with multiple multi-cardinality attributes produce a flattened list.
+
+**Example**
+
+This returns a single list containing all vehicle entitlements from all of the owner’s licenses.
+```haskell
+owner -> drivingLicence -> vehicleEntitlement 
+```
+
+### 4.1 List operator keywords
+Rune supports common list operations:
+- `then`
+- `filter`
+- `extract`
+- `reduce`
+
+#### `then` 
+The `then` keyword takes the result of the expression on the left and passes it as input to the expression on the right.
+
+You can pass the entire left-hand result (for example, a list or empty) to a function that expects it. 
+
+Here, item represents the entire list of driving licences.
+```haskell
+set updatedVehicleOwnership -> drivingLicence: <"Overwrite existing driving licences with renewed driving licences.">
+    vehicleOwnership -> drivingLicence
+        //then without extract means that item is a list of driving licenses
+        then RenewAllDrivingLicences(item, newDateOfRenewal)
+```
+**Iterating with** `extract`
+
+Use `then extract` to process each element individually.
+```haskell
+add renewedDrivingLicences:
+    drivingLicences 
+         //then with extract will pass driving licenses one by one to item
+        then extract RenewDrivingLicence(item, newDateOfRenewal)
+```
+**Incorrect use of** `then`
+
+If the right-hand side does not use the input item, the left hand result is discarded. Rune raises a syntax error indicating that the input `item` is not used in the `then` expression.
+```haskell
+  add ownersName: <"Filter lists to only include drivers with first and last names, then use 'map' to convert driving licences into list of names.">
+        drivingLicences
+            extract person
+            then filter firstName exists and surname exists
+            then "someOutput"
+```
+
+To conditionally return `firstName + " " + surname` based on if `surname` exists, ensure that the right-hand side actually consumes the bound `item` by using `extract`.
+```haskell
+    add ownersName: <"Filter lists to only include drivers with first and last names, then use 'map' to convert driving licences into list of names.">
+        drivingLicences
+            extract person
+            then filter firstName exists and surname exists
+            then extract firstName + " " + surname
+```
+
+#### `Filter` 
+The `filter` keyword keeps only the items in a list that satisfy a boolean condition.
+
+**Syntax**
+
+- The boolean expression is evaluated for each item.
+- If it’s True, the item is included.
+- If it’s False, the item is excluded.
+- The output list has the **same item type** as the input list.
+- The default item name is item, but you can provide your own.
+
+**Example** 
+
+Filter by engine type:
+```haskell
+vehicles
+    filter [ item -> specification -> engine -> engineType = engineType ]
+```
+**Example**
+
+Filter using a custom item name:
+```haskell
+vehicles
+    filter vehicle [ vehicle -> specification -> zeroTo60 < zeroTo60 ]
+```
+
+**Example**
+
+Chaining filters with conditions. Square brackets are optional unless needed to avoid ambiguity in nested expressions.
+```haskell
+vehicles
+    filter (if carbonMonoxideCOLimit exists then specification -> engine -> emissionMetrics -> carbonMonoxideCO <= carbonMonoxideCOLimit else True)
+    then filter (if nitrogenOxydeNOXLimit exists then specification -> engine -> emissionMetrics -> nitrogenOxydeNOX <= nitrogenOxydeNOXLimit else True)
+    then filter (if particulateMatterPMLimit exists then specification -> engine -> emissionMetrics -> particulateMatterPM <= particulateMatter
+```
+**Nested list operations**
+
+You can nest list operations inside each other.
+
+**Example**
+
+Find all owners whose licenses do not exceed a penalty point limit.
+```haskell
+owners
+    filter owner [ owner -> drivingLicence
+        filter licence [ licence -> penaltyPoints > maximumPenaltyPoints ] count = 0
+        ]
+```
+
+#### `Extract`
+The keyword `extract` transforms each item in a list using an expression.
+- The expression runs once per list item.
+- The output is a new list containing the transformed items.
+- Square brackets are optional unless needed to avoid ambiguity.
+
+**Syntax**
+
+`<list> extract (optional <itemName>) [ <expression> ]`
+
+**Example**
+
+Convert driving licences into a list of names.
+```haskell
+drivingLicences
+    extract person
+    filter firstName exists and surname exists
+    then extract firstName + " " + surname
+```
+
+
+#### `Reduce`
+The `reduce` keyword is an operation that takes a list and returns a **single value**.
+
+#### Built-in reduction operators
+- `sum` – sum of all numbers.
+- `min, max` – smallest or largest element.
+- `join` – concatenates strings (optional delimiter).
+- `reduce` – custom reduction using a merge expression.
+
+**Syntax**
+```haskell
+<list> <reduceOperator> (optional <itemName>) (optional [ <operationExpression> ])
+```
+**Example**
+```haskell
+vehicles
+    max [ item -> specification -> engine -> power ]
+```
+
+For `join`, the operator can specify a delimiter expression in-between each string element. This example concatenates a list of strings, separating each element with the given delimiter:
+` strings join ";"`
+
+
+```haskell
+vehicles
+    reduce v1, v2 [
+        if v1 -> specification -> engine -> power > v2 -> specification -> engine -> power then v1 else v2
+        ]
+```
+Reduction works by repeatedly combining two list elements into one until only a single result remains. All built in reduction operators are just shortcuts for this generic reduce process. 
+When using `reduce`, you must provide an expression that defines how to merge two items. The earlier example that finds the vehicle with the highest engine power can be rewritten.
+
+### 4.2. List comparison
+Rune supports comparison operators on lists. All list comparisons return a **Boolean**.
+
+### 4.3 Additional list comparison keywords
+- `all / any` – compare a list to a single value.
+- `contains` – true if the right side is a subset of the left.
+- `disjoint` – true if the lists share no elements.
+
+If a single value expression is used with `contains` or `disjoint`, Rune treats it as a list with one element (or empty if null).
+
+### 4.4 Rules
+- If one side is a list and the other is a single value, you must use `all` or `any`.
+- If both sides are lists, they must have the same length for pairwise comparisons.
+
+### 4.5 Semantics
+`=`
+- List vs list – true if same length and all items match.
+- List vs single (all) – all items equal the value.
+- List vs single (any) – at least one item equals the value.
+
+`<>`
+- List vs list – true if lengths differ or any item differs.
+- List vs single (any) – any item differs.
+- List vs single (all) – all items differ.
+
+`<, <=, >=, >`
+- List vs list – lists must be same length; comparison must hold pairwise.
+- List vs single (all) – comparison must hold for all items.
+- List vs single (any) – comparison must hold for at least one item.
+
+### 4.6 Other list operators
+These operators all require that the expression has multiple cardinality:
+- **only-element** – returns the single element if the list has exactly one item.
+- **count** – number of items.
+- **first, last** – first or last element.
+- **flatten** – flattens a list of lists.
+- **sort** – sorts comparable elements.
+- **distinct** – removes duplicates.
+
+**Examples**
+
+The `only-element`  keyword imposes a constraint that the evaluation of the path up to this point returns exactly one value. 
+If the list has 0, 2, or more items – result is null.
+```haskell
+observationEvent -> primitives only-element -> observation
+```
+You can use the `distinct` operator to remove duplicate elements from a list.
+Combine it with other keywords like `count` to determine if all elements of a list are equal.
+```haskell
+owner -> drivingLicense -> countryofIssuance distinct count = 1
+```
+
+
+## 5. Conversion operators
+Rune provides five conversion operators:
+- `to-enum`
+- `to-string`
+- `to-number`
+- `to-int`
+- `to-time`
+
+**Examples**
+
+Given:
+`enum Foo: VALUE1 VALUE2 displayName "Value 2"`
+
+These values will result:
+```haskell
+- Foo -> VALUE1 to-string – "VALUE1"
+- Foo -> VALUE2 to-string – "Value 2" (uses display name)
+- "VALUE1" to-enum Foo – Foo -> VALUE1
+- "Value 2" to-enum Foo – Foo -> VALUE2
+- "-3.14" to-number – -3.14
+- "17:05:33" to-time – time value 17:05:33
+```
+If conversion fails – the result is empty.
+- `"VALUE2" to-enum Foo` – empty (display name mismatch)
+- `"3.14" to-int` – empty
+
+
+### 5.1 Keyword clashes
+If a model name clashes with a Rune keyword, prefix it with the `^` operator. The `^` is not included in generated code or JSON.
+
+**Example**
+
+In this example, `^E` avoids conflict with the E notation from mathematics, which is supported by Rune.
+Generated code and JSON will simply use E.
+```haskell
+enum VehicleTaxBandEnum:
+    A
+    B
+    C
+    D
+    ^E
+    F
+    G
+```
+
+
+

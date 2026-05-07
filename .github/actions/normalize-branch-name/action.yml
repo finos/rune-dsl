@@ -10,8 +10,14 @@ outputs:
     description: "Normalized branch name"
 
 runs:
-  using: "node12"
-  main: "index.js"
+  using: "composite"
+  steps:
+    - name: Install dependencies
+      run: npm install
+      shell: bash
+    - name: Run normalization
+      using: "node12"
+      main: "index.js"
 branding:
   icon: 'terminal'
   color: 'green'

@@ -1,0 +1,46 @@
+---
+title: FAQs
+sidebar_label: FAQs
+description: Frequently asked questions on Rune DSL.
+---
+
+
+## What are modelling components in Rune DSL?
+Modelling components are the building blocks used to describe financial products, processes and workflows in a consistent, machine readable way. Each component represents a specific modelling concept – such as types, attributes, functions, or events – that together form a complete domain model. They help ensure clarity and standardisation across teams and systems.
+
+## Why does Rune DSL use a component-based modelling approach?
+A component based approach makes models easier to understand, maintain and reuse. By breaking complex financial logic into smaller, well defined parts, Rune ensures that each concept is expressed once and referenced consistently across the model. This reduces duplication and improves long term maintainability.
+
+## How do components relate to the Rosetta platform?
+Rune models are designed to work seamlessly with the Rosetta platform, which transforms them into machine readable artefacts such as code, documentation and validation rules. Components defined in Rune become the foundation for automated generation, ensuring that downstream outputs remain aligned with the source model.
+
+## What types of modelling components does Rune DSL support?
+Rune includes components such as **types**, **attributes**, **functions**, **events** and **rules**. Each serves a different purpose: types define structures, attributes describe data, functions express logic and rules enforce constraints. Together, they allow modellers to represent both static data and dynamic behaviour.
+
+## How do I know which component to use when modelling?
+Choosing the right component depends on what you’re trying to express. If you’re defining a data structure, you’ll use a type; if you’re expressing a calculation or transformation, you’ll use a function. Rune’s documentation provides examples for each component, helping you match your modelling intent to the correct construct.
+
+## Can components reference each other?
+Yes – components are designed to be composable. A type can reference other types, functions can operate on multiple components, and rules can apply constraints across the model. This interconnected structure allows you to build rich, expressive models without duplicating logic.
+
+## How does Rune DSL ensure consistency across components?
+Consistency is achieved through strict syntax, shared definitions and a unified modelling vocabulary. Because components are defined once and reused throughout the model, Rune prevents divergence and ensures that every part of the system interprets the same concepts in the same way.
+
+## Are there examples of each modelling component in the documentation?
+Yes – the [Modelling components](../modelling-components) section includes examples that illustrate how each component works and how it should be used in practise. These examples are intentionally simple and focused, making it easier to understand the purpose and structure of each component.
+
+## How do modelling components support keyword search?
+Each component is indexed and structured in a way that makes keyword search highly effective. You can search for a term on the [Rune keywords](../get-started/rune-keywords.mdx) page and immediately find the relevant component definitions, examples and related concepts. This helps modellers quickly locate the information they need without navigating the entire documentation tree.
+
+## Can developers extend or integrate modelling components into their own systems?
+Yes – Rune is designed for integration. Once components are defined, developers can use the [Rosetta platform](https://docs.rosetta-technology.io/) to generate code, APIs and validation logic that align with the model. This makes it easy to embed Rune based models into existing systems or build new applications on top of them.
+
+## How do I make a Pull Request to change the Rune documentation?
+- In the [Rune DSL GitHub repository](https://github.com/REGnosys/rune-docs), open the file you want to change.
+- Select the pencil symbol in the top-right navigation bar to edit the file. 
+- Make your changes. All our documentation files use [Markdown](https://www.markdownguide.org/) language and tags – please use Markdown for your suggested changes. 
+- When you’re finished, click the ‘Commit changes’ button at the top-right of the file. 
+- AI will suggest a title and summary for your changes – edit these if necessary.
+- Click the ‘Commit changes’ button.
+- Our team will review your change and be in touch to let you know if it’s approved or to ask for further details.
+
