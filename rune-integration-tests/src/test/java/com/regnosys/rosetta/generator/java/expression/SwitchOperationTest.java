@@ -125,8 +125,6 @@ public class SwitchOperationTest {
                 Qux
         """).compile();
 
-        model.writeClasses("test-choice");
-
         Integer resultBar = model.evaluateExpression(Integer.class, """
             Foo { Bar: Bar { barAttr: 42 }, ... }
                 switch
