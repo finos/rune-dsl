@@ -10,10 +10,4 @@ import com.rosetta.model.lib.RosettaModelObjectBuilder;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RuneChoiceType {
     String value() default "";
-
-    String model() default "";
-
-    Class<? extends RosettaModelObjectBuilder> builder();
-
-    String version() default "";
 }

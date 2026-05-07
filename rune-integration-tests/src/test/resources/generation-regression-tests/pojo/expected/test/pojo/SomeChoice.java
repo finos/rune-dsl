@@ -8,6 +8,7 @@ import com.rosetta.model.lib.annotations.RosettaAttribute;
 import com.rosetta.model.lib.annotations.RosettaDataType;
 import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.annotations.RuneDataType;
+import com.rosetta.model.lib.annotations.RuneChoiceType;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.BuilderMerger;
@@ -23,6 +24,7 @@ import static java.util.Optional.ofNullable;
  */
 @RosettaDataType(value="SomeChoice", builder=SomeChoice.SomeChoiceBuilderImpl.class, version="0.0.0")
 @RuneDataType(value="SomeChoice", model="test", builder=SomeChoice.SomeChoiceBuilderImpl.class, version="0.0.0")
+@RuneChoiceType
 public interface SomeChoice extends RosettaModelObject {
 
 	SomeChoiceMeta metaData = new SomeChoiceMeta();
