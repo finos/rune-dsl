@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import com.regnosys.rosetta.generator.java.scoping.JavaPackageName;
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil;
+import com.regnosys.rosetta.rosetta.simple.Choice;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RDataType;
 import com.rosetta.model.lib.process.AttributeMeta;
@@ -61,6 +62,11 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 	@Override
 	public String getVersion() {
 		return type.getEObject().getModel().getVersion();
+	}
+	
+	@Override
+	public boolean isChoiceType() {
+		return type.getEObject() instanceof Choice;
 	}
 	
 	@Override

@@ -37,6 +37,7 @@ public abstract class JavaPojoInterface extends RGeneratedJavaClass<RosettaModel
 	public abstract String getJavadoc();
 	public abstract String getRosettaName();
 	public abstract String getVersion();
+	public abstract boolean isChoiceType();
 	
 	public abstract Collection<JavaPojoProperty> getOwnProperties();
 	public abstract Collection<JavaPojoProperty> getAllProperties();
