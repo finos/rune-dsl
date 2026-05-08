@@ -18,6 +18,11 @@ public abstract class RJavaWithMetaValue extends JavaPojoInterface {
 	}
 	
 	@Override
+	public boolean isChoiceType() {
+		return false;
+	}
+	
+	@Override
 	public Collection<JavaPojoProperty> getAllProperties() {
 		return getOwnProperties();
 	}

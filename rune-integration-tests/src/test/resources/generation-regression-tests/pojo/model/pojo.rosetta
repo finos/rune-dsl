@@ -37,3 +37,7 @@ type Bar:
 type Baz:
     baz string (1..1)
         [metadata address "pointsTo"=Bar->bar->qux]
+
+choice SomeChoice:
+    Foo
+    Bar
