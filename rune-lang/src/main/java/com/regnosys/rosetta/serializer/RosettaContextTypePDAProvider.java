@@ -28,18 +28,17 @@ import org.eclipse.xtext.util.formallang.Pda;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 /**
  * Serialises access to Xtext's context-type PDA cache. The upstream provider is
  * a singleton with a plain {@link java.util.HashMap}; concurrent reads can miss
- * the cache together and mutate it concurrently. We also warm the cache in the
- * background when the language injector is created, so the first serializer
- * request does not have to pay the full PDA construction cost.
+ * the cache together and mutate it concurrently. The cache can also be warmed
+ * up in the background via {@link #warmUpAsync(Grammar)}, so the first
+ * serializer request does not have to pay the full PDA construction cost.
  *
  * TODO: contribute this synchronization, or an equivalent
- * {@code ConcurrentHashMap.computeIfAbsent} implementation, and the eager
+ * {@code ConcurrentHashMap.computeIfAbsent} implementation, and the
  * grammar PDA warm-up hook, to Xtext.
  */
 @Singleton
@@ -48,12 +47,7 @@ public class RosettaContextTypePDAProvider extends ContextTypePDAProvider {
 
 	private CompletableFuture<Void> warmUp;
 
-	@Inject
-	void startWarmUp(IGrammarAccess grammarAccess) {
-		warmUpAsync(grammarAccess.getGrammar());
-	}
-
-	synchronized CompletableFuture<Void> warmUpAsync(Grammar grammar) {
+	public synchronized CompletableFuture<Void> warmUpAsync(Grammar grammar) {
 		if (warmUp == null) {
 			warmUp = CompletableFuture.runAsync(() -> {
 				try {

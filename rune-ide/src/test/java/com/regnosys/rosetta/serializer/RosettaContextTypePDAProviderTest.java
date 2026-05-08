@@ -130,7 +130,7 @@ class RosettaContextTypePDAProviderTest {
 		private final CountDownLatch releaseComputation = new CountDownLatch(1);
 
 		@Override
-		synchronized CompletableFuture<Void> warmUpAsync(Grammar grammar) {
+		public synchronized CompletableFuture<Void> warmUpAsync(Grammar grammar) {
 			return CompletableFuture.completedFuture(null);
 		}
 

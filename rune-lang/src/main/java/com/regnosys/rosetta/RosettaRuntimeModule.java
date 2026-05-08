@@ -132,7 +132,6 @@ public class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	}
 
 	public void configureContextTypePDAProvider(Binder binder) {
-		binder.bind(RosettaContextTypePDAProvider.class).asEagerSingleton();
 		binder.bind(IContextTypePDAProvider.class).to(RosettaContextTypePDAProvider.class);
 		binder.bind(ContextTypePDAProvider.class).to(RosettaContextTypePDAProvider.class);
 	}
