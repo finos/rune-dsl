@@ -44,6 +44,8 @@ import com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperationType
 import com.rosetta.util.types.JavaType
 import com.regnosys.rosetta.generator.java.scoping.JavaMethodScope
 import com.regnosys.rosetta.generator.java.types.JavaPojoImpl
+import com.rosetta.model.lib.annotations.RuneChoiceType
+
 class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojoInterface> {
 	
 	@Inject extension ModelObjectBoilerPlate
@@ -79,6 +81,7 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 			«javaType.javadoc»
 			@«RosettaDataType»(value="«javaType.rosettaName»", builder=«builderImplClass».class, version="«javaType.version»")
 			@«RuneDataType»(value="«javaType.rosettaName»", model="«modelShortName»", builder=«builderImplClass».class, version="«javaType.version»")
+			«IF javaType.choiceType»@«RuneChoiceType»«ENDIF»
 			public «javaType.asInterfaceDeclaration» {
 
 				«metaType» «metaDataIdentifier» = new «metaType»();
