@@ -47,6 +47,18 @@ public class SomeChoiceMeta implements RosettaMetaData<SomeChoice> {
 		return factory.<SomeChoice>create(SomeChoiceTypeFormatValidator.class);
 	}
 
+	@Deprecated
+	@Override
+	public Validator<? super SomeChoice> validator() {
+		return new SomeChoiceValidator();
+	}
+
+	@Deprecated
+	@Override
+	public Validator<? super SomeChoice> typeFormatValidator() {
+		return new SomeChoiceTypeFormatValidator();
+	}
+	
 	@Override
 	public ValidatorWithArg<? super SomeChoice, Set<String>> onlyExistsValidator() {
 		return new SomeChoiceOnlyExistsValidator();
