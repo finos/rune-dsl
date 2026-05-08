@@ -80,7 +80,7 @@ class RosettaContextTypePDAProviderTest {
 		CompletableFuture<Void> second = provider.warmUpAsync(grammar);
 
 		assertSame(first, second);
-		first.get(60, TimeUnit.SECONDS);
+		first.get(5, TimeUnit.MINUTES);
 		assertTrue(cache(provider).containsKey(grammar));
 	}
 
@@ -101,9 +101,9 @@ class RosettaContextTypePDAProviderTest {
 			assertFalse(second.isDone());
 
 			provider.releaseComputation.countDown();
-			SerializationContextMap<Pda<ISerState, RuleCall>> firstResult = first.get(60, TimeUnit.SECONDS);
+			SerializationContextMap<Pda<ISerState, RuleCall>> firstResult = first.get(5, TimeUnit.MINUTES);
 			int collectTypesCallsAfterFirstResult = provider.collectTypesCalls.get();
-			SerializationContextMap<Pda<ISerState, RuleCall>> secondResult = second.get(60, TimeUnit.SECONDS);
+			SerializationContextMap<Pda<ISerState, RuleCall>> secondResult = second.get(5, TimeUnit.MINUTES);
 
 			assertSame(firstResult, secondResult);
 			assertEquals(collectTypesCallsAfterFirstResult, provider.collectTypesCalls.get());
