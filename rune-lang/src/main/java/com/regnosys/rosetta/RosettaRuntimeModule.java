@@ -17,6 +17,8 @@ import org.eclipse.xtext.resource.IDerivedStateComputer;
 import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
+import org.eclipse.xtext.serializer.analysis.ContextTypePDAProvider;
+import org.eclipse.xtext.serializer.analysis.IContextTypePDAProvider;
 import org.eclipse.xtext.service.DispatchingProvider;
 import org.eclipse.xtext.validation.INamesAreUniqueValidationHelper;
 import org.eclipse.xtext.validation.IResourceValidator;
@@ -38,6 +40,7 @@ import com.regnosys.rosetta.parsing.RosettaValueConverterService;
 import com.regnosys.rosetta.resource.RosettaResource;
 import com.regnosys.rosetta.resource.RosettaResourceDescriptionStrategy;
 import com.regnosys.rosetta.scoping.RosettaQualifiedNameProvider;
+import com.regnosys.rosetta.serializer.RosettaContextTypePDAProvider;
 import com.regnosys.rosetta.serialization.RosettaTransientValueService;
 import com.regnosys.rosetta.transgest.ModelLoader;
 import com.regnosys.rosetta.transgest.ModelLoaderImpl;
@@ -126,6 +129,12 @@ public class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	
 	public Class<? extends ResourceFormatterService> bindResourceFormatterService() {
 		return XtextResourceFormatter.class;
+	}
+
+	public void configureContextTypePDAProvider(Binder binder) {
+		binder.bind(RosettaContextTypePDAProvider.class).asEagerSingleton();
+		binder.bind(IContextTypePDAProvider.class).to(RosettaContextTypePDAProvider.class);
+		binder.bind(ContextTypePDAProvider.class).to(RosettaContextTypePDAProvider.class);
 	}
 	
 	@Override
