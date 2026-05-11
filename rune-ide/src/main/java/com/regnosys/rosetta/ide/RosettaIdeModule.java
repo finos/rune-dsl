@@ -14,6 +14,7 @@ import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2;
 import org.eclipse.xtext.ide.server.contentassist.ContentAssistService;
 import org.eclipse.xtext.ide.server.formatting.FormattingService;
 import org.eclipse.xtext.ide.server.hover.IHoverService;
+import org.eclipse.xtext.ide.serializer.impl.RegionDiffFormatter;
 import org.eclipse.xtext.ide.server.symbol.DocumentSymbolService;
 import org.eclipse.xtext.service.OperationCanceledManager;
 
@@ -37,6 +38,7 @@ import com.regnosys.rosetta.ide.quickfix.RosettaCodeActionProvider;
 import com.regnosys.rosetta.ide.quickfix.RosettaCodeActionService;
 import com.regnosys.rosetta.ide.quickfix.RosettaQuickFixProvider;
 import com.regnosys.rosetta.ide.quickfix.RosettaResolveCodeActionService;
+import com.regnosys.rosetta.ide.serializer.RosettaRegionDiffFormatter;
 import com.regnosys.rosetta.ide.semantictokens.ISemanticTokenModifiersProvider;
 import com.regnosys.rosetta.ide.semantictokens.ISemanticTokenTypesProvider;
 import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService;
@@ -89,6 +91,10 @@ public class RosettaIdeModule extends AbstractRosettaIdeModule {
 
 	public Class<? extends FormattingService> bindFormattingService() {
 		return RosettaFormattingService.class;
+	}
+
+	public Class<? extends RegionDiffFormatter> bindRegionDiffFormatter() {
+		return RosettaRegionDiffFormatter.class;
 	}
 	
 	public Class<? extends IQuickFixProvider> bindIQuickFixProvider() {

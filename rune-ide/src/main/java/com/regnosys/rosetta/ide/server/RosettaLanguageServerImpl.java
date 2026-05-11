@@ -49,6 +49,7 @@ import com.regnosys.rosetta.ide.overrides.IParentsService;
 import com.regnosys.rosetta.ide.overrides.ParentsParams;
 import com.regnosys.rosetta.ide.overrides.ParentsResult;
 import com.regnosys.rosetta.ide.quickfix.IResolveCodeActionService;
+import com.regnosys.rosetta.ide.serializer.SerializerWarmUpService;
 import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService;
 import com.regnosys.rosetta.ide.semantictokens.SemanticToken;
 import com.regnosys.rosetta.ide.util.CodeActionUtils;
@@ -60,6 +61,11 @@ import com.regnosys.rosetta.ide.util.CodeActionUtils;
 public class RosettaLanguageServerImpl extends LanguageServerImpl implements RosettaLanguageServer, RosettaTextDocumentService {
 	@Inject FormattingOptionsService formattingOptionsService;
 	@Inject CodeActionUtils codeActionUtils;
+	
+	@Inject
+	void warmupSerializer(SerializerWarmUpService warmUpService) {
+		warmUpService.warmUp();
+	}
 	
 	@Override
 	public RosettaTextDocumentService getRosettaTextDocumentService() {
