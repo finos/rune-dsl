@@ -73,7 +73,11 @@ public class RosettaContextTypePDAProvider extends ContextTypePDAProvider {
 
 	public synchronized CompletableFuture<Void> warmUpAsync(Grammar grammar) {
 		if (warmUp == null) {
-			warmUp = startWarmUp(grammar);
+			CompletableFuture<Void> startedWarmUp = startWarmUp(grammar);
+			if (startedWarmUp == null) {
+				return SKIPPED_WARM_UP;
+			}
+			warmUp = startedWarmUp;
 		}
 		return warmUp;
 	}
@@ -81,7 +85,7 @@ public class RosettaContextTypePDAProvider extends ContextTypePDAProvider {
 	private CompletableFuture<Void> startWarmUp(Grammar grammar) {
 		if (!WARM_UP_RUNNING.compareAndSet(false, true)) {
 			LOGGER.debug("Skipping serializer context-type PDA warm-up because another warm-up is already running.");
-			return SKIPPED_WARM_UP;
+			return null;
 		}
 		CompletableFuture<Void> result = new CompletableFuture<>();
 		try {
