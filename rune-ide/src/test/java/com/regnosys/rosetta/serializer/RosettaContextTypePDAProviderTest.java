@@ -85,6 +85,28 @@ class RosettaContextTypePDAProviderTest {
 	}
 
 	@Test
+	void warmUpSkipsOtherProvidersWhileOneProviderIsWarmingUp() throws Exception {
+		BlockingWarmUpProvider first = new BlockingWarmUpProvider();
+		BlockingWarmUpProvider second = new BlockingWarmUpProvider();
+		Grammar grammar = grammarAccess.getGrammar();
+
+		CompletableFuture<Void> firstWarmUp = first.warmUpAsync(grammar);
+		try {
+			assertTrue(first.enteredWarmUp.await(30, TimeUnit.SECONDS));
+
+			CompletableFuture<Void> secondWarmUp = second.warmUpAsync(grammar);
+
+			assertTrue(secondWarmUp.isDone());
+			secondWarmUp.get(5, TimeUnit.SECONDS);
+			assertEquals(1, first.contextTypePdaCalls.get());
+			assertEquals(0, second.contextTypePdaCalls.get());
+		} finally {
+			first.releaseWarmUp.countDown();
+		}
+		firstWarmUp.get(5, TimeUnit.SECONDS);
+	}
+
+	@Test
 	void concurrentCallsWaitForFirstComputationAndReuseCache() throws Exception {
 		BlockingProvider provider = new BlockingProvider();
 		injector.injectMembers(provider);
@@ -119,6 +141,25 @@ class RosettaContextTypePDAProviderTest {
 		Field cache = ContextTypePDAProvider.class.getDeclaredField("cache");
 		cache.setAccessible(true);
 		return (Map<Grammar, ?>) cache.get(provider);
+	}
+
+	private static class BlockingWarmUpProvider extends RosettaContextTypePDAProvider {
+		private final AtomicInteger contextTypePdaCalls = new AtomicInteger();
+		private final CountDownLatch enteredWarmUp = new CountDownLatch(1);
+		private final CountDownLatch releaseWarmUp = new CountDownLatch(1);
+
+		@Override
+		public synchronized SerializationContextMap<Pda<ISerState, RuleCall>> getContextTypePDAs(Grammar grammar) {
+			contextTypePdaCalls.incrementAndGet();
+			enteredWarmUp.countDown();
+			try {
+				assertTrue(releaseWarmUp.await(30, TimeUnit.SECONDS));
+				return null;
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new AssertionError(e);
+			}
+		}
 	}
 
 	private static class BlockingProvider extends RosettaContextTypePDAProvider {
