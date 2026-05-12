@@ -82,29 +82,25 @@ class RosettaContextTypePDAProviderTest {
 
 	@Test
 	void warmUpSkipsOtherProvidersWhileOneProviderIsWarmingUp() throws Exception {
-		BlockingWarmUpProvider first = new BlockingWarmUpProvider();
-		BlockingWarmUpProvider second = new BlockingWarmUpProvider();
+		BlockingWarmUpProvider provider = new BlockingWarmUpProvider();
 		Grammar grammar = grammarAccess.getGrammar();
+		AtomicBoolean warmUpRunning = holdWarmUpRunning();
 
-		CompletableFuture<Void> firstWarmUp = startBlockingWarmUp(first, grammar);
 		try {
-			assertSame(firstWarmUp, first.warmUpAsync(grammar));
+			CompletableFuture<Void> skippedWarmUp = provider.warmUpAsync(grammar);
 
-			CompletableFuture<Void> secondWarmUp = second.warmUpAsync(grammar);
-
-			assertTrue(secondWarmUp.isDone());
-			secondWarmUp.get(5, TimeUnit.SECONDS);
-			assertEquals(1, first.contextTypePdaCalls.get());
-			assertEquals(0, second.contextTypePdaCalls.get());
+			assertTrue(skippedWarmUp.isDone());
+			skippedWarmUp.get(5, TimeUnit.SECONDS);
+			assertEquals(0, provider.contextTypePdaCalls.get());
 		} finally {
-			first.releaseWarmUp.countDown();
+			warmUpRunning.set(false);
 		}
-		firstWarmUp.get(5, TimeUnit.SECONDS);
 
-		CompletableFuture<Void> secondRetry = startBlockingWarmUp(second, grammar);
-		second.releaseWarmUp.countDown();
-		secondRetry.get(5, TimeUnit.SECONDS);
-		assertEquals(1, second.contextTypePdaCalls.get());
+		CompletableFuture<Void> retryWarmUp = startBlockingWarmUp(provider, grammar);
+		provider.releaseWarmUp.countDown();
+		retryWarmUp.get(5, TimeUnit.SECONDS);
+		assertSame(retryWarmUp, provider.warmUpAsync(grammar));
+		assertEquals(1, provider.contextTypePdaCalls.get());
 	}
 
 	@Test
@@ -142,6 +138,25 @@ class RosettaContextTypePDAProviderTest {
 		Field cache = ContextTypePDAProvider.class.getDeclaredField("cache");
 		cache.setAccessible(true);
 		return (Map<Grammar, ?>) cache.get(provider);
+	}
+
+	private static AtomicBoolean holdWarmUpRunning() throws Exception {
+		AtomicBoolean warmUpRunning = warmUpRunning();
+		long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(30);
+		do {
+			if (warmUpRunning.compareAndSet(false, true)) {
+				return warmUpRunning;
+			}
+			Thread.sleep(10);
+		} while (System.nanoTime() < deadline);
+		fail("Timed out waiting to hold serializer context-type PDA warm-up throttle.");
+		return warmUpRunning;
+	}
+
+	private static AtomicBoolean warmUpRunning() throws Exception {
+		Field warmUpRunning = RosettaContextTypePDAProvider.class.getDeclaredField("WARM_UP_RUNNING");
+		warmUpRunning.setAccessible(true);
+		return (AtomicBoolean) warmUpRunning.get(null);
 	}
 
 	private static void warmUpUntilCacheContains(RosettaContextTypePDAProvider provider, Grammar grammar)
