@@ -60,6 +60,6 @@ public class RosettaSerializationTest {
 
 		String serialized = serializer.serialize(model);
 
-		assertTrue(serialized.contains("condition FooExists:\n\t\tfoo exists"), serialized);
+		assertTrue(serialized.contains("condition FooExists:\n        foo exists"), serialized);
 	}
 }
