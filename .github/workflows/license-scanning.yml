@@ -3,7 +3,7 @@ name: License Scanning for Maven
 on:
   push:
     branches:
-      - main
+      - 9.x.x
     paths:
       - 'pom.xml'
       - '.github/workflows/license-scanning.yml'
