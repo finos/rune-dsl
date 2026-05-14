@@ -72,6 +72,6 @@ public class RosettaSerializationTest {
 		RosettaExistsExpression serializedExists = (RosettaExistsExpression) serializedCondition.getExpression();
 		RosettaSymbolReference serializedReference = (RosettaSymbolReference) serializedExists.getArgument();
 
-		assertEquals("foo", NodeModelUtils.findActualNodeFor(serializedReference).getText());
+		assertEquals("foo", NodeModelUtils.getTokenText(NodeModelUtils.findActualNodeFor(serializedReference)));
 	}
 }
