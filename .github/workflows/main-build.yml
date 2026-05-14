@@ -1,8 +1,8 @@
-name: Build main branch and upload dependency graph
+name: Build 9.x.x branch and upload dependency graph
 
 on:
   push:
-    branches: [ main ]
+    branches: [ 9.x.x ]
 
 # Cancel previous jobs
 concurrency:
