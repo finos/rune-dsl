@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.validation;
 
+import com.google.common.collect.Iterables;
 import com.regnosys.rosetta.validation.names.ClusterScope;
 import com.regnosys.rosetta.validation.names.RosettaUniqueNamesConfig;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
@@ -171,7 +172,7 @@ public class NamesValidationTest {
 
         IEObjectDescription attribute = attributes.getFirst();
         var sameName = scopeFunction.apply(attribute).getExportedObjects(clusterType, attribute.getName(), false);
-        Assertions.assertEquals(2, count(sameName),
+        Assertions.assertEquals(2, Iterables.size(sameName),
                 "Local scope should still include both duplicate attributes.");
     }
 
@@ -211,13 +212,5 @@ public class NamesValidationTest {
         } catch (IllegalAccessException e) {
             throw new RuntimeException("Unable to inspect localValidationScopes via reflection.", e);
         }
-    }
-
-    private static int count(Iterable<?> values) {
-        int count = 0;
-        for (Object ignored : values) {
-            count++;
-        }
-        return count;
     }
 }
