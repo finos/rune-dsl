@@ -64,7 +64,6 @@ public class ClusterScopes {
     private static abstract class LocalClusterScope<Parent, Child extends RosettaNamed> implements ClusterScope {
         private final Class<Child> childClass;
 
-        private final Map<LocalScopeKey<Parent>, ISelectable> localValidationScopes = new HashMap<>();
         private record LocalScopeKey<Parent>(Parent container, EClass clusterType) {}
 
         public LocalClusterScope(Class<Child> childClass) {
@@ -81,6 +80,7 @@ public class ClusterScopes {
 
         @Override
         public Function<IEObjectDescription, ISelectable> getScope(Resource resource, EClass clusterType) {
+            Map<LocalScopeKey<Parent>, ISelectable> localValidationScopes = new HashMap<>();
             return description -> {
                 Parent parent = getParentFromChildDescription(description);
                 LocalScopeKey<Parent> key = new LocalScopeKey<>(parent, clusterType);
