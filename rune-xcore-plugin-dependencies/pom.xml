@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.rune</groupId>
         <artifactId>org.finos.rune.parent</artifactId>
-        <version>0.0.0.main-SNAPSHOT</version>
+        <version>0.0.0.9.x.x-SNAPSHOT</version>
     </parent>
 
 	<name>Rune DSL Plugin Dependencies</name>
@@ -33,6 +33,22 @@
     </description>
 
     <dependencies>
+        <dependency>
+            <groupId>org.eclipse.xtext</groupId>
+            <artifactId>org.eclipse.xtext</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.xtext</groupId>
+            <artifactId>org.eclipse.xtext.util</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.xtext</groupId>
+            <artifactId>org.eclipse.xtext.ecore</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf</groupId>
+            <artifactId>org.eclipse.emf.ecore.xcore.lib</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.eclipse.emf</groupId>
             <artifactId>org.eclipse.emf.ecore.xmi</artifactId>

@@ -13,7 +13,7 @@
     <name>Rosetta DSL Backport</name>
     <groupId>com.regnosys.rosetta</groupId>
     <artifactId>rosetta-backport-parent</artifactId>
-    <version>0.0.0.main-SNAPSHOT</version>
+    <version>0.0.0.9.x.x-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>

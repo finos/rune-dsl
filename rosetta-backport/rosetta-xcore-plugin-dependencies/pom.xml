@@ -7,12 +7,12 @@
     <parent>
         <groupId>com.regnosys.rosetta</groupId>
         <artifactId>rosetta-backport-parent</artifactId>
-        <version>0.0.0.main-SNAPSHOT</version>
+        <version>0.0.0.9.x.x-SNAPSHOT</version>
     </parent>
 
     <name>Rosetta DSL Plugin Dependencies</name>
     <artifactId>com.regnosys.rosetta.xcore</artifactId>
-    <version>0.0.0.main-SNAPSHOT</version>
+    <version>0.0.0.9.x.x-SNAPSHOT</version>
 
     <dependencies>
         <dependency>

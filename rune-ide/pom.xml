@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.rune</groupId>
         <artifactId>org.finos.rune.parent</artifactId>
-        <version>0.0.0.main-SNAPSHOT</version>
+        <version>0.0.0.9.x.x-SNAPSHOT</version>
     </parent>
 
     <name>Rune DSL Language Server</name>
