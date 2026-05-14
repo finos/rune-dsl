@@ -119,7 +119,6 @@ public class ReversedSimpleScope extends SimpleScope {
 	
 	@Override
 	public Iterable<IEObjectDescription> getElements(final EObject object) {
-		Iterable<IEObjectDescription> parentElements = getParent().getElements(object);
 		final URI uri = EcoreUtil2.getPlatformResourceOrNormalizedURI(object);
 		Iterable<IEObjectDescription> localElements = getLocalElements(new Provider<Iterable<IEObjectDescription>>() {
 			@Override
@@ -127,7 +126,9 @@ public class ReversedSimpleScope extends SimpleScope {
 				return getLocalElementsByEObject(object, uri);
 			}
 		});
-		Iterable<IEObjectDescription> result = Iterables.concat(parentElements, localElements);
+		Iterable<IEObjectDescription> parentElements = getParent().getElements(object);
+		// Object lookup is used by the serializer. Prefer local names there without changing textual lookup.
+		Iterable<IEObjectDescription> result = Iterables.concat(localElements, parentElements);
 		return result;
 	}
 	
