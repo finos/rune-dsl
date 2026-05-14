@@ -1,9 +1,10 @@
 package com.regnosys.rosetta.serialization;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import javax.inject.Inject;
 
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.serializer.impl.Serializer;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
@@ -59,7 +60,18 @@ public class RosettaSerializationTest {
 		data.getConditions().add(condition);
 
 		String serialized = serializer.serialize(model);
+		RosettaModel serializedModel = modelHelper.parseRosettaWithNoIssues(serialized);
+		Data serializedData = (Data) serializedModel.getElements().stream()
+				.filter(Data.class::isInstance)
+				.findFirst()
+				.orElseThrow();
+		Condition serializedCondition = serializedData.getConditions().stream()
+				.filter(c -> "FooExists".equals(c.getName()))
+				.findFirst()
+				.orElseThrow();
+		RosettaExistsExpression serializedExists = (RosettaExistsExpression) serializedCondition.getExpression();
+		RosettaSymbolReference serializedReference = (RosettaSymbolReference) serializedExists.getArgument();
 
-		assertTrue(serialized.contains("condition FooExists:\n        foo exists"), serialized);
+		assertEquals("foo", NodeModelUtils.findActualNodeFor(serializedReference).getText());
 	}
 }
