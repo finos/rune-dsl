@@ -6,6 +6,7 @@ import com.regnosys.rosetta.tests.util.ModelHelper;
 import com.regnosys.rosetta.tests.validation.RosettaValidationTestHelper;
 import com.regnosys.rosetta.rosetta.simple.SimplePackage;
 import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.testing.InjectWith;
@@ -19,7 +20,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalInt;
 import java.util.function.Function;
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.TYPE_PARAMETER;
@@ -128,28 +128,27 @@ public class NamesValidationTest {
 
     @Test
     void testLocalValidationScopeCacheDoesNotPersistAcrossValidationContexts() {
-        var clusterScope = uniqueNamesConfig.getDuplicationCluster(SimplePackage.eINSTANCE.getAttribute()).clusterScope();
+        EClass clusterType = SimplePackage.eINSTANCE.getAttribute();
+        var clusterScope = uniqueNamesConfig.getDuplicationCluster(clusterType).clusterScope();
 
         var modelV1 = modelHelper.parseRosetta("""
                 type Foo:
                     a int (1..1)
                 """);
         validationTestHelper.assertNoIssues(modelV1);
-        OptionalInt cacheSizeAfterV1 = persistentLocalValidationScopeCacheSize(clusterScope);
+        int cacheSizeAfterV1 = localValidationScopeCacheSize(clusterScope, modelV1.eResource(), clusterType);
 
         var modelV2 = modelHelper.parseRosetta("""
                 type Bar:
                     b int (1..1)
                 """);
         validationTestHelper.assertNoIssues(modelV2);
-        OptionalInt cacheSizeAfterV2 = persistentLocalValidationScopeCacheSize(clusterScope);
+        int cacheSizeAfterV2 = localValidationScopeCacheSize(clusterScope, modelV2.eResource(), clusterType);
 
-        if (cacheSizeAfterV1.isPresent() && cacheSizeAfterV2.isPresent()) {
-            Assertions.assertEquals(cacheSizeAfterV1.getAsInt(), cacheSizeAfterV2.getAsInt(),
-                    "Persistent local validation scope cache grew across independent validation contexts.");
-        }
-        Assertions.assertFalse(cacheSizeAfterV2.isPresent(),
-                "Local cluster scope must not keep a persistent localValidationScopes cache.");
+        Assertions.assertEquals(cacheSizeAfterV1, cacheSizeAfterV2,
+                "Local validation-scope cache should not accumulate across independent validation contexts.");
+        Assertions.assertEquals(1, cacheSizeAfterV1,
+                "Expected exactly one local-scope cache entry for one attribute container.");
     }
 
     @Test
@@ -174,20 +173,39 @@ public class NamesValidationTest {
                 "Local scope should still include both duplicate attributes.");
     }
 
-    private static OptionalInt persistentLocalValidationScopeCacheSize(Object clusterScope) {
-        Field cacheField;
-        try {
-            cacheField = clusterScope.getClass().getDeclaredField("localValidationScopes");
-        } catch (NoSuchFieldException e) {
-            return OptionalInt.empty();
+    private int localValidationScopeCacheSize(Object clusterScope, Resource resource, EClass clusterType) {
+        Function<IEObjectDescription, org.eclipse.xtext.resource.ISelectable> function =
+                ((com.regnosys.rosetta.validation.names.ClusterScope) clusterScope).getScope(resource, clusterType);
+        IResourceDescription resourceDescription = resourceDescriptionManager.getResourceDescription(resource);
+        List<IEObjectDescription> descriptions = new ArrayList<>();
+        resourceDescription.getExportedObjectsByType(clusterType).forEach(descriptions::add);
+        for (IEObjectDescription description : descriptions) {
+            function.apply(description);
         }
+        return reflectedCacheSize(function);
+    }
+
+    private static int reflectedCacheSize(Object scopedFunction) {
+        List<Field> mapFields = new ArrayList<>();
+        for (Field field : scopedFunction.getClass().getDeclaredFields()) {
+            if (Map.class.isAssignableFrom(field.getType())) {
+                mapFields.add(field);
+            }
+        }
+        if (mapFields.isEmpty()) {
+            throw new AssertionError("Could not find captured localValidationScopes map on scope function.");
+        }
+        if (mapFields.size() > 1) {
+            throw new AssertionError("Expected a single captured map on scope function, found " + mapFields.size() + ".");
+        }
+        Field cacheField = mapFields.getFirst();
         cacheField.setAccessible(true);
         try {
-            Object value = cacheField.get(clusterScope);
+            Object value = cacheField.get(scopedFunction);
             if (value instanceof Map<?, ?> cache) {
-                return OptionalInt.of(cache.size());
+                return cache.size();
             }
-            throw new AssertionError("Expected localValidationScopes to be a Map.");
+            throw new AssertionError("Expected captured localValidationScopes to be a Map.");
         } catch (IllegalAccessException e) {
             throw new AssertionError("Unable to inspect localValidationScopes via reflection.", e);
         }
