@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.validation;
 
+import com.regnosys.rosetta.validation.names.ClusterScope;
 import com.regnosys.rosetta.validation.names.RosettaUniqueNamesConfig;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.ModelHelper;
@@ -9,6 +10,7 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.IResourceDescription;
+import org.eclipse.xtext.resource.ISelectable;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Assertions;
@@ -159,7 +161,7 @@ public class NamesValidationTest {
                     attr int (1..1)
                 """);
         EClass clusterType = SimplePackage.eINSTANCE.getAttribute();
-        Function<IEObjectDescription, org.eclipse.xtext.resource.ISelectable> scopeFunction =
+        Function<IEObjectDescription, ISelectable> scopeFunction =
                 uniqueNamesConfig.getDuplicationCluster(clusterType).clusterScope().getScope(model.eResource(), clusterType);
 
         IResourceDescription resourceDescription = resourceDescriptionManager.getResourceDescription(model.eResource());
@@ -174,8 +176,8 @@ public class NamesValidationTest {
     }
 
     private int localValidationScopeCacheSize(Object clusterScope, Resource resource, EClass clusterType) {
-        Function<IEObjectDescription, org.eclipse.xtext.resource.ISelectable> function =
-                ((com.regnosys.rosetta.validation.names.ClusterScope) clusterScope).getScope(resource, clusterType);
+        Function<IEObjectDescription, ISelectable> function =
+                ((ClusterScope) clusterScope).getScope(resource, clusterType);
         IResourceDescription resourceDescription = resourceDescriptionManager.getResourceDescription(resource);
         List<IEObjectDescription> descriptions = new ArrayList<>();
         resourceDescription.getExportedObjectsByType(clusterType).forEach(descriptions::add);
@@ -185,7 +187,7 @@ public class NamesValidationTest {
         return reflectedCacheSize(function);
     }
 
-    private static int reflectedCacheSize(Object scopedFunction) {
+    private static int reflectedCacheSize(Function<IEObjectDescription, ISelectable> scopedFunction) {
         List<Field> mapFields = new ArrayList<>();
         for (Field field : scopedFunction.getClass().getDeclaredFields()) {
             if (Map.class.isAssignableFrom(field.getType())) {
@@ -193,10 +195,10 @@ public class NamesValidationTest {
             }
         }
         if (mapFields.isEmpty()) {
-            throw new AssertionError("Could not find captured localValidationScopes map on scope function.");
+            throw new RuntimeException("Could not find captured localValidationScopes map on scope function.");
         }
         if (mapFields.size() > 1) {
-            throw new AssertionError("Expected a single captured map on scope function, found " + mapFields.size() + ".");
+            throw new RuntimeException("Expected a single captured map on scope function, found " + mapFields.size() + ".");
         }
         Field cacheField = mapFields.getFirst();
         cacheField.setAccessible(true);
@@ -205,9 +207,9 @@ public class NamesValidationTest {
             if (value instanceof Map<?, ?> cache) {
                 return cache.size();
             }
-            throw new AssertionError("Expected captured localValidationScopes to be a Map.");
+            throw new RuntimeException("Expected captured localValidationScopes to be a Map.");
         } catch (IllegalAccessException e) {
-            throw new AssertionError("Unable to inspect localValidationScopes via reflection.", e);
+            throw new RuntimeException("Unable to inspect localValidationScopes via reflection.", e);
         }
     }
 
