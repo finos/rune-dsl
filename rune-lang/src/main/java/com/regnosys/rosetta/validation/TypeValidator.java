@@ -40,7 +40,8 @@ public class TypeValidator extends AbstractDeclarativeRosettaValidator {
 	public void checkDoNotExtendChoice(Data data) {
 		// TODO: remove once Choice does not extend Data anymore
 		if (data.getSuperType() instanceof Choice) {
-			error("Extending a choice type is not allowed", data, DATA__SUPER_TYPE);
+			//TODO: set back to error when models have been updated
+			warning("Extending a choice type is deprecated", data, DATA__SUPER_TYPE);
 		}
 	}
 	
