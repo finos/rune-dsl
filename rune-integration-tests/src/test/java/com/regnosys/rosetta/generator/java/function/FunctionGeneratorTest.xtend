@@ -1023,7 +1023,8 @@ class FunctionGeneratorTest {
         	test.invokeFunc(List, #[aBOpt1, bOpt2, #[aCOpt1, aBAttr, aBOpt2]])
         )
 	}
-	
+
+    //TODO: remove this when deep path on choice has been set back to error
 	@Test
 	def void testChoiceAttributeAccess() {
 		val code = '''
