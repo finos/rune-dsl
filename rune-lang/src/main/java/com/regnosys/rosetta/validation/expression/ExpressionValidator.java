@@ -46,7 +46,8 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 		RosettaExpression receiver = rosettaFeatureCall.getReceiver();
 		RMetaAnnotatedType rMetaAnnotatedType = typeProvider.getRMetaAnnotatedType(receiver);
 		if (rMetaAnnotatedType.getRType() instanceof RChoiceType) {
-			error("Using the path operator on a choice type is not allowed. Use the switch operator instead", rosettaFeatureCall, ROSETTA_FEATURE_CALL__RECEIVER);
+			//TODO: set back to error when models have been updated
+			warning("Using the path operator on a choice type is deprecated. Use the switch operator instead", rosettaFeatureCall, ROSETTA_FEATURE_CALL__RECEIVER);
 		}
 	}
 
@@ -450,7 +451,8 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 				unsupportedTypeError(parentType, "only exists", first, null, "All attributes of input type should be optional");
 			}
 			if (parentData instanceof RChoiceType) {
-				error("Using only exist on a choice option is not allowed", expr, ROSETTA_ONLY_EXISTS_EXPRESSION__ARGS);
+				//TODO: set back to error when models have been updated
+				warning("Using only exist on a choice option is deprecated", expr, ROSETTA_ONLY_EXISTS_EXPRESSION__ARGS);
 			}
 		}
 	}
