@@ -53,7 +53,12 @@ public class FormattingUtil {
 	}
 	public void formatInlineOrMultiline(IFormattableDocument document, ITextSegment astRegion, ITextSegment formattableRegion, FormattingMode mode, int maxLineWidth, Consumer<IFormattableDocument> inlineFormatter, Consumer<IFormattableDocument> multilineFormatter) {
 		if (mode.equals(FormattingMode.NORMAL)) {
-			if (astRegion.getText().length() > maxLineWidth) {
+			// Early-terminate heuristic for performance: if the non-whitespace content alone already exceeds
+			// the maximum line width, no amount of formatting can fit it on a single line,
+			// so go straight to the multiline formatter. Whitespace is excluded from the count
+			// because it can be collapsed/removed by the formatter.
+			String astText = astRegion.getText();
+			if (nonWhitespaceLength(astText) > maxLineWidth) {
 				multilineFormatter.accept(document);
 				return;
 			}
@@ -77,6 +82,15 @@ public class FormattingUtil {
 		} else if (mode.equals(FormattingMode.CHAIN)) {
 			multilineFormatter.accept(document);
 		}
+	}
+	private int nonWhitespaceLength(String text) {
+		int count = 0;
+		for (int i = 0; i < text.length(); i++) {
+			if (!Character.isWhitespace(text.charAt(i))) {
+				count++;
+			}
+		}
+		return count;
 	}
 	
 	public IFormattableSubDocument requireTrimmedFitsInLine(IFormattableDocument document, ITextSegment astRegion, ITextSegment formattableRegion, int maxLineWidth) {
