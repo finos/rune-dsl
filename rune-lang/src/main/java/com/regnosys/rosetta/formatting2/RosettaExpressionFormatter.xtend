@@ -43,6 +43,8 @@ import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaCallableReference
 
 class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
+	static val BINARY_OPERATION_INLINE_CHAIN_LIMIT = 24
+	static val CONDITIONAL_INLINE_CHAIN_LIMIT = 12
 	
 	@Inject extension RosettaGrammarAccess
 	@Inject extension FormattingUtil
@@ -348,7 +350,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				)
 			}
 		]
-		formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine), document.getPreference(RosettaFormatterPreferenceKeys.conditionalMaxLineWidth),
+		formatInlineOrMultiline(document, expr, mode.chainIf(expr.hasLongConditionalChain).singleLineIf(expr.shouldBeOnSingleLine), document.getPreference(RosettaFormatterPreferenceKeys.conditionalMaxLineWidth),
 			[extension doc | // case: short conditional
 				expr.regionFor.keyword(thenKeyword_3)
 					.prepend[oneSpace]
@@ -369,6 +371,20 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 				expr.elsethen.formatExpression(doc, mode.chainIf(expr.elsethen instanceof RosettaConditionalExpression))
 			]
 		)
+	}
+
+	private def boolean hasLongConditionalChain(RosettaConditionalExpression expr) {
+		expr.hasConditionalChainDepth(CONDITIONAL_INLINE_CHAIN_LIMIT)
+	}
+
+	private def boolean hasConditionalChainDepth(RosettaExpression expr, int remainingDepth) {
+		if (remainingDepth <= 0) {
+			return true
+		}
+		if (expr instanceof RosettaConditionalExpression) {
+			return expr.elsethen.hasConditionalChainDepth(remainingDepth - 1)
+		}
+		return false
 	}
 	
 	private def dispatch void unsafeFormatExpression(RosettaFeatureCall expr, extension IFormattableDocument document, FormattingMode mode) {
@@ -464,7 +480,7 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		expr.regionFor.feature(ROSETTA_OPERATION__OPERATOR)
 			.append[oneSpace]
 		
-		formatInlineOrMultiline(document, expr, mode.singleLineIf(expr.shouldBeOnSingleLine),
+		formatInlineOrMultiline(document, expr, mode.chainIf(expr.hasLongSameOperationChain).singleLineIf(expr.shouldBeOnSingleLine),
 			[extension doc | // case: short operation
 				if (!expr.left.isEmpty) {
 					expr.left.nextHiddenRegion
@@ -492,9 +508,36 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					
 					expr.left.formatExpression(doc, mode.chainIf(leftIsSameOperation))
 				}
-				expr.right.formatExpression(doc, mode.stopChain)
+				val rightIsSameOperation = if (expr.right instanceof RosettaBinaryOperation) {
+						expr.operator == (expr.right as RosettaBinaryOperation).operator
+					} else {
+						false
+					}
+				val rightMode = if (rightIsSameOperation) {
+						mode.chainIf(true)
+					} else {
+						mode.stopChain
+					}
+				expr.right.formatExpression(doc, rightMode)
 			]
 		)
+	}
+
+	private def boolean hasLongSameOperationChain(RosettaBinaryOperation expr) {
+		expr.hasSameOperationChainDepth(expr.operator, BINARY_OPERATION_INLINE_CHAIN_LIMIT)
+	}
+
+	private def boolean hasSameOperationChainDepth(RosettaExpression expr, String operator, int remainingDepth) {
+		if (remainingDepth <= 0) {
+			return true
+		}
+		if (expr instanceof RosettaBinaryOperation) {
+			if (expr.operator == operator) {
+				return expr.left.hasSameOperationChainDepth(operator, remainingDepth - 1)
+					|| expr.right.hasSameOperationChainDepth(operator, remainingDepth - 1)
+			}
+		}
+		return false
 	}
 	
 	private def dispatch void unsafeFormatExpression(RosettaFunctionalOperation expr, extension IFormattableDocument document, FormattingMode mode) {
@@ -618,9 +661,10 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		expr.formatUnaryOperation(document, mode, [])
 		expr.regionFor.feature(ROSETTA_OPERATION__OPERATOR)
 			.surround[oneSpace]
-		expr.allRegionsFor.keyword(',')
-			.prepend[noSpace]
-			.append[oneSpace]
+		expr.regionFor.keywords(',').forEach[
+			prepend[noSpace]
+			append[oneSpace]
+		]
 	}
 	
 	private def dispatch void unsafeFormatExpression(RosettaAbsentExpression expr, extension IFormattableDocument document, FormattingMode mode) {

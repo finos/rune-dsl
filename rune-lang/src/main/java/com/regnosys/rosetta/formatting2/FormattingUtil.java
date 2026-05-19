@@ -53,6 +53,10 @@ public class FormattingUtil {
 	}
 	public void formatInlineOrMultiline(IFormattableDocument document, ITextSegment astRegion, ITextSegment formattableRegion, FormattingMode mode, int maxLineWidth, Consumer<IFormattableDocument> inlineFormatter, Consumer<IFormattableDocument> multilineFormatter) {
 		if (mode.equals(FormattingMode.NORMAL)) {
+			if (astRegion.getText().length() > maxLineWidth) {
+				multilineFormatter.accept(document);
+				return;
+			}
 			document.formatConditionally(formattableRegion.getOffset(), formattableRegion.getLength(),
 					(doc) -> { // case: short region
 						IFormattableSubDocument singleLineDoc =

@@ -39,7 +39,34 @@ public class RosettaFormattingTest {
 		});
 	}
 
-    @Test
+	@Test
+	void testChoiceCommaSpacingWithMultipleAttributes() {
+		formatAndAssert("""
+				namespace test
+
+				type Foo:
+					field1 string (0..1)
+					field2 string (0..1)
+					field3 string (0..1)
+					field4 string (0..1)
+
+					condition Choice:
+						required choice field1 , field2 , field3 , field4
+				""", """
+				namespace test
+				
+				type Foo:
+					field1 string (0..1)
+					field2 string (0..1)
+					field3 string (0..1)
+					field4 string (0..1)
+				
+					condition Choice:
+						required choice field1, field2, field3, field4
+				""");
+	}
+
+	@Test
     void testFormatFunctionExtension() {
         formatAndAssert("""
                 namespace test
