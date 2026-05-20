@@ -81,7 +81,15 @@ public class RosettaSerializationTest {
 
 		Condition condition = SimpleFactory.eINSTANCE.createCondition();
 		condition.setName("ManyFoosExist");
-		condition.setExpression(rightNestedAnd(attribute, 1_000));
+		// The goal of this test is to guard against non-linear (exponential) blow-up of the
+		// formatter on right-nested logical operations -- see the early-terminate heuristic in
+		// FormattingUtil.formatInlineOrMultiline. With exponential behaviour, even a depth in the
+		// low tens would burst the 10s timeout (2^30 >> 10s of work), so 100 is more than enough
+		// to detect a regression. We intentionally do NOT use a much deeper nesting (e.g. 1000),
+		// because Xtext's serializer (ContextFinder/AssignmentFinder) walks the containment tree
+		// recursively and would StackOverflow on JVMs with a smaller default -Xss (typical on
+		// Linux CI runners) -- which has nothing to do with what this test is meant to verify.
+		condition.setExpression(rightNestedAnd(attribute, 100));
 		data.getConditions().add(condition);
 
 		String serialized = assertTimeout(Duration.ofSeconds(10), () -> serializer.serialize(testModel.getModel()));
