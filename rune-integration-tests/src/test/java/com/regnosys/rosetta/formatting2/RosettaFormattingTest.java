@@ -217,6 +217,57 @@ public class RosettaFormattingTest {
 	}
 
 	@Test
+	void testDocReferenceOnType() {
+		formatAndAssert("""
+				namespace "com.regnosys.rosetta.model"
+				version "test"
+
+				body Authority ESMA
+				corpus Regulation "600/2014" MiFIR
+				corpus CommissionDelegatedRegulation "2017/590" RTS_22
+				segment annex
+				segment article
+
+				type Product: [docReference ESMA MiFIR RTS_22 article "2" provision "Transaction report details."] [docReference ESMA MiFIR RTS_22 annex "I"]
+					id string (1..1)
+				""", """
+				namespace "com.regnosys.rosetta.model"
+				version "test"
+
+				body Authority ESMA
+
+				corpus Regulation "600/2014" MiFIR
+				corpus CommissionDelegatedRegulation "2017/590" RTS_22
+
+				segment annex
+				segment article
+
+				type Product:
+					[docReference ESMA MiFIR RTS_22 article "2"
+						provision "Transaction report details."]
+					[docReference ESMA MiFIR RTS_22 annex "I"]
+					id string (1..1)
+				""");
+	}
+
+	@Test
+	void testImports() {
+		formatAndAssert("""
+				namespace "com.regnosys.rosetta.model"
+				version "test" import com.regnosys.rosetta.common.* import com.regnosys.rosetta.product.* as product
+				type Product:
+				""", """
+				namespace "com.regnosys.rosetta.model"
+				version "test"
+
+				import com.regnosys.rosetta.common.*
+				import com.regnosys.rosetta.product.* as product
+
+				type Product:
+				""");
+	}
+
+	@Test
 	void testBuiltinFeaturesAreGrouped() {
 		formatAndAssert("""
 				namespace "com.regnosys.rosetta.model"

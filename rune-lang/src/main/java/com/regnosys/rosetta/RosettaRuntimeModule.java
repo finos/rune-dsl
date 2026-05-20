@@ -19,6 +19,7 @@ import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.serializer.analysis.ContextTypePDAProvider;
 import org.eclipse.xtext.serializer.analysis.IContextTypePDAProvider;
+import org.eclipse.xtext.serializer.tokens.ICrossReferenceSerializer;
 import org.eclipse.xtext.service.DispatchingProvider;
 import org.eclipse.xtext.validation.INamesAreUniqueValidationHelper;
 import org.eclipse.xtext.validation.IResourceValidator;
@@ -41,6 +42,7 @@ import com.regnosys.rosetta.resource.RosettaResource;
 import com.regnosys.rosetta.resource.RosettaResourceDescriptionStrategy;
 import com.regnosys.rosetta.scoping.RosettaQualifiedNameProvider;
 import com.regnosys.rosetta.serializer.RosettaContextTypePDAProvider;
+import com.regnosys.rosetta.serializer.RosettaCrossReferenceSerializer;
 import com.regnosys.rosetta.serialization.RosettaTransientValueService;
 import com.regnosys.rosetta.transgest.ModelLoader;
 import com.regnosys.rosetta.transgest.ModelLoaderImpl;
@@ -134,6 +136,10 @@ public class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	public void configureContextTypePDAProvider(Binder binder) {
 		binder.bind(IContextTypePDAProvider.class).to(RosettaContextTypePDAProvider.class);
 		binder.bind(ContextTypePDAProvider.class).to(RosettaContextTypePDAProvider.class);
+	}
+
+	public Class<? extends ICrossReferenceSerializer> bindICrossReferenceSerializer() {
+		return RosettaCrossReferenceSerializer.class;
 	}
 	
 	@Override
