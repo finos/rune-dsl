@@ -15,6 +15,7 @@
  */
 package com.regnosys.rosetta.serializer;
 
+import com.google.common.collect.MapMaker;
 import com.regnosys.rosetta.rosetta.Import;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
@@ -39,7 +40,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Serializes root-element references directly from model namespaces where that
@@ -60,7 +61,8 @@ public class RosettaCrossReferenceSerializer extends CrossReferenceSerializer {
 	@Inject
 	private LinkingHelper linkingHelper;
 
-	private final Map<RosettaModel, ImportResolutionCache> importResolutionCaches = new WeakHashMap<>();
+	private final ConcurrentMap<RosettaModel, ImportResolutionCache> importResolutionCaches =
+			new MapMaker().weakKeys().makeMap();
 
 	@Override
 	protected String getCrossReferenceNameFromScope(EObject semanticObject, CrossReference crossref, EObject target,
@@ -98,14 +100,10 @@ public class RosettaCrossReferenceSerializer extends CrossReferenceSerializer {
 
 	private ImportResolutionCache getCache(RosettaModel model) {
 		String signature = importSignature(model);
-		synchronized (importResolutionCaches) {
-			ImportResolutionCache cache = importResolutionCaches.get(model);
-			if (cache == null || !cache.signature.equals(signature)) {
-				cache = new ImportResolutionCache(model, signature);
-				importResolutionCaches.put(model, cache);
-			}
-			return cache;
-		}
+		return importResolutionCaches.compute(model, (key, existing) ->
+				(existing != null && existing.signature.equals(signature))
+						? existing
+						: new ImportResolutionCache(key, signature));
 	}
 
 	private String importSignature(RosettaModel model) {
