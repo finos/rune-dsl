@@ -24,6 +24,85 @@ public class ChoiceValidatorTest implements RosettaIssueCodes {
     private ModelHelper modelHelper;
 
     @Test
+    public void testChoiceOptionsDoNotInheritEachOther() {
+        RosettaModel model = modelHelper.parseRosetta("""
+            type Base:
+            
+            type Foo extends Base:
+            
+            choice SomeChoice:
+                Base
+                Foo
+            """);
+
+        validationTestHelper.assertError(model, SimplePackage.Literals.CHOICE_OPTION, null,
+                "Option 'Foo' is in the same type hierarchy as 'Base'");
+
+        RosettaModel model2 = modelHelper.parseRosetta("""
+            type Base:
+            
+            type Foo extends Base:
+            
+            choice SomeChoice:
+                Foo
+                Base
+            """);
+
+        validationTestHelper.assertError(model2, SimplePackage.Literals.CHOICE_OPTION, null,
+                "Option 'Base' is in the same type hierarchy as 'Foo'");
+    }
+
+    @Test
+    public void testChoiceOptionsDoNotInheritEachOtherIndirectExtension() {
+        RosettaModel model = modelHelper.parseRosetta("""
+            type Base:
+            
+            type Mid extends Base
+            
+            type Foo extends Mid:
+            
+            choice SomeChoice:
+                Base
+                Foo
+            """);
+
+        validationTestHelper.assertError(model, SimplePackage.Literals.CHOICE_OPTION, null,
+                "Option 'Foo' is in the same type hierarchy as 'Base'");
+
+        RosettaModel model2 = modelHelper.parseRosetta("""
+            type Base:
+            
+            type Mid extends Base
+            
+            type Foo extends Mid:
+            
+            choice SomeChoice:
+                Foo
+                Base
+            """);
+
+        validationTestHelper.assertError(model2, SimplePackage.Literals.CHOICE_OPTION, null,
+                "Option 'Base' is in the same type hierarchy as 'Foo'");
+    }
+
+    @Test
+    public void testSiblingTypeChoiceOptionsAreValid() {
+        RosettaModel model = modelHelper.parseRosetta("""
+            type Base:
+            
+            type Bar extends Base:
+            
+            type Foo extends Base:
+            
+            choice SomeChoice:
+                Bar
+                Foo
+            """);
+
+        validationTestHelper.assertNoIssues(model);
+    }
+
+    @Test
     public void testChoiceOptionsDoNotOverlap() {
         RosettaModel model = modelHelper.parseRosetta("""
             choice Foo:
