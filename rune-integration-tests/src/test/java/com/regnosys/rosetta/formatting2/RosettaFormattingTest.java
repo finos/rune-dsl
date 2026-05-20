@@ -39,7 +39,34 @@ public class RosettaFormattingTest {
 		});
 	}
 
-    @Test
+	@Test
+	void testChoiceCommaSpacingWithMultipleAttributes() {
+		formatAndAssert("""
+				namespace test
+
+				type Foo:
+					field1 string (0..1)
+					field2 string (0..1)
+					field3 string (0..1)
+					field4 string (0..1)
+
+					condition Choice:
+						required choice field1 , field2 , field3 , field4
+				""", """
+				namespace test
+				
+				type Foo:
+					field1 string (0..1)
+					field2 string (0..1)
+					field3 string (0..1)
+					field4 string (0..1)
+				
+					condition Choice:
+						required choice field1, field2, field3, field4
+				""");
+	}
+
+	@Test
     void testFormatFunctionExtension() {
         formatAndAssert("""
                 namespace test
@@ -190,6 +217,57 @@ public class RosettaFormattingTest {
 						provision "Indication as to whether the transaction report is new or a cancellation."]
 					"Not Modelled"
 						as "Report Status"
+				""");
+	}
+
+	@Test
+	void testDocReferenceOnType() {
+		formatAndAssert("""
+				namespace "com.regnosys.rosetta.model"
+				version "test"
+
+				body Authority ESMA
+				corpus Regulation "600/2014" MiFIR
+				corpus CommissionDelegatedRegulation "2017/590" RTS_22
+				segment annex
+				segment article
+
+				type Product: [docReference ESMA MiFIR RTS_22 article "2" provision "Transaction report details."] [docReference ESMA MiFIR RTS_22 annex "I"]
+					id string (1..1)
+				""", """
+				namespace "com.regnosys.rosetta.model"
+				version "test"
+
+				body Authority ESMA
+
+				corpus Regulation "600/2014" MiFIR
+				corpus CommissionDelegatedRegulation "2017/590" RTS_22
+
+				segment annex
+				segment article
+
+				type Product:
+					[docReference ESMA MiFIR RTS_22 article "2"
+						provision "Transaction report details."]
+					[docReference ESMA MiFIR RTS_22 annex "I"]
+					id string (1..1)
+				""");
+	}
+
+	@Test
+	void testImports() {
+		formatAndAssert("""
+				namespace "com.regnosys.rosetta.model"
+				version "test" import com.regnosys.rosetta.common.* import com.regnosys.rosetta.product.* as product
+				type Product:
+				""", """
+				namespace "com.regnosys.rosetta.model"
+				version "test"
+
+				import com.regnosys.rosetta.common.*
+				import com.regnosys.rosetta.product.* as product
+
+				type Product:
 				""");
 	}
 

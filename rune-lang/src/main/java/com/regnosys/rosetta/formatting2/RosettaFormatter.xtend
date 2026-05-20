@@ -58,6 +58,7 @@ import com.regnosys.rosetta.rosetta.TypeCallArgument
 import jakarta.inject.Inject
 import com.regnosys.rosetta.rosetta.RosettaRule
 import com.regnosys.rosetta.rosetta.simple.Choice
+import com.regnosys.rosetta.rosetta.Import
 
 class RosettaFormatter extends AbstractRosettaFormatter2 {
 	
@@ -97,6 +98,14 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		rosettaModel.regionFor.keyword(versionKeyword_5_0)
 			.prepend[newLine]
 			.append[oneSpace]
+
+		rosettaModel.imports.head
+			.prepend[setNewLines(2)]
+			.format
+		rosettaModel.imports.tail.forEach[
+			prepend[newLine]
+			format
+		]
 		
 		val groupedElementTypes = #[RosettaBody, RosettaCorpus, RosettaSegment, RosettaBasicType, 
 			RosettaRecordType, RosettaExternalFunction, RosettaMetaType
@@ -122,6 +131,15 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		// Always end with a single newline
 		rosettaModel.nextHiddenRegion.previousSemanticRegion
 			.append[newLine]
+	}
+
+	def dispatch void format(Import ele, extension IFormattableDocument document) {
+		val extension importGrammarAccess = importAccess
+		ele.regionFor.keyword(importKeyword_0)
+			.append[oneSpace]
+		ele.regionFor.keyword(asKeyword_2_0)
+			.prepend[oneSpace]
+			.append[oneSpace]
 	}
 	
 	def dispatch void format(RosettaScope ele, extension IFormattableDocument document) {
@@ -290,6 +308,10 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			format
 		]
 		ele.annotations.forEach[
+			prepend[newLine]
+			format
+		]
+		ele.references.forEach[
 			prepend[newLine]
 			format
 		]

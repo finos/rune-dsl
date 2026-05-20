@@ -51,8 +51,10 @@ class DocumentationSamples {
 			
 			type EuropeanParliamentReport:
 			    vehicleRegistrationID string (1..1)
+			        [label "Vehicle Registration ID"]
 			        [ruleReference VehicleRegistrationID]
 			    vehicleClassificationType VehicleClassificationEnum (1..1)
+			        [label "Vehicle Classification Type"]
 			        [ruleReference VehicleClassificationType]
 			
 			type Vehicle:
@@ -108,11 +110,9 @@ class DocumentationSamples {
 			
 			reporting rule VehicleRegistrationID from VehicleOwnership:
 			    extract vehicle -> registrationID
-			        as "Vehicle Registration ID"
-			
+
 			reporting rule VehicleClassificationType from VehicleOwnership: <"Classification type of the vehicle">
 			    extract vehicle -> vehicleClassification
-			        as "Vehicle Classification Type"
 		'''
 		model.parseRosettaWithNoIssues
 		val code = model.generateCode
