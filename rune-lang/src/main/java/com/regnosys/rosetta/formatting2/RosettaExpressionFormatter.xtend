@@ -43,7 +43,6 @@ import com.regnosys.rosetta.rosetta.expression.SwitchOperation
 import com.regnosys.rosetta.rosetta.expression.RosettaCallableReference
 
 class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
-	
 	@Inject extension RosettaGrammarAccess
 	@Inject extension FormattingUtil
 	
@@ -618,9 +617,10 @@ class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		expr.formatUnaryOperation(document, mode, [])
 		expr.regionFor.feature(ROSETTA_OPERATION__OPERATOR)
 			.surround[oneSpace]
-		expr.allRegionsFor.keyword(',')
-			.prepend[noSpace]
-			.append[oneSpace]
+		expr.regionFor.keywords(',').forEach[
+			prepend[noSpace]
+			append[oneSpace]
+		]
 	}
 	
 	private def dispatch void unsafeFormatExpression(RosettaAbsentExpression expr, extension IFormattableDocument document, FormattingMode mode) {
