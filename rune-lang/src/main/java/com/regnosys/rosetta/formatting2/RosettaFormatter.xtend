@@ -681,6 +681,10 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		rosettaEnumValue
 			.formatDefinition(document)
 			.indentInner(document)
+		rosettaEnumValue.references.forEach[
+			prepend[newLine]
+			format
+		]
 		rosettaEnumValue.enumSynonyms.forEach[
 			prepend[newLine]
 			format
