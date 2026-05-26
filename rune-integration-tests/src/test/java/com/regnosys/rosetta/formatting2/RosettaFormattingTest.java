@@ -251,6 +251,46 @@ public class RosettaFormattingTest {
 	}
 
 	@Test
+	void testDocReferenceOnEnumAndEnumValue() {
+		formatAndAssert("""
+				namespace "com.regnosys.rosetta.model"
+				version "test"
+
+				body Authority ESMA
+				corpus Regulation "600/2014" MiFIR
+				segment annex
+				segment article
+
+				enum Color: <"Some colors."> [docReference ESMA MiFIR article "1" provision "Color enum."]
+					RED <"Red color."> [docReference ESMA MiFIR article "2" provision "Red value."]
+					GREEN [docReference ESMA MiFIR article "3" provision "Green value."] [docReference ESMA MiFIR annex "I"]
+					BLUE
+				""", """
+				namespace "com.regnosys.rosetta.model"
+				version "test"
+
+				body Authority ESMA
+
+				corpus Regulation "600/2014" MiFIR
+
+				segment annex
+				segment article
+
+				enum Color: <"Some colors.">
+					[docReference ESMA MiFIR article "1"
+						provision "Color enum."]
+					RED <"Red color.">
+						[docReference ESMA MiFIR article "2"
+							provision "Red value."]
+					GREEN
+						[docReference ESMA MiFIR article "3"
+							provision "Green value."]
+						[docReference ESMA MiFIR annex "I"]
+					BLUE
+				""");
+	}
+
+	@Test
 	void testImports() {
 		formatAndAssert("""
 				namespace "com.regnosys.rosetta.model"
