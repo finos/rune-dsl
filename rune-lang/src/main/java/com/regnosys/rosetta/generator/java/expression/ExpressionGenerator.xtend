@@ -739,7 +739,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val argCode = expr.argument.javaCode(context.withExpected(MAPPER.wrapExtends(argItemType)))
 		val argType = argCode.expressionType
 		argCode
-			.applyRuntimeMethod('distinct', argType.hasWildcardArgument ? MAPPER_C.wrapExtends(argItemType) : MAPPER_C.wrap(argItemType))
+			.applyRuntimeMethod('distinctIgnoringPrecision', argType.hasWildcardArgument ? MAPPER_C.wrapExtends(argItemType) : MAPPER_C.wrap(argItemType))
 	}
 
 	override protected caseDivideOperation(ArithmeticOperation expr, Context context) {
