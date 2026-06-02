@@ -2,6 +2,7 @@ package com.regnosys.rosetta.formatting2;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
@@ -79,16 +80,22 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		// list contains all the replacements which should be applied to resource
 		List<ITextReplacement> replacements;
 		try {
-			replacements = formatter.format(req); // throws exception
+			replacements = new ArrayList<>(formatter.format(req)); // throws exception
 		} catch (RuntimeException e) {
 			LOGGER.error("RuntimeException in " + resource.getURI() + ": " + e.getMessage(), e);
 			replacements = new ArrayList<>();
 		}
 
 		// get text replacement for optimized imports
-		ITextReplacement importsReplacement = formattedImportsReplacement(resource, regionAccess);
-		if (importsReplacement != null)
-			replacements.add(importsReplacement);
+		FormattedImportsReplacement importsReplacement = formattedImportsReplacement(resource, regionAccess);
+		if (importsReplacement != null) {
+			ITextRegion importsRegion = importsReplacement.importsRegion();
+			int importsStart = importsRegion.getOffset();
+			int importsEnd = importsStart + importsRegion.getLength();
+			replacements.removeIf(replacement -> overlaps(replacement, importsStart, importsEnd));
+			replacements.add(importsReplacement.replacement());
+		}
+		replacements.sort(Comparator.comparingInt(ITextReplacement::getOffset));
 
 		// formatting using TextRegionRewriter
 		ITextRegionRewriter regionRewriter = regionAccess.getRewriter();
@@ -97,7 +104,7 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		return formattedString;
 	}
 
-	public ITextReplacement formattedImportsReplacement(XtextResource resource, ITextRegionAccess regionAccess) {
+	public FormattedImportsReplacement formattedImportsReplacement(XtextResource resource, ITextRegionAccess regionAccess) {
 		RosettaModel model = (RosettaModel) resource.getContents().get(0);
 		ITextRegion importsRegion = getImportsTextRegion(model.getImports());
 
@@ -106,8 +113,15 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 
 		importManagementService.cleanupImports(model);
 		String sortedImportsText = importManagementService.toString(model.getImports());
-		return regionAccess.getRewriter().createReplacement(importsRegion.getOffset(), importsRegion.getLength(),
-				sortedImportsText);
+		ITextReplacement replacement = regionAccess.getRewriter().createReplacement(importsRegion.getOffset(),
+				importsRegion.getLength(), sortedImportsText);
+		return new FormattedImportsReplacement(importsRegion, replacement);
+	}
+
+	private boolean overlaps(ITextReplacement replacement, int start, int end) {
+		int replacementStart = replacement.getOffset();
+		int replacementEnd = replacementStart + replacement.getLength();
+		return replacementStart < end && start < replacementEnd;
 	}
 	
 	private ITextRegionAccess getRegionAccess(XtextResource resource) {
@@ -137,5 +151,8 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		ITextRegion lastRegion = NodeModelUtils.getNode(lastImport).getTextRegion();
 
 		return firstRegion.merge(lastRegion);
+	}
+
+	public record FormattedImportsReplacement(ITextRegion importsRegion, ITextReplacement replacement) {
 	}
 }

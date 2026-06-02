@@ -109,11 +109,11 @@ public class ImportManagementService {
 		
 		Import previousImport = null;
 		for (Import imp : imports) {
-			//if previous import comes from a different package, insert new line
+			// if previous import comes from a different top-level package, insert blank line
 			if (previousImport != null) {
 				String previousFirstSegment = previousImport.getImportedNamespace().split("\\.")[0];
 				String currentFirstSegment = imp.getImportedNamespace().split("\\.")[0];
-				if(!previousFirstSegment.equals(currentFirstSegment)) {
+				if (!previousFirstSegment.equals(currentFirstSegment)) {
 					sortedImportsText.append("\n");
 				}
 			}
@@ -122,7 +122,6 @@ public class ImportManagementService {
 				sortedImportsText.append(" as ").append(imp.getNamespaceAlias());
 			}
 			sortedImportsText.append("\n");
-			
 			
 			previousImport = imp;
 		}
