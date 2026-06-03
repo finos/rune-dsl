@@ -344,6 +344,42 @@ public class ExpressionValidatorTest {
     }
 
     @Test
+    void asToChoiceOptionPreservesMetadata() {
+        // Narrowing to a choice option that has metadata must keep that metadata accessible.
+        RosettaExpression expr = modelService.toTestModel("""
+                typeAlias MyString: string(maxLength: 42)
+
+                choice Foo:
+                    number
+                    MyString
+                        [metadata scheme]
+                """).parseExpression("""
+                foo as MyString -> scheme
+                """, "foo Foo (1..1)");
+
+        validationTestHelper.assertNoIssues(expr);
+    }
+
+    @Test
+    void asToStrictSubtypeOfChoiceOptionShouldError() {
+        // A choice may only be narrowed to one of its options, not to a strict subtype of an option:
+        // we do not mix choice subtyping with data extension subtyping.
+        RosettaExpression expr = modelService.toTestModel("""
+                type Bar:
+                type SubBar extends Bar:
+                type Qux:
+                choice Foo:
+                    Bar
+                    Qux
+                """).parseExpression("""
+                foo as SubBar
+                """, "foo Foo (1..1)");
+
+        validationTestHelper.assertError(expr, AS_OPERATION, null,
+                "`SubBar` is not an option of choice type `Foo`. The `as` operator can only narrow a choice type to one of its (nested) options.");
+    }
+
+    @Test
     void asToSubtypeHasNoIssues() {
         RosettaExpression expr = modelService.toTestModel("""
                 type Foo:
@@ -366,7 +402,7 @@ public class ExpressionValidatorTest {
                 """, "foo Foo (1..1)");
 
         validationTestHelper.assertError(expr, AS_OPERATION, null,
-                "`Unrelated` is not a subtype of `Foo`. The `as` operator can only filter to a subtype of its argument.");
+                "`Unrelated` is not a subtype of `Foo`. The `as` operator can only narrow a data type to one of its extensions.");
     }
 
     @Test

@@ -306,7 +306,19 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
         if (expr.getType() == null || !extensions.isResolved(expr.getType())) {
             return builtins.NOTHING_WITH_ANY_META;
         }
-        return RMetaAnnotatedType.withNoMeta(typeSystem.typeWithUnknownArgumentsToRType(expr.getType()));
+        RType targetType = typeSystem.typeWithUnknownArgumentsToRType(expr.getType());
+        RType argType = typeSystem.stripFromTypeAliases(safeRType(expr.getArgument(), cycleTracker).getRType());
+        if (argType instanceof RChoiceType) {
+            // The result is the matched option's value, so it keeps that option's metadata (consistent
+            // with the `switch` operator).
+            RType strippedTarget = typeSystem.stripFromTypeAliases(targetType);
+            if (typeSystem.isSubtypeOf(strippedTarget, argType, false)) {
+                List<RChoiceOption> optionPath = typeSystem.findChoiceOptionPath((RChoiceType) argType, strippedTarget);
+                List<RMetaAttribute> meta = optionPath.get(optionPath.size() - 1).getType().getMetaAttributes();
+                return RMetaAnnotatedType.withMeta(targetType, meta);
+            }
+        }
+        return RMetaAnnotatedType.withNoMeta(targetType);
     }
 
     @Override

@@ -129,35 +129,25 @@ public class AsOperationTest {
     }
 
     @Test
-    void asChoiceOptionStrictSubtypeTest() {
-        // The target is a strict subtype of a choice option: navigate to the option, then filter by type.
+    void asChoiceOptionWithMetadataTest() {
+        // Narrowing to a choice option that carries metadata must preserve that metadata, so that the
+        // metadata (e.g. `scheme`) is accessible on the result - consistent with the `switch` operator.
         JavaTestModel model = modelService.toJavaTestModel("""
                 namespace test
 
-                type Bar:
-                    barAttr int (1..1)
-
-                type SubBar extends Bar:
-                    subAttr int (1..1)
-
-                type Qux:
-                    quxAttr int (1..1)
+                typeAlias MyString: string(maxLength: 42)
 
                 choice Foo:
-                    Bar
-                    Qux
+                    number
+                    MyString
+                        [metadata scheme]
                 """).compile();
 
-        Integer match = model.evaluateExpression(Integer.class, """
-                Foo { Bar: SubBar { barAttr: 1, subAttr: 9 }, ... } as SubBar -> subAttr
+        String result = model.evaluateExpression(String.class, """
+                Foo { MyString: "abc123" with-meta { scheme: "myScheme" }, ... } as MyString -> scheme
                 """);
-        assertEquals(9, match);
 
-        // The option holds a plain `Bar` (not a `SubBar`), so narrowing to `SubBar` yields empty.
-        Integer noMatch = model.evaluateExpression(Integer.class, """
-                Foo { Bar: Bar { barAttr: 1 }, ... } as SubBar -> subAttr
-                """);
-        assertNull(noMatch);
+        assertEquals("myScheme", result);
     }
 
     @Test

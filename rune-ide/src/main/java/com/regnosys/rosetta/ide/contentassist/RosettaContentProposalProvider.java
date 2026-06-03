@@ -22,6 +22,7 @@ import com.regnosys.rosetta.rosetta.expression.ExpressionPackage;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.services.RosettaGrammarAccess;
+import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.types.TypeSystem;
@@ -48,25 +49,31 @@ public class RosettaContentProposalProvider extends IdeContentProposalProvider {
 	protected Predicate<IEObjectDescription> getCrossrefFilter(CrossReference reference, ContentAssistContext context) {
 		Predicate<IEObjectDescription> baseFilter = super.getCrossrefFilter(reference, context);
 		EObject model = context.getCurrentModel();
-		// Restrict the `as` target proposals to valid subtypes of the argument type. This only affects
-		// auto-completion; the actual subtype rule is enforced by validation (see AsOperationValidator).
+		// Restrict the `as` target proposals to valid targets of the argument type. This only affects
+		// auto-completion; the actual rule is enforced by validation (see AsOperationValidator).
 		if (model instanceof AsOperation op
 				&& ExpressionPackage.Literals.AS_OPERATION__TYPE.equals(GrammarUtil.getReference(reference))) {
 			RType argumentType = typeSystem.stripFromTypeAliases(typeProvider.getRMetaAnnotatedType(op.getArgument()).getRType());
-			return desc -> baseFilter.apply(desc) && isAsTargetSubtype(desc, argumentType, op);
+			return desc -> baseFilter.apply(desc) && isValidAsTarget(desc, argumentType, op);
 		}
 		return baseFilter;
 	}
 
-	private boolean isAsTargetSubtype(IEObjectDescription candidate, RType supertype, EObject context) {
+	private boolean isValidAsTarget(IEObjectDescription candidate, RType argumentType, EObject context) {
 		try {
 			EObject obj = candidate.getEObjectOrProxy();
 			if (obj.eIsProxy()) {
 				obj = EcoreUtil2.resolve(obj, context);
 			}
 			if (obj instanceof RosettaType type && !obj.eIsProxy()) {
-				RType candidateType = typeSystem.typeWithUnknownArgumentsToRType(type);
-				return typeSystem.isSubtypeOf(candidateType, supertype, false);
+				RType candidateType = typeSystem.stripFromTypeAliases(typeSystem.typeWithUnknownArgumentsToRType(type));
+				if (argumentType instanceof RChoiceType choiceType) {
+					// A choice may only be narrowed to one of its (nested) options.
+					return choiceType.getAllOptions().stream()
+							.anyMatch(o -> typeSystem.stripFromTypeAliases(o.getType().getRType()).equals(candidateType));
+				}
+				// A data type may be narrowed to any (transitive) extension.
+				return typeSystem.isSubtypeOf(candidateType, argumentType, false);
 			}
 		} catch (Exception e) {
 			// On any failure, keep the candidate rather than hiding a potentially valid proposal.
