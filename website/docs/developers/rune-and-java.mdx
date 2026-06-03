@@ -138,10 +138,10 @@ type VehicleOwnership:
 
 type EuropeanParliamentReport:
     vehicleRegistrationID string (1..1)
-        [label as "Vehicle Registration ID"]
+        [label "Vehicle Registration ID"]
         [ruleReference VehicleRegistrationID]
     vehicleClassificationType VehicleClassificationEnum (1..1)
-        [label as "Vehicle Classification Type"]
+        [label "Vehicle Classification Type"]
         [ruleReference VehicleClassificationType]
 
 type Vehicle:

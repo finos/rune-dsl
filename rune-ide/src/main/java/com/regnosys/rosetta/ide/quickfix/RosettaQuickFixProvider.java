@@ -91,6 +91,7 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 	@QuickFix(RosettaIssueCodes.UNUSED_IMPORT)
 	@QuickFix(RosettaIssueCodes.DUPLICATE_IMPORT)
 	public void fixUnoptimizedImports(DiagnosticResolutionAcceptor acceptor) {
+		//TODO: sorting imports should be done on the EObjects as an ISemanticModification
 		acceptor.accept("Optimize imports", (Diagnostic diagnostic, EObject object, Document document) -> {
 			Import importObj = (Import) object;
 			EObject container = importObj.eContainer();
@@ -100,7 +101,6 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 				List<Import> imports = model.getImports();
 
 				Range importsRange = codeActionUtils.getImportsRange(imports);
-
 				importManagementService.cleanupImports(model);
 				String sortedImportsText = importManagementService.toString(imports);
 

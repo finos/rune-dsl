@@ -1,7 +1,9 @@
 package com.regnosys.rosetta.scoping;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import jakarta.inject.Provider;
 
@@ -19,7 +21,6 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Sets;
 
 /**
  * A simple scope with reverse shadowing: for a given name, first the parent scope will be checked,
@@ -28,6 +29,7 @@ import com.google.common.collect.Sets;
  * In that sense, local elements that shadow an element in the parent scope will be hidden.
  */
 public class ReversedSimpleScope extends SimpleScope {
+	private final Map<Object, Boolean> parentShadowingByKey = new HashMap<>();
 	
 	protected static class LocalIterable implements Iterable<IEObjectDescription>, Predicate<IEObjectDescription> {
 
@@ -119,7 +121,6 @@ public class ReversedSimpleScope extends SimpleScope {
 	
 	@Override
 	public Iterable<IEObjectDescription> getElements(final EObject object) {
-		Iterable<IEObjectDescription> parentElements = getParent().getElements(object);
 		final URI uri = EcoreUtil2.getPlatformResourceOrNormalizedURI(object);
 		Iterable<IEObjectDescription> localElements = getLocalElements(new Provider<Iterable<IEObjectDescription>>() {
 			@Override
@@ -127,7 +128,9 @@ public class ReversedSimpleScope extends SimpleScope {
 				return getLocalElementsByEObject(object, uri);
 			}
 		});
-		Iterable<IEObjectDescription> result = Iterables.concat(parentElements, localElements);
+		Iterable<IEObjectDescription> parentElements = getParent().getElements(object);
+		// Object lookup is used by the serializer. Prefer local names there without changing textual lookup.
+		Iterable<IEObjectDescription> result = Iterables.concat(localElements, parentElements);
 		return result;
 	}
 	
@@ -137,14 +140,15 @@ public class ReversedSimpleScope extends SimpleScope {
 	
 	@Override
 	protected boolean isShadowed(IEObjectDescription fromParent) {
-		if (shadowingIndex == null) {
-			shadowingIndex = Sets.newHashSet();
-			for(IEObjectDescription parentElement: getParent().getAllElements()) {
-				shadowingIndex.add(getShadowingKey(parentElement));
+		Object shadowingKey = getShadowingKey(fromParent);
+		return parentShadowingByKey.computeIfAbsent(shadowingKey, key -> {
+			for (IEObjectDescription parentElement : getParent().getElements(fromParent.getName())) {
+				if (key.equals(getShadowingKey(parentElement))) {
+					return true;
+				}
 			}
-		}
-		boolean result = shadowingIndex.contains(getShadowingKey(fromParent));
-		return result;
+			return false;
+		});
 	}
 
 }
