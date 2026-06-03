@@ -303,22 +303,19 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
 
     @Override
     protected RMetaAnnotatedType caseAsOperation(AsOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
-        if (expr.getType() == null || !extensions.isResolved(expr.getType())) {
+        SwitchCaseTarget target = expr.getType();
+        if (target == null || !extensions.isResolved(target)) {
             return builtins.NOTHING_WITH_ANY_META;
         }
-        RType targetType = typeSystem.typeWithUnknownArgumentsToRType(expr.getType());
-        RType argType = typeSystem.stripFromTypeAliases(safeRType(expr.getArgument(), cycleTracker).getRType());
-        if (argType instanceof RChoiceType) {
-            // The result is the matched option's value, so it keeps that option's metadata (consistent
-            // with the `switch` operator).
-            RType strippedTarget = typeSystem.stripFromTypeAliases(targetType);
-            if (typeSystem.isSubtypeOf(strippedTarget, argType, false)) {
-                List<RChoiceOption> optionPath = typeSystem.findChoiceOptionPath((RChoiceType) argType, strippedTarget);
-                List<RMetaAttribute> meta = optionPath.get(optionPath.size() - 1).getType().getMetaAttributes();
-                return RMetaAnnotatedType.withMeta(targetType, meta);
-            }
+        if (target instanceof ChoiceOption) {
+            // The result is the option's value, so it keeps the option's type and metadata - exactly like
+            // the matched value of the corresponding `switch` case.
+            return getRTypeOfSymbol((ChoiceOption) target, expr);
         }
-        return RMetaAnnotatedType.withNoMeta(targetType);
+        if (target instanceof Data) {
+            return RMetaAnnotatedType.withNoMeta(typeSystem.typeWithUnknownArgumentsToRType((Data) target));
+        }
+        return builtins.NOTHING_WITH_ANY_META;
     }
 
     @Override

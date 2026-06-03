@@ -22,7 +22,7 @@ import com.regnosys.rosetta.rosetta.expression.ExpressionPackage;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.services.RosettaGrammarAccess;
-import com.regnosys.rosetta.types.RChoiceType;
+import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.types.TypeSystem;
@@ -60,6 +60,11 @@ public class RosettaContentProposalProvider extends IdeContentProposalProvider {
 	}
 
 	private boolean isValidAsTarget(IEObjectDescription candidate, RType argumentType, EObject context) {
+		// For a choice argument the scope already restricts proposals to its options. Only the data case
+		// needs refining: the scope returns all data types, so keep only the (transitive) extensions.
+		if (!(argumentType instanceof RDataType)) {
+			return true;
+		}
 		try {
 			EObject obj = candidate.getEObjectOrProxy();
 			if (obj.eIsProxy()) {
@@ -67,12 +72,6 @@ public class RosettaContentProposalProvider extends IdeContentProposalProvider {
 			}
 			if (obj instanceof RosettaType type && !obj.eIsProxy()) {
 				RType candidateType = typeSystem.stripFromTypeAliases(typeSystem.typeWithUnknownArgumentsToRType(type));
-				if (argumentType instanceof RChoiceType choiceType) {
-					// A choice may only be narrowed to one of its (nested) options.
-					return choiceType.getAllOptions().stream()
-							.anyMatch(o -> typeSystem.stripFromTypeAliases(o.getType().getRType()).equals(candidateType));
-				}
-				// A data type may be narrowed to any (transitive) extension.
 				return typeSystem.isSubtypeOf(candidateType, argumentType, false);
 			}
 		} catch (Exception e) {

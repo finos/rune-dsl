@@ -20,29 +20,17 @@ public class AsOperationValidator extends ExpressionValidator {
             // If there is an error within the argument, do not check further.
             return;
         }
-        // The result type of the operation is the target type (or `nothing` if the target is unresolved,
-        // in which case linking - not this check - reports the problem).
-        RType targetType = typeSystem.stripFromTypeAliases(typeProvider.getRMetaAnnotatedType(op).getRType());
-        if (targetType.equals(builtins.NOTHING)) {
-            return;
-        }
 
         if (rType instanceof RChoiceType) {
-            // A choice type may only be narrowed to one of its (nested) options. We deliberately do not
-            // mix choice subtyping with data extension subtyping, so narrowing to a strict subtype of an
-            // option is not allowed.
-            RChoiceType choiceType = (RChoiceType) rType;
-            RType target = targetType;
-            boolean isOption = choiceType.getAllOptions().stream()
-                    .anyMatch(o -> typeSystem.stripFromTypeAliases(o.getType().getRType()).equals(target));
-            if (!isOption) {
-                error("`" + targetType.getName() + "` is not an option of choice type `" + rType.getName()
-                        + "`. The `as` operator can only narrow a choice type to one of its (nested) options.",
-                        op, AS_OPERATION__TYPE);
-            }
+            // A choice may only be narrowed to one of its (nested) options. That is enforced structurally
+            // by scoping (only options of the choice resolve as a target), exactly like the `switch`
+            // operator - so there is nothing further to validate here. In particular, narrowing to a
+            // strict subtype of an option is not possible: we do not mix choice subtyping with data
+            // extension subtyping.
         } else if (rType instanceof RDataType) {
             // A data type may be narrowed to any (transitive) extension.
-            if (!typeSystem.isSubtypeOf(targetType, rType, false)) {
+            RType targetType = typeSystem.stripFromTypeAliases(typeProvider.getRMetaAnnotatedType(op).getRType());
+            if (!targetType.equals(builtins.NOTHING) && !typeSystem.isSubtypeOf(targetType, rType, false)) {
                 error("`" + targetType.getName() + "` is not a subtype of `" + rType.getName()
                         + "`. The `as` operator can only narrow a data type to one of its extensions.",
                         op, AS_OPERATION__TYPE);

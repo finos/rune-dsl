@@ -1159,17 +1159,12 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val argRType = typeProvider.getRMetaAnnotatedType(expr.argument).RType.stripFromTypeAliases
 
 		if (argRType instanceof RChoiceType) {
-			// A choice type is represented as a wrapper with one attribute per option, so narrowing to an
-			// option means navigating the path of option attributes leading to that option. A choice can
-			// only be narrowed to one of its options (enforced by validation), so no further filtering is
-			// needed.
-			val targetRType = typeProvider.getRMetaAnnotatedType(expr).RType.stripFromTypeAliases
-			val optionPath = findChoiceOptionPath(argRType, targetRType)
+			// Narrowing a choice to one of its options means navigating the path of option attributes
+			// leading to that option - the same navigation a `switch` case performs.
+			val choiceOption = new RChoiceOption(expr.type as ChoiceOption, argRType, typeProvider)
 			val argCode = expr.argument.javaCode(context.withExpected(
 				isMulti ? MAPPER_C.wrapExtends(argRType.toJavaReferenceType) as JavaType : MAPPER.wrap(argRType.toJavaReferenceType)))
-			optionPath.fold(argCode, [acc, opt|
-				acc.attributeCall(opt.choiceType.withNoMeta, (opt.EObject as ChoiceOption).buildRAttribute, false, context.expectedType, context.scope)
-			])
+			navigateToChoiceOption(argCode, argRType, choiceOption, context)
 		} else {
 			// A data type is narrowed by filtering on the runtime type and casting.
 			val targetJavaType = typeProvider.getRMetaAnnotatedType(expr).RType.stripFromTypeAliases.toJavaReferenceType
@@ -1177,6 +1172,16 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				isMulti ? MAPPER_C.wrapExtends(argRType.toJavaReferenceType) as JavaType : MAPPER_S.wrapExtends(argRType.toJavaReferenceType)))
 			narrowToSubtype(argCode, targetJavaType, isMulti, context)
 		}
+	}
+	/**
+	 * Navigate from a choice-typed mapper to the value of one of its (nested) options, by following the
+	 * path of option attributes. Shared by the `as` and `switch` operators.
+	 */
+	private def JavaStatementBuilder navigateToChoiceOption(JavaStatementBuilder choiceArg, RChoiceType choiceType, RChoiceOption goal, Context context) {
+		val optionPath = findChoiceOptionPath(choiceType, goal.type.RType.stripFromTypeAliases)
+		optionPath.fold(choiceArg, [acc, opt|
+			acc.attributeCall(opt.choiceType.withNoMeta, (opt.EObject as ChoiceOption).buildRAttribute, false, context.expectedType, context.scope)
+		])
 	}
 	private def JavaStatementBuilder narrowToSubtype(JavaStatementBuilder mapperCode, JavaType targetType, boolean isMulti, Context context) {
 		val filterScope = context.scope.lambdaScope
@@ -1361,12 +1366,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			
 			createSwitchJavaExpression(expr, switchArgument, [acc,switchCase,switchArg|
 				val choiceOption = new RChoiceOption(switchCase.guard.choiceOptionGuard, inputRType, typeProvider)
-				val optionPath = findChoiceOptionPath(inputRType, choiceOption.type.RType.stripFromTypeAliases)
-
 				val itemVar = context.scope.createIdentifier(switchCase.expression.implicitVarInContext, choiceOption.type.RType.name.toFirstLower)
-				val optionExpr = optionPath.fold(switchArg as JavaStatementBuilder, [pathAcc,opt|
-					pathAcc.attributeCall(opt.choiceType.withNoMeta, (opt.EObject as ChoiceOption).buildRAttribute, false, context.expectedType, context.scope)
-				])
+				val optionExpr = navigateToChoiceOption(switchArg, inputRType, choiceOption, context)
 				optionExpr
 					.collapseToSingleExpression(context.scope)
 					.mapExpression[

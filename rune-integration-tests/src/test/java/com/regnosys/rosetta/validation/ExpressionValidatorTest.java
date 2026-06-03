@@ -361,9 +361,10 @@ public class ExpressionValidatorTest {
     }
 
     @Test
-    void asToStrictSubtypeOfChoiceOptionShouldError() {
-        // A choice may only be narrowed to one of its options, not to a strict subtype of an option:
-        // we do not mix choice subtyping with data extension subtyping.
+    void asToStrictSubtypeOfChoiceOptionShouldNotResolve() {
+        // A choice may only be narrowed to one of its options. A strict subtype of an option is not in
+        // scope as a target (we do not mix choice subtyping with data extension subtyping), so it does
+        // not resolve - the same structural restriction as the `switch` operator.
         RosettaExpression expr = modelService.toTestModel("""
                 type Bar:
                 type SubBar extends Bar:
@@ -375,8 +376,8 @@ public class ExpressionValidatorTest {
                 foo as SubBar
                 """, "foo Foo (1..1)");
 
-        validationTestHelper.assertError(expr, AS_OPERATION, null,
-                "`SubBar` is not an option of choice type `Foo`. The `as` operator can only narrow a choice type to one of its (nested) options.");
+        validationTestHelper.assertError(expr, AS_OPERATION, org.eclipse.xtext.diagnostics.Diagnostic.LINKING_DIAGNOSTIC,
+                "Couldn't resolve reference to SwitchCaseTarget 'SubBar'.");
     }
 
     @Test
