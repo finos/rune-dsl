@@ -45,18 +45,14 @@ public class ResourceFormatterServiceTest {
 		}
 
 		for (String url : expectedUrls) {
-			expectedText.add(normalizeLineEndings(Files.readString(Path.of(Resources.getResource(url).toURI()))));
+			expectedText.add(Files.readString(Path.of(Resources.getResource(url).toURI())));
 		}
 
 		formatterService.formatCollection(resources, (resource, formattedContent) -> {
-			formattedText.add(normalizeLineEndings(formattedContent)); // Collect formatted content for assertions
+			formattedText.add(formattedContent); // Collect formatted content for assertions
 		});
 
 		Assertions.assertIterableEquals(expectedText, formattedText);
-	}
-
-	private static String normalizeLineEndings(String text) {
-		return text.replace("\r\n", "\n");
 	}
 
 	@Test
