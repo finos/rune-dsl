@@ -14,6 +14,7 @@ import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.RosettaFeature
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
+import com.regnosys.rosetta.rosetta.RosettaType
 import com.regnosys.rosetta.rosetta.RosettaMapTestExpression
 import com.regnosys.rosetta.rosetta.RosettaTyped
 import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression
@@ -368,6 +369,10 @@ class ChoiceOperation extends RosettaUnaryOperation {
 }
 
 class ToStringOperation extends RosettaUnaryOperation {
+}
+
+class AsOperation extends RosettaUnaryOperation {
+	refers RosettaType ^type
 }
 
 interface ParseOperation extends RosettaUnaryOperation {

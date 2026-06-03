@@ -302,6 +302,14 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
     }
 
     @Override
+    protected RMetaAnnotatedType caseAsOperation(AsOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
+        if (expr.getType() == null || !extensions.isResolved(expr.getType())) {
+            return builtins.NOTHING_WITH_ANY_META;
+        }
+        return RMetaAnnotatedType.withNoMeta(typeSystem.typeWithUnknownArgumentsToRType(expr.getType()));
+    }
+
+    @Override
     protected RMetaAnnotatedType caseBooleanLiteral(RosettaBooleanLiteral expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
         return builtins.BOOLEAN_WITH_NO_META;
     }

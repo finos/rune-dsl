@@ -342,4 +342,42 @@ public class ExpressionValidatorTest {
         validationTestHelper.assertError(expr, WITH_META_OPERATION, null,
                 "Expecting single cardinality. The with-meta operator can only be used with single cardinality arguments");
     }
+
+    @Test
+    void asToSubtypeHasNoIssues() {
+        RosettaExpression expr = modelService.toTestModel("""
+                type Foo:
+                type Bar extends Foo:
+                """).parseExpression("""
+                foo as Bar
+                """, "foo Foo (1..1)");
+
+        validationTestHelper.assertNoIssues(expr);
+    }
+
+    @Test
+    void asToNonSubtypeShouldError() {
+        RosettaExpression expr = modelService.toTestModel("""
+                type Foo:
+                type Bar extends Foo:
+                type Unrelated:
+                """).parseExpression("""
+                foo as Unrelated
+                """, "foo Foo (1..1)");
+
+        validationTestHelper.assertError(expr, AS_OPERATION, null,
+                "`Unrelated` is not a subtype of `Foo`. The `as` operator can only filter to a subtype of its argument.");
+    }
+
+    @Test
+    void asOnUnsupportedTypeShouldError() {
+        RosettaExpression expr = modelService.toTestModel("""
+                type Foo:
+                """).parseExpression("""
+                myString as Foo
+                """, "myString string (1..1)");
+
+        validationTestHelper.assertError(expr, AS_OPERATION, null,
+                "Operator `as` is not supported for type `string`. Supported argument types are complex types and choice types");
+    }
 }

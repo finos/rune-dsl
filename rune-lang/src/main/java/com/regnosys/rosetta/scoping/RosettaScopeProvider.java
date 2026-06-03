@@ -411,7 +411,7 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 	private IScope filteredScope(IScope scope, Predicate<IEObjectDescription> filter) {
 		return new FilteringScope(scope, filter);
 	}
-	
+
 	private IScope createExtendedFeatureScope(EObject receiver, RMetaAnnotatedType metaReceiverType) {
 		var receiverType = metaReceiverType.getRType();
 		if (receiverType instanceof REnumType enumType) {

@@ -1221,6 +1221,15 @@ repository:
             0: { name: entity.name.type.enum.rosetta }
           patterns:
           - include: '#comment'
+        - name: meta.as-operation.rosetta
+          begin: '{{wordStart}}as{{wordEnd}}(?!-)'
+          beginCaptures:
+            0: { name: keyword.operator.word.rosetta }
+          end: '{{qualifiedIdentifier}}'
+          endCaptures:
+            0: { name: entity.name.type.rosetta }
+          patterns:
+          - include: '#comment'
         - name: meta.switch-operation.rosetta
           begin: '{{wordStart}}switch{{wordEnd}}'
           beginCaptures:
