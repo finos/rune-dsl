@@ -13,6 +13,8 @@ import org.eclipse.xtext.ide.editor.contentassist.IIdeContentProposalAcceptor;
 import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalProvider;
 import org.eclipse.xtext.resource.EObjectDescription;
 import org.eclipse.xtext.resource.IEObjectDescription;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Predicate;
 import com.regnosys.rosetta.RosettaEcoreUtil;
@@ -28,6 +30,8 @@ import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.regnosys.rosetta.types.TypeSystem;
 
 public class RosettaContentProposalProvider extends IdeContentProposalProvider {
+	private static final Logger LOGGER = LoggerFactory.getLogger(RosettaContentProposalProvider.class);
+
 	@Inject
 	private RosettaGrammarAccess grammarAccess;
 	@Inject
@@ -76,6 +80,8 @@ public class RosettaContentProposalProvider extends IdeContentProposalProvider {
 			}
 		} catch (Exception e) {
 			// On any failure, keep the candidate rather than hiding a potentially valid proposal.
+			LOGGER.warn("Failed to determine whether '" + candidate.getName()
+					+ "' is a valid `as` target; keeping it as a proposal.", e);
 		}
 		return true;
 	}
