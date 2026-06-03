@@ -370,6 +370,10 @@ class ChoiceOperation extends RosettaUnaryOperation {
 class ToStringOperation extends RosettaUnaryOperation {
 }
 
+class AsOperation extends RosettaUnaryOperation {
+	refers SwitchCaseTarget ^type
+}
+
 interface ParseOperation extends RosettaUnaryOperation {
 }
 

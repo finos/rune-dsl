@@ -345,6 +345,33 @@ public class TypeSystem {
 		return t;
 	}
 	
+	/**
+	 * Find the path of choice options leading from the given choice type to the option whose type is the
+	 * closest supertype of {@code target}, descending into nested choice types as needed. The returned
+	 * list starts at an option of {@code from} and ends at the matched option.
+	 *
+	 * {@code target} must be a subtype of {@code from}.
+	 */
+	public List<RChoiceOption> findChoiceOptionPath(RChoiceType from, RType target) {
+		List<RChoiceOption> result = new ArrayList<>();
+		RChoiceType currentChoice = from;
+		while (true) {
+			RChoiceType choiceToSearch = currentChoice;
+			RChoiceOption option = choiceToSearch.getOwnOptions().stream()
+					.filter(o -> isSubtypeOf(target, o.getType().getRType(), false))
+					.findFirst()
+					.orElseThrow(() -> new IllegalStateException(
+							"Did not find an option of " + choiceToSearch + " that is a supertype of " + target));
+			result.add(option);
+			RType optionType = stripFromTypeAliases(option.getType().getRType());
+			if (optionType instanceof RChoiceType && !target.equals(optionType)) {
+				currentChoice = (RChoiceType) optionType;
+			} else {
+				return result;
+			}
+		}
+	}
+
 	public AliasHierarchy computeAliasHierarchy(RType t) {
 		List<RAliasType> aliasHierarchy = new ArrayList<>();
 		RType underlyingType = t;
