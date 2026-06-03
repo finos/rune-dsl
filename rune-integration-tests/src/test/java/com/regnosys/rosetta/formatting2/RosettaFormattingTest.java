@@ -40,6 +40,30 @@ public class RosettaFormattingTest {
 	}
 
 	@Test
+	void testCanHandleNonContiguousImportBlocks() {
+		formatAndAssert("""
+				namespace test
+
+				import cdm.product.asset.*
+				import cdm.product.common.settlement.*
+				import cdm.product.template.*
+				
+				import fpml.consolidated.* as fpml
+				import fpml.consolidated.asset.* as fpml
+				import fpml.consolidated.dividend.swaps.* as fpml
+				""", """
+				namespace test
+
+				import cdm.product.asset.*
+				import cdm.product.common.settlement.*
+				import cdm.product.template.*
+				import fpml.consolidated.* as fpml
+				import fpml.consolidated.asset.* as fpml
+				import fpml.consolidated.dividend.swaps.* as fpml
+				""");
+	}
+
+	@Test
 	void testChoiceCommaSpacingWithMultipleAttributes() {
 		formatAndAssert("""
 				namespace test
