@@ -3879,7 +3879,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Integer> assignOutput(List<Integer> res, Foo foo) {
-							res = distinct(MapperS.of(foo).<Integer>mapC("getN", _foo -> _foo.getN())).getMulti();
+							res = distinctIgnoringPrecision(MapperS.of(foo).<Integer>mapC("getN", _foo -> _foo.getN())).getMulti();
 							
 							return res;
 						}
@@ -3952,7 +3952,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Integer> assignOutput(List<Integer> res, List<Integer> n) {
-							res = distinct(MapperC.<Integer>of(n)).getMulti();
+							res = distinctIgnoringPrecision(MapperC.<Integer>of(n)).getMulti();
 							
 							return res;
 						}
@@ -4087,7 +4087,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, Foo foo) {
-							res.addAll(toBuilder(distinct(MapperS.of(foo).<Bar>mapC("getBarList", _foo -> _foo.getBarList())).getMulti()));
+							res.addAll(toBuilder(distinctIgnoringPrecision(MapperS.of(foo).<Bar>mapC("getBarList", _foo -> _foo.getBarList())).getMulti()));
 							
 							return Optional.ofNullable(res)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
@@ -4193,7 +4193,7 @@ class FunctionGeneratorTest {
 						}
 						
 						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, List<? extends Bar> barList) {
-							res.addAll(toBuilder(distinct(MapperC.<Bar>of(barList)).getMulti()));
+							res.addAll(toBuilder(distinctIgnoringPrecision(MapperC.<Bar>of(barList)).getMulti()));
 							
 							return Optional.ofNullable(res)
 								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))

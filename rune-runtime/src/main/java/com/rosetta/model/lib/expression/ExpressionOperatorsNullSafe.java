@@ -302,12 +302,43 @@ public class ExpressionOperatorsNullSafe {
 	}
 	
 	// distinct
-	
+
+	/**
+	 * @deprecated This implementation deduplicates using {@link Object#equals}, which is
+	 * precision-sensitive for {@link BigDecimal}: e.g. {@code 1.0} and {@code 1.00} are kept as
+	 * two distinct elements even though they represent the same Rune number. In the Rune DSL
+	 * precision is not part of a number's identity, so this is inconsistent with the equality
+	 * operator. Use {@link #distinctIgnoringPrecision(Mapper)} instead. This method is kept for
+	 * backwards compatibility with previously generated code.
+	 */
+	@Deprecated
 	public static <T> MapperC<T> distinct(Mapper<T> o) {
 		return MapperC.of(o.getMulti()
 				.stream()
 				.distinct()
 				.collect(Collectors.toList()));
+	}
+
+	/**
+	 * Returns the distinct elements of the given mapper, preserving order. Unlike
+	 * {@link #distinct(Mapper)}, numbers are deduplicated based on their value rather than their
+	 * representation, so that {@code BigDecimal} values that only differ in precision (e.g.
+	 * {@code 1.0} and {@code 1.00}) are treated as equal. This is consistent with how the Rune
+	 * equality operator compares numbers.
+	 */
+	public static <T> MapperC<T> distinctIgnoringPrecision(Mapper<T> o) {
+		Set<Object> seen = new HashSet<>();
+		List<T> result = new ArrayList<>();
+		for (T item : o.getMulti()) {
+			// Normalize BigDecimal keys so that equal values with a different scale (e.g. 1.0 and
+			// 1.00) collapse to the same dedup key, matching the precision-insensitive comparison
+			// used by the equality operator (BigDecimal.compareTo).
+			Object key = item instanceof BigDecimal ? ((BigDecimal) item).stripTrailingZeros() : item;
+			if (seen.add(key)) {
+				result.add(item);
+			}
+		}
+		return MapperC.of(result);
 	}
 	
 	public static ComparisonResult checkCardinality(String msgPrefix, int actual, int min, int max) {
