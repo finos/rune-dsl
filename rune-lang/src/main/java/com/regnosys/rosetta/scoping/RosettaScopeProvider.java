@@ -18,6 +18,7 @@ import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
 import com.regnosys.rosetta.rosetta.TypeCall;
+import com.regnosys.rosetta.rosetta.expression.AsOperation;
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
 import com.regnosys.rosetta.rosetta.expression.ConstructorKeyValuePair;
 import com.regnosys.rosetta.rosetta.expression.InlineFunction;
@@ -267,15 +268,14 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 					var argumentType = typeSystem.stripFromTypeAliases(typeProvider.getRMetaAnnotatedType(guard.getCase().getSwitchOperation().getArgument()).getRType());
 					if (argumentType instanceof REnumType argEnumType) {
 					   return Scopes.scopeFor(argEnumType.getAllEnumValues());
-					} else if (argumentType instanceof RChoiceType argChoiceType) {
-						return Scopes.scopeFor(Iterables.transform(argChoiceType.getAllOptions(), RChoiceOption::getEObject));
-					} else if (argumentType instanceof RDataType) {
-                        // TODO: find an efficient way to only include subtypes to improve auto-completion... E.g., by adding supertype info in the resource description?
-						// Once done succesfully: remove validation.
-                        return filteredScope(defaultScope(context, reference), it -> it.getEClass().equals(DATA));
-					} else {
-                        return IScope.NULLSCOPE;
-                    }
+					}
+					return getChoiceOrDataTargetScope(argumentType, context, reference);
+				}
+			} else if (reference.equals(AS_OPERATION__TYPE)) {
+				if (context instanceof AsOperation op) {
+					// `as` shares the choice-option / data-subtype target representation with `switch`.
+					var argumentType = typeSystem.stripFromTypeAliases(typeProvider.getRMetaAnnotatedType(op.getArgument()).getRType());
+					return getChoiceOrDataTargetScope(argumentType, context, reference);
 				}
 			} else if (reference.equals(WITH_META_ENTRY__KEY)) {
 				if (context instanceof WithMetaEntry) {
@@ -411,7 +411,23 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 	private IScope filteredScope(IScope scope, Predicate<IEObjectDescription> filter) {
 		return new FilteringScope(scope, filter);
 	}
-	
+
+	/**
+	 * The scope of valid narrowing targets for a choice or data argument, shared by the `switch` and `as`
+	 * operators: for a choice type, its (nested) options; for a data type, all data types (subtype
+	 * restriction is left to validation / content assist).
+	 */
+	private IScope getChoiceOrDataTargetScope(RType argumentType, EObject context, EReference reference) {
+		if (argumentType instanceof RChoiceType argChoiceType) {
+			return Scopes.scopeFor(Iterables.transform(argChoiceType.getAllOptions(), RChoiceOption::getEObject));
+		} else if (argumentType instanceof RDataType) {
+			// TODO: find an efficient way to only include subtypes to improve auto-completion... E.g., by adding supertype info in the resource description?
+			// Once done succesfully: remove validation.
+			return filteredScope(defaultScope(context, reference), it -> it.getEClass().equals(DATA));
+		}
+		return IScope.NULLSCOPE;
+	}
+
 	private IScope createExtendedFeatureScope(EObject receiver, RMetaAnnotatedType metaReceiverType) {
 		var receiverType = metaReceiverType.getRType();
 		if (receiverType instanceof REnumType enumType) {

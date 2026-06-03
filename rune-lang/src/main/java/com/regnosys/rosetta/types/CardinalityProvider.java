@@ -22,6 +22,7 @@ import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions;
 import com.regnosys.rosetta.rosetta.TypeParameter;
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation;
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation;
+import com.regnosys.rosetta.rosetta.expression.AsOperation;
 import com.regnosys.rosetta.rosetta.expression.CanHandleListOfLists;
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter;
@@ -291,6 +292,11 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 	
 	@Override
 	protected Boolean caseAsKeyOperation(AsKeyOperation expr, Map<RosettaSymbol, Boolean> cycleTracker) {
+		return safeIsMulti(expr.getArgument(), cycleTracker);
+	}
+
+	@Override
+	protected Boolean caseAsOperation(AsOperation expr, Map<RosettaSymbol, Boolean> cycleTracker) {
 		return safeIsMulti(expr.getArgument(), cycleTracker);
 	}
 	

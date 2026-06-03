@@ -80,6 +80,25 @@ public class RosettaExpressionPrioritisationTest {
 			"foo Foo (1..1)");
 	}
 	
+	@Test
+	void testPrioritisationOfAsOperation() {
+		// The `as` operator is parsed at the same level as the `->` path operator, associating left to right.
+		var model = modelService.toTestModel("""
+				type Foo:
+					bar Bar (1..1)
+				type Bar:
+				type Qux extends Bar:
+					attr string (1..1)
+			""");
+
+		assertEcoreEquals(model, """
+					foo -> bar as Qux -> attr
+				""", """
+					((foo -> bar) as Qux) -> attr
+				""",
+				"foo Foo (1..1)");
+	}
+
 	private void assertEcoreEquals(RosettaTestModel context, String expr1, String expr2, String... attributes) {
 		var parsedExpr1 = context.parseExpression(expr1, attributes);
 		var parsedExpr2 = context.parseExpression(expr2, attributes);

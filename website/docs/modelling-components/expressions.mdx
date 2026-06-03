@@ -187,6 +187,30 @@ owner -> drivingLicence -> penaltyPoints
 Use deep path operator `->>` to access common attributes across all options of a choice type. 
 With a choice type called `Vehicle`, each of its options exposing an attribute `vehicleId`, this identifier can be accessed directly using `vehicle ->> vehicleId`.
 
+### 2.3 Narrowing to a subtype with `as`
+Use the `as` operator to narrow a value to one of its subtypes:
+`<expression> as <Type>`
+
+It can be used in two situations:
+- On a **choice type**, where the right-hand side may be any (nested) option of the choice. For a choice type `Payout` with an option `PerformancePayout`, you can access that option directly:
+  ```haskell
+  payout as PerformancePayout
+  ```
+  If the payout is not a PerformancePayout, then the result is empty.
+- On a **data type**, where the right-hand side may be any (transitive) extension of that data type.
+
+**Semantics:** `as` filters its input by type.
+- For a single-cardinality input, the result is the input if it is of the given type, or empty otherwise.
+- For a multi-cardinality input, the result is the list of all items that are of the given type.
+
+```haskell
+// Returns the payout if it is an `OptionPayout`, or empty otherwise.
+payout as OptionPayout
+
+// Keeps only the `OptionPayout` items of a list of payouts.
+payouts as OptionPayout
+```
+
 
 ## 3. Operators
 Rune provides a set of operators that let you combine expressions into more complex logic. These operators mirror the basics found in most programming languages:
@@ -473,7 +497,7 @@ Rune evaluates expressions in a fixed order, from highest to lowest priority:
 2. Brackets: e.g. `(1+2)`
 3. if-then-else: e.g. `if (1=2) then 3`
 4. Constructor expressions: e.g `MyType {attr1: "value 1"}`
-5. Unary operators: `>, ->>, exists, is absent, only-element, flatten, distinct, reverse, first, last, sum, one-of, choice, to-string, to-number, to-int, to-time, to-enum, to-date, to-date-time, to-zoned-date-time, switch, sort, min, max, reduce, filter, map, extract, with-meta`
+5. Unary operators: `>, ->>, as, exists, is absent, only-element, flatten, distinct, reverse, first, last, sum, one-of, choice, to-string, to-number, to-int, to-time, to-enum, to-date, to-date-time, to-zoned-date-time, switch, sort, min, max, reduce, filter, map, extract, with-meta`
 6. Binary operators:  `contains, disjoint, default, join`
 7. Multiplicative operators: `*, /`
 8. Additive operators: `+, -`

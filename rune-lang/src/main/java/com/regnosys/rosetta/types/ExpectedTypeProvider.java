@@ -331,6 +331,11 @@ public interface ExpectedTypeProvider {
             }
 
             @Override
+            protected RMetaAnnotatedType caseAsOperation(AsOperation expr, Context context) {
+                return null;
+            }
+
+            @Override
             protected RMetaAnnotatedType caseChoiceOperation(ChoiceOperation expr, Context context) {
                 return null;
             }

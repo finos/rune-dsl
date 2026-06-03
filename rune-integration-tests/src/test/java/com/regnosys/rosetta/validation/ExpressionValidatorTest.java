@@ -342,4 +342,79 @@ public class ExpressionValidatorTest {
         validationTestHelper.assertError(expr, WITH_META_OPERATION, null,
                 "Expecting single cardinality. The with-meta operator can only be used with single cardinality arguments");
     }
+
+    @Test
+    void asToChoiceOptionPreservesMetadata() {
+        // Narrowing to a choice option that has metadata must keep that metadata accessible.
+        RosettaExpression expr = modelService.toTestModel("""
+                typeAlias MyString: string(maxLength: 42)
+
+                choice Foo:
+                    number
+                    MyString
+                        [metadata scheme]
+                """).parseExpression("""
+                foo as MyString -> scheme
+                """, "foo Foo (1..1)");
+
+        validationTestHelper.assertNoIssues(expr);
+    }
+
+    @Test
+    void asToStrictSubtypeOfChoiceOptionShouldNotResolve() {
+        // A choice may only be narrowed to one of its options. A strict subtype of an option is not in
+        // scope as a target (we do not mix choice subtyping with data extension subtyping), so it does
+        // not resolve - the same structural restriction as the `switch` operator.
+        RosettaExpression expr = modelService.toTestModel("""
+                type Bar:
+                type SubBar extends Bar:
+                type Qux:
+                choice Foo:
+                    Bar
+                    Qux
+                """).parseExpression("""
+                foo as SubBar
+                """, "foo Foo (1..1)");
+
+        validationTestHelper.assertError(expr, AS_OPERATION, org.eclipse.xtext.diagnostics.Diagnostic.LINKING_DIAGNOSTIC,
+                "Couldn't resolve reference to SwitchCaseTarget 'SubBar'.");
+    }
+
+    @Test
+    void asToSubtypeHasNoIssues() {
+        RosettaExpression expr = modelService.toTestModel("""
+                type Foo:
+                type Bar extends Foo:
+                """).parseExpression("""
+                foo as Bar
+                """, "foo Foo (1..1)");
+
+        validationTestHelper.assertNoIssues(expr);
+    }
+
+    @Test
+    void asToNonSubtypeShouldError() {
+        RosettaExpression expr = modelService.toTestModel("""
+                type Foo:
+                type Bar extends Foo:
+                type Unrelated:
+                """).parseExpression("""
+                foo as Unrelated
+                """, "foo Foo (1..1)");
+
+        validationTestHelper.assertError(expr, AS_OPERATION, null,
+                "`Unrelated` is not a subtype of `Foo`. The `as` operator can only narrow a data type to one of its extensions.");
+    }
+
+    @Test
+    void asOnUnsupportedTypeShouldError() {
+        RosettaExpression expr = modelService.toTestModel("""
+                type Foo:
+                """).parseExpression("""
+                myString as Foo
+                """, "myString string (1..1)");
+
+        validationTestHelper.assertError(expr, AS_OPERATION, null,
+                "Operator `as` is not supported for type `string`. Supported argument types are complex types and choice types");
+    }
 }

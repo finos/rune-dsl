@@ -30,7 +30,7 @@ import static com.regnosys.rosetta.rosetta.simple.SimplePackage.Literals.*;
 import static com.regnosys.rosetta.types.RMetaAnnotatedType.withNoMeta;
 
 // TODO: move over expression validations from RosettaSimpleValidator
-@ComposedChecks(validators = { ConstructorValidator.class, SwitchValidator.class })
+@ComposedChecks(validators = { ConstructorValidator.class, SwitchValidator.class, AsOperationValidator.class })
 public class ExpressionValidator extends AbstractExpressionValidator {
 	@Inject
 	private ExpressionHelper exprHelper;
