@@ -6,8 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import org.eclipse.xtext.xtext.generator.XtextGenerator;
-import org.eclipse.xtext.xtext.generator.XtextGeneratorLanguage;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.io.Files;
@@ -22,18 +20,6 @@ public class ParserCaseExtractorFragmentTest {
 		
 		ParserCaseExtractorFragment fragment = new ParserCaseExtractorFragment();
 		fragment.addGrammarFile(target.toString());
-		
-		XtextGeneratorLanguage lang = new XtextGeneratorLanguage();
-		lang.addReferencedResource("platform:/resource/rune-lang/model/Rosetta.xcore");
-		lang.addReferencedResource("platform:/resource/rune-lang/model/RosettaSimple.xcore");
-		lang.addReferencedResource("platform:/resource/rune-lang/model/RosettaExpression.xcore");
-		lang.setGrammarUri(new File("src/main/java", "com.regnosys.rosetta.Rosetta".replace(".", "/") + ".xtext").toURI().toString());
-		lang.addFragment(fragment);
-		
-		XtextGenerator generator = new XtextGenerator();
-		generator.addLanguage(lang);
-		generator.initialize();
-		
 		fragment.generate();
 		
 		File expected = new File("src/test/resources/extractor-test/ExpectedOutputParser.java");

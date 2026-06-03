@@ -104,25 +104,25 @@ public class ImportManagementService {
 		return duplicates;
 	}
 
+	//TODO: adding a new line between package blocks is a whitespace operation move this to XtextResourceFormatter
 	public String toString(List<Import> imports) {
 		StringBuilder sortedImportsText = new StringBuilder();
 		
 		Import previousImport = null;
 		for (Import imp : imports) {
-			//if previous import comes from a different package, insert new line
+			// if previous import comes from a different top-level package, insert blank line
 			if (previousImport != null) {
 				String previousFirstSegment = previousImport.getImportedNamespace().split("\\.")[0];
 				String currentFirstSegment = imp.getImportedNamespace().split("\\.")[0];
-				if(!previousFirstSegment.equals(currentFirstSegment)) {
-					sortedImportsText.append("\n");
+				if (!previousFirstSegment.equals(currentFirstSegment)) {
+					sortedImportsText.append(System.lineSeparator());
 				}
 			}
 			sortedImportsText.append("import ").append(imp.getImportedNamespace());
 			if (imp.getNamespaceAlias() != null) {
 				sortedImportsText.append(" as ").append(imp.getNamespaceAlias());
 			}
-			sortedImportsText.append("\n");
-			
+			sortedImportsText.append(System.lineSeparator());
 			
 			previousImport = imp;
 		}
