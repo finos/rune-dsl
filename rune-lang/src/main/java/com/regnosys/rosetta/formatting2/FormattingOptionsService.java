@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.Map;
 
-import org.eclipse.emf.mwe.core.resources.ResourceLoader;
 import org.eclipse.lsp4j.FormattingOptions;
 import org.eclipse.xtext.preferences.ITypedPreferenceValues;
 
@@ -23,8 +22,12 @@ public class FormattingOptionsService {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	
 	public FormattingOptions getDefaultOptions() {
-		InputStream resourceStream = ResourceLoader.class.getClassLoader().getResourceAsStream(DEFAULT_FORMATTING_OPTIONS_PATH);
-		try {
+		try (InputStream resourceStream = FormattingOptionsService.class.getClassLoader()
+				.getResourceAsStream(DEFAULT_FORMATTING_OPTIONS_PATH)) {
+			if (resourceStream == null) {
+				throw new IOException("Default formatting options resource not found on classpath: "
+						+ DEFAULT_FORMATTING_OPTIONS_PATH);
+			}
 			return fromInputStream(resourceStream);
 		} catch (IOException e) {
 			throw new UncheckedIOException("Failed to read default formatting options.", e);
@@ -35,8 +38,9 @@ public class FormattingOptionsService {
 	}
 	
 	public FormattingOptions readOptionsFromFile(String optionsPath) throws IOException {
-		InputStream resourceStream = new FileInputStream(optionsPath);
-		return fromInputStream(resourceStream);
+		try (InputStream resourceStream = new FileInputStream(optionsPath)) {
+			return fromInputStream(resourceStream);
+		}
 	}
 	public ITypedPreferenceValues readPreferencesFromFile(String optionsPath) throws IOException {
 		return optionsAdaptor.createPreferences(readOptionsFromFile(optionsPath));
