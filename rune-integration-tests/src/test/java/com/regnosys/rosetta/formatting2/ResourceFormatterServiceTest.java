@@ -56,6 +56,12 @@ public class ResourceFormatterServiceTest {
 	}
 
 	@Test
+	void formatNonContiguousImportBlock() throws IOException, URISyntaxException {
+		testFormatting(List.of("formatting-test/input/nonContiguousImportBlock.rosetta"),
+				List.of("formatting-test/expected/nonContiguousImportBlock.rosetta"));
+	}
+
+	@Test
 	void formatSingleDocument() throws IOException, URISyntaxException {
 		testFormatting(List.of("formatting-test/input/typeAlias.rosetta"),
 				List.of("formatting-test/expected/typeAlias.rosetta"));
