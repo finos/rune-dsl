@@ -679,8 +679,8 @@ UnaryOperation returns RosettaExpression:
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
 			|({SwitchOperation.argument=current} operator='switch' ->(cases+=SwitchCaseOrDefault ->(',' cases+=SwitchCaseOrDefault)*)?)
 			|({WithMetaOperation.argument=current} operator='with-meta' ('{' (entries+=WithMetaEntry (',' entries+=WithMetaEntry)*)? '}')?)
-			|({AsOperation.argument=current} operator='as' type=[SwitchCaseTarget|QualifiedName])
 		)
+		| =>({AsOperation.argument=current} operator='as' type=[SwitchCaseTarget|QualifiedName])
 		| ->(
 			({SortOperation.argument=current} operator='sort')
 			|({MinOperation.argument=current} operator='min')
@@ -756,8 +756,8 @@ UnaryOperation returns RosettaExpression:
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
 			|({SwitchOperation.argument=current} operator='switch' ->(cases+=SwitchCaseOrDefault ->(',' cases+=SwitchCaseOrDefault)*)?)
 			|({WithMetaOperation.argument=current} operator='with-meta' ('{' (entries+=WithMetaEntry (',' entries+=WithMetaEntry)*)? '}')?)
-			|({AsOperation.argument=current} operator='as' type=[SwitchCaseTarget|QualifiedName])
 		)
+		| =>({AsOperation.argument=current} operator='as' type=[SwitchCaseTarget|QualifiedName])
 		| ->(
 			({SortOperation.argument=current} operator='sort')
 			|({MinOperation.argument=current} operator='min')
@@ -915,7 +915,7 @@ RosettaRule:
  	(
 		References*
 		(expression = Expression
-		('as' identifier=STRING)?)
+		=>('as' identifier=STRING)?)
  	)
 ;
 

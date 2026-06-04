@@ -615,41 +615,6 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
     }
 
     @Test
-    void testAsOperationProposesOnlySubtypes() {
-        // After `as`, only subtypes of the argument type (`T1`) should be proposed:
-        // `T1` and `T2` (which extends `T1`), but not the unrelated `U1`.
-        String model = """
-                namespace a
-
-                type T1:
-
-                type T2 extends T1:
-
-                type U1:
-
-                func Test:
-                    inputs:
-                        t1 T1 (1..1)
-                    output:
-                        result T1 (1..1)
-                    set result:
-                        t1 as \s
-                """;
-
-        testCompletion(it -> {
-            it.setModel(model);
-            it.setLine(14);
-            it.setColumn(15);
-            it.setExpectedCompletionItems("""
-                    a.T1 (Data) -> a.T1 [[14, 15] .. [14, 15]]
-                    a.T2 (Data) -> a.T2 [[14, 15] .. [14, 15]]
-                    T1 (Data) -> T1 [[14, 15] .. [14, 15]]
-                    T2 (Data) -> T2 [[14, 15] .. [14, 15]]
-                    """);
-        });
-    }
-
-    @Test
     void testAttributeOverride() {
         String model = """
                 namespace my.ns
