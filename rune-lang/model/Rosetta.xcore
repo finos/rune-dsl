@@ -105,6 +105,7 @@ class RosettaBasicType extends RosettaRootElement, RosettaBuiltinType, Parametri
 
 class TypeParameter extends RosettaSymbol, RosettaTyped, RosettaDefinable {}
 
+// deprecated: synonym syntax has been removed from Rosetta.xtext.
 class RosettaSynonymSource extends RosettaRootElement , RosettaNamed {
 }
 
@@ -140,12 +141,14 @@ class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaSy
 
 class RosettaEnumeration extends RootElement, RosettaType, RosettaDefinable, References, RosettaSymbol {
 	refers RosettaEnumeration parent
+	// deprecated: synonym syntax has been removed from Rosetta.xtext.
 	contains RosettaSynonym[] synonyms
 	contains RosettaEnumValue[] enumValues opposite enumeration
 }
 
 class RosettaEnumValue extends RosettaSymbol, RosettaDefinable, RosettaFeature, References, Annotated, SwitchCaseTarget {
 	String display
+	// deprecated: synonym syntax has been removed from Rosetta.xtext.
 	contains RosettaEnumSynonym[] enumSynonyms
 	container RosettaEnumeration enumeration opposite enumValues
 }
@@ -238,12 +241,15 @@ class RosettaCardinality {
 
 /**********************************************************************
  * Synonyms
+ * deprecated: synonym syntax has been removed from Rosetta.xtext.
  */
 
+// deprecated: synonym syntax has been removed from Rosetta.xtext.
 abstract class RosettaSynonymBase {
 	refers RosettaSynonymSource[] sources
 }
 
+// deprecated: synonym syntax has been removed from Rosetta.xtext.
 class RosettaSynonymValueBase {
 	String name
 	RosettaSynonymRef refType
@@ -252,15 +258,18 @@ class RosettaSynonymValueBase {
 	int maps
 }
 
+// deprecated: synonym syntax has been removed from Rosetta.xtext.
 class RosettaClassSynonym extends RosettaSynonymBase {
 	contains RosettaSynonymValueBase value
 	contains RosettaSynonymValueBase metaValue
 }
 
+// deprecated: synonym syntax has been removed from Rosetta.xtext.
 class RosettaSynonym extends RosettaSynonymBase {
 	contains RosettaSynonymBody body
 }
 
+// deprecated: synonym syntax has been removed from Rosetta.xtext.
 class RosettaSynonymBody {
 	contains RosettaSynonymValueBase[] values
 	contains RosettaMapping mappingLogic
@@ -274,11 +283,13 @@ class RosettaSynonymBody {
 	boolean removeHtml
 }
 
+// deprecated: synonym syntax has been removed from Rosetta.xtext.
 class RosettaMergeSynonymValue {
 	String name
 	String excludePath
 }
 
+// deprecated: synonym syntax has been removed from Rosetta.xtext.
 class RosettaEnumSynonym extends RosettaSynonymBase, RosettaDefinable {
 	String synonymValue
 	String patternMatch
@@ -286,6 +297,7 @@ class RosettaEnumSynonym extends RosettaSynonymBase, RosettaDefinable {
 	boolean removeHtml
 }
 
+// deprecated: synonym syntax has been removed from Rosetta.xtext.
 enum RosettaSynonymRef {
 	tag
 	componentID = 1
@@ -414,10 +426,12 @@ enum RosettaQualifiableType {
 
 /*****************************************
  * Translate external synonym support
+ * deprecated: external synonym syntax has been removed from Rosetta.xtext.
  *****************************************/
 
 abstract class ExternalAnnotationSource extends RosettaRootElement, RosettaNamed {
 	contains RosettaExternalClass[] externalClasses
+	// deprecated: external enum annotation syntax has been removed from Rosetta.xtext.
 	contains RosettaExternalEnum[] externalEnums
 	
 	// refers ExternalAnnotationSource[] superSources
@@ -433,6 +447,7 @@ abstract class RosettaExternalRef {
 
 class RosettaExternalClass extends RosettaExternalRef {
 	refers Data data
+	// deprecated: external synonym syntax has been removed from Rosetta.xtext.
 	contains RosettaExternalClassSynonym[] externalClassSynonyms
 	contains RosettaExternalRegularAttribute[] regularAttributes
 	
@@ -441,6 +456,7 @@ class RosettaExternalClass extends RosettaExternalRef {
 	}
 }
 
+// deprecated: external enum annotation syntax has been removed from Rosetta.xtext.
 class RosettaExternalEnum extends RosettaExternalRef {
 	refers RosettaEnumeration enumeration
 	contains RosettaExternalEnumValue[] regularValues
@@ -458,25 +474,31 @@ enum ExternalValueOperator {
 class RosettaExternalRegularAttribute {
 	ExternalValueOperator operator
 	refers RosettaFeature attributeRef
+	// deprecated: external synonym syntax has been removed from Rosetta.xtext.
 	contains RosettaExternalSynonym[] externalSynonyms
 	contains RuleReferenceAnnotation[] externalRuleReferences
 }
 
+// deprecated: external enum annotation syntax has been removed from Rosetta.xtext.
 class RosettaExternalEnumValue {
 	ExternalValueOperator operator
 	refers RosettaEnumValue enumRef
+	// deprecated: external enum synonym syntax has been removed from Rosetta.xtext.
 	contains RosettaEnumSynonym[] externalEnumSynonyms
 }
 
+// deprecated: external synonym syntax has been removed from Rosetta.xtext.
 class RosettaExternalClassSynonym {
 	contains RosettaSynonymValueBase value
 	contains RosettaSynonymValueBase metaValue
 }
 
+// deprecated: external synonym syntax has been removed from Rosetta.xtext.
 class RosettaExternalSynonym {
 	contains RosettaSynonymBody body
 }
 
+// deprecated: external synonym source syntax has been removed from Rosetta.xtext.
 class RosettaExternalSynonymSource extends ExternalAnnotationSource, RosettaSynonymSource {
 	// @Compat: move this one up to `ExternalAnnotationSource` once `RosettaSynonymSource` is removed
 	refers RosettaSynonymSource[] superSources

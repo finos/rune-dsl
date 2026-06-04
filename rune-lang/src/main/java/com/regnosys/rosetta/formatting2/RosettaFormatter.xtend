@@ -3,19 +3,14 @@
  */
 package com.regnosys.rosetta.formatting2
 
-import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaDocReference
-import com.regnosys.rosetta.rosetta.RosettaEnumSynonym
 import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.regnosys.rosetta.rosetta.RosettaEnumeration
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression
 import com.regnosys.rosetta.rosetta.RosettaExternalClass
-import com.regnosys.rosetta.rosetta.RosettaExternalEnum
-import com.regnosys.rosetta.rosetta.RosettaExternalEnumValue
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute
-import com.regnosys.rosetta.rosetta.RosettaExternalSynonym
+import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource
 import com.regnosys.rosetta.rosetta.RosettaModel
-import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef
 import com.regnosys.rosetta.rosetta.simple.Attribute
 import com.regnosys.rosetta.rosetta.simple.Condition
@@ -37,7 +32,6 @@ import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.simple.Segment
-import com.regnosys.rosetta.rosetta.RosettaSynonymSource
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaBody
 import com.regnosys.rosetta.rosetta.RosettaCorpus
@@ -48,7 +42,6 @@ import com.regnosys.rosetta.rosetta.RosettaScope
 import com.regnosys.rosetta.rosetta.RosettaMetaType
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction
 import com.regnosys.rosetta.rosetta.simple.Annotation
-import com.regnosys.rosetta.rosetta.ExternalAnnotationSource
 import com.regnosys.rosetta.rosetta.TypeCall
 import com.regnosys.rosetta.rosetta.RosettaParameter
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias
@@ -303,10 +296,6 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			.prepend[noSpace]
 		ele.formatDefinition(document)
 		ele.indentInner(document)
-		ele.synonyms.forEach[
-			prepend[newLine]
-			format
-		]
 		ele.annotations.forEach[
 			prepend[newLine]
 			format
@@ -370,10 +359,6 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			prepend[newLine]
 			format
 		]
-		ele.synonyms.forEach[
-			prepend[newLine]
-			format
-		]
 	}
 	
 	def dispatch void format(TypeCall ele, extension IFormattableDocument document) {
@@ -404,16 +389,6 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			.surround[noSpace]
 		card.regionFor.keyword(')')
 			.prepend[noSpace]
-	}
-	
-	private def EObject formatSingleLineAnnotation(EObject annotation, extension IFormattableDocument document) {
-		val left = annotation.regionFor.keyword('[')
-		val right = annotation.regionFor.keyword(']')
-		
-		left.append[noSpace]
-		right.prepend[noSpace]
-		singleSpacesUntil(document, left.nextHiddenRegion.nextHiddenRegion, right.previousHiddenRegion)
-		return annotation
 	}
 	
 	def dispatch void format(Condition ele, extension IFormattableDocument document) {
@@ -644,14 +619,6 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			.prepend[newLine]
 	}
 
-	def dispatch void format(RosettaClassSynonym ele, extension IFormattableDocument document) {
-		ele.formatSingleLineAnnotation(document)
-	}
-	
-	def dispatch void format(RosettaSynonym ele, extension IFormattableDocument document) {
-		ele.formatSingleLineAnnotation(document)
-	}
-	
 	def dispatch void format(RosettaEnumeration ele, extension IFormattableDocument document) {
 		ele.regionFor.keyword(enumerationAccess.enumKeyword_0)
 			.append[oneSpace]
@@ -661,10 +628,6 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		ele.indentInner(document)
 		
 		ele.references.forEach[
-			prepend[newLine]
-			format
-		]
-		ele.synonyms.forEach[
 			prepend[newLine]
 			format
 		]
@@ -685,18 +648,6 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			prepend[newLine]
 			format
 		]
-		rosettaEnumValue.enumSynonyms.forEach[
-			prepend[newLine]
-			format
-		]
-	}
-
-	def dispatch void format(RosettaEnumSynonym rosettaEnumSynonym, extension IFormattableDocument document) {		
-		formatSingleLineAnnotation(rosettaEnumSynonym, document)
-	}
-		
-	def dispatch void format(RosettaExternalSynonym externalSynonym, extension IFormattableDocument document) {
-		formatSingleLineAnnotation(externalSynonym, document)
 	}
 
 	def dispatch void format(RosettaExpression ele, extension IFormattableDocument document) {
@@ -733,49 +684,23 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			.format
 	}
 	
-	def dispatch void format(RosettaSynonymSource synonymSource, extension IFormattableDocument document) {
-		val extension synonymSourceGrammarAccess = rosettaSynonymSourceAccess
-		
-		synonymSource.regionFor.keyword(sourceKeyword_1)
-			.surround[oneSpace]
-	}
-
-	def dispatch void format(ExternalAnnotationSource externalAnnotationSource, extension IFormattableDocument document) {
-		val extension externalAnnotationSourceGrammarAccess = externalAnnotationSourceAccess
-		val extension externalSynonymSourceGrammarAccess = rosettaExternalSynonymSourceAccess
+	def dispatch void format(RosettaExternalRuleSource ruleSource, extension IFormattableDocument document) {
 		val extension externalRuleSourceGrammarAccess = rosettaExternalRuleSourceAccess
 		
-		externalAnnotationSource.regionFor.keyword(externalSynonymSourceGrammarAccess.sourceKeyword_1)
+		ruleSource.regionFor.keyword(sourceKeyword_1)
 			.surround[oneSpace]
-		externalAnnotationSource.regionFor.keyword(externalRuleSourceGrammarAccess.sourceKeyword_1)
-			.surround[oneSpace]
-		externalAnnotationSource.regionFor.keyword(externalSynonymSourceGrammarAccess.extendsKeyword_3_0)
-			.surround[oneSpace]
-		externalAnnotationSource.regionFor.keyword(externalRuleSourceGrammarAccess.extendsKeyword_3_0)
+		ruleSource.regionFor.keyword(extendsKeyword_3_0)
 			.surround[oneSpace]
 		
-		indentedBraces(externalAnnotationSource, document)
-		externalAnnotationSource.externalClasses.head
+		indentedBraces(ruleSource, document)
+		ruleSource.externalClasses.head
 			.prepend[newLine]
-		externalAnnotationSource.externalClasses.tail.forEach[
+		ruleSource.externalClasses.tail.forEach[
 			prepend[setNewLines(2)]
 		]
-		externalAnnotationSource.externalClasses.forEach[
+		ruleSource.externalClasses.forEach[
 			format
 		]
-		
-		val enumsKeyword = externalAnnotationSource.regionFor.keyword(enumsKeyword_2_0)
-		if (enumsKeyword !== null) {
-			if (externalAnnotationSource.externalClasses.empty) {
-				enumsKeyword.prepend[newLine]
-			} else {
-				enumsKeyword.prepend[setNewLines(2)]
-			}
-			externalAnnotationSource.externalEnums.forEach[
-				prepend[setNewLines(2)]
-				format
-			]
-		}
 	}
 
 	def dispatch void format(RosettaExternalClass externalClass, extension IFormattableDocument document) {
@@ -787,30 +712,11 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 		]
 	}
 
-	def dispatch void format(RosettaExternalEnum externalEnum, extension IFormattableDocument document) {
-		externalEnum.regionFor.keyword(':').prepend[noSpace]
-		externalEnum.indentInner(document)
-		externalEnum.regularValues.forEach[
-			prepend[newLine]
-			format
-		]
-	}
-
 	def dispatch void format(RosettaExternalRegularAttribute externalRegularAttribute, extension IFormattableDocument document) {
 		externalRegularAttribute.regionFor.feature(ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__OPERATOR)
 			.append[oneSpace]
 		externalRegularAttribute.indentInner(document)
-		externalRegularAttribute.externalSynonyms.forEach[
-			prepend[newLine]
-			format
-		]
-	}
-	
-	def dispatch void format(RosettaExternalEnumValue externalEnumValue, extension IFormattableDocument document) {
-		externalEnumValue.regionFor.feature(ROSETTA_EXTERNAL_ENUM_VALUE__OPERATOR)
-			.append[oneSpace]
-		externalEnumValue.indentInner(document)
-		externalEnumValue.externalEnumSynonyms.forEach[
+		externalRegularAttribute.externalRuleReferences.forEach[
 			prepend[newLine]
 			format
 		]

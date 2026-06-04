@@ -92,6 +92,7 @@ interface AssignPathRoot extends RosettaSymbol {
 class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, References, AssignPathRoot {
 	boolean override
 	contains RosettaCardinality card
+	// deprecated: synonym syntax has been removed from Rosetta.xtext.
 	contains RosettaSynonym[] synonyms
 	contains RuleReferenceAnnotation[] ruleReferences
 	contains LabelAnnotation[] labels
@@ -100,6 +101,7 @@ class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, Refere
 
 class Data extends RosettaTypeWithConditions, RootElement, References, SwitchCaseTarget {
 	refers Data superType
+	// deprecated: synonym syntax has been removed from Rosetta.xtext.
 	contains RosettaClassSynonym[] synonyms
 	contains Attribute[] attributes
 	
@@ -228,4 +230,3 @@ class ShortcutDeclaration extends RosettaNamed, RosettaDefinable, AssignPathRoot
 class References {
 	contains RosettaDocReference[] references
 }
-

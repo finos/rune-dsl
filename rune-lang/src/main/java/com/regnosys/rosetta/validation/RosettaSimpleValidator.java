@@ -35,12 +35,8 @@ import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 import org.eclipse.xtext.xbase.lib.Conversions;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
-import org.eclipse.xtext.xbase.lib.StringExtensions;
 
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * Do not write any more validators in here for the following reasons:
@@ -330,34 +326,11 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
     }
 
     @Check
-    public void checkSynonymSource(RosettaExternalSynonymSource source) {
-        for (RosettaExternalClass t : source.getExternalClasses()) {
-            for (RosettaExternalRegularAttribute attr : t.getRegularAttributes()) {
-                attr.getExternalRuleReferences().forEach(it ->
-                        error("You may not define rule references in a synonym source.", it, null)
-                );
-            }
-        }
-    }
-
-    @Check
     public void checkRuleSource(RosettaExternalRuleSource source) {
         if (source.getSuperSources().size() > 1) {
             error("A rule source may not extend more than one other rule source.", source,
                     RosettaPackage.Literals.ROSETTA_EXTERNAL_RULE_SOURCE__SUPER_SOURCES, 1);
         }
-        for (RosettaExternalClass t : source.getExternalClasses()) {
-            t.getExternalClassSynonyms().forEach(it ->
-                    error("You may not define synonyms in a rule source.", it, null)
-            );
-            for (RosettaExternalRegularAttribute attr : t.getRegularAttributes()) {
-                attr.getExternalSynonyms().forEach(it ->
-                        error("You may not define synonyms in a rule source.", it, null)
-                );
-            }
-        }
-        errorKeyword("A rule source cannot define annotations for enums.", source,
-                grammarAccess.getExternalAnnotationSourceAccess().getEnumsKeyword_2_0());
     }
 
     @Check
@@ -523,125 +496,6 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         }
     }
 
-    // CONTINUE MIGRATION FROM HERE
-    @Check
-    public void checkMergeSynonymAttributeCardinality(Attribute attribute) {
-        for (RosettaSynonym syn : attribute.getSynonyms()) {
-            boolean multi = attribute.getCard().isIsMany();
-            RosettaSynonymBody body = syn.getBody();
-            RosettaMergeSynonymValue merge = body == null ? null : body.getMerge();
-            if (merge != null && !multi) {
-                error("Merge synonym can only be specified on an attribute with multiple cardinality.",
-                        syn.getBody(), RosettaPackage.Literals.ROSETTA_SYNONYM_BODY__MERGE);
-            }
-        }
-    }
-
-    @Check
-    public void checkMergeSynonymAttributeCardinality(RosettaExternalRegularAttribute attribute) {
-        RosettaFeature att = attribute.getAttributeRef();
-        if (att instanceof Attribute attr) {
-            for (RosettaExternalSynonym syn : attribute.getExternalSynonyms()) {
-                boolean multi = attr.getCard().isIsMany();
-                RosettaSynonymBody body = syn.getBody();
-                RosettaMergeSynonymValue merge = body == null ? null : body.getMerge();
-                if (merge != null && !multi) {
-                    error("Merge synonym can only be specified on an attribute with multiple cardinality.",
-                            syn.getBody(), RosettaPackage.Literals.ROSETTA_SYNONYM_BODY__MERGE);
-                }
-            }
-        }
-    }
-
-    @Check
-    public void checkPatternAndFormat(RosettaExternalRegularAttribute attribute) {
-        boolean isDateTime = isDateTime(rosettaTypeProvider
-                .getRTypeOfFeature(attribute.getAttributeRef(), attribute).getRType());
-        if (!isDateTime) {
-            for (RosettaExternalSynonym s : attribute.getExternalSynonyms()) {
-                checkFormatNull(s.getBody());
-                checkPatternValid(s.getBody());
-            }
-        } else {
-            for (RosettaExternalSynonym s : attribute.getExternalSynonyms()) {
-                checkFormatValid(s.getBody());
-                checkPatternNull(s.getBody());
-            }
-        }
-    }
-
-    @Check
-    public void checkPatternAndFormat(Attribute attribute) {
-        boolean isDateTime = isDateTime(rosettaTypeProvider.getRTypeOfSymbol(attribute).getRType());
-        if (!isDateTime) {
-            for (RosettaSynonym s : attribute.getSynonyms()) {
-                checkFormatNull(s.getBody());
-                checkPatternValid(s.getBody());
-            }
-        } else {
-            for (RosettaSynonym s : attribute.getSynonyms()) {
-                checkFormatValid(s.getBody());
-                checkPatternNull(s.getBody());
-            }
-        }
-    }
-
-    public void checkFormatNull(RosettaSynonymBody body) {
-        if (body.getFormat() != null) {
-            error("Format can only be applied to date/time types", body, RosettaPackage.Literals.ROSETTA_SYNONYM_BODY__FORMAT);
-        }
-    }
-
-    public DateTimeFormatter checkFormatValid(RosettaSynonymBody body) {
-        if (body == null || body.getFormat() == null) return null;
-        try {
-            return DateTimeFormatter.ofPattern(body.getFormat());
-        } catch (IllegalArgumentException e) {
-            error("Format must be a valid date/time format - " + e.getMessage(),
-                    body, RosettaPackage.Literals.ROSETTA_SYNONYM_BODY__FORMAT);
-            return null;
-        }
-    }
-
-    public void checkPatternNull(RosettaSynonymBody body) {
-        if (body.getPatternMatch() != null) {
-            error("Pattern cannot be applied to date/time types",
-                    body, RosettaPackage.Literals.ROSETTA_SYNONYM_BODY__PATTERN_MATCH);
-        }
-    }
-
-    public Pattern checkPatternValid(RosettaSynonymBody body) {
-        if (body == null || body.getPatternMatch() == null) return null;
-        try {
-            return Pattern.compile(body.getPatternMatch());
-        } catch (PatternSyntaxException e) {
-            error("Pattern to match must be a valid regular expression - " + getPatternSyntaxErrorMessage(e),
-                    body, RosettaPackage.Literals.ROSETTA_SYNONYM_BODY__PATTERN_MATCH);
-            return null;
-        }
-    }
-
-    private boolean isDateTime(RType rType) {
-        String name = rType == null ? null : rType.getName();
-        return java.util.Set.of("date", "time", "zonedDateTime").contains(name);
-    }
-
-    @Check
-    public void checkPatternOnEnum(RosettaEnumSynonym synonym) {
-        if (synonym.getPatternMatch() != null) {
-            try {
-                Pattern.compile(synonym.getPatternMatch());
-            } catch (PatternSyntaxException e) {
-                error("Pattern to match must be a valid regular expression - " + getPatternSyntaxErrorMessage(e),
-                        synonym, RosettaPackage.Literals.ROSETTA_ENUM_SYNONYM__PATTERN_MATCH);
-            }
-        }
-    }
-
-    private String getPatternSyntaxErrorMessage(PatternSyntaxException e) {
-        return e.getMessage().replace(System.lineSeparator(), "\n");
-    }
-
     @Check
     public void checkFuncDispatchAttr(FunctionDispatch ele) {
         if (rosettaEcoreUtil.isResolved(ele.getAttribute())
@@ -734,33 +588,6 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         if (ele.getPath() == null && ele.getAssignRoot() instanceof ShortcutDeclaration) {
             error("An alias can not be assigned. Assign target must be an attribute.",
                     ele, SimplePackage.Literals.OPERATION__ASSIGN_ROOT);
-        }
-    }
-
-    // Helper type to avoid xbase Pair
-    private static record InvalidPathChar(char ch, boolean atSegmentStart) {}
-
-    @Check
-    public void checkSynonymMapPath(RosettaMapPathValue ele) {
-        if (!StringExtensions.isNullOrEmpty(ele.getPath())) {
-            InvalidPathChar invalid = checkPathChars(ele.getPath());
-            if (invalid != null) {
-                String msg = "Character '" + invalid.ch + "' is not allowed "
-                             + (invalid.atSegmentStart ? "as first symbol in a path segment." : "in paths. Use '->' to separate path segments.");
-                error(msg, ele, RosettaPackage.Literals.ROSETTA_MAP_PATH_VALUE__PATH);
-            }
-        }
-    }
-
-    @Check
-    public void checkSynonyValuePath(RosettaSynonymValueBase ele) {
-        if (!StringExtensions.isNullOrEmpty(ele.getPath())) {
-            InvalidPathChar invalid = checkPathChars(ele.getPath());
-            if (invalid != null) {
-                String msg = "Character '" + invalid.ch + "' is not allowed "
-                             + (invalid.atSegmentStart ? "as first symbol in a path segment." : "in paths. Use '->' to separate path segments.");
-                error(msg, ele, RosettaPackage.Literals.ROSETTA_SYNONYM_VALUE_BASE__PATH);
-            }
         }
     }
 
@@ -1007,23 +834,6 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         if (!Objects.equals(outType, builtinTypeService.BOOLEAN)) {
             error("Qualification functions must output a boolean.", func, SimplePackage.Literals.FUNCTION__OUTPUT);
         }
-    }
-
-    private InvalidPathChar checkPathChars(String str) {
-        String[] segments = str.split("->");
-        for (String segment : segments) {
-            if (!segment.isEmpty()) {
-                if (!Character.isJavaIdentifierStart(segment.charAt(0))) {
-                    return new InvalidPathChar(segment.charAt(0), true);
-                }
-                for (char c : segment.toCharArray()) {
-                    if (!Character.isJavaIdentifierPart(c)) {
-                        return new InvalidPathChar(c, false);
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     @Check

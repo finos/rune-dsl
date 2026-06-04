@@ -1060,20 +1060,14 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
-    void enumNotAllowedInRuleReferenceSourceTest() {
+    void enumKeywordNotAllowedInRuleReferenceSourceTest() {
         var model = modelHelper.parseRosetta("""
-				enum Foo:
-					BAR
-
-				rule source TestA {
-					enums
-
-					Foo:
-						+ BAR
-				}
-				""");
-        validationTestHelper.assertError(model, ROSETTA_EXTERNAL_RULE_SOURCE, null,
-                "A rule source cannot define annotations for enums.");
+					rule source TestA {
+						enums
+					}
+					""");
+        validationTestHelper.assertError(model, ROSETTA_EXTERNAL_RULE_SOURCE, Diagnostic.SYNTAX_DIAGNOSTIC,
+                "missing ':' at '}'");
     }
 
     @Test

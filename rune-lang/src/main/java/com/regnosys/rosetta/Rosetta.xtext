@@ -4,11 +4,6 @@ import "http://www.rosetta-model.com/RosettaSimple"
 import "http://www.rosetta-model.com/RosettaExpression"
 import "http://www.eclipse.org/emf/2002/Ecore" as ecore
 
-// general TODO: naming is inconsistent, e.g., 
-// - [RosettaSynonymSource]
-// - [RosettaSynonymSource|ValidID]
-// - [RosettaSynonymSource|QualifiedName]
-
 RosettaModel:
 	 (overridden?='override')? 'namespace' name=(QualifiedName | STRING) (':' RosettaDefinable)? // TODO do we need STRING here? It is not supported for highlighting.
 	// TODO colon is inconsistent with other documentation
@@ -45,12 +40,6 @@ Annotation:
 fragment Annotations returns Annotated:
 	annotations+=AnnotationRef;
 
-fragment Synonyms*:
-	synonyms+=RosettaSynonym;
-
-fragment ClassSynonyms*:
-	synonyms+=RosettaClassSynonym;
-
 fragment References*:
 	references+=RosettaDocReference;
 
@@ -59,8 +48,6 @@ fragment RuleReference*:
 // TODO: cleanup annotations. Now it's a mix of hard-coded annotations and these kind of annotations.
 // Hard-coded:
 // - prefix annotation
-// - (class/enum) synonyms
-// - external (class/enum) synonym
 // - docReference
 // - ruleReference
 AnnotationRef:
@@ -69,6 +56,14 @@ AnnotationRef:
 
 AnnotationQualifier:
 	qualName=STRING '=' (qualValue=STRING | qualPath=RosettaAttributeReference)
+;
+
+RosettaDataReference returns RosettaAttributeReferenceSegment:
+	{RosettaDataReference} data=[Data|QualifiedName]
+;
+
+RosettaAttributeReference returns RosettaAttributeReferenceSegment:
+	RosettaDataReference ({RosettaAttributeReference.receiver=current} '->' attribute=[Attribute|ValidID])+
 ;
 
 Data:
@@ -216,8 +211,8 @@ TypeParameterValidID:
 ;
 
 ValidID:
-	ID | 'condition' | 'source' | 'value' | 'version'
-	| 'pattern' | 'scope'
+	ID | 'condition' | 'source' | 'version'
+	| 'scope'
 ;
 
 
@@ -235,10 +230,6 @@ fragment TypeParameters returns ParametrizedRosettaType:
 
 TypeParameter:
 	name=TypeParameterValidID RosettaTyped RosettaDefinable?
-;
-
-RosettaSynonymSource:
-	'synonym' 'source' RosettaNamed
 ;
 
 RosettaRecordType:
@@ -283,145 +274,6 @@ RosettaCardinality:
 	'(' (inf=INT '..' sup=INT | inf=INT '..' unbounded?='*') ')'
 ;
 
-
-
-/**********************************************************************
- * Synonyms 
- */ 
-
-RosettaClassSynonym:
-	'[' 'synonym' sources+=[RosettaSynonymSource|QualifiedName] (',' sources += [RosettaSynonymSource|QualifiedName])*
-	 ('value' value=RosettaClassSynonymValue)?
-	 ('meta' metaValue = RosettaMetaSynonymValue)?
-	 ']'
-;
-
-RosettaClassSynonymValue returns RosettaSynonymValueBase:
-	name = STRING (refType=RosettaSynonymRef value=INT)?
-	('path' path = STRING)? 
-;
-
-RosettaSynonym:
-	'[' 'synonym' sources+=[RosettaSynonymSource|QualifiedName] (',' sources += [RosettaSynonymSource|QualifiedName])*
-	body=RosettaSynonymBody
-	']'
-;
-
-RosettaSynonymBody:
-	('value' (values+=RosettaSynonymValue ',')* values+=RosettaSynonymValue (mappingLogic=RosettaMapping)? ('meta' (metaValues += STRING ',')* metaValues += STRING)? 
-		| 'hint' (hints+=STRING ',')* hints+=STRING
-		| 'merge' merge=RosettaMergeSynonymValue
-		| mappingLogic=RosettaMappingSetTo 
-		| 'meta' (metaValues += STRING ',')* metaValues += STRING)
-	
-	('dateFormat' format=STRING)?
-	('pattern' patternMatch=STRING patternReplace=STRING)?
-	(removeHtml ?= 'removeHtml')?
-	('mapper' mapper=STRING)?
-;
-
-RosettaSynonymValue returns RosettaSynonymValueBase :
-	name = STRING (refType=RosettaSynonymRef value=INT)?
-	('path' path = STRING)? 
-	('maps' maps=INT)?
-;
-RosettaMetaSynonymValue  returns RosettaSynonymValueBase :
-	name = STRING (refType=RosettaSynonymRef value=INT)?
-	('path' path = STRING)? 
-	('maps' maps=INT)?
-;
-RosettaMergeSynonymValue :
-	name = STRING ('when' 'path' '<>' excludePath=STRING)?
-;
-
-RosettaEnumSynonym:
-	/*
-	 * The rationale for having a synonym which syntax is distinct for the enumeration
-	 * is because it needs to accommodate integer values for FIX while there is no Tag nor ComponentID
-	 * an optional definition field has also been added, while the synonymValue is of type STRING to accommodate peculiar values
-	 */
-	'[' 'synonym' sources+=[RosettaSynonymSource|QualifiedName] (',' sources += [RosettaSynonymSource|QualifiedName])*  
-		'value' synonymValue=STRING ('definition' definition=STRING)?  
-		('pattern' patternMatch=STRING patternReplace=STRING)? 
-		(removeHtml ?= 'removeHtml')?
-	']'
-;
-
-enum RosettaSynonymRef:
-	tag | componentID
-;
-
-/**********************************************************************
- * Mapping Logic - Attribute Synonym
- */
-
-RosettaMapping:
-	instances += RosettaMappingInstance (',' instances += RosettaMappingInstance)*
-;
-
-RosettaMappingInstance:
-	('set' 'when') when=RosettaMappingPathTests
-	| (default?='default' 'to') set=RosettaMapPrimaryExpression
-;
-
-RosettaMappingSetTo returns RosettaMapping:
-	instances += RosettaMappingSetToInstance (',' instances += RosettaMappingSetToInstance)*
-;
-
-RosettaMappingSetToInstance returns RosettaMappingInstance:
-	('set' 'to') set=RosettaMapPrimaryExpression ('when' when = RosettaMappingPathTests)?
-;
-
-RosettaMappingPathTests:
-	tests+=RosettaMapTest ('and' tests += RosettaMapTest)*
-;
-
-RosettaMapTest:
-	RosettaMapPath
-	| RosettaMapRosettaPath
-	| RosettaMapTestExpression
-	| RosettaMapTestFunc
-;
-
-RosettaMapPath:
-	'path' '=' path=RosettaMapPathValue
-;
-
-RosettaMapRosettaPath:
-	'rosettaPath' '=' path=RosettaAttributeReference
-;
-
-RosettaDataReference returns RosettaAttributeReferenceSegment:
-	{RosettaDataReference} data=[Data|QualifiedName]
-;
-
-RosettaAttributeReference returns RosettaAttributeReferenceSegment:
-	RosettaDataReference ({RosettaAttributeReference.receiver=current} '->' attribute=[Attribute|ValidID])+
-;
-
-RosettaMapTestExpression returns RosettaMapTestExpression:
-	RosettaMapPathValue (
-		{RosettaMapTestExistsExpression.argument=current} 'exists' 
-		| {RosettaMapTestAbsentExpression.argument=current} 'is' 'absent'
-		| {RosettaMapTestEqualityOperation.left=current} operator=('='|'<>') right=RosettaMapPrimaryExpression
-	)
-;
-
-RosettaMapPrimaryExpression returns RosettaMapTestExpression:
-	EnumValueReference
-	| RosettaStringLiteral
-	| RosettaBooleanLiteral
-	| RosettaIntLiteral
-	| RosettaNumberLiteral
-;
-
-RosettaMapPathValue:
-	path=STRING
-;
-
-RosettaMapTestFunc:
-	'condition-func' func=[RosettaCallableWithArgs|QualifiedName] ('condition-path' predicatePath=RosettaMapPathValue)?
-;
 
 
 /**********************************************************************
@@ -809,35 +661,19 @@ RosettaOnlyExistsElementRoot returns RosettaExpression:
 ;
 
 /*****************************************
- * Translate external synonym and rule support
+ * Translate external rule support
  *****************************************/
-
-fragment ExternalAnnotationSource:
-	'{'
-	    (externalClasses+=RosettaExternalClass)*
-	    ('enums' (externalEnums+=RosettaExternalEnum)*)?
-	'}'
-;
-// @Compat: move common parts to `ExternalAnnotationSource` once `RosettaSynonymSource` is removed.
-RosettaExternalSynonymSource:
-		'synonym' 'source' RosettaNamed ('extends' superSources+=[RosettaSynonymSource|QualifiedName]  (',' superSources+=[RosettaSynonymSource|QualifiedName])* )?
-		ExternalAnnotationSource
-;
 
 RosettaExternalRuleSource:
 		'rule' 'source' RosettaNamed ('extends' superSources+=[RosettaExternalRuleSource|QualifiedName]  (',' superSources+=[RosettaExternalRuleSource|QualifiedName])* )?
-		ExternalAnnotationSource
+		'{'
+		    (externalClasses+=RosettaExternalClass)*
+		'}'
 ;
 
 RosettaExternalClass:
 	data=[Data|QualifiedName] ':'
-		(externalClassSynonyms += RosettaExternalClassSynonym)*
 		(regularAttributes += RosettaExternalRegularAttribute)*
-;
-
-RosettaExternalEnum:
-	enumeration=[RosettaEnumeration|QualifiedName] ':'
-		(regularValues += RosettaExternalEnumValue)*
 ;
 
 enum ExternalValueOperator:
@@ -847,35 +683,8 @@ enum ExternalValueOperator:
 
 RosettaExternalRegularAttribute:
 	operator=ExternalValueOperator attributeRef=[RosettaFeature|ValidID]
-		externalSynonyms+=RosettaExternalSynonym*
 		externalRuleReferences+=RuleReferenceAnnotation*
 ;
-
-RosettaExternalEnumValue: 
-	operator=ExternalValueOperator enumRef=[RosettaEnumValue|ValidID]
-		externalEnumSynonyms += RosettaExternalEnumSynonym*
-;
-
-RosettaExternalClassSynonym:
-	'['
-	('value' value=RosettaClassSynonymValue)?
-	'meta' metaValue = RosettaMetaSynonymValue
-	']'
-;
-
-RosettaExternalSynonym:
-	'['
-	body=RosettaSynonymBody
-	']'
-;
-
-RosettaExternalEnumSynonym returns RosettaEnumSynonym:
-	'['
-	'value' synonymValue=STRING ('definition' definition=STRING)?
-	('pattern' patternMatch=STRING patternReplace=STRING)?
-	']'
-;
-
 
 /*****************************************
  * Reporting support

@@ -25,10 +25,10 @@ variables:
   
   # Keywords indicating the start of a root element are split in three categories:
   # - keywords that may also be used as an identifier (e.g., `version`),
-  # - keywords that may also be used as another keyword in a certain context (e.g., `synonym`),
+  # - keywords that may also be used as another keyword in a certain context (e.g., `rule`),
   # - keywords that are unambiguous, i.e., all other keywords indicating the start of a root element.
   identifiersConflictingWithNamespace: '{{wordStart}}(scope|version){{wordEnd}}'
-  ambiguousRootStart: '{{wordStart}}(synonym|rule){{wordEnd}}'
+  ambiguousRootStart: '{{wordStart}}rule{{wordEnd}}'
   unambiguousRootStart: '{{wordStart}}(namespace|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|typeAlias|library|reporting|eligibility|metaType|report|annotation|enum|type|choice|func){{wordEnd}}'
   rootStart: '{{ambiguousRootStart}}|{{unambiguousRootStart}}'
   namespaceEnd: (?={{identifiersConflictingWithNamespace}}|{{ambiguousRootStart}}|{{unambiguousRootStart}})
@@ -39,9 +39,6 @@ variables:
   functionalOperation: '{{wordStart}}(reduce|filter|extract|sort|min|max){{wordEnd}}'
   listOperationWord: '{{functionalOperation}}|{{wordStart}}(single|multiple|exists|is|absent|only-element|count|flatten|distinct|reverse|first|last|sum){{wordEnd}}'
   listOperation: ->>|->|{{listOperationWord}}
-  synonymAnnotationSimpleSection: '{{wordStart}}(value|meta|definition|pattern|removeHtml|dateFormat|mapper|hint|merge|condition-func|condition-path){{wordEnd}}'
-  synonymAnnotationSection: '{{synonymAnnotationSimpleSection}}|{{wordStart}}(set){{wordEnd}}'
-  synonymAnnotationSectionEnd: (?={{synonymAnnotationSection}})|(?=\])|{{rootEnd}}
   docReferenceAnnotationSection: '{{wordStart}}(rationale|rationale_author|structured_provision|provision|reportedField){{wordEnd}}'
   docReferenceAnnotationSectionEnd: (?={{docReferenceAnnotationSection}}|\])|{{sectionEnd}}
   reportSectionStart: '{{wordStart}}(in|from|when|with){{wordEnd}}'
@@ -150,7 +147,7 @@ repository:
           - include: '#rosettaRecordType'
           - include: '#rosettaTypeAlias'
           - include: '#rosettaLibraryFunction'
-          - include: '#rosettaAnnotationSource'
+          - include: '#rosettaExternalRuleSource'
           - include: '#rosettaRule'
           - include: '#rosettaMetaType'
           - include: '#rosettaReport'
@@ -389,15 +386,15 @@ repository:
         - include: '#comment'
         - include: '#typeCall'
 
-      rosettaAnnotationSource:
-        name: meta.annotation-source.rosetta
-        begin: '{{wordStart}}(synonym|rule){{wordEnd}}'
+      rosettaExternalRuleSource:
+        name: meta.rule-source.rosetta
+        begin: '{{wordStart}}rule{{wordEnd}}'
         beginCaptures:
-          0: { name: keyword.other.rosetta }
+          0: { name: keyword.other.rule.rosetta }
         end: '{{rootEnd}}'
         patterns:
         - include: '#comment'
-        - begin: '(?<=({{wordStart}}synonym{{wordEnd}})|({{wordStart}}rule{{wordEnd}}))' # used to be '(?<={{wordStart}}(synonym|rule){{wordEnd}})'. See issue https://github.com/zikaari/monaco-textmate/issues/10.
+        - begin: '(?<={{wordStart}}rule{{wordEnd}})'
           end: (?=\{)|{{rootEnd}}
           patterns:
           - include: '#comment'
@@ -405,9 +402,9 @@ repository:
             match: '{{wordStart}}source{{wordEnd}}'
           - name: keyword.other.extends.rosetta
             match: '{{wordStart}}extends{{wordEnd}}'
-          - name: entity.name.annotation-source.rosetta
+          - name: entity.name.rule-source.rosetta
             match: '{{identifier}}'
-        - name: meta.annotation-source-body.rosetta
+        - name: meta.rule-source-body.rosetta
           begin: (\{)
           beginCaptures:
             1: { name: punctuation.section.braces.begin.rosetta }
@@ -416,31 +413,7 @@ repository:
             1: { name: punctuation.section.braces.end.rosetta }
           patterns:
           - include: '#comment'
-          - begin: '{{wordStart}}enums{{wordEnd}}'
-            beginCaptures:
-              0: { name: keyword.other.rosetta }
-            end: (?=\})|{{rootEnd}}
-            patterns:
-            - include: '#comment'
-            - include: '#colon'
-            - name: meta.annotation-source-enum-mapping.rosetta
-              begin: '{{identifier}}'
-              beginCaptures:
-                0: { name: entity.name.type.enum.rosetta }
-              end: (?={{identifier}}|\})|{{rootEnd}}
-              patterns:
-              - include: '#comment'
-              - include: '#annotation'
-              - name: meta.annotation-source-enum-value-mapping.rosetta
-                begin: '(\+|-)\s*({{identifier}})'
-                beginCaptures:
-                  1: { name: keyword.operator.annotation.rosetta }
-                  2: { name: variable.other.enummember.rosetta }
-                end: (?={{identifier}}|\}|\+|-)|{{rootEnd}}
-                patterns:
-                - include: '#comment'
-                - include: '#annotation'
-          - name: meta.annotation-source-type-mapping.rosetta
+          - name: meta.rule-source-type-mapping.rosetta
             begin: '{{identifier}}'
             beginCaptures:
               0: { name: entity.name.type.type.rosetta }
@@ -448,8 +421,8 @@ repository:
             patterns:
             - include: '#comment'
             - include: '#colon'
-            - include: '#annotation'
-            - name: meta.annotation-source-attribute-mapping.rosetta
+            - include: '#externalRuleReferenceAnnotation'
+            - name: meta.rule-source-attribute-mapping.rosetta
               begin: '(\+|-)\s*({{identifier}})'
               beginCaptures:
                 1: { name: keyword.operator.annotation.rosetta }
@@ -457,7 +430,7 @@ repository:
               end: (?={{identifier}}|\}|\+|-)|{{rootEnd}}
               patterns:
               - include: '#comment'
-              - include: '#annotation'
+              - include: '#externalRuleReferenceAnnotation'
 
       rosettaRule:
         patterns:
@@ -560,7 +533,7 @@ repository:
             end: (?={{reportSectionStart}})|{{rootEnd}}
             patterns:
             - include: '#comment'
-            - name: entity.name.annotation-source.rosetta
+            - name: entity.name.rule-source.rosetta
               match: '{{identifier}}'
             - name: punctuation.separator.dot.rosetta
               match: \.
@@ -595,7 +568,6 @@ repository:
         patterns:
         - include: '#comment'
         - include: '#prefixAnnotationBody'
-        - include: '#synonymAnnotationBody'
         - include: '#referenceAnnotationBody'
         - include: '#ruleReferenceAnnotationBody'
         - include: '#labelAnnotationBody'
@@ -612,76 +584,17 @@ repository:
         - name: entity.name.function.rosetta
           match: '{{identifier}}'
 
-      synonymAnnotationBody: # TODO: highlight `path` and `dateFormat` strings differently
-        name: meta.annotated.synonym.rosetta
-        begin: '{{wordStart}}(synonym){{wordEnd}}|(?={{synonymAnnotationSection}})'
+      externalRuleReferenceAnnotation:
+        name: meta.annotated.external-rule-reference.rosetta
+        begin: (\[)
         beginCaptures:
-          1: { name: variable.annotation.synonym.rosetta }
-        end: (?=\])|{{rootEnd}}
+          1: { name: punctuation.annotation.begin.rosetta }
+        end: (\])|{{rootEnd}}
+        endCaptures:
+          1: { name: punctuation.annotation.end.rosetta }
         patterns:
         - include: '#comment'
-        - name: meta.annotated.synonym.synonym-section.rosetta
-          begin: '(?<={{wordStart}}synonym{{wordEnd}})'
-          end: '{{synonymAnnotationSectionEnd}}'
-          patterns:
-          - include: '#comment'
-          - include: '#comma'
-          - name: punctuation.separator.dot.rosetta
-            match: '.'
-          - name: entity.name.synonym-source.rosetta
-            match: '{{identifier}}'
-        - name: meta.annotated.synonym.simple-section.rosetta
-          begin: '{{synonymAnnotationSimpleSection}}'
-          beginCaptures:
-            0: { name: keyword.other.rosetta }
-          end: '{{synonymAnnotationSectionEnd}}'
-          patterns:
-          - include: '#comment'
-          - include: '#synonymValue'
-          - include: '#synonymMapping'
-          - include: '#comma'
-        - name: meta.annotated.synonym.set-section.rosetta
-          begin: '(?={{wordStart}}set{{wordEnd}})'
-          beginCaptures:
-            0: { name: keyword.other.rosetta }
-          end: '(?!{{wordStart}}set{{wordEnd}}){{synonymAnnotationSectionEnd}}'
-          patterns:
-          - include: '#comment'
-          - include: '#synonymValue'
-          - include: '#synonymMapping'
-          - include: '#comma'
-
-      synonymValue: # includes RosettaSynonymValue, RosettaClassSynonymValue, RosettaMetaSynonymValue and RosettaMergeSynonymValue
-        patterns:
-        - include: '#comment'
-        - include: '#string'
-        - include: '#integer'
-        - include: '#comma'
-        - name: constant.language.rosetta
-          match: '{{wordStart}}(tag|componentID){{wordEnd}}'
-        - name: keyword.other.rosetta
-          match: '{{wordStart}}(when|path|maps){{wordEnd}}'
-        - name: keyword.operator.rosetta
-          match: '<>'
-
-      synonymMapping: # TODO: improve
-        patterns:
-        - include: '#comment'
-        - include: '#literal'
-        - include: '#comma'
-        - begin: '{{wordStart}}(set|default){{wordEnd}}'
-          beginCaptures:
-            0: { name: keyword.other.rosetta }
-          end: '(?=,)|{{synonymAnnotationSectionEnd}}'
-          patterns:
-          - include: '#comment'
-          - name: keyword.other.rosetta
-            match: '{{wordStart}}(when|condition-func|condition-path|to|path|rosettaPath|and){{wordEnd}}'
-          - name: keyword.operator.word.rosetta
-            match: '{{wordStart}}(exists|is|absent){{wordEnd}}'
-          - name: keyword.operator.rosetta
-            match: '{{wordStart}}(=|<>){{wordEnd}}'
-          - include: '#literal'
+        - include: '#ruleReferenceAnnotationBody'
 
       referenceAnnotationBody:
         name: meta.annotated.document.rosetta
@@ -1349,7 +1262,6 @@ repository:
             patterns:
             - include: '#comment'
             - include: '#prefixAnnotationBody'
-            - include: '#synonymAnnotationBody'
             - include: '#referenceAnnotationBody'
             - include: '#ruleReferenceAnnotationBody'
             - include: '#labelAnnotationBody'
