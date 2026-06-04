@@ -12,7 +12,6 @@ import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.annotations.RuneMetaType;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.MetaFields;
@@ -192,16 +191,6 @@ public interface Foo extends RosettaModelObject, GlobalKey {
 		@Override
 		public boolean hasData() {
 			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public Foo.FooBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			Foo.FooBuilder o = (Foo.FooBuilder) other;
-			
-			merger.mergeRosetta(getMeta(), o.getMeta(), this::setMeta);
-			
-			return this;
 		}
 	
 		@Override

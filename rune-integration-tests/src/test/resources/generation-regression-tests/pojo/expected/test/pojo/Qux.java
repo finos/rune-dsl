@@ -13,7 +13,6 @@ import com.rosetta.model.lib.annotations.RuneScopedAttributeKey;
 import com.rosetta.model.lib.meta.Key;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.FieldWithMetaString;
@@ -205,16 +204,6 @@ public interface Qux extends RosettaModelObject {
 		public boolean hasData() {
 			if (getQux()!=null) return true;
 			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public Qux.QuxBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			Qux.QuxBuilder o = (Qux.QuxBuilder) other;
-			
-			merger.mergeRosetta(getQux(), o.getQux(), this::setQux);
-			
-			return this;
 		}
 	
 		@Override

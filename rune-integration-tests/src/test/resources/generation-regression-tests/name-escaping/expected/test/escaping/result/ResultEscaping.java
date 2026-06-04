@@ -11,7 +11,6 @@ import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import java.util.Objects;
@@ -191,16 +190,6 @@ public interface ResultEscaping extends RosettaModelObject {
 		public boolean hasData() {
 			if (getResult()!=null && getResult().hasData()) return true;
 			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public ResultEscaping.ResultEscapingBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			ResultEscaping.ResultEscapingBuilder o = (ResultEscaping.ResultEscapingBuilder) other;
-			
-			merger.mergeRosetta(getResult(), o.getResult(), this::setResult);
-			
-			return this;
 		}
 	
 		@Override

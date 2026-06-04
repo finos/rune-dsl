@@ -2,7 +2,6 @@ package test.pojo;
 
 import com.google.common.collect.ImmutableList;
 import com.rosetta.model.lib.RosettaModelObject;
-import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.Accessor;
 import com.rosetta.model.lib.annotations.AccessorType;
 import com.rosetta.model.lib.annotations.Multi;
@@ -16,7 +15,6 @@ import com.rosetta.model.lib.annotations.RuneIgnore;
 import com.rosetta.model.lib.mapper.MapperC;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.FieldWithMetaString;
@@ -767,21 +765,6 @@ public interface Foo3 extends Foo2 {
 			if (getOtherParentList()!=null && getOtherParentList().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 			if (getStringAttr()!=null) return true;
 			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public Foo3.Foo3Builder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			Foo3.Foo3Builder o = (Foo3.Foo3Builder) other;
-			
-			merger.mergeRosetta(getParent(), o.getParent(), this::setParent);
-			merger.mergeRosetta(getParentListOverriddenAsReferenceWithMetaGrandChild(), o.getParentListOverriddenAsReferenceWithMetaGrandChild(), this::setParentList);
-			merger.mergeRosetta(getOtherParentList(), o.getOtherParentList(), this::getOrCreateOtherParentList);
-			merger.mergeRosetta(getStringAttr(), o.getStringAttr(), this::setStringAttr);
-			
-			merger.mergeBasic(getAttr(), o.getAttr(), this::setAttr);
-			merger.mergeBasic(getNumberAttrOverriddenAsInteger(), o.getNumberAttrOverriddenAsInteger(), this::setNumberAttr);
-			return this;
 		}
 	
 		@Override

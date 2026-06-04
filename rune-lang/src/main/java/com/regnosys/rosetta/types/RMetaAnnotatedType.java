@@ -10,7 +10,7 @@ import org.apache.commons.lang3.Validate;
 import com.google.common.collect.Streams;
 
 public class RMetaAnnotatedType {
-    private static final Set<String> TYPE_META_NAMES = Set.of("key", "template");
+    private static final Set<String> TYPE_META_NAMES = Set.of("key");
     
 	private final RType rType;
 	private final List<RMetaAttribute> metaAttributes;

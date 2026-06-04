@@ -22,6 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
+@Deprecated // since 10.0.0
 public @interface RosettaSynonyms {
     RosettaSynonym[] value();
 }

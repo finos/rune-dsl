@@ -11,43 +11,27 @@ import org.junit.jupiter.api.^extension.ExtendWith
 
 import static org.hamcrest.CoreMatchers.*
 import static org.hamcrest.MatcherAssert.*
-import org.junit.jupiter.api.Disabled
 import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
 class EnumGeneratorTest {
-    
+
     @Inject extension CodeGeneratorTestHelper
     @Inject extension ModelHelper
 
     @Test
-    def void shouldGenerateAnnotationForEnumSynonyms() {
-        val code = '''
-        	synonym source FpML
-        	enum TestEnum:
-        		one <"Some description"> [synonym FpML value "oneSynonym"]
-        		two <"Some other description"> [synonym FpML value "twoSynonym"]
-        '''.generateCode
-
-        val testEnumCode = code.get(rootPackage + ".TestEnum")
-        assertThat(testEnumCode, containsString('''RosettaSynonym(value = "oneSynonym", source = "FpML")'''))
-
-        code.compileToClasses
-    }
-    
-    @Test
     def void shouldGenerateBasicReferenceForEnum() {
         val code = '''
-        	namespace "com.rosetta.test.model"
-        	version "test"
-        	
-        	enum TestEnum:
-        		one 
-        		two 
-        	
-        	type TestObj: 
-        		attr TestEnum (1..1) 
+	namespace "com.rosetta.test.model"
+	version "test"
+
+	enum TestEnum:
+		one
+		two
+
+	type TestObj:
+		attr TestEnum (1..1)
         '''.generateCode
 
 		//code.writeClasses("BasicReferenceForEnum")
@@ -58,12 +42,11 @@ class EnumGeneratorTest {
     @Test
     def void shouldGenerateAllDisplayNameAndConstructors() {
         val code = '''
-        	synonym source FpML
-        	enum TestEnumWithDisplay:
-        		one displayName "uno" <"Some description"> [synonym FpML value "oneSynonym"]
-        		two <"Some other description"> [synonym FpML value "twoSynonym"]
-        		three displayName "tria" <"Some description"> [synonym FpML value "threeSynonym"]
-        		four  displayName "tessera" <"Some description"> [synonym FpML value "fourSynonym"]
+	enum TestEnumWithDisplay:
+		one displayName "uno" <"Some description">
+		two <"Some other description">
+		three displayName "tria" <"Some description">
+		four  displayName "tessera" <"Some description">
         '''.generateCode
 
         val testEnumCode = code.get(rootPackage + ".TestEnumWithDisplay")

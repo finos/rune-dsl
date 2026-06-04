@@ -22,7 +22,10 @@ package com.rosetta.model.lib.meta;
  * The instance can be merged with the template to form one complete, valid instance.
  * 
  * TemplateFields extends MetaFields to provide methods to get and set a global reference to the template's global key.
+ *
+ * @deprecated since 10.0.0. Template metadata is deprecated.
  */
+@Deprecated // since 10.0.0
 public interface TemplateFields {
 
 	/**
@@ -30,6 +33,10 @@ public interface TemplateFields {
 	 */
 	String getTemplateGlobalReference();
 
+	/**
+	 * @deprecated since 10.0.0. Template metadata is deprecated.
+	 */
+	@Deprecated // since 10.0.0
 	interface TemplateFieldsBuilder extends TemplateFields {
 		
 		/**

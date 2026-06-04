@@ -13,7 +13,6 @@ import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.FieldWithMetaString;
@@ -524,21 +523,6 @@ public interface Foo1 extends RosettaModelObject {
 			if (getOtherParentList()!=null && getOtherParentList().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 			if (getStringAttr()!=null) return true;
 			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public Foo1.Foo1Builder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			Foo1.Foo1Builder o = (Foo1.Foo1Builder) other;
-			
-			merger.mergeRosetta(getParent(), o.getParent(), this::setParent);
-			merger.mergeRosetta(getParentList(), o.getParentList(), this::getOrCreateParentList);
-			merger.mergeRosetta(getOtherParentList(), o.getOtherParentList(), this::getOrCreateOtherParentList);
-			merger.mergeRosetta(getStringAttr(), o.getStringAttr(), this::setStringAttr);
-			
-			merger.mergeBasic(getAttr(), o.getAttr(), this::setAttr);
-			merger.mergeBasic(getNumberAttr(), o.getNumberAttr(), this::setNumberAttr);
-			return this;
 		}
 	
 		@Override

@@ -15,7 +15,6 @@ import com.rosetta.model.lib.meta.ReferenceWithMeta;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.AttributeMeta;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import java.util.Objects;
@@ -328,19 +327,6 @@ public interface ReferenceWithMetaGrandChild extends RosettaModelObject, Referen
 			if (getExternalReference()!=null) return true;
 			if (getReference()!=null && getReference().hasData()) return true;
 			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder o = (ReferenceWithMetaGrandChild.ReferenceWithMetaGrandChildBuilder) other;
-			
-			merger.mergeRosetta(getValue(), o.getValue(), this::setValue);
-			merger.mergeRosetta(getReference(), o.getReference(), this::setReference);
-			
-			merger.mergeBasic(getGlobalReference(), o.getGlobalReference(), this::setGlobalReference);
-			merger.mergeBasic(getExternalReference(), o.getExternalReference(), this::setExternalReference);
-			return this;
 		}
 	
 		@Override

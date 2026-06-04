@@ -92,5 +92,11 @@ public interface RosettaModelObjectBuilder extends RosettaModelObject {
 		
 	}
 	
-	public abstract <B extends RosettaModelObjectBuilder> B merge(B other, BuilderMerger merger);
+	/**
+	 * @deprecated since 10.0.0. Template merge functionality is deprecated.
+	 */
+	@Deprecated // since 10.0.0
+	default <B extends RosettaModelObjectBuilder> B merge(B other, BuilderMerger merger) {
+		return other; // dummy implementation
+	}
 }

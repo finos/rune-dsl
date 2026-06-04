@@ -21,7 +21,6 @@ import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.*;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.AttributeMeta;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.ProcessorPathConstants;
@@ -215,16 +214,6 @@ public interface Reference extends RosettaModelObject {
 		@Override
 		@SuppressWarnings("unchecked")
 		public ReferenceBuilder prune() {
-			return this;
-		}
-
-		@SuppressWarnings("unchecked")
-		@Override
-		public ReferenceBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			ReferenceBuilder o = (ReferenceBuilder) other;
-			merger.mergeBasic(getScope(), o.getScope(), this::setScope);
-			merger.mergeBasic(getPointsTo(), o.getPointsTo(), this::setPointsTo);
-			merger.mergeBasic(getReference(), o.getReference(), this::setReference);
 			return this;
 		}
 

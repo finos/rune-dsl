@@ -108,7 +108,6 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
                     sort -> sort [[15, 12] .. [15, 12]]
                     sum -> sum [[15, 12] .. [15, 12]]
                     switch -> switch [[15, 12] .. [15, 12]]
-                    synonym -> synonym [[15, 12] .. [15, 12]]
                     then -> then [[15, 12] .. [15, 12]]
                     to-date -> to-date [[15, 12] .. [15, 12]]
                     to-date-time -> to-date-time [[15, 12] .. [15, 12]]
@@ -288,7 +287,6 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
                     sort -> sort [[7, 30] .. [7, 30]]
                     sum -> sum [[7, 30] .. [7, 30]]
                     switch -> switch [[7, 30] .. [7, 30]]
-                    synonym -> synonym [[7, 30] .. [7, 30]]
                     then -> then [[7, 30] .. [7, 30]]
                     to-date -> to-date [[7, 30] .. [7, 30]]
                     to-date-time -> to-date-time [[7, 30] .. [7, 30]]
@@ -389,80 +387,6 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
                     = -> = [[6, 28] .. [6, 28]]
                     > -> > [[6, 28] .. [6, 28]]
                     >= -> >= [[6, 28] .. [6, 28]]
-                    """);
-        });
-    }
-
-    @Test
-    void testSynonymSource() {
-        String model = """
-                namespace "test"
-                
-                synonym source FIX
-                synonym source FpML
-                
-                type Foo:
-                    [synonym ]
-                """;
-
-        testCompletion(it -> {
-            it.setModel(model);
-            it.setLine(6);
-            it.setColumn(13);
-            // TODO: should only have the first two?
-            it.setExpectedCompletionItems("""
-                    FIX (RosettaSynonymSource) -> FIX [[6, 13] .. [6, 13]]
-                    FpML (RosettaSynonymSource) -> FpML [[6, 13] .. [6, 13]]
-                    test.FIX (RosettaSynonymSource) -> test.FIX [[6, 13] .. [6, 13]]
-                    test.FpML (RosettaSynonymSource) -> test.FpML [[6, 13] .. [6, 13]]
-                    """);
-        });
-    }
-
-    @Test
-    void testSynonymSetToEnum() {
-        String model = """
-                namespace "test"
-                version "test"
-                
-                type Foo:
-                    action ActionEnum (1..1)
-                        [synonym FpML set to ActionEnum -> ]
-                
-                enum ActionEnum: new correct cancel
-                """;
-
-        testCompletion(it -> {
-            it.setModel(model);
-            it.setLine(5);
-            it.setColumn(43);
-            it.setExpectedCompletionItems("""
-                    cancel (RosettaEnumValue) -> cancel [[5, 43] .. [5, 43]]
-                    correct (RosettaEnumValue) -> correct [[5, 43] .. [5, 43]]
-                    new (RosettaEnumValue) -> new [[5, 43] .. [5, 43]]
-                    """);
-        });
-    }
-
-    @Test
-    void testSynonymSetToBoolean() {
-        String model = """
-                namespace "test"
-                version "test"
-                
-                type Foo:
-                    attr boolean (1..1)
-                    [synonym FpML set to T]
-                }
-                """;
-
-        testCompletion(it -> {
-            it.setModel(model);
-            it.setLine(5);
-            it.setColumn(26);
-            it.setExpectedCompletionItems("""
-                    True -> True [[5, 25] .. [5, 26]]
-                    -> -> -> [[5, 26] .. [5, 26]]
                     """);
         });
     }

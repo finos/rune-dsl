@@ -11,7 +11,6 @@ import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import java.util.Objects;
@@ -174,16 +173,6 @@ public interface GetTypeEscaping extends RosettaModelObject {
 		public boolean hasData() {
 			if (_getType()!=null) return true;
 			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public GetTypeEscaping.GetTypeEscapingBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			GetTypeEscaping.GetTypeEscapingBuilder o = (GetTypeEscaping.GetTypeEscapingBuilder) other;
-			
-			
-			merger.mergeBasic(_getType(), o._getType(), this::setType);
-			return this;
 		}
 	
 		@Override

@@ -12,7 +12,6 @@ import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.annotations.RuneScopedAttributeReference;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.ReferenceWithMetaString;
@@ -203,16 +202,6 @@ public interface Baz extends RosettaModelObject {
 		public boolean hasData() {
 			if (getBaz()!=null) return true;
 			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public Baz.BazBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			Baz.BazBuilder o = (Baz.BazBuilder) other;
-			
-			merger.mergeRosetta(getBaz(), o.getBaz(), this::setBaz);
-			
-			return this;
 		}
 	
 		@Override

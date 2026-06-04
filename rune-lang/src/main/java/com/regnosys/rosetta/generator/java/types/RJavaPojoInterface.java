@@ -103,11 +103,10 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 						!attr.getCardinality().isOptional());
 			});
 			if (type.hasMetaAttribute("key")) {
-				JavaType metaFieldsType = type.hasMetaAttribute("template") ? typeUtil.META_AND_TEMPLATE_FIELDS : typeUtil.META_FIELDS;
 				addPropertyIfNecessary("meta",
 						null,
 						"meta",
-						metaFieldsType,
+						typeUtil.META_FIELDS,
 						null,
 						null,
 						false,
@@ -213,9 +212,6 @@ public class RJavaPojoInterface extends JavaPojoInterface {
 		}
 		if (type.hasMetaAttribute("key")) {
 			interfaces.add(typeUtil.GLOBAL_KEY);
-		}
-		if (type.hasMetaAttribute("template")) {
-			interfaces.add(typeUtil.TEMPLATABLE);
 		}
 		return interfaces;
 	}

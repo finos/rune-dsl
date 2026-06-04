@@ -824,21 +824,6 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
                                 it, SimplePackage.Literals.ANNOTATION_REF__ATTRIBUTE);
                     }
                     break;
-                case "template":
-                    if (!(ele instanceof Data)) {
-                        error("[metadata template] annotation only allowed on a type.",
-                                it, SimplePackage.Literals.ANNOTATION_REF__ATTRIBUTE);
-                    } else {
-                        boolean hasKey = metadatas.stream()
-                                .map(AnnotationRef::getAttribute)
-                                .map(a -> a == null ? null : a.getName())
-                                .anyMatch("key"::equals);
-                        if (!hasKey) {
-                            error("Types with [metadata template] annotation must also specify the [metadata key] annotation.",
-                                    it, SimplePackage.Literals.ANNOTATION_REF__ATTRIBUTE);
-                        }
-                    }
-                    break;
                 case "location":
                     if (ele instanceof Attribute) {
                         boolean hasPointsTo = it.getQualifiers().stream()

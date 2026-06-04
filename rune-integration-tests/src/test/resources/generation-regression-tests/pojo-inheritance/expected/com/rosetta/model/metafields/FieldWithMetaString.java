@@ -14,7 +14,6 @@ import com.rosetta.model.lib.meta.BasicRosettaMetaData;
 import com.rosetta.model.lib.meta.FieldWithMeta;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import java.util.Objects;
@@ -231,17 +230,6 @@ public interface FieldWithMetaString extends RosettaModelObject, FieldWithMeta<S
 		public boolean hasData() {
 			if (getValue()!=null) return true;
 			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public FieldWithMetaString.FieldWithMetaStringBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			FieldWithMetaString.FieldWithMetaStringBuilder o = (FieldWithMetaString.FieldWithMetaStringBuilder) other;
-			
-			merger.mergeRosetta(getMeta(), o.getMeta(), this::setMeta);
-			
-			merger.mergeBasic(getValue(), o.getValue(), this::setValue);
-			return this;
 		}
 	
 		@Override

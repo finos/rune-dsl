@@ -11,7 +11,6 @@ import com.rosetta.model.lib.annotations.RuneChoiceType;
 import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import java.util.Objects;
@@ -243,17 +242,6 @@ public interface SomeChoice extends RosettaModelObject {
 			if (getFoo()!=null && getFoo().hasData()) return true;
 			if (getBar()!=null && getBar().hasData()) return true;
 			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public SomeChoice.SomeChoiceBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			SomeChoice.SomeChoiceBuilder o = (SomeChoice.SomeChoiceBuilder) other;
-			
-			merger.mergeRosetta(getFoo(), o.getFoo(), this::setFoo);
-			merger.mergeRosetta(getBar(), o.getBar(), this::setBar);
-			
-			return this;
 		}
 	
 		@Override

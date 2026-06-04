@@ -1,7 +1,6 @@
 package test.pojo;
 
 import com.rosetta.model.lib.RosettaModelObject;
-import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.Accessor;
 import com.rosetta.model.lib.annotations.AccessorType;
 import com.rosetta.model.lib.annotations.Required;
@@ -13,7 +12,6 @@ import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.annotations.RuneIgnore;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import java.util.Objects;
@@ -191,17 +189,6 @@ public interface Level2 extends Level1 {
 			if (super.hasData()) return true;
 			if (getAttr()!=null) return true;
 			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public Level2.Level2Builder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			super.merge(other, merger);
-			Level2.Level2Builder o = (Level2.Level2Builder) other;
-			
-			
-			merger.mergeBasic(getAttr(), o.getAttr(), this::setAttrOverriddenAsInteger);
-			return this;
 		}
 	
 		@Override

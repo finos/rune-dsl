@@ -1,13 +1,10 @@
 package com.regnosys.rosetta.generator.java.enums
 
-import com.regnosys.rosetta.rosetta.RosettaEnumValue
 import com.rosetta.model.lib.annotations.RosettaEnum
-import com.rosetta.model.lib.annotations.RosettaSynonym
 import java.util.Collections
 import java.util.Map
 import java.util.concurrent.ConcurrentHashMap
 import jakarta.inject.Inject
-import org.eclipse.xtend2.lib.StringConcatenationClient
 
 import com.regnosys.rosetta.types.REnumType
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
@@ -39,7 +36,6 @@ class EnumGenerator extends RObjectJavaClassGenerator<REnumType, RJavaEnum> {
 		
 			«FOR value: javaEnum.enumValues SEPARATOR ',\n' AFTER ';'»
 				«javadoc(value.EObject)»
-				«value.EObject.contributeAnnotations»
 				@«com.rosetta.model.lib.annotations.RosettaEnumValue»(value = "«value.rosettaName»"«IF value.displayName !== null», displayName = "«value.displayName»"«ENDIF») 
 				«value.name»("«value.rosettaName»", «IF value.displayName !== null»"«StringEscapeUtils.escapeJava(value.displayName)»"«ELSE»null«ENDIF»)
 			«ENDFOR»
@@ -80,13 +76,4 @@ class EnumGenerator extends RObjectJavaClassGenerator<REnumType, RJavaEnum> {
 		}
 		'''
 	}
-	
-	private def StringConcatenationClient contributeAnnotations(RosettaEnumValue e) '''
-	«FOR synonym : e.enumSynonyms»
-		«FOR source : synonym.sources»
-			@«RosettaSynonym»(value = "«synonym.synonymValue»", source = "«source.getName»")
-		«ENDFOR»
-	«ENDFOR»
-	'''
-	
 }
