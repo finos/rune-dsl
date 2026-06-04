@@ -196,15 +196,6 @@ public interface Key extends RosettaModelObject{
 			return this;
 		}
 
-		@SuppressWarnings("unchecked")
-		@Override
-		public KeyBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			KeyBuilder otherKey = (KeyBuilder) other;
-			merger.mergeBasic(getKeyValue(), otherKey.getKeyValue(), this::setKeyValue);
-			merger.mergeBasic(getScope(), otherKey.getScope(), this::setScope);
-			return this;
-		}
-
 		@Override
 		public int hashCode() {
 			final int prime = 31;

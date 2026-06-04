@@ -7,7 +7,6 @@ import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import foo._package.meta.FooMeta;
@@ -127,15 +126,6 @@ public interface Foo extends RosettaModelObject {
 		@Override
 		public boolean hasData() {
 			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public Foo.FooBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			Foo.FooBuilder o = (Foo.FooBuilder) other;
-			
-			
-			return this;
 		}
 	
 		@Override

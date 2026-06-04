@@ -71,14 +71,12 @@ annotation metadata:
   key string (0..1)
   scheme string (0..1)
   reference string (0..1)
-  template string (0..1)
   location string (0..1) <"Specifies this is the target of an internal reference">
   address string (0..1) <"Specified that this is an internal reference to an object that appears elsewhere">
 ```
 
 Each `metadata` field represents a different qualifier:
 - `scheme` – controls the allowed values for an attribute without needing an enumeration. The attribute is usually a simple `string`, and the annotation tells the system where to source the scheme values.
-- `template` – marks that a data type can be used as a data template, allowing shared data to be stored once and referenced by multiple objects.
 - **Other fields** – used for [cross referencing](#3-cross-referencing) between objects.
 
 ### 1.4 Using metadata in functions and expressions
@@ -204,24 +202,6 @@ In general, the path must start with the keyword `for`, followed by one of these
 - A deep path in a choice type e.g. `item ->> dayCountConvention`. See the [deep path operator](./expressions#22-deep-paths-for-choice-types). 
 
 
-### 2.4 Data template
-When a data type is marked as a **template**, it can reference a separate template object. Both the template and any object that uses it are usually incomplete and should not be validated on their own. After resolving the template reference, the template data must be merged into the object to create a fully populated object. Validation should only happen after this merge.
-
-Aside from the annotation itself, templates do not change the model – they do not add new types, attributes or conditions.
-
-Template designation also applies to all encapsulated types within the annotated type. 
-
-In this example, marking `NonTransferableProduct` as a template also makes `EconomicTerms` (and all types inside it) eligible for the template:
-```haskell
-type NonTransferableProduct:
-  [metadata key]
-  [metadata template]
-  identifier ProductIdentifier (0..*)
-  taxonomy ProductTaxonomy (0..*)
-  economicTerms EconomicTerms (1..1)
-```
-
-
 ## 3. Cross-referencing
 **Cross-referencing** lets an attribute point to an object located elsewhere in the model. The source object carries a metadata identifier, and the target attribute stores that identifier instead of a normal value.
 
@@ -318,6 +298,5 @@ The syntax uses the address and location metadata pair as shown below.
 <sourceAttribute>
   [metadata location]
 ```
-
 
 

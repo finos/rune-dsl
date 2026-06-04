@@ -29,7 +29,7 @@ import static java.util.Optional.ofNullable;
 
 /**
  * @version 1
- * 
+ *
  * Note this class was made static as of DSL version 9.24.0 prior to that it was generated
  */
 @RosettaDataType(value="MetaFields", builder=MetaFields.MetaFieldsBuilderImpl.class, version="0.0.0")
@@ -40,6 +40,10 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 
 	/*********************** Getter Methods  ***********************/
 	String getScheme();
+	/**
+	 * @deprecated since 10.0.0. Template metadata is deprecated.
+	 */
+	@Deprecated
 	String getTemplate();
 	@Deprecated
 	String getLocation();
@@ -50,12 +54,12 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 	@Deprecated
 	List<? extends Key> getKey();
 	String getScopedKey();
-	
+
 	/*********************** Build Methods  ***********************/
 	MetaFields build();
-	
+
 	MetaFields.MetaFieldsBuilder toBuilder();
-	
+
 	static MetaFields.MetaFieldsBuilder builder() {
 		return new MetaFields.MetaFieldsBuilderImpl();
 	}
@@ -65,13 +69,13 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 	default RosettaMetaData<? extends MetaFields> metaData() {
 		return metaData;
 	}
-	
+
 	@Override
 	default Class<? extends MetaFields> getType() {
 		return MetaFields.class;
 	}
-	
-	
+
+
 	@Override
 	default void process(RosettaPath path, Processor processor) {
 		processor.processBasic(path.newSubPath(ProcessorPathConstants.SCHEME), String.class, getScheme(), this, AttributeMeta.META);
@@ -81,13 +85,17 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		processor.processBasic(path.newSubPath(ProcessorPathConstants.EXTERNAL_KEY), String.class, getExternalKey(), this, AttributeMeta.META);
         processRosetta(path.newSubPath("key"), processor, Key.class, getKey());
 	}
-	
+
 
 	/*********************** Builder Interface  ***********************/
 	interface MetaFieldsBuilder extends MetaFields, RosettaModelObjectBuilder, GlobalKeyFields.GlobalKeyFieldsBuilder, MetaDataFields.MetaDataFieldsBuilder {
 		Key.KeyBuilder getOrCreateKey(int _index);
 		List<? extends Key.KeyBuilder> getKey();
 		MetaFields.MetaFieldsBuilder setScheme(String scheme);
+		/**
+		 * @deprecated since 10.0.0. Template metadata is deprecated.
+		 */
+		@Deprecated
 		MetaFields.MetaFieldsBuilder setTemplate(String template);
 		@Deprecated
 		MetaFields.MetaFieldsBuilder setLocation(String location);
@@ -115,7 +123,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 			processor.processBasic(path.newSubPath(ProcessorPathConstants.EXTERNAL_KEY), String.class, getExternalKey(), this, AttributeMeta.META);
 	        processRosetta(path.newSubPath("key"), processor, Key.KeyBuilder.class, getKey());
 		}
-		
+
 
 		MetaFields.MetaFieldsBuilder prune();
 	}
@@ -129,7 +137,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		private final String globalKey;
 		private final String externalKey;
 		private final List<? extends Key> key;
-		
+
 		protected MetaFieldsImpl(MetaFields.MetaFieldsBuilder builder) {
 			this.scheme = builder.getScheme();
 			this.template = builder.getTemplate();
@@ -139,7 +147,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 			this.externalKey = builder.getExternalKey();
 			this.key = ofNullable(builder.getKey()).filter(_l->!_l.isEmpty()).map(list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(ImmutableList.toImmutableList())).orElse(null);
 		}
-		
+
 		@Override
 		@RosettaAttribute("scheme")
 		@Accessor(AccessorType.GETTER)
@@ -147,21 +155,21 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		public String getScheme() {
 			return scheme;
 		}
-		
+
 		@Override
 		@RosettaAttribute("template")
 		@Accessor(AccessorType.GETTER)
 		public String getTemplate() {
 			return template;
 		}
-		
+
 		@Override
 		@RosettaAttribute("scopedLocation")
 		@Accessor(AccessorType.GETTER)
 		public String getLocation() {
 			return location;
 		}
-		
+
 		@Override
 		@RosettaAttribute("address")
 		@Accessor(AccessorType.GETTER)
@@ -169,7 +177,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		public String getAddress() {
 			return address;
 		}
-		
+
 		@Override
 		@RosettaAttribute("globalKey")
 		@Accessor(AccessorType.GETTER)
@@ -177,7 +185,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		public String getGlobalKey() {
 			return globalKey;
 		}
-		
+
 		@Override
 		@RosettaAttribute("externalKey")
 		@Accessor(AccessorType.GETTER)
@@ -185,7 +193,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		public String getExternalKey() {
 			return externalKey;
 		}
-		
+
 		@Override
 		@RosettaAttribute("location")
 		@Accessor(AccessorType.GETTER)
@@ -194,7 +202,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		public List<? extends Key> getKey() {
 			return key;
 		}
-		
+
         @Override
         @RuneAttribute(SCOPED_KEY)
         public String getScopedKey() {
@@ -203,19 +211,19 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
             }
             return key.get(0).getKeyValue();
         }
-        
+
 		@Override
 		public MetaFields build() {
 			return this;
 		}
-		
+
 		@Override
 		public MetaFields.MetaFieldsBuilder toBuilder() {
 			MetaFields.MetaFieldsBuilder builder = builder();
 			setBuilderFields(builder);
 			return builder;
 		}
-		
+
 		protected void setBuilderFields(MetaFields.MetaFieldsBuilder builder) {
 			ofNullable(getScheme()).ifPresent(builder::setScheme);
 			ofNullable(getTemplate()).ifPresent(builder::setTemplate);
@@ -230,9 +238,9 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		public boolean equals(Object o) {
 			if (this == o) return true;
 			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
-		
+
 			MetaFields _that = getType().cast(o);
-		
+
 			if (!Objects.equals(scheme, _that.getScheme())) return false;
 			if (!Objects.equals(template, _that.getTemplate())) return false;
 			if (!Objects.equals(location, _that.getLocation())) return false;
@@ -242,7 +250,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 			if (!ListEquals.listEquals(key, _that.getKey())) return false;
 			return true;
 		}
-		
+
 		@Override
 		public int hashCode() {
 			int _result = 0;
@@ -255,7 +263,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 			_result = 31 * _result + (key != null ? key.hashCode() : 0);
 			return _result;
 		}
-		
+
 		@Override
 		public String toString() {
 			return "MetaFields {" +
@@ -272,7 +280,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 
 	/*********************** Builder Implementation of MetaFields  ***********************/
 	class MetaFieldsBuilderImpl implements MetaFields.MetaFieldsBuilder {
-	
+
 		protected String scheme;
 		protected String template;
 		protected String location;
@@ -280,10 +288,10 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		protected String globalKey;
 		protected String externalKey;
 		protected List<Key.KeyBuilder> key = new ArrayList<>();
-	
+
 		public MetaFieldsBuilderImpl() {
 		}
-	
+
 		@Override
 		@RosettaAttribute("scheme")
 		@Accessor(AccessorType.GETTER)
@@ -291,21 +299,21 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		public String getScheme() {
 			return scheme;
 		}
-		
+
 		@Override
 		@RosettaAttribute("template")
 		@Accessor(AccessorType.GETTER)
 		public String getTemplate() {
 			return template;
 		}
-		
+
 		@Override
 		@RosettaAttribute("scopedLocation")
 		@Accessor(AccessorType.GETTER)
 		public String getLocation() {
 			return location;
 		}
-		
+
 		@Override
 		@RosettaAttribute("address")
 		@Accessor(AccessorType.GETTER)
@@ -313,7 +321,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		public String getAddress() {
 			return address;
 		}
-		
+
 		@Override
 		@RosettaAttribute("globalKey")
 		@Accessor(AccessorType.GETTER)
@@ -321,7 +329,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		public String getGlobalKey() {
 			return globalKey;
 		}
-		
+
 		@Override
 		@RosettaAttribute("externalKey")
 		@Accessor(AccessorType.GETTER)
@@ -329,7 +337,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		public String getExternalKey() {
 			return externalKey;
 		}
-		
+
 		@Override
 		@RosettaAttribute("location")
 		@Accessor(AccessorType.GETTER)
@@ -338,7 +346,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 		public List<? extends Key.KeyBuilder> getKey() {
 			return key;
 		}
-		
+
         @Override
         @RuneAttribute(SCOPED_KEY)
         public String getScopedKey() {
@@ -347,9 +355,9 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
             }
             return key.get(0).getKeyValue();
         }
-		
+
 		public Key.KeyBuilder getOrCreateKey(int _index) {
-		
+
 			if (key==null) {
 				this.key = new ArrayList<>();
 			}
@@ -359,7 +367,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 						return newKey;
 					});
 		}
-		
+
 		@Override
 		@RosettaAttribute("scheme")
 		@Accessor(AccessorType.SETTER)
@@ -411,13 +419,13 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 			if (key!=null) this.key.add(key.toBuilder());
 			return this;
 		}
-		
+
 		@Override
 		public MetaFields.MetaFieldsBuilder addKey(Key key, int _idx) {
 			getIndex(this.key, _idx, () -> key.toBuilder());
 			return this;
 		}
-		@Override 
+		@Override
 		public MetaFields.MetaFieldsBuilder addKey(List<? extends Key> keys) {
 			if (keys != null) {
 				for (Key toAdd : keys) {
@@ -426,8 +434,8 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 			}
 			return this;
 		}
-		
-		@Override 
+
+		@Override
 		@RosettaAttribute("location")
 		@Accessor(AccessorType.SETTER)
 		@Multi
@@ -443,7 +451,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 			}
 			return this;
 		}
-		
+
         @Override
         @RuneAttribute(SCOPED_KEY)
         public MetaFields.MetaFieldsBuilder setScopedKey(String scopedKey) {
@@ -453,25 +461,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
             }
             return this;
         }
-		
-		
-		@Override
-		public MetaFields build() {
-			return new MetaFields.MetaFieldsImpl(this);
-		}
-		
-		@Override
-		public MetaFields.MetaFieldsBuilder toBuilder() {
-			return this;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public MetaFields.MetaFieldsBuilder prune() {
-			key = key.stream().filter(b->b!=null).<Key.KeyBuilder>map(b->b.prune()).filter(b->b.hasData()).collect(Collectors.toList());
-			return this;
-		}
-		
+
 		@Override
 		public boolean hasData() {
 			if (getScheme()!=null) return true;
@@ -483,30 +473,40 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 			if (getKey()!=null && getKey().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 			return false;
 		}
-	
+
+
+		@Override
+		public MetaFields build() {
+			return new MetaFields.MetaFieldsImpl(this);
+		}
+
+		@Override
+		public MetaFields.MetaFieldsBuilder toBuilder() {
+			return this;
+		}
+
+		@Override
+		public MetaFields.MetaFieldsBuilder prune() {
+			return this;
+		}
+
+		/**
+		 * @deprecated since 10.0.0. Template merge functionality is deprecated.
+		 */
+		@Deprecated // since 10.0.0
 		@SuppressWarnings("unchecked")
 		@Override
 		public MetaFields.MetaFieldsBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			MetaFields.MetaFieldsBuilder o = (MetaFields.MetaFieldsBuilder) other;
-			
-			merger.mergeRosetta(getKey(), o.getKey(), this::getOrCreateKey);
-			
-			merger.mergeBasic(getScheme(), o.getScheme(), this::setScheme);
-			merger.mergeBasic(getTemplate(), o.getTemplate(), this::setTemplate);
-			merger.mergeBasic(getLocation(), o.getLocation(), this::setLocation);
-			merger.mergeBasic(getAddress(), o.getAddress(), this::setAddress);
-			merger.mergeBasic(getGlobalKey(), o.getGlobalKey(), this::setGlobalKey);
-			merger.mergeBasic(getExternalKey(), o.getExternalKey(), this::setExternalKey);
 			return this;
 		}
-	
+
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
 			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
-		
+
 			MetaFields _that = getType().cast(o);
-		
+
 			if (!Objects.equals(scheme, _that.getScheme())) return false;
 			if (!Objects.equals(template, _that.getTemplate())) return false;
 			if (!Objects.equals(location, _that.getLocation())) return false;
@@ -516,7 +516,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 			if (!ListEquals.listEquals(key, _that.getKey())) return false;
 			return true;
 		}
-		
+
 		@Override
 		public int hashCode() {
 			int _result = 0;
@@ -529,7 +529,7 @@ public interface MetaFields extends RosettaModelObject, GlobalKeyFields, MetaDat
 			_result = 31 * _result + (key != null ? key.hashCode() : 0);
 			return _result;
 		}
-		
+
 		@Override
 		public String toString() {
 			return "MetaFieldsBuilder {" +

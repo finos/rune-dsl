@@ -16,7 +16,6 @@ import com.rosetta.model.lib.annotations.RuneMetaType;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.process.AttributeMeta;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.FieldWithMetaString;
@@ -25,7 +24,6 @@ import com.rosetta.util.ListEquals;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import test.pojo.meta.PojoMeta;
 import test.pojo.metafields.ReferenceWithMetaFoo;
@@ -1041,26 +1039,6 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			if (getComplexAttrWithRef()!=null && getComplexAttrWithRef().hasData()) return true;
 			if (getMultiComplexAttrWithRef()!=null && getMultiComplexAttrWithRef().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public Pojo.PojoBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			Pojo.PojoBuilder o = (Pojo.PojoBuilder) other;
-			
-			merger.mergeRosetta(getSimpleAttrWithMeta(), o.getSimpleAttrWithMeta(), this::setSimpleAttrWithMeta);
-			merger.mergeRosetta(getMultiSimpleAttrWithMeta(), o.getMultiSimpleAttrWithMeta(), this::getOrCreateMultiSimpleAttrWithMeta);
-			merger.mergeRosetta(getSimpleAttrWithId(), o.getSimpleAttrWithId(), this::setSimpleAttrWithId);
-			merger.mergeRosetta(getMultiSimpleAttrWithId(), o.getMultiSimpleAttrWithId(), this::getOrCreateMultiSimpleAttrWithId);
-			merger.mergeRosetta(getComplexAttr(), o.getComplexAttr(), this::setComplexAttr);
-			merger.mergeRosetta(getMultiComplexAttr(), o.getMultiComplexAttr(), this::getOrCreateMultiComplexAttr);
-			merger.mergeRosetta(getComplexAttrWithRef(), o.getComplexAttrWithRef(), this::setComplexAttrWithRef);
-			merger.mergeRosetta(getMultiComplexAttrWithRef(), o.getMultiComplexAttrWithRef(), this::getOrCreateMultiComplexAttrWithRef);
-			merger.mergeRosetta(getMeta(), o.getMeta(), this::setMeta);
-			
-			merger.mergeBasic(getSimpleAttr(), o.getSimpleAttr(), this::setSimpleAttr);
-			merger.mergeBasic(getMultiSimpleAttr(), o.getMultiSimpleAttr(), (Consumer<String>) this::addMultiSimpleAttr);
-			return this;
 		}
 	
 		@Override

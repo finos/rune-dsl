@@ -13,11 +13,11 @@ import com.regnosys.rosetta.scoping.RosettaScopeProvider;
 import java.util.*;
 
 /**
- * Deprecated — Use RosettaExtensions instead.
- * <p>
  * Note that these methods will add a "meta" attribute if the data type has annotations.
- * "Can't inject as used in rosetta-translate and daml directly" — where noted, an instance
+ * "Can't inject as used in rosetta-translate and daml directly" - where noted, an instance
  * of RosettaEcoreUtil is created ad-hoc instead of DI.
+ *
+ * @deprecated since 10.0.0. Use RosettaExtensions instead.
  */
 @Deprecated
 public class RosettaAttributeExtensions {
@@ -97,6 +97,11 @@ public class RosettaAttributeExtensions {
     }
 
     public static String METAFIELDS_CLASS_NAME = "MetaFields";
+
+    /**
+     * @deprecated since 10.0.0. Template metadata fields are deprecated. Kept for rosetta-translate compatibility.
+     */
+    @Deprecated
     public static String META_AND_TEMPLATE_FIELDS_CLASS_NAME = "MetaAndTemplateFields";
 
     // A simple cache keyed by Data identity (these EObjects are identity-stable within a resource)
@@ -109,11 +114,8 @@ public class RosettaAttributeExtensions {
         // Build a synthetic type in the lib namespace
         RosettaModel rosModel = RosettaFactory.eINSTANCE.createRosettaModel();
         rosModel.setName(RosettaScopeProvider.LIB_NAMESPACE);
-        // Can't inject as used in rosetta-translate and daml directly
-        RosettaEcoreUtil rosExt = new RosettaEcoreUtil();
-        String name = rosExt.hasTemplateAnnotation(data) ? META_AND_TEMPLATE_FIELDS_CLASS_NAME : METAFIELDS_CLASS_NAME;
 
-        ExpandedType computed = new ExpandedType(rosModel, name, true, false, false);
+        ExpandedType computed = new ExpandedType(rosModel, METAFIELDS_CLASS_NAME, true, false, false);
         META_FIELDS_CACHE.put(data, computed);
         return computed;
     }

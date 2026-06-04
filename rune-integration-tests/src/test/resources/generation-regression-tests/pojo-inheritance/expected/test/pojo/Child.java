@@ -2,7 +2,6 @@ package test.pojo;
 
 import com.rosetta.model.lib.GlobalKey;
 import com.rosetta.model.lib.RosettaModelObject;
-import com.rosetta.model.lib.RosettaModelObjectBuilder;
 import com.rosetta.model.lib.annotations.Accessor;
 import com.rosetta.model.lib.annotations.AccessorType;
 import com.rosetta.model.lib.annotations.RosettaAttribute;
@@ -12,7 +11,6 @@ import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.annotations.RuneMetaType;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import com.rosetta.model.metafields.MetaFields;
@@ -197,17 +195,6 @@ public interface Child extends Parent, GlobalKey {
 		public boolean hasData() {
 			if (super.hasData()) return true;
 			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public Child.ChildBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			super.merge(other, merger);
-			Child.ChildBuilder o = (Child.ChildBuilder) other;
-			
-			merger.mergeRosetta(getMeta(), o.getMeta(), this::setMeta);
-			
-			return this;
 		}
 	
 		@Override

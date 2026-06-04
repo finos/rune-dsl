@@ -388,51 +388,15 @@ public class RosettaFormattingTest {
 	}
 
 	@Test
-	void stereotypeIsSurroundedWithSingleSpace() {
-		formatAndAssert("""
-				namespace "com.regnosys.rosetta.model" version "test" type CalculationPeriod: <"xxx xxx.">
-					 [synonym FpML value "CalculationPeriod"]
-
-				""", """
-				namespace "com.regnosys.rosetta.model"
-				version "test"
-
-				type CalculationPeriod: <"xxx xxx.">
-					[synonym FpML value "CalculationPeriod"]
-				""");
-	}
-
-	@Test
-	void synonymIsOnSingleIndentedLine() {
-		formatAndAssert("""
-				namespace "com.regnosys.rosetta.model"
-				version "test"
-				type CalculationPeriod : <"xxx xxx."> [synonym FpML value "CalculationPeriod"]
-						// sinleline comment
-									field1 string (1..1) <"Some Field">[synonym FpML value "CalculationPeriod"]
-
-				""", """
-				namespace "com.regnosys.rosetta.model"
-				version "test"
-
-				type CalculationPeriod: <"xxx xxx.">
-					[synonym FpML value "CalculationPeriod"]
-					// sinleline comment
-					field1 string (1..1) <"Some Field">
-						[synonym FpML value "CalculationPeriod"]
-				""");
-	}
-
-	@Test
 	void conditionOnType() {
 		formatAndAssert("""
 				namespace "com.regnosys.rosetta.model"
 				version "test"
-				type CalculationPeriod : <"xxx xxx.">  [  metadata   scheme  ] [synonym FpML value "CalculationPeriod"]
+				type CalculationPeriod : <"xxx xxx.">  [  metadata   scheme  ]
 									// sinleline comment
 							field3 string (1..1) <"Some Field">  [  metadata   scheme  ]
 							// sinleline comment
-							[synonym FpML value "CalculationPeriod"] 					field1 string (1..1) <"Some Field">[synonym FpML value "CalculationPeriod"] condition: one-of condition Foo: field1
+											field1 string (1..1) <"Some Field"> condition: one-of condition Foo: field1
 				condition Foo12: 	optional 		choice field1 , field3
 				// sinleline comment
 							condition Foo2:
@@ -448,15 +412,11 @@ public class RosettaFormattingTest {
 
 				type CalculationPeriod: <"xxx xxx.">
 					[metadata scheme]
-					[synonym FpML value "CalculationPeriod"]
 					// sinleline comment
 					field3 string (1..1) <"Some Field">
 						[metadata scheme]
-						// sinleline comment
-						[synonym FpML value "CalculationPeriod"]
+					// sinleline comment
 					field1 string (1..1) <"Some Field">
-						[synonym FpML value "CalculationPeriod"]
-
 					condition:
 						one-of
 
@@ -483,7 +443,7 @@ public class RosettaFormattingTest {
 		formatAndAssert("""
 				namespace "test"
 				version "test"
-				type Type: foo string (1..1) func Execute2:[ metadata  scheme ] inputs:		product string (1..1) <"">[synonym FpML value "CalculationPeriod"] 		quantity string (1..1) 	output:
+				type Type: foo string (1..1) func Execute2:[ metadata  scheme ] inputs:		product string (1..1) <""> 		quantity string (1..1) 	output:
 						execution Type (1..1) <""> condition Foo: product set execution -> foo:
 						"sdf"set execution:
 						execution
@@ -502,7 +462,6 @@ public class RosettaFormattingTest {
 					[metadata scheme]
 					inputs:
 						product string (1..1) <"">
-							[synonym FpML value "CalculationPeriod"]
 						quantity string (1..1)
 					output:
 						execution Type (1..1) <"">
@@ -545,27 +504,19 @@ public class RosettaFormattingTest {
 	@Test
 	void formatDayOfWeekEnum() {
 		formatAndAssert("""
-				namespace "com.regnosys.rosetta.model" version "test" enum DayOfWeekEnum: <"A day of the seven-day week."> [synonym FpML value "DayOfWeekEnum"] MON <"Monday">[synonym FpML value "MON"] TUE <"Tuesday">[synonym FpML value "TUE"] WED <"Wednesday">[synonym FpML value "WED"]THU <"Thursday">[synonym FpML value "THU"]FRI <"Friday">[synonym FpML value "FRI"]SAT <"Saturday">[synonym FpML value "SAT"]SUN <"Sunday">[synonym FpML value "SUN"]
+				namespace "com.regnosys.rosetta.model" version "test" enum DayOfWeekEnum: <"A day of the seven-day week."> MON <"Monday"> TUE <"Tuesday"> WED <"Wednesday">THU <"Thursday">FRI <"Friday">SAT <"Saturday">SUN <"Sunday">
 				""", """
 				namespace "com.regnosys.rosetta.model"
 				version "test"
 
 				enum DayOfWeekEnum: <"A day of the seven-day week.">
-					[synonym FpML value "DayOfWeekEnum"]
 					MON <"Monday">
-						[synonym FpML value "MON"]
 					TUE <"Tuesday">
-						[synonym FpML value "TUE"]
 					WED <"Wednesday">
-						[synonym FpML value "WED"]
 					THU <"Thursday">
-						[synonym FpML value "THU"]
 					FRI <"Friday">
-						[synonym FpML value "FRI"]
 					SAT <"Saturday">
-						[synonym FpML value "SAT"]
 					SUN <"Sunday">
-						[synonym FpML value "SUN"]
 				""");
 	}
 
@@ -574,113 +525,16 @@ public class RosettaFormattingTest {
 		formatAndAssert("""
 				namespace "com.regnosys.rosetta.model"
 				version "test"
-				enum SpreadScheduleTypeEnum: <"The enumerated values to specify a long or short spread value."> 	[synonym FpML value "spreadScheduleTypeScheme"]
+				enum SpreadScheduleTypeEnum: <"The enumerated values to specify a long or short spread value.">
 					Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
-				[synonym FpML value "Long"] Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
-						[synonym FpML value "Short"]
+				Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
 				""", """
 				namespace "com.regnosys.rosetta.model"
 				version "test"
 
 				enum SpreadScheduleTypeEnum: <"The enumerated values to specify a long or short spread value.">
-					[synonym FpML value "spreadScheduleTypeScheme"]
 					Long <"Represents a Long Spread Schedule. Spread schedules defined as 'Long' will be applied to Long Positions.">
-						[synonym FpML value "Long"]
 					Short <"Represents a Short Spread Schedule. Spread schedules defined as 'Short' will be applied to Short Positions.">
-						[synonym FpML value "Short"]
-				""");
-	}
-
-	@Test
-	void formatExternalSynomym() {
-		formatAndAssert("""
-				namespace "com.regnosys.rosetta.model"
-				version "test"
-
-				synonym source FpML_5_10
-
-				synonym source MySynonymExtention extends FpML_5_10 {
-
-
-					Contract:
-					+ account	[value "my_account"]
-					[value "my_account_2"]
-
-					+ party [value "my_party"]
-
-
-					Event:
-						+ account
-						[value "event_account"]
-
-
-
-				}
-				""", """
-				namespace "com.regnosys.rosetta.model"
-				version "test"
-
-				synonym source FpML_5_10
-
-				synonym source MySynonymExtention extends FpML_5_10
-				{
-					Contract:
-						+ account
-							[value "my_account"]
-							[value "my_account_2"]
-						+ party
-							[value "my_party"]
-
-					Event:
-						+ account
-							[value "event_account"]
-				}
-				""");
-	}
-
-	@Test
-	void formatAttributeSynomym() {
-		formatAndAssert("""
-				namespace "test"
-				version "test"
-				synonym source SynSource
-
-				type AllocationOutcome:
-					allocatedTrade AllocationOutcome (1..*)
-												[synonym SynSource value "originalTrade"]
-					originalTrade string (1..1)<"">
-						[synonym SynSource value "allocatedTrade"]
-
-					condition AllocationOutcome_executionClosed: <"The allocation outcome must result in execution state of 'Allocated' for an execution.">
-						if AllocationOutcome -> allocatedTrade  exists
-						then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
-					condition AllocationOutcome_contractClosed: <"The allocation outcome must result in a contract state of 'Allocated' for a contract.">
-						if AllocationOutcome -> allocatedTrade  exists
-						then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
-					condition AllocationOutcome_contractClosed:
-						one-of
-				""", """
-				namespace "test"
-				version "test"
-
-				synonym source SynSource
-
-				type AllocationOutcome:
-					allocatedTrade AllocationOutcome (1..*)
-						[synonym SynSource value "originalTrade"]
-					originalTrade string (1..1) <"">
-						[synonym SynSource value "allocatedTrade"]
-
-					condition AllocationOutcome_executionClosed: <"The allocation outcome must result in execution state of 'Allocated' for an execution.">
-						if AllocationOutcome -> allocatedTrade exists
-						then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
-
-					condition AllocationOutcome_contractClosed: <"The allocation outcome must result in a contract state of 'Allocated' for a contract.">
-						if AllocationOutcome -> allocatedTrade exists
-						then allocatedTrade -> allocatedTrade -> allocatedTrade = allocatedTrade
-
-					condition AllocationOutcome_contractClosed:
-						one-of
 				""");
 	}
 

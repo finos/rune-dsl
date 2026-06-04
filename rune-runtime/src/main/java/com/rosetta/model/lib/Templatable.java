@@ -25,7 +25,10 @@ import com.rosetta.model.lib.meta.TemplateFields.TemplateFieldsBuilder;
  * The instance can be merged with the template to form one complete, valid instance.
  * 
  * RosettaModelObjects specified as Templatable provide methods to get and set a global reference to the template's global key.
+ *
+ * @deprecated since 10.0.0. Template metadata is deprecated.
  */
+@Deprecated // since 10.0.0
 public interface Templatable {
 	
 	/**
@@ -34,6 +37,10 @@ public interface Templatable {
 	TemplateFields getMeta();
 
 
+	/**
+	 * @deprecated since 10.0.0. Template metadata is deprecated.
+	 */
+	@Deprecated // since 10.0.0
 	interface TemplatableBuilder {
 	
 		/**

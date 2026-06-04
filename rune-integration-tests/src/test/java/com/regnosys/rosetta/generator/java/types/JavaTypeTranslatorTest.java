@@ -34,7 +34,6 @@ public class JavaTypeTranslatorTest {
                 
                 type FooWithBoth:
                 	[metadata key]
-                	[metadata template]
                 
                 type Bar:
                     attr1 FooWithKey (1..1)

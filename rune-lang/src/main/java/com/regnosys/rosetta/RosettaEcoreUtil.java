@@ -287,16 +287,11 @@ public class RosettaEcoreUtil {
 		return !isTypeMeta(name);
 	}
 	public boolean isTypeMeta(String name) {
-		return "key".equals(name) || "template".equals(name);
+		return "key".equals(name);
 	}
 	@Deprecated
 	public boolean hasKeyedAnnotation(Annotated it) {
 		return metaAttributeExists(it, attr -> "key".equals(attr.getName()));
-	}
-	
-	@Deprecated
-	public boolean hasTemplateAnnotation(Annotated it) {
-		return metaAttributeExists(it, attr -> "template".equals(attr.getName()));
 	}
 	
 	@Deprecated

@@ -11,7 +11,6 @@ import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import java.util.Objects;
@@ -191,16 +190,6 @@ public interface Bar extends RosettaModelObject {
 		public boolean hasData() {
 			if (getBar()!=null && getBar().hasData()) return true;
 			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public Bar.BarBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			Bar.BarBuilder o = (Bar.BarBuilder) other;
-			
-			merger.mergeRosetta(getBar(), o.getBar(), this::setBar);
-			
-			return this;
 		}
 	
 		@Override

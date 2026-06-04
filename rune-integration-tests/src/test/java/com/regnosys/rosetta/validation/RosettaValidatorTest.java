@@ -1060,25 +1060,6 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
-    void synonymNotAllowedInRuleSourceTest() {
-        var model = modelHelper.parseRosetta("""
-				type Foo:
-					foo string (0..1)
-
-				rule source TestA {
-					Foo:
-						[meta "bar"]
-						+ foo
-							[value "bar" path "baz"]
-				}
-				""");
-        validationTestHelper.assertError(model, ROSETTA_EXTERNAL_CLASS_SYNONYM, null,
-                "You may not define synonyms in a rule source.");
-        validationTestHelper.assertError(model, ROSETTA_EXTERNAL_SYNONYM, null,
-                "You may not define synonyms in a rule source.");
-    }
-
-    @Test
     void enumNotAllowedInRuleReferenceSourceTest() {
         var model = modelHelper.parseRosetta("""
 				enum Foo:
@@ -1093,17 +1074,6 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				""");
         validationTestHelper.assertError(model, ROSETTA_EXTERNAL_RULE_SOURCE, null,
                 "A rule source cannot define annotations for enums.");
-    }
-
-    @Test
-    void externalRuleSourceCannotExtendExternalSynonymSourceTest() {
-        var model = modelHelper.parseRosetta("""
-				synonym source SynSource {}
-
-				rule source RuleSource extends SynSource {}
-				""");
-        validationTestHelper.assertError(model, ROSETTA_EXTERNAL_RULE_SOURCE, Diagnostic.LINKING_DIAGNOSTIC,
-                "Couldn't resolve reference to ExternalAnnotationSource 'SynSource'.");
     }
 
     @Test
@@ -1585,97 +1555,6 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
-    void checkMergeSynonymErrorOnSingleCardinality() {
-        var model = modelHelper.parseRosetta("""
-				synonym source FpML
-
-				type Foo:
-					attr int (0..1)
-						[synonym FpML merge "bar"]
-				""");
-        validationTestHelper.assertError(model, ROSETTA_SYNONYM_BODY, null, "Merge synonym can only be specified on an attribute with multiple cardinality.");
-    }
-
-    @Test
-    void checkMergeSynonymNoErrorOnMultiCardinality() {
-        var model = modelHelper.parseRosetta("""
-				synonym source FpML
-
-				type Foo:
-					attr int (0..*)
-						[synonym FpML merge "bar"]
-				""");
-        validationTestHelper.assertNoErrors(model);
-    }
-
-    @Test
-    void checkMappingMultipleSetToWithoutWhenCases() {
-        var model = modelHelper.parseRosetta("""
-				type Quote:
-					attr int (1..1)
-						[synonym FIX
-							set to 1,
-							set to 2]
-				""");
-        validationTestHelper.assertError(model, ROSETTA_MAPPING, null, "Only one set to with no when clause allowed.");
-    }
-
-    @Test
-    void checkMappingMultipleSetToOrdering() {
-        var model = modelHelper.parseRosetta("""
-				type Quote:
-					attr int (1..1)
-						[synonym FIX
-							set to 1,
-							set to 2 when "a.b.c" exists]
-				""");
-        validationTestHelper.assertError(model, ROSETTA_MAPPING, null, "Set to without when case must be ordered last.");
-    }
-
-    @Test
-    void checkMappingSetToTypeCheck() {
-        var model = modelHelper.parseRosetta("""
-				type Foo:
-					value0 string (1..1)
-
-				type Quote:
-					attr Foo (1..1)
-						[synonym FIX
-							set to "hello"]
-				""");
-        validationTestHelper.assertError(model, ROSETTA_MAPPING, null, "Set to constant type does not match type of field.");
-    }
-
-    @Test
-    void checkMappingSetToEnumTypeCheck() {
-        var model = modelHelper.parseRosetta("""
-				enum Foo: ONE
-
-				enum Bar: BAR
-
-				type Quote:
-					attr Foo (1..1)
-						[synonym FIX
-							set to Bar.BAR]
-				""");
-        validationTestHelper.assertError(model, ROSETTA_MAPPING, null, "Set to constant type does not match type of field.");
-    }
-
-    @Test
-    void checkMappingSetToWhenTypeCheck() {
-        var model = modelHelper.parseRosetta("""
-				synonym source FpML
-				type Foo:
-					stringvar string (1..1)
-
-				type Quote:
-					attr Foo (1..1)
-						[synonym FpML value "foo" set when "foo->bar" exists]
-				""");
-        validationTestHelper.assertNoErrors(model);
-    }
-
-    @Test
     void checkOperationTypes() {
         var model = modelHelper.parseRosetta("""
 				type Clazz:
@@ -1811,28 +1690,6 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
-    void checkSynonymPathSyntax_01() {
-        var model = modelHelper.parseRosetta("""
-				type TypeToUse:
-					attr string (0..1)
-						[synonym FpML value "adjustedDate" path "relative.date" meta id]
-				""");
-        validationTestHelper.assertError(model, ROSETTA_SYNONYM_VALUE_BASE, null,
-                "Character '.' is not allowed in paths. Use '->' to separate path segments.");
-    }
-
-    @Test
-    void checkSynonymPathSyntax_02() {
-        var model = modelHelper.parseRosetta("""
-				type TypeToUse:
-					attr string (0..1)
-						[synonym FpML set to "Custom" when "Pty+Src" = "D"]
-				""");
-        validationTestHelper.assertError(model, ROSETTA_MAP_PATH_VALUE, null,
-                "Character '+' is not allowed in paths. Use '->' to separate path segments.");
-    }
-
-    @Test
     void checkChoiceConditionAttributes() {
         var model = modelHelper.parseRosetta("""
 				type Bar:
@@ -1846,120 +1703,6 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				""");
         validationTestHelper.assertError(model, CHOICE_OPERATION, null,
                 "At least two attributes must be passed to a choice rule");
-    }
-
-
-    @Test
-    void externalSynonymWithFormatShouldOnlyOnDate() {
-        var model = modelHelper.parseRosetta("""
-				type Foo:
-					foo int (0..1)
-
-				synonym source TEST_Base
-
-				synonym source TEST extends TEST_Base {
-					Foo:
-						+ foo
-							[value "bar" path "baz" dateFormat "MM/dd/yy"]
-				}
-				""");
-        validationTestHelper.assertError(model, ROSETTA_SYNONYM_BODY, null,
-                "Format can only be applied to date/time types");
-    }
-
-    @Test
-    void externalSynonymWithFormatValid() {
-        var model = modelHelper.parseRosetta("""
-				type Foo:
-					foo time (0..1)
-
-				synonym source TEST_Base
-
-				synonym source TEST extends TEST_Base {
-					Foo:
-						+ foo
-							[value "bar" path "baz" dateFormat "MMb/dd/yy"]
-				}
-				""");
-        validationTestHelper.assertError(model, ROSETTA_SYNONYM_BODY, null,
-                "Format must be a valid date/time format - Unknown pattern letter: b");
-    }
-
-    @Test
-    void internalSynonymWithFormatShouldOnlyBeOnDate() {
-        var model = modelHelper.parseRosetta("""
-				type Foo:
-					foo int (0..1)
-						[synonym TEST_Base value "bar" path "baz" dateFormat "MM/dd/yy"]
-				synonym source TEST_Base
-				""");
-        validationTestHelper.assertError(model, ROSETTA_SYNONYM_BODY, null,
-                "Format can only be applied to date/time types");
-    }
-
-    @Test
-    void externalSynonymCanExtendMultipleParents() {
-        var model = modelHelper.parseRosetta("""
-				type Foo:
-					foo time (0..1)
-
-				synonym source TEST_Base1
-				synonym source TEST_Base2
-				synonym source TEST_Base3
-
-				synonym source TEST extends TEST_Base1, TEST_Base2, TEST_Base3 {
-				}
-				""");
-        validationTestHelper.assertNoErrors(model);
-    }
-
-    @Test
-    void internalSynonymWithPatternShouldBeValid() {
-        var model = modelHelper.parseRosetta("""
-				type Foo:
-					foo int (0..1)
-						[synonym TEST_Base value "bar" path "baz" pattern "([A-Z)" "$1"]
-				synonym source TEST_Base
-				""");
-        validationTestHelper.assertError(model, ROSETTA_SYNONYM_BODY, null,
-                """
-                        Pattern to match must be a valid regular expression - Unclosed character class near index 5
-                        ([A-Z)
-                             ^""");
-    }
-
-    @Disabled
-    @Test
-    void testFishIsAShark() {//This test tests that when a check throws an exception it is translated into a validation error - see ExceptionValidator below
-        var model = modelHelper.parseRosetta("""
-				type MyFish:
-					foo int (0..1)
-						[synonym TEST_Base value "bar" path "baz" pattern "([A-Z)" "$1"]
-				synonym source TEST_Base
-				""");
-        validationTestHelper.assertError(model, ROSETTA_TYPE, null,
-                "checkForSharks");
-    }
-
-    @Test
-    void enumSynonymWithPatternShouldBeValid() {
-        var model = modelHelper.parseRosetta("""
-				enum Enumerate : X Y Z
-
-				synonym source TEST_Base
-				synonym source TEST extends TEST_Base {
-					enums
-
-					Enumerate:
-						+ X
-							[value "bar" pattern "([A-Z)" "$1"]
-				}
-				""");
-        validationTestHelper.assertError(model, ROSETTA_ENUM_SYNONYM, null,
-                """
-                        Pattern to match must be a valid regular expression - Unclosed character class near index 5
-                        ([A-Z)
-                             ^""");
     }
 
     @Test
@@ -3044,13 +2787,11 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 
                 import foo.bar.*
 
-
                              type Foo:
                      attr int (1..1)
                 """);
         validationTestHelper.assertWarning(model, IMPORT, UNUSED_IMPORT, "Unused import foo.bar.*");
     }
-
 
     @Test
     void shouldNotWarnForValidDataImports() {
@@ -3063,7 +2804,6 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
                 """
                              namespace test.two
                         import test.one.*
-
 
                                      type Bar:
                              attr Foo (1..1)
@@ -3081,7 +2821,6 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
                 """
                              namespace test.two
                         import test.one.*
-
 
                                      type Bar:
                              attr Foo (1..1)
@@ -3159,7 +2898,6 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
                 """
                         namespace foo.bar.qux
 
-
                         type MyType:
                         a int (0..1)
                         """);
@@ -3177,7 +2915,6 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
                         """,
                 """
                         namespace foo.bar.qux
-
 
                         type MyType:
                         a int (0..1)

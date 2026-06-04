@@ -33,7 +33,6 @@ import com.regnosys.rosetta.types.RosettaTypeProvider;
 import com.rosetta.model.lib.GlobalKey;
 import com.rosetta.model.lib.RosettaModelObject;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
-import com.rosetta.model.lib.Templatable;
 import com.rosetta.model.lib.expression.ComparisonResult;
 import com.rosetta.model.lib.mapper.Mapper;
 import com.rosetta.model.lib.mapper.MapperC;
@@ -45,7 +44,6 @@ import com.rosetta.model.lib.meta.ReferenceWithMeta;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.validation.Validator;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
-import com.rosetta.model.metafields.MetaAndTemplateFields;
 import com.rosetta.model.metafields.MetaFields;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaGenericTypeDeclaration;
@@ -79,14 +77,10 @@ public class JavaTypeUtil {
 	
 	public final JavaClass<GlobalKey> GLOBAL_KEY = JavaClass.from(GlobalKey.class);
 	public final JavaClass<GlobalKey.GlobalKeyBuilder> GLOBAL_KEY_BUILDER = JavaClass.from(GlobalKey.GlobalKeyBuilder.class);
-	public final JavaClass<Templatable> TEMPLATABLE = JavaClass.from(Templatable.class);
-	public final JavaClass<Templatable.TemplatableBuilder> TEMPLATABLE_BUILDER = JavaClass.from(Templatable.TemplatableBuilder.class);
 	public final JavaClass<Reference> REFERENCE = JavaClass.from(Reference.class);
 	public final JavaClass<Reference.ReferenceBuilder> REFERENCE_BUILDER = JavaClass.from(Reference.ReferenceBuilder.class);
 	public final JavaClass<MetaFields> META_FIELDS = JavaClass.from(MetaFields.class);
 	public final JavaClass<MetaFields.MetaFieldsBuilder> META_FIELDS_BUILDER = JavaClass.from(MetaFields.MetaFieldsBuilder.class);
-	public final JavaClass<MetaAndTemplateFields> META_AND_TEMPLATE_FIELDS = JavaClass.from(MetaAndTemplateFields.class);
-	public final JavaClass<MetaAndTemplateFields.MetaAndTemplateFieldsBuilder> META_AND_TEMPLATE_FIELDS_BUILDER = JavaClass.from(MetaAndTemplateFields.MetaAndTemplateFieldsBuilder.class);
 	public final JavaGenericTypeDeclaration<FieldWithMeta<?>> FIELD_WITH_META = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	public final JavaGenericTypeDeclaration<FieldWithMeta.FieldWithMetaBuilder<?>> FIELD_WITH_META_BUILDER = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
 	public final JavaGenericTypeDeclaration<ReferenceWithMeta<?>> REFERENCE_WITH_META = JavaGenericTypeDeclaration.from(new TypeReference<>() {});
@@ -112,10 +106,8 @@ public class JavaTypeUtil {
 	private final Map<JavaTypeDeclaration<?>, JavaTypeDeclaration<?>> builderMap = Map.of(
 				ROSETTA_MODEL_OBJECT, ROSETTA_MODEL_OBJECT_BUILDER,
 				GLOBAL_KEY, GLOBAL_KEY_BUILDER,
-				TEMPLATABLE, TEMPLATABLE_BUILDER,
 				REFERENCE, REFERENCE_BUILDER,
 				META_FIELDS, META_FIELDS_BUILDER,
-				META_AND_TEMPLATE_FIELDS, META_AND_TEMPLATE_FIELDS_BUILDER,
 				FIELD_WITH_META, FIELD_WITH_META_BUILDER,
 				REFERENCE_WITH_META, REFERENCE_WITH_META_BUILDER
 			);

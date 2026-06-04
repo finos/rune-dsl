@@ -10,7 +10,6 @@ import com.rosetta.model.lib.annotations.RuneAttribute;
 import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.path.RosettaPath;
-import com.rosetta.model.lib.process.BuilderMerger;
 import com.rosetta.model.lib.process.BuilderProcessor;
 import com.rosetta.model.lib.process.Processor;
 import java.util.Objects;
@@ -170,16 +169,6 @@ public interface Level1 extends RosettaModelObject {
 		public boolean hasData() {
 			if (getAttr()!=null) return true;
 			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public Level1.Level1Builder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			Level1.Level1Builder o = (Level1.Level1Builder) other;
-			
-			
-			merger.mergeBasic(getAttr(), o.getAttr(), this::setAttr);
-			return this;
 		}
 	
 		@Override

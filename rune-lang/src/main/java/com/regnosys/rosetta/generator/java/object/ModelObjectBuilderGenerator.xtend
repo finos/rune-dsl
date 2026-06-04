@@ -12,18 +12,15 @@ import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
-import com.rosetta.model.lib.RosettaModelObjectBuilder
 import com.rosetta.model.lib.annotations.RosettaAttribute
 import com.rosetta.model.lib.annotations.RuneAttribute
 import com.rosetta.model.lib.annotations.RuneMetaType
 import com.rosetta.model.lib.annotations.RuneIgnore
 import com.rosetta.model.lib.meta.Key
-import com.rosetta.model.lib.process.BuilderMerger
 import com.rosetta.util.types.JavaPrimitiveType
 import com.rosetta.util.types.JavaType
 import java.util.ArrayList
 import java.util.Collections
-import java.util.function.Consumer
 import java.util.stream.Collectors
 import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
@@ -35,7 +32,6 @@ import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
 import static com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperationType.*
 import com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperationType
 import com.regnosys.rosetta.generator.java.scoping.JavaMethodScope
-import com.regnosys.rosetta.generator.java.types.JavaPojoBuilderInterface
 import com.regnosys.rosetta.generator.java.types.JavaPojoBuilderImpl
 import com.rosetta.model.lib.annotations.Accessor
 import com.rosetta.model.lib.annotations.AccessorType
@@ -97,42 +93,8 @@ class ModelObjectBuilderGenerator {
 			
 			«javaType.hasData(properties, extendSuperImpl, scope)»
 		
-			«properties.merge(builderInterface, extendSuperImpl, scope)»
-		
 			«javaType.builderBoilerPlate(extendSuperImpl, scope)»
 		}
-		'''
-	}
-
-	private def StringConcatenationClient merge(Iterable<JavaPojoProperty> properties, JavaPojoBuilderInterface builderType, boolean extended, JavaClassScope builderScope) {
-		'''
-			@SuppressWarnings("unchecked")
-			@Override
-			public «builderType» merge(«RosettaModelObjectBuilder» other, «BuilderMerger» merger) {
-				«IF extended»
-					super.merge(other, merger);
-				«ENDIF»
-				«builderType» o = («builderType») other;
-				
-				«FOR prop : properties.filter[type.isRosettaModelObject]»
-					«val getter = prop.getOperationName(GET)»
-					«IF prop.type.isList»
-						merger.mergeRosetta(«getter»(), o.«getter»(), this::«prop.getOperationName(GET_OR_CREATE)»);
-					«ELSE»
-						merger.mergeRosetta(«getter»(), o.«getter»(), this::«prop.getOperationName(SET)»);
-					«ENDIF»
-				«ENDFOR»
-				
-				«FOR prop : properties.filter[!type.isRosettaModelObject]»
-					«val getter = prop.getOperationName(GET)»
-					«IF prop.type.isList»
-						merger.mergeBasic(«getter»(), o.«getter»(), («Consumer»<«prop.type.itemType»>) this::«prop.getOperationName(ADD)»);
-					«ELSE»
-						merger.mergeBasic(«getter»(), o.«getter»(), this::«prop.getOperationName(SET)»);
-					«ENDIF»
-				«ENDFOR»
-				return this;
-			}
 		'''
 	}
 

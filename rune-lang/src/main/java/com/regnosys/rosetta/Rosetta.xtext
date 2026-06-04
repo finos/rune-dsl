@@ -73,32 +73,32 @@ AnnotationQualifier:
 
 Data:
 	'type' RosettaNamed ('extends' superType = [Data|QualifiedName])? ':' RosettaDefinable?
-	(References|Annotations|ClassSynonyms)*
+	(References|Annotations)*
 	attributes+=Attribute*
 	conditions+=Condition*
 ;
 
 Choice:
 	'choice' RosettaNamed ':' RosettaDefinable?
-	(Annotations|ClassSynonyms)*
+	Annotations*
 	
 	attributes+=ChoiceOption*
 ;
 
 ChoiceOption:
 	RosettaTyped RosettaDefinable?
-	(References|Annotations|Synonyms|labels+=LabelAnnotation|RuleReference)*
+	(References|Annotations|labels+=LabelAnnotation|RuleReference)*
 ;
 
 Attribute:
 	override?='override'? RosettaNamed RosettaTyped card=RosettaCardinality
 	RosettaDefinable?
-	(References|Annotations|Synonyms|labels+=LabelAnnotation|RuleReference)*
+	(References|Annotations|labels+=LabelAnnotation|RuleReference)*
 ;
 
 Enumeration returns RosettaEnumeration:
 	'enum' RosettaNamed ('extends' parent=[RosettaEnumeration|QualifiedName])? ':' RosettaDefinable?
-		(References|Annotations|synonyms+=RosettaSynonym)*
+		(References|Annotations)*
 		enumValues += RosettaEnumValue*
 ;
 
@@ -166,10 +166,8 @@ RosettaRootElement:
 	| RosettaBasicType
 	| RosettaRecordType
 	| RosettaLibraryFunction
-	| RosettaSynonymSource
 	| RosettaRule
 	| RosettaMetaType
-	| RosettaExternalSynonymSource
 	| RosettaExternalRuleSource
 	| RosettaReport
 	| RosettaTypeAlias
@@ -278,7 +276,7 @@ RosettaMetaType:
 
 RosettaEnumValue:
 	RosettaNamed ('displayName' display=STRING)? RosettaDefinable?
-		(References|Annotations|enumSynonyms+=RosettaEnumSynonym)*
+		(References|Annotations)*
 ;
 
 RosettaCardinality:

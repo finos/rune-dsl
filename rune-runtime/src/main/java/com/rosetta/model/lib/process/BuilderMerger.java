@@ -31,7 +31,9 @@ import com.rosetta.model.lib.RosettaModelObjectBuilder;
  * Typically used to merge or un-merge an object with a "template".
  * 
  * @see RosettaModelObjectBuilder
+ * @deprecated since 10.0.0. Template merge functionality is deprecated.
  */
+@Deprecated // since 10.0.0
 public interface BuilderMerger {
 	
 	/**
