@@ -679,6 +679,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
 			|({SwitchOperation.argument=current} operator='switch' ->(cases+=SwitchCaseOrDefault ->(',' cases+=SwitchCaseOrDefault)*)?)
 			|({WithMetaOperation.argument=current} operator='with-meta' ('{' (entries+=WithMetaEntry (',' entries+=WithMetaEntry)*)? '}')?)
+			|({AsOperation.argument=current} operator='as' type=[SwitchCaseTarget|QualifiedName])
 		)
 		| ->(
 			({SortOperation.argument=current} operator='sort')
@@ -715,7 +716,8 @@ UnaryOperation returns RosettaExpression:
 			|({ToDateTimeOperation} operator='to-date-time')
 			|({ToZonedDateTimeOperation} operator='to-zoned-date-time')
 			|({SwitchOperation} operator='switch' ->(cases+=SwitchCaseOrDefault ->(',' cases+=SwitchCaseOrDefault)*)?)
-			|({WithMetaOperation} operator='with-meta' ('{' (entries+=WithMetaEntry (',' entries+=WithMetaEntry)*)? '}')?)			
+			|({WithMetaOperation} operator='with-meta' ('{' (entries+=WithMetaEntry (',' entries+=WithMetaEntry)*)? '}')?)
+			|({AsOperation} operator='as' type=[SwitchCaseTarget|QualifiedName])
 		)
 		| (
 			({SortOperation} operator='sort')
@@ -754,6 +756,7 @@ UnaryOperation returns RosettaExpression:
 			|({ToZonedDateTimeOperation.argument=current} operator='to-zoned-date-time')
 			|({SwitchOperation.argument=current} operator='switch' ->(cases+=SwitchCaseOrDefault ->(',' cases+=SwitchCaseOrDefault)*)?)
 			|({WithMetaOperation.argument=current} operator='with-meta' ('{' (entries+=WithMetaEntry (',' entries+=WithMetaEntry)*)? '}')?)
+			|({AsOperation.argument=current} operator='as' type=[SwitchCaseTarget|QualifiedName])
 		)
 		| ->(
 			({SortOperation.argument=current} operator='sort')
