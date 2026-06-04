@@ -193,7 +193,7 @@ This ensures reporting logic is transparent, consistent, and traceable back to a
 A rule is defined as:
 ```haskell
 <ruleType> rule <RuleName> from <InputType>:
-  [ regulatoryReference <Body> <Corpus>
+  [ docReference <Body> <Corpus>
     <Segment1>
     <Segment2>
     <SegmentN...>
@@ -203,13 +203,13 @@ A rule is defined as:
 
 The `ruleType` can be either `reporting` (returns a value) or `eligibility` (returns a Boolean).
 
-`regulatoryReference` links the rule to the exact regulatory text that justifies it and uses the same syntax as `docReference`, as outlined in the document reference section of the [Metadata component](./metadata#2-document-reference).
+`docReference` links the rule to the exact regulatory text that justifies it, as outlined in the document reference section of the [Metadata component](./metadata#2-document-reference).
 
 Functional expressions are composable, so a rule can also call another rule, as shown here. Both `Euro1Standard`, and `Euro6Standard` are themselves reporting rules.
 
 ```haskell
 reporting rule EuroEmissionStandard from ReportableEvent:
-  [regulatoryReference EuropeanCommission StandardEmissionsEuro6 article "1"  
+  [docReference EuropeanCommission StandardEmissionsEuro6 article "1"
     provision "Regulation (EC) No 715/2007 is amended as follows:..."]
   if Euro1Standard exists
   then Euro1Standard
@@ -278,7 +278,7 @@ then extract <type name> { attribute1: <...>, attribute2: <...>, <etc> }
 **Example**
 ```haskell
 reporting rule NotionalAmountScheduleLeg1 from ReportableEvent: <"Notional Amount Schedule">
-	[regulatoryReference CFTC Part45 appendix "1" dataElement "33-35" field "Notional Amount Schedule"
+	[docReference CFTC Part45 appendix "1" dataElement "33-35" field "Notional Amount Schedule"
 		rationale "Model only applicable for back-to-back schedules. Repeatable field 35 (endDate) not applicable and therefore removed"
     rationale_author "DRR Peer Review Group - 03/12/21"
 		provision "Fields 33-35 are repeatable and shall be populated in the case of derivatives involving notional amount schedules"]
@@ -293,7 +293,7 @@ reporting rule NotionalAmountScheduleLeg1 from ReportableEvent: <"Notional Amoun
 Each attribute of the repeating type has its own rule:
 ```haskell
 reporting rule NotionalAmountScheduleLeg1EffectiveDate from DatedValue: <"Effective date of the notional amount of leg 1">
-  [regulatoryReference CFTC Part45 appendix "1" dataElement "34" field "Effective date of the notional amount of leg 1"
+  [docReference CFTC Part45 appendix "1" dataElement "34" field "Effective date of the notional amount of leg 1"
     provision "For each leg of the transaction, where applicable: for OTC derivative transactions negotiated in monetary amounts with a notional amount schedule:     Unadjusted date on which the associated notional amount becomes effective This data element is not applicable to OTC derivative transactions with notional amounts that are condition- or event-dependent. The currency of the varying notional amounts in the schedule is reported in Notional currency."]
   CDENotionalAmountScheduleEffectiveDate
 ```
@@ -454,4 +454,3 @@ func CalculatePayment:
   set payment:
     ExtendedCalculateNotional()  // Call the extended version from a scope
 ```
-

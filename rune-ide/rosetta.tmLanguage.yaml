@@ -44,6 +44,7 @@ variables:
   synonymAnnotationSectionEnd: (?={{synonymAnnotationSection}})|(?=\])|{{rootEnd}}
   docReferenceAnnotationSection: '{{wordStart}}(rationale|rationale_author|structured_provision|provision|reportedField){{wordEnd}}'
   docReferenceAnnotationSectionEnd: (?={{docReferenceAnnotationSection}}|\])|{{sectionEnd}}
+  reportSectionStart: '{{wordStart}}(in|from|when|with){{wordEnd}}'
   expressionEndIgnoringComma: '(?=\)|\]|\})|(?={{wordStart}}to{{wordEnd}}\s)|{{sectionEnd}}'
   expressionEnd: '(?=,)|{{expressionEndIgnoringComma}}'
   functionalOperationEnd: (?={{listOperation}}|{{wordStart}}(else|then){{wordEnd}})|{{expressionEnd}}
@@ -501,13 +502,13 @@ repository:
         patterns:
         - include: '#comment'
         - begin: (?<={{wordStart}}report{{wordEnd}})
-          end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+          end: (?={{reportSectionStart}})|{{rootEnd}}
           patterns:
           - include: '#comment'
           - begin: '{{identifier}}'
             beginCaptures:
               0: { name: entity.name.document.body.rosetta }
-            end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+            end: (?={{reportSectionStart}})|{{rootEnd}}
             patterns:
             - include: '#comment'
             - name: entity.name.document.corpus.rosetta
@@ -515,7 +516,7 @@ repository:
         - begin: '{{wordStart}}in{{wordEnd}}'
           beginCaptures:
             0: { name: keyword.other.in.rosetta }
-          end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+          end: (?={{reportSectionStart}})|{{rootEnd}}
           patterns:
           - include: '#comment'
           - name: constant.language.timing.rosetta
@@ -523,40 +524,30 @@ repository:
         - begin: '{{wordStart}}from{{wordEnd}}'
           beginCaptures:
             0: { name: keyword.other.from.rosetta }
-          end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+          end: (?={{reportSectionStart}})|{{rootEnd}}
           patterns:
           - include: '#comment'
           - include: '#typeCall'
         - begin: '{{wordStart}}when{{wordEnd}}'
           beginCaptures:
             0: { name: keyword.other.when.rosetta }
-          end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+          end: (?={{reportSectionStart}})|{{rootEnd}}
           patterns:
           - include: '#comment'
           - name: keyword.other.and.rosetta
             match: '{{wordStart}}and{{wordEnd}}'
           - name: entity.name.rule.rosetta
             match: '{{identifier}}'
-        - begin: '{{wordStart}}using{{wordEnd}}'
-          beginCaptures:
-            0: { name: keyword.other.using.rosetta }
-          end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
-          patterns:
-          - include: '#comment'
-          - name: keyword.other.standard.rosetta
-            match: '{{wordStart}}standard{{wordEnd}}'
-          - name: entity.name.document.corpus.rosetta
-            match: '{{identifier}}'
         - begin: '{{wordStart}}with{{wordEnd}}'
           beginCaptures:
             0: { name: keyword.other.with.rosetta }
-          end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+          end: (?={{reportSectionStart}})|{{rootEnd}}
           patterns:
           - include: '#comment'
           - begin: '{{wordStart}}type{{wordEnd}}'
             beginCaptures:
               0: { name: keyword.other.type.rosetta }
-            end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+            end: (?={{reportSectionStart}})|{{rootEnd}}
             patterns:
             - include: '#comment'
             - name: entity.name.type.type.rosetta
@@ -566,7 +557,7 @@ repository:
           - begin: '{{wordStart}}source{{wordEnd}}'
             beginCaptures:
               0: { name: keyword.other.source.rosetta }
-            end: (?={{wordStart}}(in|from|when|using|with){{wordEnd}})|{{rootEnd}}
+            end: (?={{reportSectionStart}})|{{rootEnd}}
             patterns:
             - include: '#comment'
             - name: entity.name.annotation-source.rosetta
@@ -694,14 +685,14 @@ repository:
 
       referenceAnnotationBody:
         name: meta.annotated.document.rosetta
-        begin: '{{wordStart}}(regulatoryReference|docReference){{wordEnd}}'
+        begin: '{{wordStart}}(docReference){{wordEnd}}'
         beginCaptures:
           1: { name: variable.annotation.doc-reference.rosetta }
         end: (?=\])|{{sectionEnd}}
         patterns:
         - include: '#comment'
         - name: meta.annotated.document.document-id.rosetta
-          begin: '(?<={{wordStart}}regulatoryReference{{wordEnd}}|{{wordStart}}docReference{{wordEnd}})' # used to be '(?<={{wordStart}}(regulatoryReference|docReference){{wordEnd}})'. See issue https://github.com/zikaari/monaco-textmate/issues/10.
+          begin: '(?<={{wordStart}}docReference{{wordEnd}})'
           end: '{{docReferenceAnnotationSectionEnd}}'
           patterns:
           - include: '#comment'
@@ -1221,6 +1212,15 @@ repository:
             0: { name: entity.name.type.enum.rosetta }
           patterns:
           - include: '#comment'
+        - name: meta.as-operation.rosetta
+          begin: '{{wordStart}}as{{wordEnd}}(?!-)'
+          beginCaptures:
+            0: { name: keyword.operator.word.rosetta }
+          end: '{{qualifiedIdentifier}}'
+          endCaptures:
+            0: { name: entity.name.type.rosetta }
+          patterns:
+          - include: '#comment'
         - name: meta.switch-operation.rosetta
           begin: '{{wordStart}}switch{{wordEnd}}'
           beginCaptures:
@@ -1244,7 +1244,7 @@ repository:
             - include: '#expression'
           - include: '#expressionWithoutThenAndDefaultOperation'
         - name: keyword.operator.word.rosetta
-          match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|default|disjoint|join|only|exists|as-key|one-of|as(?!-)|to-number|to-int|to-time|to-date|to-date-time|to-zoned-date-time|to-string|with-meta){{wordEnd}}'
+          match: '{{listOperationWord}}|{{wordStart}}(any|all|or|and|contains|default|disjoint|join|only|exists|as-key|one-of|to-number|to-int|to-time|to-date|to-date-time|to-zoned-date-time|to-string|with-meta){{wordEnd}}'
         - name: keyword.operator.word.super.rosetta
           match: '{{wordStart}}super{{wordEnd}}'
         - name: keyword.operator.rosetta

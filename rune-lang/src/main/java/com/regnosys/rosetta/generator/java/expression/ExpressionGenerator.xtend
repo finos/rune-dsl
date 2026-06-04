@@ -32,6 +32,7 @@ import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 import com.regnosys.rosetta.rosetta.TypeParameter
 import com.regnosys.rosetta.rosetta.expression.ArithmeticOperation
 import com.regnosys.rosetta.rosetta.expression.AsKeyOperation
+import com.regnosys.rosetta.rosetta.expression.AsOperation
 import com.regnosys.rosetta.rosetta.expression.CardinalityModifier
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter
@@ -739,7 +740,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val argCode = expr.argument.javaCode(context.withExpected(MAPPER.wrapExtends(argItemType)))
 		val argType = argCode.expressionType
 		argCode
-			.applyRuntimeMethod('distinct', argType.hasWildcardArgument ? MAPPER_C.wrapExtends(argItemType) : MAPPER_C.wrap(argItemType))
+			.applyRuntimeMethod('distinctIgnoringPrecision', argType.hasWildcardArgument ? MAPPER_C.wrapExtends(argItemType) : MAPPER_C.wrap(argItemType))
 	}
 
 	override protected caseDivideOperation(ArithmeticOperation expr, Context context) {
@@ -1153,6 +1154,55 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		conversionOperation(expr, context, conversion, IllegalArgumentException)
 	}
 
+	override protected caseAsOperation(AsOperation expr, Context context) {
+		val isMulti = expr.isMulti
+		val argRType = typeProvider.getRMetaAnnotatedType(expr.argument).RType.stripFromTypeAliases
+
+		if (argRType instanceof RChoiceType) {
+			// Narrowing a choice to one of its options means navigating the path of option attributes
+			// leading to that option - the same navigation a `switch` case performs.
+			val choiceOption = new RChoiceOption(expr.type as ChoiceOption, argRType, typeProvider)
+			val argCode = expr.argument.javaCode(context.withExpected(
+				isMulti ? MAPPER_C.wrapExtends(argRType.toJavaReferenceType) as JavaType : MAPPER.wrap(argRType.toJavaReferenceType)))
+			navigateToChoiceOption(argCode, argRType, choiceOption, context)
+		} else {
+			// A data type is narrowed by filtering on the runtime type and casting.
+			val targetJavaType = typeProvider.getRMetaAnnotatedType(expr).RType.stripFromTypeAliases.toJavaReferenceType
+			val argCode = expr.argument.javaCode(context.withExpected(
+				isMulti ? MAPPER_C.wrapExtends(argRType.toJavaReferenceType) as JavaType : MAPPER_S.wrapExtends(argRType.toJavaReferenceType)))
+			narrowToSubtype(argCode, targetJavaType, isMulti, context)
+		}
+	}
+	/**
+	 * Navigate from a choice-typed mapper to the value of one of its (nested) options, by following the
+	 * path of option attributes. Shared by the `as` and `switch` operators.
+	 */
+	private def JavaStatementBuilder navigateToChoiceOption(JavaStatementBuilder choiceArg, RChoiceType choiceType, RChoiceOption goal, Context context) {
+		val optionPath = findChoiceOptionPath(choiceType, goal.type.RType.stripFromTypeAliases)
+		optionPath.fold(choiceArg, [acc, opt|
+			acc.attributeCall(opt.choiceType.withNoMeta, (opt.EObject as ChoiceOption).buildRAttribute, false, context.expectedType, context.scope)
+		])
+	}
+	private def JavaStatementBuilder narrowToSubtype(JavaStatementBuilder mapperCode, JavaType targetType, boolean isMulti, Context context) {
+		val filterScope = context.scope.lambdaScope
+		val filterParam = filterScope.createUniqueIdentifier("a")
+		val castScope = context.scope.lambdaScope
+		val castParam = castScope.createUniqueIdentifier(targetType.simpleName.toFirstLower)
+		val collapsed = mapperCode.collapseToSingleExpression(context.scope)
+		if (isMulti) {
+			collapsed.mapExpression[JavaExpression.from('''
+				«it»
+					.filterItemNullSafe(«filterParam» -> «filterParam».get() instanceof «targetType»)
+					.map("as «targetType.simpleName»", «castParam» -> («targetType») «castParam»)''',
+				MAPPER_C.wrap(targetType))]
+		} else {
+			collapsed.mapExpression[JavaExpression.from('''
+				«it»
+					.filterSingleNullSafe(«filterParam» -> «filterParam».get() instanceof «targetType»)
+					.map("as «targetType.simpleName»", «castParam» -> («targetType») «castParam»)''',
+				MAPPER_S.wrap(targetType))]
+		}
+	}
 	override protected caseToIntOperation(ToIntOperation expr, Context context) {
 		conversionOperation(expr, context, '''«Integer»::parseInt''', NumberFormatException)
 	}
@@ -1316,12 +1366,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			
 			createSwitchJavaExpression(expr, switchArgument, [acc,switchCase,switchArg|
 				val choiceOption = new RChoiceOption(switchCase.guard.choiceOptionGuard, inputRType, typeProvider)
-				val optionPath = findOptionPath(inputRType, choiceOption)
-				
 				val itemVar = context.scope.createIdentifier(switchCase.expression.implicitVarInContext, choiceOption.type.RType.name.toFirstLower)
-				val optionExpr = optionPath.fold(switchArg as JavaStatementBuilder, [pathAcc,opt|
-					pathAcc.attributeCall(opt.choiceType.withNoMeta, (opt.EObject as ChoiceOption).buildRAttribute, false, context.expectedType, context.scope)
-				])
+				val optionExpr = navigateToChoiceOption(switchArg, inputRType, choiceOption, context)
 				optionExpr
 					.collapseToSingleExpression(context.scope)
 					.mapExpression[
@@ -1378,24 +1424,6 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 			], context)
 		}
  	}
- 	private def List<RChoiceOption> findOptionPath(RChoiceType from, RChoiceOption goal) {
- 		val result = newArrayList
- 		
- 		var currentChoice = from
- 		var currentOption = currentChoice.ownOptions.findFirst[goal.type.isSubtypeOf(it.type, false)]
- 		result.add(currentOption)
- 		while (currentOption != goal) {
- 			if (currentOption === null || !(currentOption.type.RType instanceof RChoiceType)) {
-				throw new IllegalStateException("Did not find an option path from " + from + " to " + goal + ". " + currentOption)
-			}
- 			currentChoice = currentOption.type.RType as RChoiceType
- 			currentOption = currentChoice.ownOptions.findFirst[goal.type.isSubtypeOf(it.type, false)]
- 			result.add(currentOption)
- 		}
- 		
- 		result
- 	}
-
  	private def JavaStatementBuilder createSwitchJavaExpression(SwitchOperation expr, JavaStatementBuilder switchArgument, Function3<JavaStatementBuilder, SwitchCaseOrDefault, JavaExpression, JavaStatementBuilder> fold, Context context) {
  		val defaultExpr = expr.^default === null ? JavaLiteral.NULL : expr.^default.javaCode(context)
  		switchArgument

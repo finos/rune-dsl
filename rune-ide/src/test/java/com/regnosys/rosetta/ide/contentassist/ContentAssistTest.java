@@ -63,6 +63,7 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
                     and -> and [[15, 12] .. [15, 12]]
                     annotation -> annotation [[15, 12] .. [15, 12]]
                     any -> any [[15, 12] .. [15, 12]]
+                    as -> as [[15, 12] .. [15, 12]]
                     as-key -> as-key [[15, 12] .. [15, 12]]
                     basicType -> basicType [[15, 12] .. [15, 12]]
                     body -> body [[15, 12] .. [15, 12]]
@@ -165,6 +166,7 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
                     all -> all [[9, 20] .. [9, 20]]
                     and -> and [[9, 20] .. [9, 20]]
                     any -> any [[9, 20] .. [9, 20]]
+                    as -> as [[9, 20] .. [9, 20]]
                     contains -> contains [[9, 20] .. [9, 20]]
                     count -> count [[9, 20] .. [9, 20]]
                     default -> default [[9, 20] .. [9, 20]]
@@ -244,6 +246,7 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
                     and -> and [[7, 30] .. [7, 30]]
                     annotation -> annotation [[7, 30] .. [7, 30]]
                     any -> any [[7, 30] .. [7, 30]]
+                    as -> as [[7, 30] .. [7, 30]]
                     basicType -> basicType [[7, 30] .. [7, 30]]
                     body -> body [[7, 30] .. [7, 30]]
                     choice -> choice [[7, 30] .. [7, 30]]
@@ -338,6 +341,7 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
                     all -> all [[6, 28] .. [6, 28]]
                     and -> and [[6, 28] .. [6, 28]]
                     any -> any [[6, 28] .. [6, 28]]
+                    as -> as [[6, 28] .. [6, 28]]
                     contains -> contains [[6, 28] .. [6, 28]]
                     count -> count [[6, 28] .. [6, 28]]
                     default -> default [[6, 28] .. [6, 28]]
@@ -458,6 +462,7 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
                     all -> all [[19, 8] .. [19, 8]]
                     and -> and [[19, 8] .. [19, 8]]
                     any -> any [[19, 8] .. [19, 8]]
+                    as -> as [[19, 8] .. [19, 8]]
                     contains -> contains [[19, 8] .. [19, 8]]
                     count -> count [[19, 8] .. [19, 8]]
                     default -> default [[19, 8] .. [19, 8]]
@@ -529,6 +534,41 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
             it.setColumn(7);
             // TODO: should have an auto completion?
             it.setExpectedCompletionItems("""
+                    """);
+        });
+    }
+
+    @Test
+    void testAsOperationProposesOnlySubtypes() {
+        // After `as`, only subtypes of the argument type (`T1`) should be proposed:
+        // `T1` and `T2` (which extends `T1`), but not the unrelated `U1`.
+        String model = """
+                namespace a
+
+                type T1:
+
+                type T2 extends T1:
+
+                type U1:
+
+                func Test:
+                    inputs:
+                        t1 T1 (1..1)
+                    output:
+                        result T1 (1..1)
+                    set result:
+                        t1 as \s
+                """;
+
+        testCompletion(it -> {
+            it.setModel(model);
+            it.setLine(14);
+            it.setColumn(15);
+            it.setExpectedCompletionItems("""
+                    a.T1 (Data) -> a.T1 [[14, 15] .. [14, 15]]
+                    a.T2 (Data) -> a.T2 [[14, 15] .. [14, 15]]
+                    T1 (Data) -> T1 [[14, 15] .. [14, 15]]
+                    T2 (Data) -> T2 [[14, 15] .. [14, 15]]
                     """);
         });
     }

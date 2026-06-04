@@ -77,6 +77,7 @@ import com.regnosys.rosetta.rosetta.expression.SwitchOperation;
 import com.regnosys.rosetta.rosetta.expression.ThenOperation;
 import com.regnosys.rosetta.rosetta.expression.ToDateOperation;
 import com.regnosys.rosetta.rosetta.expression.ToDateTimeOperation;
+import com.regnosys.rosetta.rosetta.expression.AsOperation;
 import com.regnosys.rosetta.rosetta.expression.ToEnumOperation;
 import com.regnosys.rosetta.rosetta.expression.ToIntOperation;
 import com.regnosys.rosetta.rosetta.expression.ToNumberOperation;
@@ -560,6 +561,12 @@ public class RosettaInterpreter extends RosettaExpressionSwitch<RosettaValue, Ro
 	protected RosettaValue caseToEnumOperation(ToEnumOperation expr, RosettaInterpreterContext context) {
 		// TODO
 		throw new RosettaInterpreterException("ToEnum operations are not supported yet.");
+	}
+
+	@Override
+	protected RosettaValue caseAsOperation(AsOperation expr, RosettaInterpreterContext context) {
+		// TODO
+		throw new RosettaInterpreterException("As operations are not supported yet.");
 	}
 	
 	@Override

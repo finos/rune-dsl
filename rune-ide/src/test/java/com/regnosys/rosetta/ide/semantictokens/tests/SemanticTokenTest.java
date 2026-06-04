@@ -127,7 +127,7 @@ public class SemanticTokenTest extends AbstractRosettaLanguageServerTest {
 					a int (1..1)
 
 				reporting rule Cleared from number:
-					[regulatoryReference CFTC Pa
+					[docReference CFTC Pa
 
 				type B:
 					a string (1..1)
