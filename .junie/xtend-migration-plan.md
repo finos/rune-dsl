@@ -87,7 +87,7 @@ No project files to migrate.
 - [x] RosettaFormattingTest
 - [ ] ListOperationTest
 - [x] RosettaCountOperationTest
-- [ ] FunctionOperationGeneratorTest
+- [ ] CalculationFunctionGeneratorTest
 - [ ] FunctionGeneratorHelper
 - [ ] FunctionGeneratorTest
 - [ ] EnumGeneratorTest
