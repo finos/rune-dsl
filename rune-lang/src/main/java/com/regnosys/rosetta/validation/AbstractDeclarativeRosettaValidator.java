@@ -37,11 +37,10 @@ public abstract class AbstractDeclarativeRosettaValidator extends AbstractDeclar
 	
 	@Override
 	protected List<EPackage> getEPackages() {
-		List<EPackage> result = new ArrayList<EPackage>();
+		List<EPackage> result = new ArrayList<>();
 		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/Rosetta"));
 		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaSimple"));
 		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaExpression"));
-		result.add(EPackage.Registry.INSTANCE.getEPackage("http://www.rosetta-model.com/RosettaTranslate"));
 		return result;
 	}
 	

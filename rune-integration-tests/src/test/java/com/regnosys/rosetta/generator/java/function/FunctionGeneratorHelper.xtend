@@ -67,7 +67,7 @@ class FunctionGeneratorHelper {
 		])
 	}
 
-	def void assertToGeneratedCalculation(CharSequence actualModel, CharSequence expected) throws AssertionError {
+	def void assertToGeneratedFunctionWithOperations(CharSequence actualModel, CharSequence expected) throws AssertionError {
 		actualModel.assertToGenerated(expected, [
 			val func = generator.streamObjects(it)
 				.filter[!operations.nullOrEmpty]

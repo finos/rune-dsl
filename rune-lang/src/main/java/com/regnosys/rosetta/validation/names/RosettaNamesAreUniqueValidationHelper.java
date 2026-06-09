@@ -37,7 +37,6 @@ public class RosettaNamesAreUniqueValidationHelper extends NamesAreUniqueValidat
     private static final Map<EClass, String> TYPE_LABELS = ImmutableMap.<EClass, String>builder()
             .put(RosettaPackage.eINSTANCE.getRosettaModel(), "namespace")
             .put(RosettaPackage.eINSTANCE.getRosettaRootElement(), "element")
-            .put(RosettaPackage.eINSTANCE.getRosettaSynonymSource(), "synonym source")
             .put(RosettaPackage.eINSTANCE.getRosettaExternalRuleSource(), "rule source")
             .put(RosettaPackage.eINSTANCE.getRosettaCallableWithArgs(), "function")
             .put(RosettaPackage.eINSTANCE.getRosettaType(), "type")

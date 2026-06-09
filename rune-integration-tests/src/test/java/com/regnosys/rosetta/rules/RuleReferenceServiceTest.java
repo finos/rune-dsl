@@ -162,55 +162,6 @@ public class RuleReferenceServiceTest {
 	}
 	
 	@Test
-	void testMultiInheritance() {
-		assertTraversalWithSource(
-				"Rules",
-				"Bar",
-				"""
-				type Foo:
-					fooAttr string (1..1)
-						[ruleReference FooAttr]
-				
-				type Bar extends Foo:
-					barAttr string (1..1)
-						[ruleReference BarAttr]
-				
-				rule source BaseRules1 {
-					Bar:
-					+ fooAttr
-						[ruleReference BaseFooAttr1]
-					+ barAttr
-						[ruleReference BaseBarAttr1]
-				}
-				
-				rule source BaseRules2 {
-					Bar:
-					+ fooAttr
-						[ruleReference BaseFooAttr2]
-					+ barAttr
-						[ruleReference BaseBarAttr2]
-				}
-				
-				rule source Rules extends BaseRules1, BaseRules2 {
-					Foo:
-					- fooAttr
-				}
-				
-				reporting rule FooAttr:
-				reporting rule BarAttr:
-				reporting rule BaseFooAttr1:
-				reporting rule BaseBarAttr1:
-				reporting rule BaseFooAttr2:
-				reporting rule BaseBarAttr2:
-				""",
-				"""
-				fooAttr: <empty>
-				barAttr: BaseBarAttr1
-				"""
-			);
-	}
-	
-	@Test
 	void testValidCircularReferenceTraversal() {
 		assertTraversal(
 				"Foo",

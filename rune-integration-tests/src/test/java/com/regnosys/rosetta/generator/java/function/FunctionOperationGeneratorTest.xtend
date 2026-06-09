@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 @ExtendWith(InjectionExtension)
 @InjectWith(RosettaTestInjectorProvider)
-class CalculationFunctionGeneratorTest {
+class FunctionOperationGeneratorTest {
 
 	@Inject extension FunctionGeneratorHelper
 	@Inject extension CodeGeneratorTestHelper
@@ -130,7 +130,7 @@ class CalculationFunctionGeneratorTest {
 				output: out int (1..1)
 				alias oneA : 1
 				set out: oneA + oneA
-		'''.assertToGeneratedCalculation(
+		'''.assertToGeneratedFunctionWithOperations(
 			'''
 			package com.rosetta.test.model.functions;
 			
@@ -181,10 +181,9 @@ class CalculationFunctionGeneratorTest {
 	}
 	
 	@Test
-	def void testSimpleCalculationGeneration() {
+	def void testSimpleFunctionWithOperationsGeneration() {
 		'''
 			func Calc:
-				[calculation]
 				inputs:
 					arg1 int  (1..1)
 					arg2 int  (1..1)
@@ -193,7 +192,7 @@ class CalculationFunctionGeneratorTest {
 				alias a2 :  Max(1,2)
 			
 				set res: a1 + a2 * 215
-		'''.assertToGeneratedCalculation(
+		'''.assertToGeneratedFunctionWithOperations(
 			'''
 			package com.rosetta.test.model.functions;
 			
@@ -255,7 +254,7 @@ class CalculationFunctionGeneratorTest {
 
 	@Test
 	def void testDateTimeAdd() {
-		val calculation = '''
+		val generatedCode = '''
 			type FuncIn:
 				val1 date (1..1)
 				val2 time (1..1)
@@ -275,7 +274,7 @@ class CalculationFunctionGeneratorTest {
 				set res -> res1:  arg1 + arg2 
 				set res -> res2:  arg1 + arg2 
 		'''.generateCode
-		val calcJava = calculation.get("com.rosetta.test.model.functions.Calc")
+		val generated = generatedCode.get("com.rosetta.test.model.functions.Calc")
 		val expected = '''
 			package com.rosetta.test.model.functions;
 			
@@ -353,13 +352,13 @@ class CalculationFunctionGeneratorTest {
 				}
 			}
 			'''
-		assertEquals(expected, calcJava)
-		calculation.compileToClasses
+		assertEquals(expected, generated)
+		generatedCode.compileToClasses
 	}
 
 	@Test
 	def void testWierdness() {
-		val calculation = '''
+		val generatedCode = '''
 			type FuncIn:
 				valS string (1..1)
 				val1 date (1..1)
@@ -370,7 +369,6 @@ class CalculationFunctionGeneratorTest {
 				tradingDateTime dateTime (1..1)
 			
 			func RTS_22_Fields :
-				[calculation]
 				inputs: funcIn FuncIn (1..1)
 			
 				output: out FuncOut (1..1)
@@ -381,8 +379,8 @@ class CalculationFunctionGeneratorTest {
 				set out -> tradingDateTime:
 					tradeDate + tradeTime
 		'''.generateCode
-		val calcJava = calculation.get("com.rosetta.test.model.functions.RTS_22_Fields")
-		calculation.compileToClasses
+		val generated = generatedCode.get("com.rosetta.test.model.functions.RTS_22_Fields")
+		generatedCode.compileToClasses
 		val expected = '''
 			package com.rosetta.test.model.functions;
 			
@@ -467,7 +465,7 @@ class CalculationFunctionGeneratorTest {
 				}
 			}
 			'''
-		assertEquals(expected, calcJava)
+		assertEquals(expected, generated)
 	}
 
 	@Test
@@ -489,7 +487,7 @@ class CalculationFunctionGeneratorTest {
 				withMeta as-key
 			set out -> attrSingle:
 				withMeta only-element as-key
-		'''.assertToGeneratedCalculation(
+		'''.assertToGeneratedFunctionWithOperations(
 			'''
 				package com.rosetta.test.model.functions;
 				
@@ -589,7 +587,7 @@ class CalculationFunctionGeneratorTest {
 			func AddOne:
 				inputs:  arg int (1..1)
 				output: out int(1..1)
-		'''.assertToGeneratedCalculation(
+		'''.assertToGeneratedFunctionWithOperations(
 			'''
 			package com.rosetta.test.model.functions;
 			
@@ -644,7 +642,7 @@ class CalculationFunctionGeneratorTest {
 
 	
 	@Test
-	def void shouldResolveExternalFunctionDependenciesWhenEnumCalculation() {
+	def void shouldResolveExternalFunctionDependenciesWhenEnumFunction() {
 		val generatedCode = '''
 			type MathInput:
 				mathInput string (1..1)
@@ -794,7 +792,7 @@ class CalculationFunctionGeneratorTest {
 			func AddOne:
 				inputs: arg int (1..1)
 				output: out int (1..1)
-		'''.assertToGeneratedCalculation(
+		'''.assertToGeneratedFunctionWithOperations(
 			'''
 			package com.rosetta.test.model.functions;
 			

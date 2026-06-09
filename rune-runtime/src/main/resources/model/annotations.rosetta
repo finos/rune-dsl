@@ -8,8 +8,6 @@ annotation metadata: <"Defines metadata that can be specified on types, attribut
 	scheme string (0..1) <"Specifies that an attribute can have a scheme assoicated with the value.">
 	location string (0..1) <"Specifies this is the target of an internal reference.">
 	address string (0..1) <"Specified that this is an internal reference to an object that appears elsewhere.">
-     
-annotation calculation: <"Marks a function as fully implemented calculation.">
 
 annotation rootType: <"Mark a type as a root of the rosetta model">
 

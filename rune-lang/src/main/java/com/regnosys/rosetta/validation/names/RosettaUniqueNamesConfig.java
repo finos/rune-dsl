@@ -35,9 +35,6 @@ public class RosettaUniqueNamesConfig {
         // should be checked for case-insensitive uniqueness. On the other hand, it does not
         // generate a file for an attribute, so we can check those for case-sensitive uniqueness.
         
-        // Check synonym sources have a unique name
-        addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaSynonymSource(), false);
-        
         // Check rule sources have a unique name
         addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaExternalRuleSource(), false);
         

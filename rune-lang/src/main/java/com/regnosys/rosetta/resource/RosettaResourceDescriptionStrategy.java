@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.regnosys.rosetta.rosetta.ExternalAnnotationSource;
+import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import org.apache.log4j.Logger;
@@ -58,7 +58,7 @@ public class RosettaResourceDescriptionStrategy extends DefaultResourceDescripti
             return createAttributeDescription(attribute, isInOverriddenNamespace, acceptor);
         } else if (eObject instanceof RosettaRule rule) {
             return createRosettaRuleDescription(rule, isInOverriddenNamespace, acceptor);
-        } else if (eObject instanceof ExternalAnnotationSource) {
+        } else if (eObject instanceof RosettaExternalRuleSource) {
             defaultCreateRosettaDescriptions(eObject, isInOverriddenNamespace, acceptor);
             return false; // Do not traverse down annotation sources
         } else {

@@ -1031,17 +1031,6 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
-    void noDuplicateInheritanceForRuleSourceTest() {
-        var model = modelHelper.parseRosetta("""
-				rule source TestA {}
-				rule source TestB {}
-				rule source TestC extends TestA, TestB {}
-				""");
-        validationTestHelper.assertError(model, ROSETTA_EXTERNAL_RULE_SOURCE, null,
-                "A rule source may not extend more than one other rule source.");
-    }
-
-    @Test
     void noDuplicateTypesInAnnotationSourceTest() {
         var model = modelHelper.parseRosetta("""
 				type Foo:
@@ -1060,20 +1049,14 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
-    void enumNotAllowedInRuleReferenceSourceTest() {
+    void enumKeywordNotAllowedInRuleReferenceSourceTest() {
         var model = modelHelper.parseRosetta("""
-				enum Foo:
-					BAR
-
-				rule source TestA {
-					enums
-
-					Foo:
-						+ BAR
-				}
-				""");
-        validationTestHelper.assertError(model, ROSETTA_EXTERNAL_RULE_SOURCE, null,
-                "A rule source cannot define annotations for enums.");
+					rule source TestA {
+						enums
+					}
+					""");
+        validationTestHelper.assertError(model, ROSETTA_EXTERNAL_RULE_SOURCE, Diagnostic.SYNTAX_DIAGNOSTIC,
+                "missing ':' at '}'");
     }
 
     @Test

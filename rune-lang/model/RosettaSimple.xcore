@@ -7,13 +7,11 @@ package com.regnosys.rosetta.rosetta.simple
 
 import com.regnosys.rosetta.rosetta.RosettaSymbol
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs
-import com.regnosys.rosetta.rosetta.RosettaClassSynonym
 import com.regnosys.rosetta.rosetta.RosettaDefinable
 import com.regnosys.rosetta.rosetta.RosettaDocReference
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
-import com.regnosys.rosetta.rosetta.RosettaSynonym
 import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.RosettaRule
@@ -92,7 +90,6 @@ interface AssignPathRoot extends RosettaSymbol {
 class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, References, AssignPathRoot {
 	boolean override
 	contains RosettaCardinality card
-	contains RosettaSynonym[] synonyms
 	contains RuleReferenceAnnotation[] ruleReferences
 	contains LabelAnnotation[] labels
 }
@@ -100,7 +97,6 @@ class Attribute extends RosettaTypedFeature, RosettaDefinable, Annotated, Refere
 
 class Data extends RosettaTypeWithConditions, RootElement, References, SwitchCaseTarget {
 	refers Data superType
-	contains RosettaClassSynonym[] synonyms
 	contains Attribute[] attributes
 	
 	op boolean hasSuperType() {
