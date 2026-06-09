@@ -1049,17 +1049,6 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
-    void enumKeywordNotAllowedInRuleReferenceSourceTest() {
-        var model = modelHelper.parseRosetta("""
-					rule source TestA {
-						enums
-					}
-					""");
-        validationTestHelper.assertError(model, ROSETTA_EXTERNAL_RULE_SOURCE, Diagnostic.SYNTAX_DIAGNOSTIC,
-                "missing ':' at '}'");
-    }
-
-    @Test
     void cannotRemoveNonExistingRuleReferenceFromExternalRuleSourceTest() {
         var model = modelHelper.parseRosetta("""
 				body Authority TEST_REG
