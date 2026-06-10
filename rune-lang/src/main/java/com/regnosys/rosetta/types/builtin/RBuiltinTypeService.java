@@ -43,7 +43,7 @@ public class RBuiltinTypeService {
 	private RosettaBuiltinsService builtinsService;
 
 
-	private Map<String, Function<Map<String, RosettaValue>, RType>> typeMap = new HashMap<>();
+	private final Map<String, Function<Map<String, RosettaValue>, RType>> typeMap = new HashMap<>();
 
 	public final String INT_NAME = "int";
 	public final RTypeFunction INT_FUNCTION = new RTypeFunction(DottedPath.splitOnDots(RosettaScopeProvider.LIB_NAMESPACE), INT_NAME) {
@@ -55,11 +55,10 @@ public class RBuiltinTypeService {
 		}
 		@Override
 		public Optional<LinkedHashMap<String, RosettaValue>> reverse(RType type) {
-			if (!(type instanceof RNumberType)) {
+			if (!(type instanceof RNumberType nt)) {
 				return Optional.empty();
 			}
-			RNumberType nt = (RNumberType)type;
-			if (!nt.isInteger() || nt.getScale().isPresent()) {
+            if (!nt.isInteger() || nt.getScale().isPresent()) {
 				return Optional.empty();
 			}
 			Map<String, RosettaValue> oldArgs = nt.getArguments();
@@ -108,13 +107,8 @@ public class RBuiltinTypeService {
 	public final RMetaAnnotatedType ZONED_DATE_TIME_WITH_NO_META = RMetaAnnotatedType.withNoMeta(ZONED_DATE_TIME);
 	
 	public RBuiltinTypeService() {
-		register("number", (m) -> RNumberType.from(m));
-		register("string", (m) -> RStringType.from(m));
-		
-		//TODO: can't get rid of these until Translate Generator stops using ExpanedTypes
-		register("productType", (m) -> UNCONSTRAINED_STRING);
-		register("eventType", (m) -> UNCONSTRAINED_STRING);
-		register("calculation", (m) -> UNCONSTRAINED_STRING);
+		register("number", RNumberType::from);
+		register("string", RStringType::from);
 		register("int", (m) -> UNCONSTRAINED_INT);
 	}
 	

@@ -12,8 +12,6 @@ import com.regnosys.rosetta.rosetta.RosettaAttributeReference;
 import com.regnosys.rosetta.rosetta.RosettaEnumValueReference;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaExternalClass;
-import com.regnosys.rosetta.rosetta.RosettaExternalEnum;
-import com.regnosys.rosetta.rosetta.RosettaExternalEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
@@ -34,7 +32,6 @@ import com.regnosys.rosetta.rosetta.simple.AnnotationPath;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Condition;
-import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch;
 import com.regnosys.rosetta.rosetta.simple.Operation;
@@ -238,16 +235,8 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 				return IScope.NULLSCOPE;
 			} else if (reference.equals(ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__ATTRIBUTE_REF)) {
 				if (context instanceof RosettaExternalRegularAttribute) {
-					var classRef = ((RosettaExternalClass)context.eContainer()).getTypeRef();
-					if (classRef instanceof Data data)
-						return Scopes.scopeFor(Iterables.filter(Iterables.transform(rObjectFactory.buildRDataType(data).getAllAttributes(), RAttribute::getEObject), Objects::nonNull));
-				}
-				return IScope.NULLSCOPE;
-			} else if (reference.equals(ROSETTA_EXTERNAL_ENUM_VALUE__ENUM_REF)) {
-				if (context instanceof RosettaExternalEnumValue) {
-					var typeRef = ((RosettaExternalEnum)context.eContainer()).getTypeRef();
-					if (typeRef instanceof RosettaEnumeration enumRef)
-						return Scopes.scopeFor(rObjectFactory.buildREnumType(enumRef).getAllEnumValues());
+					var data = ((RosettaExternalClass) context.eContainer()).getData();
+					return Scopes.scopeFor(Iterables.filter(Iterables.transform(rObjectFactory.buildRDataType(data).getAllAttributes(), RAttribute::getEObject), Objects::nonNull));
 				}
 				return IScope.NULLSCOPE;
 			} else if (reference.equals(ANNOTATION_REF__ATTRIBUTE)) {
@@ -261,9 +250,9 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 					return Scopes.scopeFor(functionExtensions.getInputs(fd));
 				}
 				return IScope.NULLSCOPE;
-			} else if (reference.equals(ROSETTA_EXTERNAL_RULE_SOURCE__SUPER_SOURCES)) {
-				return filteredScope(defaultScope(context, reference), it -> it.getEClass().equals(ROSETTA_EXTERNAL_RULE_SOURCE));
-			} else if (reference.equals(SWITCH_CASE_GUARD__REFERENCE_GUARD)) {
+				} else if (reference.equals(ROSETTA_EXTERNAL_RULE_SOURCE__SUPER_SOURCE)) {
+					return filteredScope(defaultScope(context, reference), it -> it.getEClass().equals(ROSETTA_EXTERNAL_RULE_SOURCE));
+				} else if (reference.equals(SWITCH_CASE_GUARD__REFERENCE_GUARD)) {
 				if (context instanceof SwitchCaseGuard guard) {
 					var argumentType = typeSystem.stripFromTypeAliases(typeProvider.getRMetaAnnotatedType(guard.getCase().getSwitchOperation().getArgument()).getRType());
 					if (argumentType instanceof REnumType argEnumType) {

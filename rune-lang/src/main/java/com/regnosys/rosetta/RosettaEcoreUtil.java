@@ -5,7 +5,6 @@ import jakarta.inject.Inject;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.rosetta.RosettaRecordType;
-import com.regnosys.rosetta.rosetta.RosettaSynonym;
 import com.regnosys.rosetta.rosetta.expression.ChoiceOperation;
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
@@ -40,13 +39,10 @@ import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 
 import java.util.function.Predicate;
 import com.regnosys.rosetta.types.RMetaAttribute;
-import org.eclipse.xtext.EcoreUtil2;
 
 import com.google.common.collect.Iterables;
-import com.regnosys.rosetta.rosetta.ExternalAnnotationSource;
 import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaExternalClass;
-import com.regnosys.rosetta.rosetta.RosettaExternalSynonymSource;
 import java.util.stream.Collectors;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
 
@@ -185,7 +181,7 @@ public class RosettaEcoreUtil {
 		return null;
 	}
 	public List<EObject> getParentsOfExternalType(RosettaExternalClass externalType) {
-		ExternalAnnotationSource source = EcoreUtil2.getContainerOfType(externalType, ExternalAnnotationSource.class);
+		RosettaExternalRuleSource source = externalType.getSource();
 		if (source == null) {
 			return Collections.emptyList();
 		}
@@ -200,21 +196,19 @@ public class RosettaEcoreUtil {
 			}
 		}
 		
-		List<ExternalAnnotationSource> superSources = getSuperSources(source);
-		if (superSources.isEmpty()) {
+		RosettaExternalRuleSource superSource = source.getSuperSource();
+		if (superSource == null) {
 			parents.add(type);
 		} else {
-			Set<ExternalAnnotationSource> visitedSources = new HashSet<>();
+			Set<RosettaExternalRuleSource> visitedSources = new HashSet<>();
 			visitedSources.add(source);
 			Data stop = superTypeInSource == null ? null : superTypeInSource.getData();
-			superSources.forEach(it ->
-				collectParentsOfTypeInSource(parents, type, stop, it, visitedSources)
-			);
+			collectParentsOfTypeInSource(parents, type, stop, superSource, visitedSources);
 		}
 				
 		return new ArrayList<>(parents);
 	}
-	private void collectParentsOfTypeInSource(Set<EObject> parents, Data type, Data stop, ExternalAnnotationSource currentSource, Set<ExternalAnnotationSource> visitedSources) {
+	private void collectParentsOfTypeInSource(Set<EObject> parents, Data type, Data stop, RosettaExternalRuleSource currentSource, Set<RosettaExternalRuleSource> visitedSources) {
 		if (!visitedSources.add(currentSource)) {
 			return;
 		}
@@ -223,8 +217,8 @@ public class RosettaEcoreUtil {
 		if (superTypeInSource != null) {
 			parents.add(superTypeInSource);
 		}
-		List<ExternalAnnotationSource> superSources = getSuperSources(currentSource);
-		if (superSources.isEmpty()) {
+		RosettaExternalRuleSource superSource = currentSource.getSuperSource();
+		if (superSource == null) {
 			parents.add(type);
 		} else {
 			Data newStop;
@@ -233,12 +227,10 @@ public class RosettaEcoreUtil {
 			} else {
 				newStop = stop;
 			}
-			superSources.forEach(it ->
-				collectParentsOfTypeInSource(parents, type, newStop, it, visitedSources)
-			);
+			collectParentsOfTypeInSource(parents, type, newStop, superSource, visitedSources);
 		}
 	}
-	private RosettaExternalClass findSuperTypeInSource(Data type, Data stop, ExternalAnnotationSource source) {
+	private RosettaExternalClass findSuperTypeInSource(Data type, Data stop, RosettaExternalRuleSource source) {
 		Set<Data> visitedTypes = new HashSet<>();
 		Data current = type;
 		
@@ -251,29 +243,6 @@ public class RosettaEcoreUtil {
 			current = current.getSuperType();
 		}
 		return null;
-	}
-	private List<ExternalAnnotationSource> getSuperSources(ExternalAnnotationSource source) {
-		if (source instanceof RosettaExternalSynonymSource) {
-			return ((RosettaExternalSynonymSource) source).getSuperSources().stream()
-					.filter(s -> s instanceof ExternalAnnotationSource)
-					.map(s -> (ExternalAnnotationSource) s)
-					.toList();
-		} else if (source instanceof RosettaExternalRuleSource) {
-			return ((RosettaExternalRuleSource) source).getSuperSources();
-		} else {
-			return Collections.emptyList();
-		}
-	}
-	
-	
-	public Set<RosettaSynonym> getAllSynonyms(RosettaSynonym s) {
-		return doGetSynonyms(s, new LinkedHashSet<>());
-	}
-		
-	private Set<RosettaSynonym> doGetSynonyms(RosettaSynonym s, Set<RosettaSynonym> seenSynonyms) {
-		if(s != null && seenSynonyms.add(s)) 
-			doGetSynonyms(s, seenSynonyms);
-		return seenSynonyms;
 	}
 	
 	@Deprecated
@@ -316,10 +285,6 @@ public class RosettaEcoreUtil {
 	@Deprecated
 	public boolean hasReferenceAnnotation(Annotated it) {
 		return metaAttributeExists(it, attr -> "reference".equals(attr.getName()));
-	}
-	@Deprecated
-	public boolean hasCalculationAnnotation(Annotated it) {
-		return allAnnotations(it, ann -> "calculation".equals(ann.getName())).iterator().hasNext();
 	}
 	@Deprecated
 	private Iterable<AnnotationRef> allAnnotations(Annotated withAnnotations, Predicate<Annotation> filter) {

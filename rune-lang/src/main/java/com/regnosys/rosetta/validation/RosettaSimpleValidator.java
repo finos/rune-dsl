@@ -13,7 +13,6 @@ import com.regnosys.rosetta.types.*;
 import com.regnosys.rosetta.types.builtin.RBasicType;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 import com.regnosys.rosetta.types.builtin.RRecordType;
-import com.regnosys.rosetta.utils.ExpressionHelper;
 import com.regnosys.rosetta.utils.ImplicitVariableUtil;
 import com.regnosys.rosetta.utils.ImportManagementService;
 import com.regnosys.rosetta.utils.RosettaConfigExtension;
@@ -24,23 +23,17 @@ import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.impl.EClassImpl;
 import org.eclipse.xtext.EcoreUtil2;
-import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.resource.IEObjectDescription;
-import org.eclipse.xtext.resource.impl.ResourceDescriptionsProvider;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 import org.eclipse.xtext.xbase.lib.Conversions;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
-import org.eclipse.xtext.xbase.lib.StringExtensions;
 
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * Do not write any more validators in here for the following reasons:
@@ -56,12 +49,6 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
 
     @Inject
     private RosettaTypeProvider rosettaTypeProvider;
-
-    @Inject
-    private IQualifiedNameProvider qualifiedNameProvider;
-
-    @Inject
-    private ResourceDescriptionsProvider resourceDescriptionsProvider;
 
     @Inject
     private RosettaFunctionExtensions rosettaFunctionExtensions;
@@ -320,44 +307,13 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
     }
 
     @Check
-    public void checkAnnotationSource(ExternalAnnotationSource source) {
+    public void checkAnnotationSource(RosettaExternalRuleSource source) {
         Set<RosettaType> visited = new HashSet<>();
-        for (RosettaExternalRef t : source.getExternalRefs()) {
-            if (!visited.add(t.getTypeRef())) {
-                error("Duplicate type `" + t.getTypeRef().getName() + "`.", t, null);
-            }
-        }
-    }
-
-    @Check
-    public void checkSynonymSource(RosettaExternalSynonymSource source) {
         for (RosettaExternalClass t : source.getExternalClasses()) {
-            for (RosettaExternalRegularAttribute attr : t.getRegularAttributes()) {
-                attr.getExternalRuleReferences().forEach(it ->
-                        error("You may not define rule references in a synonym source.", it, null)
-                );
+            if (!visited.add(t.getData())) {
+                error("Duplicate type `" + t.getData().getName() + "`.", t, null);
             }
         }
-    }
-
-    @Check
-    public void checkRuleSource(RosettaExternalRuleSource source) {
-        if (source.getSuperSources().size() > 1) {
-            error("A rule source may not extend more than one other rule source.", source,
-                    RosettaPackage.Literals.ROSETTA_EXTERNAL_RULE_SOURCE__SUPER_SOURCES, 1);
-        }
-        for (RosettaExternalClass t : source.getExternalClasses()) {
-            t.getExternalClassSynonyms().forEach(it ->
-                    error("You may not define synonyms in a rule source.", it, null)
-            );
-            for (RosettaExternalRegularAttribute attr : t.getRegularAttributes()) {
-                attr.getExternalSynonyms().forEach(it ->
-                        error("You may not define synonyms in a rule source.", it, null)
-                );
-            }
-        }
-        errorKeyword("A rule source cannot define annotations for enums.", source,
-                grammarAccess.getExternalAnnotationSourceAccess().getEnumsKeyword_2_0());
     }
 
     @Check
@@ -445,201 +401,6 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         if (sameNamedElement != null) {
             error("Duplicate name.", param, null);
         }
-    }
-
-    @Check
-    public void checkMappingSetToCase(RosettaMapping element) {
-        // Only one instance is allowed where set != null and when == null
-        long defaultSetCount = element.getInstances().stream()
-                .filter(inst -> inst.getSet() != null && inst.getWhen() == null)
-                .count();
-        if (defaultSetCount > 1) {
-            error("Only one set to with no when clause allowed.", element, RosettaPackage.Literals.ROSETTA_MAPPING__INSTANCES);
-        }
-
-        // If exactly one such instance exists, it must be the last instance
-        if (defaultSetCount == 1) {
-            RosettaMappingInstance defaultInstance = element.getInstances().stream()
-                    .filter(inst -> inst.getSet() != null && inst.getWhen() == null)
-                    .findFirst().orElse(null);
-            RosettaMappingInstance lastInstance = element.getInstances().isEmpty() ? null : element.getInstances().get(element.getInstances().size() - 1);
-            if (defaultInstance != lastInstance) {
-                error("Set to without when case must be ordered last.", element, RosettaPackage.Literals.ROSETTA_MAPPING__INSTANCES);
-            }
-        }
-
-        RosettaType type = getContainerType(element);
-        if (type != null) {
-            // If container type is a Data, constant set is invalid
-            boolean anySetConstants = element.getInstances().stream().anyMatch(inst -> inst.getSet() != null);
-            if (type instanceof Data && anySetConstants) {
-                error("Set to constant type does not match type of field.", element, RosettaPackage.Literals.ROSETTA_MAPPING__INSTANCES);
-            } else if (type instanceof RosettaEnumeration) {
-                // For enum types, ensure set is an enum value reference of the same enum
-                for (RosettaMappingInstance inst : element.getInstances()) {
-                    if (inst.getSet() != null) {
-                        RosettaMapTestExpression setExpr = inst.getSet();
-                        if (!(setExpr instanceof RosettaEnumValueReference)) {
-                            error("Set to constant type does not match type of field.", element, RosettaPackage.Literals.ROSETTA_MAPPING__INSTANCES);
-                        } else {
-                            RosettaEnumValueReference setEnum = (RosettaEnumValueReference) setExpr;
-                            String containerEnumName = ((RosettaEnumeration) type).getName();
-                            String setEnumName = setEnum.getEnumeration().getName();
-                            if (!Objects.equals(containerEnumName, setEnumName)) {
-                                error("Set to constant type does not match type of field.", element, RosettaPackage.Literals.ROSETTA_MAPPING__INSTANCES);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public RosettaType getContainerType(RosettaMapping element) {
-        EObject container = element.eContainer().eContainer().eContainer();
-        if (container instanceof RosettaExternalRegularAttribute attrContainer) {
-            RosettaFeature attributeRef = attrContainer.getAttributeRef();
-            if (attributeRef instanceof RosettaTyped typed) {
-                return typed.getTypeCall().getType();
-            }
-        } else if (container instanceof RosettaTyped typed) {
-            return typed.getTypeCall().getType();
-        }
-        return null;
-    }
-
-    @Check
-    public void checkMappingDefaultCase(RosettaMapping element) {
-        long defaultCount = element.getInstances().stream().filter(RosettaMappingInstance::isDefault).count();
-        if (defaultCount > 1) {
-            error("Only one default case allowed.", element, RosettaPackage.Literals.ROSETTA_MAPPING__INSTANCES);
-        }
-        if (defaultCount == 1) {
-            RosettaMappingInstance defaultInstance = element.getInstances().stream().filter(RosettaMappingInstance::isDefault).findFirst().orElse(null);
-            RosettaMappingInstance lastInstance = element.getInstances().isEmpty() ? null : element.getInstances().get(element.getInstances().size() - 1);
-            if (defaultInstance != lastInstance) {
-                error("Default case must be ordered last.", element, RosettaPackage.Literals.ROSETTA_MAPPING__INSTANCES);
-            }
-        }
-    }
-
-    // CONTINUE MIGRATION FROM HERE
-    @Check
-    public void checkMergeSynonymAttributeCardinality(Attribute attribute) {
-        for (RosettaSynonym syn : attribute.getSynonyms()) {
-            boolean multi = attribute.getCard().isIsMany();
-            RosettaSynonymBody body = syn.getBody();
-            RosettaMergeSynonymValue merge = body == null ? null : body.getMerge();
-            if (merge != null && !multi) {
-                error("Merge synonym can only be specified on an attribute with multiple cardinality.",
-                        syn.getBody(), RosettaPackage.Literals.ROSETTA_SYNONYM_BODY__MERGE);
-            }
-        }
-    }
-
-    @Check
-    public void checkMergeSynonymAttributeCardinality(RosettaExternalRegularAttribute attribute) {
-        RosettaFeature att = attribute.getAttributeRef();
-        if (att instanceof Attribute attr) {
-            for (RosettaExternalSynonym syn : attribute.getExternalSynonyms()) {
-                boolean multi = attr.getCard().isIsMany();
-                RosettaSynonymBody body = syn.getBody();
-                RosettaMergeSynonymValue merge = body == null ? null : body.getMerge();
-                if (merge != null && !multi) {
-                    error("Merge synonym can only be specified on an attribute with multiple cardinality.",
-                            syn.getBody(), RosettaPackage.Literals.ROSETTA_SYNONYM_BODY__MERGE);
-                }
-            }
-        }
-    }
-
-    @Check
-    public void checkPatternAndFormat(RosettaExternalRegularAttribute attribute) {
-        boolean isDateTime = isDateTime(rosettaTypeProvider
-                .getRTypeOfFeature(attribute.getAttributeRef(), attribute).getRType());
-        if (!isDateTime) {
-            for (RosettaExternalSynonym s : attribute.getExternalSynonyms()) {
-                checkFormatNull(s.getBody());
-                checkPatternValid(s.getBody());
-            }
-        } else {
-            for (RosettaExternalSynonym s : attribute.getExternalSynonyms()) {
-                checkFormatValid(s.getBody());
-                checkPatternNull(s.getBody());
-            }
-        }
-    }
-
-    @Check
-    public void checkPatternAndFormat(Attribute attribute) {
-        boolean isDateTime = isDateTime(rosettaTypeProvider.getRTypeOfSymbol(attribute).getRType());
-        if (!isDateTime) {
-            for (RosettaSynonym s : attribute.getSynonyms()) {
-                checkFormatNull(s.getBody());
-                checkPatternValid(s.getBody());
-            }
-        } else {
-            for (RosettaSynonym s : attribute.getSynonyms()) {
-                checkFormatValid(s.getBody());
-                checkPatternNull(s.getBody());
-            }
-        }
-    }
-
-    public void checkFormatNull(RosettaSynonymBody body) {
-        if (body.getFormat() != null) {
-            error("Format can only be applied to date/time types", body, RosettaPackage.Literals.ROSETTA_SYNONYM_BODY__FORMAT);
-        }
-    }
-
-    public DateTimeFormatter checkFormatValid(RosettaSynonymBody body) {
-        if (body == null || body.getFormat() == null) return null;
-        try {
-            return DateTimeFormatter.ofPattern(body.getFormat());
-        } catch (IllegalArgumentException e) {
-            error("Format must be a valid date/time format - " + e.getMessage(),
-                    body, RosettaPackage.Literals.ROSETTA_SYNONYM_BODY__FORMAT);
-            return null;
-        }
-    }
-
-    public void checkPatternNull(RosettaSynonymBody body) {
-        if (body.getPatternMatch() != null) {
-            error("Pattern cannot be applied to date/time types",
-                    body, RosettaPackage.Literals.ROSETTA_SYNONYM_BODY__PATTERN_MATCH);
-        }
-    }
-
-    public Pattern checkPatternValid(RosettaSynonymBody body) {
-        if (body == null || body.getPatternMatch() == null) return null;
-        try {
-            return Pattern.compile(body.getPatternMatch());
-        } catch (PatternSyntaxException e) {
-            error("Pattern to match must be a valid regular expression - " + getPatternSyntaxErrorMessage(e),
-                    body, RosettaPackage.Literals.ROSETTA_SYNONYM_BODY__PATTERN_MATCH);
-            return null;
-        }
-    }
-
-    private boolean isDateTime(RType rType) {
-        String name = rType == null ? null : rType.getName();
-        return java.util.Set.of("date", "time", "zonedDateTime").contains(name);
-    }
-
-    @Check
-    public void checkPatternOnEnum(RosettaEnumSynonym synonym) {
-        if (synonym.getPatternMatch() != null) {
-            try {
-                Pattern.compile(synonym.getPatternMatch());
-            } catch (PatternSyntaxException e) {
-                error("Pattern to match must be a valid regular expression - " + getPatternSyntaxErrorMessage(e),
-                        synonym, RosettaPackage.Literals.ROSETTA_ENUM_SYNONYM__PATTERN_MATCH);
-            }
-        }
-    }
-
-    private String getPatternSyntaxErrorMessage(PatternSyntaxException e) {
-        return e.getMessage().replace(System.lineSeparator(), "\n");
     }
 
     @Check
@@ -734,33 +495,6 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         if (ele.getPath() == null && ele.getAssignRoot() instanceof ShortcutDeclaration) {
             error("An alias can not be assigned. Assign target must be an attribute.",
                     ele, SimplePackage.Literals.OPERATION__ASSIGN_ROOT);
-        }
-    }
-
-    // Helper type to avoid xbase Pair
-    private static record InvalidPathChar(char ch, boolean atSegmentStart) {}
-
-    @Check
-    public void checkSynonymMapPath(RosettaMapPathValue ele) {
-        if (!StringExtensions.isNullOrEmpty(ele.getPath())) {
-            InvalidPathChar invalid = checkPathChars(ele.getPath());
-            if (invalid != null) {
-                String msg = "Character '" + invalid.ch + "' is not allowed "
-                             + (invalid.atSegmentStart ? "as first symbol in a path segment." : "in paths. Use '->' to separate path segments.");
-                error(msg, ele, RosettaPackage.Literals.ROSETTA_MAP_PATH_VALUE__PATH);
-            }
-        }
-    }
-
-    @Check
-    public void checkSynonyValuePath(RosettaSynonymValueBase ele) {
-        if (!StringExtensions.isNullOrEmpty(ele.getPath())) {
-            InvalidPathChar invalid = checkPathChars(ele.getPath());
-            if (invalid != null) {
-                String msg = "Character '" + invalid.ch + "' is not allowed "
-                             + (invalid.atSegmentStart ? "as first symbol in a path segment." : "in paths. Use '->' to separate path segments.");
-                error(msg, ele, RosettaPackage.Literals.ROSETTA_SYNONYM_VALUE_BASE__PATH);
-            }
         }
     }
 
@@ -1007,23 +741,6 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         if (!Objects.equals(outType, builtinTypeService.BOOLEAN)) {
             error("Qualification functions must output a boolean.", func, SimplePackage.Literals.FUNCTION__OUTPUT);
         }
-    }
-
-    private InvalidPathChar checkPathChars(String str) {
-        String[] segments = str.split("->");
-        for (String segment : segments) {
-            if (!segment.isEmpty()) {
-                if (!Character.isJavaIdentifierStart(segment.charAt(0))) {
-                    return new InvalidPathChar(segment.charAt(0), true);
-                }
-                for (char c : segment.toCharArray()) {
-                    if (!Character.isJavaIdentifierPart(c)) {
-                        return new InvalidPathChar(c, false);
-                    }
-                }
-            }
-        }
-        return null;
     }
 
     @Check

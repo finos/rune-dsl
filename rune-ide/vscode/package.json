@@ -102,7 +102,6 @@
           "basicType": ["entity.name.type.builtin.basic-type.rosetta"],
           "recordType": ["entity.name.type.builtin.record-type.rosetta"],
           "qualifiedType": ["entity.name.type.builtin.qualified-type.rosetta"],
-          "calculationType": ["entity.name.type.builtin.calculation-type.rosetta"],
           "documentCorpus": ["entity.name.document.corpus.rosetta"],
           "documentSegment": ["entity.name.document.segment.rosetta"],
           "property": ["variable.other.member.rosetta"],

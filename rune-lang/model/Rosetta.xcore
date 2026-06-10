@@ -4,7 +4,6 @@
 	complianceLevel="8.0", bundleManifest="false", modelPluginID="")
 package com.regnosys.rosetta.rosetta
 
-import com.google.common.collect.Iterables
 import java.util.stream.Collectors
 import com.regnosys.rosetta.rosetta.simple.Annotated
 import com.regnosys.rosetta.rosetta.simple.BuiltinAnnotationWithPath
@@ -105,9 +104,6 @@ class RosettaBasicType extends RosettaRootElement, RosettaBuiltinType, Parametri
 
 class TypeParameter extends RosettaSymbol, RosettaTyped, RosettaDefinable {}
 
-class RosettaSynonymSource extends RosettaRootElement , RosettaNamed {
-}
-
 class RosettaRecordType extends RosettaRootElement, RosettaBuiltinType {
 	contains RosettaRecordFeature[] features
 }
@@ -133,24 +129,20 @@ class RosettaParameter extends RosettaTyped, RosettaSymbol {
 class RosettaTypeAlias extends RosettaRootElement, RosettaTypeWithConditions, RosettaTyped, RosettaDefinable, ParametrizedRosettaType {
 }
 
-
 class RosettaMetaType extends RosettaRootElement, RosettaTypedFeature, RosettaSymbol {
-	
 }
 
 class RosettaEnumeration extends RootElement, RosettaType, RosettaDefinable, References, RosettaSymbol {
 	refers RosettaEnumeration parent
-	contains RosettaSynonym[] synonyms
 	contains RosettaEnumValue[] enumValues opposite enumeration
 }
 
 class RosettaEnumValue extends RosettaSymbol, RosettaDefinable, RosettaFeature, References, Annotated, SwitchCaseTarget {
 	String display
-	contains RosettaEnumSynonym[] enumSynonyms
 	container RosettaEnumeration enumeration opposite enumValues
 }
 
-class RosettaEnumValueReference extends RosettaMapTestExpression {
+class RosettaEnumValueReference {
 	refers RosettaEnumeration enumeration
 	refers RosettaEnumValue value
 }
@@ -235,63 +227,6 @@ class RosettaCardinality {
 	}
 }
 
-
-/**********************************************************************
- * Synonyms
- */
-
-abstract class RosettaSynonymBase {
-	refers RosettaSynonymSource[] sources
-}
-
-class RosettaSynonymValueBase {
-	String name
-	RosettaSynonymRef refType
-	int value
-	String path
-	int maps
-}
-
-class RosettaClassSynonym extends RosettaSynonymBase {
-	contains RosettaSynonymValueBase value
-	contains RosettaSynonymValueBase metaValue
-}
-
-class RosettaSynonym extends RosettaSynonymBase {
-	contains RosettaSynonymBody body
-}
-
-class RosettaSynonymBody {
-	contains RosettaSynonymValueBase[] values
-	contains RosettaMapping mappingLogic
-	String[] hints
-	contains RosettaMergeSynonymValue merge
-	String[] metaValues
-	String mapper
-	String format
-	String patternMatch
-	String patternReplace
-	boolean removeHtml
-}
-
-class RosettaMergeSynonymValue {
-	String name
-	String excludePath
-}
-
-class RosettaEnumSynonym extends RosettaSynonymBase, RosettaDefinable {
-	String synonymValue
-	String patternMatch
-	String patternReplace
-	boolean removeHtml
-}
-
-enum RosettaSynonymRef {
-	tag
-	componentID = 1
-}
-
-
 /**********************************************************************
  * docReferences
  */
@@ -333,37 +268,6 @@ class RosettaCorpus extends RosettaRootElement, RosettaNamed, RosettaDefinable {
 class RosettaSegment extends RosettaRootElement, RosettaNamed {
 }
 
-/**********************************************************************
- * Mappings
- */
-
-interface RosettaMapTest {}
-
-interface RosettaMapTestExpression extends RosettaMapTest {}
-
-class RosettaMapPathValue extends RosettaMapTestExpression {
-	String path
-}
-
-class RosettaMapTestExistsExpression extends RosettaMapTestExpression {
-	contains RosettaMapTestExpression argument
-}
-
-class RosettaMapTestAbsentExpression extends RosettaMapTestExpression {
-	contains RosettaMapTestExpression argument
-}
-
-class RosettaMapTestEqualityOperation extends RosettaMapTestExpression {
-	contains RosettaMapTestExpression left
-	contains RosettaMapTestExpression right
-	String operator
-}
-
-class RosettaMapTestFunc extends RosettaMapTestExpression {
-	refers RosettaCallableWithArgs func
-	contains RosettaMapPathValue predicatePath
-}
-
 interface RosettaAttributeReferenceSegment {}
 
 class RosettaDataReference extends RosettaAttributeReferenceSegment {
@@ -373,28 +277,6 @@ class RosettaDataReference extends RosettaAttributeReferenceSegment {
 class RosettaAttributeReference extends RosettaAttributeReferenceSegment {
 	contains RosettaAttributeReferenceSegment receiver
 	refers Attribute attribute
-}
-
-class RosettaMapping {
-	contains RosettaMappingInstance[] instances
-}
-
-class RosettaMappingInstance {
-	contains RosettaMapTestExpression ^set
-	contains RosettaMappingPathTests when
-	boolean ^default
-}
-
-class RosettaMappingPathTests {
-	contains RosettaMapTest[] tests
-}
-
-class RosettaMapPath extends RosettaMapTest {
-	contains RosettaMapPathValue path
-}
-
-class RosettaMapRosettaPath extends RosettaMapTest {
-	contains RosettaAttributeReferenceSegment path
 }
 
 /**********************************************************************
@@ -413,41 +295,18 @@ enum RosettaQualifiableType {
 }
 
 /*****************************************
- * Translate external synonym support
+ * External rule support
  *****************************************/
 
-abstract class ExternalAnnotationSource extends RosettaRootElement, RosettaNamed {
-	contains RosettaExternalClass[] externalClasses
-	contains RosettaExternalEnum[] externalEnums
-	
-	// refers ExternalAnnotationSource[] superSources
-	
-	op RosettaExternalRef[] getExternalRefs() {
-		Iterables.concat(externalClasses, externalEnums).toEList
-	}
+class RosettaExternalRuleSource extends RosettaRootElement, RosettaNamed {
+	refers RosettaExternalRuleSource superSource
+	contains RosettaExternalClass[] externalClasses opposite source
 }
 
-abstract class RosettaExternalRef {
-	op RosettaType getTypeRef()
-}
-
-class RosettaExternalClass extends RosettaExternalRef {
+class RosettaExternalClass {
+    container RosettaExternalRuleSource source opposite externalClasses
 	refers Data data
-	contains RosettaExternalClassSynonym[] externalClassSynonyms
 	contains RosettaExternalRegularAttribute[] regularAttributes
-	
-	op RosettaType getTypeRef() {
-		data
-	}
-}
-
-class RosettaExternalEnum extends RosettaExternalRef {
-	refers RosettaEnumeration enumeration
-	contains RosettaExternalEnumValue[] regularValues
-	
-	op RosettaType getTypeRef() {
-		enumeration
-	}
 }
 
 enum ExternalValueOperator {
@@ -458,41 +317,7 @@ enum ExternalValueOperator {
 class RosettaExternalRegularAttribute {
 	ExternalValueOperator operator
 	refers RosettaFeature attributeRef
-	contains RosettaExternalSynonym[] externalSynonyms
 	contains RuleReferenceAnnotation[] externalRuleReferences
-}
-
-class RosettaExternalEnumValue {
-	ExternalValueOperator operator
-	refers RosettaEnumValue enumRef
-	contains RosettaEnumSynonym[] externalEnumSynonyms
-}
-
-class RosettaExternalClassSynonym {
-	contains RosettaSynonymValueBase value
-	contains RosettaSynonymValueBase metaValue
-}
-
-class RosettaExternalSynonym {
-	contains RosettaSynonymBody body
-}
-
-class RosettaExternalSynonymSource extends ExternalAnnotationSource, RosettaSynonymSource {
-	// @Compat: move this one up to `ExternalAnnotationSource` once `RosettaSynonymSource` is removed
-	refers RosettaSynonymSource[] superSources
-	
-	op RosettaSynonymSource[] getSuperSynonymSources(){
-		return superSources.filter(RosettaSynonymSource).toEList
-	}
-}
-
-class RosettaExternalRuleSource extends ExternalAnnotationSource {
-	// @Compat: move this one up to `ExternalAnnotationSource` once `RosettaSynonymSource` is removed
-	refers ExternalAnnotationSource[] superSources
-	
-	op RosettaExternalRuleSource[] getSuperRuleSources(){
-		return superSources.filter(RosettaExternalRuleSource).toEList
-	}
 }
 
 /********************

@@ -79,7 +79,7 @@ public class RuleReferenceService {
         // Optimization: mark types that never call updateState
         // so we can skip traversal in the future.
         boolean calledUpdateState = false;
-        
+
         T currentState = initialState;
         for (RAttribute attr : type.getAllAttributes()) {
             String attrName = attr.getName();
@@ -190,14 +190,8 @@ public class RuleReferenceService {
                 }
             }
 
-            if (source.getSuperRuleSources().isEmpty()) {
-                RulePathMap parentMap = computeRulePathMapInContext(null, type, attribute);
-                parentsInDescendingPriority.add(parentMap);
-            } else {
-                source.getSuperRuleSources().stream()
-                        .map(superSource -> computeRulePathMapInContext(superSource, type, attribute))
-                        .forEach(parentMap -> parentsInDescendingPriority.add(parentMap));
-            }
+            RulePathMap parentMap = computeRulePathMapInContext(source.getSuperSource(), type, attribute);
+            parentsInDescendingPriority.add(parentMap);
         } else {
             // Outside rule source:
             // check if attribute overrides another attribute.
