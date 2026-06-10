@@ -67,6 +67,13 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 				return false
 			])
 		])
+		val hasImpliedKey = choiceType.EObject instanceof Choice && (choiceType.EObject as Choice).buildRChoiceType.hasImpliedKey
+		if (hasImpliedKey) {
+			// `chooseKey` delegates to the `chooseKey` of each nested choice option, so we depend on their utils.
+			choiceType.allAttributes.map[RMetaAnnotatedType.RType].filter(RChoiceType).forEach[
+				dependencies.add(asRDataType.toDeepPathUtilJavaClass)
+			]
+		}
 		dependencies.forEach[classScope.createIdentifier(it.toDependencyInstance, it.simpleName.toFirstLower)]
 		'''
 			public class «javaClass» {
@@ -90,50 +97,83 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 					public «methodBody.expressionType» choose«deepFeature.name.toFirstUpper»(«inputParameter.expressionType» «inputParameter») «methodBody.completeAsReturn»
 					
 				«ENDFOR»
- 			    «IF choiceType.EObject instanceof Choice && (choiceType.EObject as Choice).buildRChoiceType.hasImpliedKey»
+				«IF hasImpliedKey»
 					«val chooseKeyScope = classScope.createMethodScope('chooseKey')»
 					«val keyInputParam = new JavaVariable(chooseKeyScope.createUniqueIdentifier(choiceType.name.toFirstLower), choiceType.toJavaReferenceType)»
 					«val keyMethodBody = chooseKeyToStatement(choiceType, keyInputParam, chooseKeyScope.bodyScope)»
 					public «keyMethodBody.expressionType» chooseKey(«keyInputParam.expressionType» «keyInputParam») «keyMethodBody.completeAsReturn»
-					
+
 				«ENDIF»
 			}
 		'''
 	}
 
-	private def JavaStatementBuilder chooseKeyToStatement(RDataType choiceType, JavaVariable inputParameter, JavaStatementScope scope) {
-		val attrs = choiceType.allAttributes.toList
-		val resultType = typeUtil.STRING
-		var JavaStatementBuilder acc = JavaLiteral.NULL
-		for (a : attrs.reverseView) {
-			val currAcc = acc
-			acc = inputParameter
-					.attributeCall(choiceType.withNoMeta, a, false, a.toMetaJavaType, scope)
-					.declareAsVariable(true, a.name.toFirstLower, scope)
-					.mapExpression[attrVar|
-						attrVar.exists(ExistsModifier.NONE, scope)
+	/**
+	 * Generates the body of {@code chooseKey}, which returns the key of whichever option of the choice is populated.
+	 *
+	 * A choice holds exactly one populated option, so we build a chain of if-then-else expressions: for each option,
+	 * if it is populated then read its key, otherwise fall through to the next option. The chain is built back-to-front,
+	 * so each option wraps the previously-built expression as its {@code else} branch.
+	 */
+	private def JavaStatementBuilder chooseKeyToStatement(RDataType choiceType, JavaVariable choiceParameter, JavaStatementScope scope) {
+		val keyType = typeUtil.STRING
+		val options = choiceType.allAttributes.toList
+		var JavaStatementBuilder elseBranch = JavaLiteral.NULL
+		for (option : options.reverseView) {
+			val nextOptionBranch = elseBranch
+			elseBranch = choiceParameter
+					.attributeCall(choiceType.withNoMeta, option, false, option.toMetaJavaType, scope)
+					.declareAsVariable(true, option.name.toFirstLower, scope)
+					.mapExpression[optionValue |
+						optionValue.exists(ExistsModifier.NONE, scope)
 							.collapseToSingleExpression(scope)
 							.addCoercions(JavaPrimitiveType.BOOLEAN, scope)
-						.mapExpression[
-							val hasAttrMeta = a.RMetaAnnotatedType.hasAttributeMeta
-							val lambdaScope1 = scope.lambdaScope
-							val lp1 = lambdaScope1.createUniqueIdentifier("a")
-							val lambdaScope2 = scope.lambdaScope
-							val lp2 = lambdaScope2.createUniqueIdentifier("a")
-							val lambdaScope3 = scope.lambdaScope
-							val lp3 = lambdaScope3.createUniqueIdentifier("a")
- 						val keyExpr = attrVar.mapExpression[v |
-								if (hasAttrMeta) {
-									JavaExpression.from('''«v».map("getValue", «lp1»->«lp1».getValue()).map("getMeta", «lp2»->«lp2».getMeta()).map("getExternalKey", «lp3»->«lp3».getExternalKey()).get()''', resultType)
-								} else {
-									JavaExpression.from('''«v».map("getMeta", «lp1»->«lp1».getMeta()).map("getExternalKey", «lp2»->«lp2».getExternalKey()).get()''', resultType)
-								}
+							.mapExpression[optionIsPopulated |
+								val keyOfOption = optionValue.mapExpression[keyAccess(option, it, scope)]
+								new JavaIfThenElseBuilder(optionIsPopulated, keyOfOption, nextOptionBranch, typeUtil)
 							]
-							new JavaIfThenElseBuilder(it, keyExpr, currAcc, typeUtil)
-						]
 					]
 		}
-		acc.addCoercions(resultType, scope)
+		elseBranch.addCoercions(keyType, scope)
+	}
+
+	/**
+	 * Builds the expression that reads the key from a single, populated choice option.
+	 * <ul>
+	 *   <li>A leaf option carries {@code [metadata key]} on its type, so we read it straight from the
+	 *       option's metadata ({@code getMeta().getExternalKey()}).</li>
+	 *   <li>A nested choice option has no key of its own, so we delegate to that choice's generated
+	 *       {@code chooseKey(...)}, which in turn recurses into its populated option.</li>
+	 * </ul>
+	 */
+	private def JavaExpression keyAccess(RAttribute option, JavaExpression optionMapper, JavaStatementScope scope) {
+		val optionType = option.RMetaAnnotatedType.RType
+		if (optionType instanceof RChoiceType) {
+			val nestedUtil = optionType.asRDataType.toDeepPathUtilJavaClass
+			val nestedChoice = scope.lambdaScope.createUniqueIdentifier("nestedChoice")
+			return JavaExpression.from(
+				'''«optionMapper».map("chooseKey", «nestedChoice» -> «scope.getIdentifierOrThrow(nestedUtil.toDependencyInstance)».chooseKey(«nestedChoice»)).get()''',
+				typeUtil.STRING)
+		}
+		return leafKeyAccess(optionMapper, option.RMetaAnnotatedType.hasAttributeMeta, scope)
+	}
+
+	/**
+	 * Reads {@code getMeta().getExternalKey()} from a leaf option. When the option additionally carries
+	 * field-level metadata, its value is unwrapped via {@code getValue()} before reading the metadata.
+	 */
+	private def JavaExpression leafKeyAccess(JavaExpression optionMapper, boolean hasFieldMeta, JavaStatementScope scope) {
+		val meta = scope.lambdaScope.createUniqueIdentifier("withMeta")
+		val metaFields = scope.lambdaScope.createUniqueIdentifier("metaFields")
+		if (hasFieldMeta) {
+			val fieldWithMeta = scope.lambdaScope.createUniqueIdentifier("fieldWithMeta")
+			return JavaExpression.from(
+				'''«optionMapper».map("getValue", «fieldWithMeta» -> «fieldWithMeta».getValue()).map("getMeta", «meta» -> «meta».getMeta()).map("getExternalKey", «metaFields» -> «metaFields».getExternalKey()).get()''',
+				typeUtil.STRING)
+		}
+		return JavaExpression.from(
+			'''«optionMapper».map("getMeta", «meta» -> «meta».getMeta()).map("getExternalKey", «metaFields» -> «metaFields».getExternalKey()).get()''',
+			typeUtil.STRING)
 	}
 
 	private def JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeaturesMap, JavaStatementScope scope) {

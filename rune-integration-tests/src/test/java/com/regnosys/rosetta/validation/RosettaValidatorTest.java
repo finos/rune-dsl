@@ -382,6 +382,66 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
+    void testDeepFeatureKeyFailsWhenANestedLeafIsUnkeyed() {
+        var model = modelHelper.parseRosetta("""
+				metaType key string
+
+				type B:
+					[metadata key]
+					field string (1..1)
+
+				type C:
+					field string (1..1)
+
+				type D:
+					[metadata key]
+					field string (1..1)
+
+				choice Inner:
+					B
+					C
+
+				choice A:
+					Inner
+					D
+
+				func MyFunc:
+					inputs:
+						a A (1..1)
+					output:
+						result string (0..1)
+					set result:
+						a ->> key
+				""");
+
+        validationTestHelper.assertError(model, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC,
+                "Couldn't resolve reference to RosettaFeature 'key'."
+        );
+    }
+
+    @Test
+    void testDeepFeatureKeyFailsWhenChoiceIsEmpty() {
+        // An empty choice has no implied key, so `->> key` must not link (the empty choice is itself an error too).
+        var model = modelHelper.parseRosetta("""
+				metaType key string
+
+				choice A:
+
+				func MyFunc:
+					inputs:
+						a A (1..1)
+					output:
+						result string (0..1)
+					set result:
+						a ->> key
+				""");
+
+        validationTestHelper.assertError(model, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC,
+                "Couldn't resolve reference to RosettaFeature 'key'."
+        );
+    }
+
+    @Test
     void testCannotCallFuncWithoutInput() {
         var model = modelHelper.parseRosetta("""
 				func Foo:

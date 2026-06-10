@@ -115,11 +115,11 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 					return createExtendedFeatureScope(featureCall.getReceiver(), typeProvider.getRMetaAnnotatedType(featureCall.getReceiver()));
 				}
 				return IScope.NULLSCOPE;
- 		} else if (reference.equals(ROSETTA_DEEP_FEATURE_CALL__FEATURE)) {
- 			if (context instanceof RosettaDeepFeatureCall deepFeatureCall) {
- 				return createDeepFeatureScope(typeProvider.getRMetaAnnotatedType(deepFeatureCall.getReceiver()).getRType(), deepFeatureCall);
- 			}
- 			return IScope.NULLSCOPE;
+			} else if (reference.equals(ROSETTA_DEEP_FEATURE_CALL__FEATURE)) {
+				if (context instanceof RosettaDeepFeatureCall deepFeatureCall) {
+					return createDeepFeatureScope(typeProvider.getRMetaAnnotatedType(deepFeatureCall.getReceiver()).getRType(), deepFeatureCall);
+				}
+				return IScope.NULLSCOPE;
 			} else if (reference.equals(CHOICE_OPERATION__ATTRIBUTES)) {
 				if (context instanceof ChoiceOperation op) {
 					return createExtendedFeatureScope(op.getArgument(), withNoMeta(typeProvider.getRMetaAnnotatedType(op.getArgument()).getRType()));
@@ -185,12 +185,12 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 					return Scopes.scopeFor(ecoreUtil.allFeaturesExcludingEnumValues(t, context));
 				}
 				return IScope.NULLSCOPE;
- 		} else if (reference.equals(ANNOTATION_DEEP_PATH__ATTRIBUTE)) {
- 			if (context instanceof AnnotationDeepPath adp) {
- 				var t = typeProvider.getRMetaAnnotatedType(adp.getReceiver());
- 				return createDeepFeatureScope(t.getRType(), adp);
- 			}
- 			return IScope.NULLSCOPE;
+			} else if (reference.equals(ANNOTATION_DEEP_PATH__ATTRIBUTE)) {
+				if (context instanceof AnnotationDeepPath adp) {
+					var t = typeProvider.getRMetaAnnotatedType(adp.getReceiver());
+					return createDeepFeatureScope(t.getRType(), adp);
+				}
+				return IScope.NULLSCOPE;
 			} else if (reference.equals(ROSETTA_SYMBOL_REFERENCE__SYMBOL)) {
 				if (context instanceof Operation op) {
 					var function = op.getFunction();
@@ -432,16 +432,12 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 
 
 	private IScope createDeepFeatureScope(RType receiverType, EObject context) {
-        if (receiverType instanceof RChoiceType choiceType) {
-			IScope attributeScope = IScope.NULLSCOPE;
+		if (receiverType instanceof RChoiceType choiceType) {
 			RDataType dataView = choiceType.asRDataType();
-			if (dataView != null) {
-				attributeScope = Scopes.scopeFor(Iterables.filter(Iterables.transform(deepFeatureCallUtil.findDeepFeatures(dataView), RAttribute::getEObject), Objects::nonNull));
-			}
+			IScope attributeScope = Scopes.scopeFor(Iterables.filter(Iterables.transform(deepFeatureCallUtil.findDeepFeatures(dataView), RAttribute::getEObject), Objects::nonNull));
 			if (choiceType.hasImpliedKey()) {
-				List<RosettaFeature> keyMeta = ecoreUtil.getMetaDescriptions(
-						java.util.List.of(new RMetaAttribute("key", null)),
-						context);
+				// Surface the `key` meta-feature so `someChoice ->> key` links when every leaf option is keyed.
+				List<RosettaFeature> keyMeta = ecoreUtil.getMetaDescriptions(List.of(new RMetaAttribute("key", null)), context);
 				return Scopes.scopeFor(keyMeta, attributeScope);
 			}
 			return attributeScope;
