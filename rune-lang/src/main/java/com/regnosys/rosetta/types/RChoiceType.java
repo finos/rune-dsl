@@ -1,17 +1,16 @@
 package com.regnosys.rosetta.types;
 
+import com.google.common.collect.Streams;
+import com.regnosys.rosetta.rosetta.simple.Choice;
+import com.regnosys.rosetta.utils.ModelIdProvider;
+import com.rosetta.model.lib.ModelSymbolId;
+
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import com.google.common.collect.Streams;
-import com.regnosys.rosetta.rosetta.simple.Choice;
-import com.regnosys.rosetta.utils.ModelIdProvider;
-import com.rosetta.model.lib.ModelSymbolId;
 
 public class RChoiceType extends RType implements RObject {
 	private final Choice choice;
@@ -64,6 +63,38 @@ public class RChoiceType extends RType implements RObject {
 		return ownOptions;
 	}
 	
+	/**
+	 * Returns true if every leaf option type of this choice (recursively through nested choices) has a [metadata key].
+	 * Returns false for an empty choice, an unresolved option, or any unkeyed leaf.
+	 */
+	public boolean hasImpliedKey() {
+		return doHasImpliedKey(new HashSet<>());
+	}
+	private boolean doHasImpliedKey(Set<RChoiceType> visited) {
+		if (!visited.add(this)) {
+			return false; // cycle guard
+		}
+		List<RChoiceOption> options = getOwnOptions();
+		if (options.isEmpty()) {
+			return false;
+		}
+		for (RChoiceOption option : options) {
+			RType optionRType = option.getType().getRType();
+			if (optionRType instanceof RChoiceType) {
+				if (!((RChoiceType) optionRType).doHasImpliedKey(visited)) {
+					return false;
+				}
+			} else if (optionRType instanceof RDataType) {
+				if (!((RDataType) optionRType).hasMetaAttribute("key")) {
+					return false;
+				}
+			} else {
+				return false; // unresolved or unknown type
+			}
+		}
+		return true;
+	}
+
 	/**
 	 * Get a list of all options of this choice type, including all options of its nested choice types.
 	 * 

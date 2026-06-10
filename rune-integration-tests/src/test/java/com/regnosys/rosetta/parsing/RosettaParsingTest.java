@@ -33,6 +33,33 @@ public class RosettaParsingTest {
 	@Inject
 	private RosettaValidationTestHelper validationHelper;
 
+	@Test
+	void testDeepFeatureKeyOnFullyKeyedChoice() {
+		assertNoIssues("""
+			metaType key string
+
+			type B:
+				[metadata key]
+				field string (1..1)
+
+			type C:
+				[metadata key]
+				field string (1..1)
+
+			choice A:
+				B
+				C
+
+			func MyFunc:
+				inputs:
+					a A (1..1)
+				output:
+					result string (0..1)
+				set result:
+					a ->> key
+			""");
+	}
+
     @Test
     void testCanSwitchOverTypeFromAnotherNamespace() {
         var model1 = """
@@ -66,7 +93,7 @@ public class RosettaParsingTest {
 
         modelService.toTestModel(model2, true, model1);
     }
-	
+
 	@Test
 	void testCannotSetEnumAttribute() {
 		assertIssues("""
@@ -83,7 +110,7 @@ public class RosettaParsingTest {
 				ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'VALUE1'.' at 11:16, length 6, on Segment
 				""");
 	}
-	
+
 	@Test
 	void testRuleReferenceAnnotation() {
 		assertNoIssues("""
@@ -110,7 +137,7 @@ public class RosettaParsingTest {
 				"test"
 			""");
 	}
-	
+
 	@Test
 	void testLabelAnnotation() {
 		assertNoIssues("""
@@ -143,7 +170,7 @@ public class RosettaParsingTest {
 				opt2Attribute int (1..1)
 			""");
 	}
-	
+
 	@Test
 	void testCanOverrideAttributeOfParent() {
 		assertNoIssues("""
@@ -154,7 +181,7 @@ public class RosettaParsingTest {
 				override attr number (1..1)
 		""");
 	}
-	
+
 	@Test
 	void testNamespaceDescription() {
 		assertNoIssues("""
@@ -167,7 +194,7 @@ public class RosettaParsingTest {
 			
 		""");
 	}
-	
+
 	@Test
 	void canPassMetadataToFunctions() {
 		assertNoIssues("""
@@ -181,7 +208,7 @@ public class RosettaParsingTest {
 			    set myResult: myInput -> scheme
 		""");
 	}
-	
+
 	@Test
 	void testOnlyExistsInsideFunctionalOperation() {
 		assertNoIssues("""
@@ -199,7 +226,7 @@ public class RosettaParsingTest {
 					then True
 		""");
 	}
-	
+
 	@Test
 	void testMaxCanBeChainedWithThen() {
 		assertNoIssues("""		
@@ -211,7 +238,7 @@ public class RosettaParsingTest {
 					then max
 		""");
 	}
-	
+
 	@Test
 	@Disabled // see issue https://github.com/finos/rune-dsl/issues/524
 	void testPatternLiterals() {
@@ -223,7 +250,7 @@ public class RosettaParsingTest {
              add result: /[a-z]*/
              add result: /\\/\\+/
 	    """);
-	    
+
 		var foo = model.getFunction("Foo");
 		var patterns = foo.getOperations().stream()
 			.map(op -> ((RosettaPatternLiteral) op.getExpression()).getValue().pattern())
@@ -232,7 +259,7 @@ public class RosettaParsingTest {
 		assertEquals("[a-z]*", patterns.get(1));
 		assertEquals("/\\+", patterns.get(2));
 	}
-	
+
 	@Test
 	void testTypeAliases() {
 		assertNoIssues("""
@@ -240,7 +267,7 @@ public class RosettaParsingTest {
 			typeAlias max4String: string(minLength: 1, maxLength: 4)
 		""");
 	}
-	
+
 	@Test
 	void testTypeAliasesWithConditions() {
 		assertNoIssues("""
@@ -254,7 +281,7 @@ public class RosettaParsingTest {
 				condition IsValidCode: Foo(item, domain)
 		""");
 	}
-	
+
 	@Test
 	void testParametrizedBasicTypes() {
 		assertNoIssues("""
@@ -264,7 +291,7 @@ public class RosettaParsingTest {
 			basicType string(minLength int, maxLength int, pattern pattern)
 		""");
 	}
-	
+
 	void externalRuleReferenceParseTest() {
 		assertNoIssues("""
 			type Foo:
@@ -290,7 +317,7 @@ public class RosettaParsingTest {
 			}
 		""");
 	}
-	
+
 	@Test
 	void ambiguousReferenceAllowed() {
 		var model = modelService.toTestModel("""
@@ -311,7 +338,7 @@ public class RosettaParsingTest {
 		assertInstanceOf(RosettaSymbolReference.class, extractBody);
 		assertEquals(aInput, ((RosettaSymbolReference) extractBody).getSymbol());
 	}
-	
+
 	@Test
 	void nameParsingDoesNotConflictWithScientificNotation() {
 		assertNoIssues("""           
@@ -319,7 +346,7 @@ public class RosettaParsingTest {
              e2 int (1..1)
 	    """);
 	}
-	
+
 	@Test
 	void scientificNotationIsNotTooLoose() {
 		assertIssues("""
@@ -331,7 +358,7 @@ public class RosettaParsingTest {
 		"ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Syntax) 'Character a is neither a decimal digit number, decimal point, nor \"e\" notation exponential mark.' at 7:24, length 4, on RosettaNumberLiteral"
 	    );
 	}
-	
+
 	@Test
 	void canParseScientificNotation() {
 		assertNoIssues("""
@@ -344,7 +371,7 @@ public class RosettaParsingTest {
              add result: 0.e0
 	    """);
 	}
-	
+
 	@Test
 	void testImplicitInput() {
 	    var model = modelService.toTestModel("""
@@ -368,16 +395,16 @@ public class RosettaParsingTest {
                        then False
                        else True and F
 	    """, false);
-	    
+
 	    var foo = model.getType("Foo");
 	    Condition c = foo.getConditions().get(0);
 	    assertEquals(1, c.getAnnotations().size());
 	    assertTrue(c.getExpression() instanceof ThenOperation);
 	    assertTrue(((ThenOperation) c.getExpression()).getFunction().getBody() instanceof RosettaExistsExpression);
-	    
+
 	    validationHelper.assertNoIssues(model.getModel());
 	}
-	
+
 	@Test
 	void testExplicitArguments() {
 	    var model = modelService.toTestModel("""
@@ -389,11 +416,11 @@ public class RosettaParsingTest {
                set result:
                    F(a)
 	    """);
-	    
+
 	    var f = model.getFunction("F");
 	    assertTrue(((RosettaSymbolReference) f.getOperations().get(0).getExpression()).isExplicitArguments());
 	}
-	
+
 	@Test
 	void testMultiExtract() {
 	    var model = modelService.toTestModel("""
@@ -405,7 +432,7 @@ public class RosettaParsingTest {
                        extract [item = False]
                        extract [item = True]
 	    """, false);
-	    
+
 	    var test = model.getFunction("Test");
 	    RosettaExpression expression = test.getOperations().get(0).getExpression();
 	    assertTrue(expression instanceof MapOperation);
@@ -414,7 +441,7 @@ public class RosettaParsingTest {
 	    RosettaExpression list = ((MapOperation) argument).getArgument();
 	    assertTrue(list instanceof ListLiteral);
 	}
-	
+
 	@Test
 	void testOnlyElementInsidePath() {
 		assertNoIssues("""
@@ -433,7 +460,7 @@ public class RosettaParsingTest {
 	                   a -> b only-element -> c
 	    """);
 	}
-	
+
 	@Test
 	void testBasicTypes() {
 		assertNoIssues("""
@@ -446,7 +473,7 @@ public class RosettaParsingTest {
 				value10 zonedDateTime (0..1) <"">
 		""");
 	}
-	
+
 	@Test
 	void testEnumRegReferences() {
 		assertNoIssues("""
@@ -457,7 +484,7 @@ public class RosettaParsingTest {
 				NaturalPersonIdentifier <"The natural person identifier.  When constructed according.">
 		""");
 	}
-	
+
 	@Test
 	void testDataRuleWithChoice() {
 		assertNoIssues("""
@@ -477,7 +504,7 @@ public class RosettaParsingTest {
 				cer
 		""");
 	}
-	
+
 	@Test
 	void testChoiceRule() {
 		assertNoIssues("""
@@ -490,7 +517,7 @@ public class RosettaParsingTest {
 				 blue boolean (0..1)
 		""");
 	}
-			
+
 	@Test
 	void testAttributeWithMetadataReferenceAnnotation() {
 		assertNoIssues("""
@@ -501,7 +528,7 @@ public class RosettaParsingTest {
 					[metadata reference]
 		""");
 	}
-	
+
 	@Test
 	void testAttributeWithMetadataIdAnnotation() {
 		assertNoIssues("""
@@ -512,7 +539,7 @@ public class RosettaParsingTest {
 					[metadata id]
 		""");
 	}
-	
+
 	@Test
 	void testAttributeWithMetadataSchemeAnnotation() {
 		assertNoIssues("""
@@ -529,7 +556,7 @@ public class RosettaParsingTest {
 					[metadata reference]
 		""");
 	}
-	
+
 	@Test
 	void testAttributesWithLocationAndAddress() {
 		assertNoIssues("""
@@ -545,7 +572,7 @@ public class RosettaParsingTest {
 					[metadata address "pointsTo"=Foo->foo]
 		""");
 	}
-	
+
 	private void assertIssues(String model, String expectedIssues) {
 		RosettaTestModel parsedModel = modelService.toTestModel(model, false);
 		validationHelper.assertIssues(parsedModel.getModel(), expectedIssues);

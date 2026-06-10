@@ -783,7 +783,28 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 	
 	override protected caseDeepFeatureCall(RosettaDeepFeatureCall expr, Context context) {
-		return attributeCall(expr.receiver.javaCode(context.withExpected(MAPPER.wrapExtendsWithoutMeta(expr.receiver))), typeProvider.getRMetaAnnotatedType(expr.receiver), expr.feature.buildRAttribute, true, context.expectedType, context.scope)
+		val feature = expr.feature
+		if (feature instanceof RosettaMetaType) {
+			return deepMetaCall(expr.receiver.javaCode(context.withExpected(MAPPER.wrapExtendsWithoutMeta(expr.receiver))), typeProvider.getRMetaAnnotatedType(expr.receiver), feature, context.scope)
+		}
+		return attributeCall(expr.receiver.javaCode(context.withExpected(MAPPER.wrapExtendsWithoutMeta(expr.receiver))), typeProvider.getRMetaAnnotatedType(expr.receiver), (feature as Attribute).buildRAttribute, true, context.expectedType, context.scope)
+	}
+
+	def JavaStatementBuilder deepMetaCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RosettaMetaType feature, JavaStatementScope scope) {
+		val receiverRType = receiverType.RType
+		val t = if (receiverRType instanceof RChoiceType) {
+			receiverRType.asRDataType
+		} else {
+			receiverRType as RDataType
+		}
+		val javaType = t.toJavaReferenceType
+		val lambdaScope = scope.lambdaScope
+		val lambdaParam = new JavaVariable(lambdaScope.createUniqueIdentifier(javaType.rosettaName.toFirstLower), javaType)
+		val resultItemType = typeUtil.STRING
+		val StringConcatenationClient mappingCode = '''"chooseKey", «lambdaParam» -> «scope.getIdentifierOrThrow(t.toDeepPathUtilJavaClass.toDependencyInstance)».chooseKey(«lambdaParam»)'''
+		val StringConcatenationClient right = '''.<«resultItemType»>map(«mappingCode»)'''
+		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtendsWithoutMeta(receiverCode.expressionType.itemType), scope)
+		featureCall(mapperReceiverCode, resultItemType, right, receiverCode, receiverType, false, scope)
 	}
 
 	override protected caseFilterOperation(FilterOperation expr, Context context) {

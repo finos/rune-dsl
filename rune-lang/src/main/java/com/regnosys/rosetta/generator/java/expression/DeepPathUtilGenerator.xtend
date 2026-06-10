@@ -19,14 +19,17 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RChoiceType
 import static extension com.regnosys.rosetta.types.RMetaAnnotatedType.*
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 import com.regnosys.rosetta.generator.java.RObjectJavaClassGenerator
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
+import com.regnosys.rosetta.rosetta.simple.Choice
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.types.RObjectFactory
+import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 
 class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaClass<?>> {
 	@Inject extension JavaTypeTranslator
@@ -85,8 +88,50 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 					public «methodBody.expressionType» choose«deepFeature.name.toFirstUpper»(«inputParameter.expressionType» «inputParameter») «methodBody.completeAsReturn»
 					
 				«ENDFOR»
+ 			    «IF choiceType.EObject instanceof Choice && (choiceType.EObject as Choice).buildRChoiceType.hasImpliedKey»
+					«val chooseKeyScope = classScope.createMethodScope('chooseKey')»
+					«val keyInputParam = new JavaVariable(chooseKeyScope.createUniqueIdentifier(choiceType.name.toFirstLower), choiceType.toJavaReferenceType)»
+					«val keyMethodBody = chooseKeyToStatement(choiceType, keyInputParam, chooseKeyScope.bodyScope)»
+					public «keyMethodBody.expressionType» chooseKey(«keyInputParam.expressionType» «keyInputParam») «keyMethodBody.completeAsReturn»
+					
+				«ENDIF»
 			}
 		'''
+	}
+
+	private def JavaStatementBuilder chooseKeyToStatement(RDataType choiceType, JavaVariable inputParameter, JavaStatementScope scope) {
+		val attrs = choiceType.allAttributes.toList
+		val resultType = typeUtil.STRING
+		var JavaStatementBuilder acc = JavaLiteral.NULL
+		for (a : attrs.reverseView) {
+			val currAcc = acc
+			acc = inputParameter
+					.attributeCall(choiceType.withNoMeta, a, false, a.toMetaJavaType, scope)
+					.declareAsVariable(true, a.name.toFirstLower, scope)
+					.mapExpression[attrVar|
+						attrVar.exists(ExistsModifier.NONE, scope)
+							.collapseToSingleExpression(scope)
+							.addCoercions(JavaPrimitiveType.BOOLEAN, scope)
+						.mapExpression[
+							val hasAttrMeta = a.RMetaAnnotatedType.hasAttributeMeta
+							val lambdaScope1 = scope.lambdaScope
+							val lp1 = lambdaScope1.createUniqueIdentifier("a")
+							val lambdaScope2 = scope.lambdaScope
+							val lp2 = lambdaScope2.createUniqueIdentifier("a")
+							val lambdaScope3 = scope.lambdaScope
+							val lp3 = lambdaScope3.createUniqueIdentifier("a")
+							val keyExpr = attrVar.mapExpression[v |
+								if (hasAttrMeta) {
+									JavaExpression.from('''«v».map("getValue", «lp1»->«lp1».getValue()).map("getMeta", «lp2»->«lp2».getMeta()).map("getGlobalKey", «lp3»->«lp3».getGlobalKey()).get()''', resultType)
+								} else {
+									JavaExpression.from('''«v».map("getMeta", «lp1»->«lp1».getMeta()).map("getGlobalKey", «lp2»->«lp2».getGlobalKey()).get()''', resultType)
+								}
+							]
+							new JavaIfThenElseBuilder(it, keyExpr, currAcc, typeUtil)
+						]
+					]
+		}
+		acc.addCoercions(resultType, scope)
 	}
 
 	private def JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeaturesMap, JavaStatementScope scope) {

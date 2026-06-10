@@ -183,7 +183,7 @@ class RosettaFeatureCall extends RosettaExpression {
 
 class RosettaDeepFeatureCall extends RosettaExpression {
 	contains RosettaExpression receiver
-	refers Attribute feature
+	refers RosettaFeature feature
 }
 
 class RosettaConditionalExpression extends RosettaExpression {
