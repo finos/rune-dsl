@@ -41,7 +41,9 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 	@Inject extension RObjectFactory
 	
 	override protected streamObjects(RosettaModel model) {
-		model.elements.stream.filter[it instanceof Data].map[it as Data].map[buildRDataType].filter[isEligibleForDeepFeatureCall]
+		model.elements.stream.filter[it instanceof Data].map[it as Data].map[buildRDataType].filter[
+			isEligibleForDeepFeatureCall || (EObject instanceof Choice && (EObject as Choice).buildRChoiceType.hasImpliedKey)
+		]
 	}
 	override protected createTypeRepresentation(RDataType choiceType) {
 		choiceType.toDeepPathUtilJavaClass
@@ -120,11 +122,11 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 							val lp2 = lambdaScope2.createUniqueIdentifier("a")
 							val lambdaScope3 = scope.lambdaScope
 							val lp3 = lambdaScope3.createUniqueIdentifier("a")
-							val keyExpr = attrVar.mapExpression[v |
+ 						val keyExpr = attrVar.mapExpression[v |
 								if (hasAttrMeta) {
-									JavaExpression.from('''«v».map("getValue", «lp1»->«lp1».getValue()).map("getMeta", «lp2»->«lp2».getMeta()).map("getGlobalKey", «lp3»->«lp3».getGlobalKey()).get()''', resultType)
+									JavaExpression.from('''«v».map("getValue", «lp1»->«lp1».getValue()).map("getMeta", «lp2»->«lp2».getMeta()).map("getExternalKey", «lp3»->«lp3».getExternalKey()).get()''', resultType)
 								} else {
-									JavaExpression.from('''«v».map("getMeta", «lp1»->«lp1».getMeta()).map("getGlobalKey", «lp2»->«lp2».getGlobalKey()).get()''', resultType)
+									JavaExpression.from('''«v».map("getMeta", «lp1»->«lp1».getMeta()).map("getExternalKey", «lp2»->«lp2».getExternalKey()).get()''', resultType)
 								}
 							]
 							new JavaIfThenElseBuilder(it, keyExpr, currAcc, typeUtil)
