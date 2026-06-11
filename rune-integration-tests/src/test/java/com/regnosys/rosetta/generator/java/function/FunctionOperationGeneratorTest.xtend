@@ -184,13 +184,14 @@ class FunctionOperationGeneratorTest {
 	def void testSimpleFunctionWithOperationsGeneration() {
 		'''
 			func Calc:
+				[calculation]
 				inputs:
 					arg1 int  (1..1)
 					arg2 int  (1..1)
 				output: res int (1..1)
 				alias a1 : Min(1,2)
 				alias a2 :  Max(1,2)
-			
+
 				set res: a1 + a2 * 215
 		'''.assertToGeneratedFunctionWithOperations(
 			'''

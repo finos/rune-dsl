@@ -110,6 +110,7 @@ public class RBuiltinTypeService {
 		register("number", RNumberType::from);
 		register("string", RStringType::from);
 		register("int", (m) -> UNCONSTRAINED_INT);
+		register("calculation", (m) -> UNCONSTRAINED_STRING);
 	}
 	
 	public Optional<RType> getType(String name, Map<String, RosettaValue> params) {

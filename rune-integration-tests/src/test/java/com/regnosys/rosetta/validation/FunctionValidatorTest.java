@@ -148,6 +148,18 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
+    void functionWithCalculationAnnotationShouldNotIssue() {
+        assertNoIssues("""
+            func Calc:
+              [calculation]
+              output:
+                result string (1..1)
+
+              set result: "output"
+            """);
+    }
+
+    @Test
     void functionWithCodeImplementationAnnotationAndBodyShouldWarn() {
         assertIssues("""
             func Foo:
