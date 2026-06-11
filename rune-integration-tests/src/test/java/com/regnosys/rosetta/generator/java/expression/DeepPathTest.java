@@ -77,6 +77,36 @@ public class DeepPathTest {
     }
 
     @Test
+    void metaKeyResolvesWhenOptionsAlsoHaveKeyField() {
+        // Both options carry [metadata key] (so SomeChoice has an implied key, generating
+        // metaChooseKey) AND have a field named key (a shared deep feature, generating chooseKey).
+        // TODO: at some point we should consider having a different syntax for accessign deep meta but defaulting to the meta for a key/field clash will do for now
+        JavaTestModel model = modelService.toJavaTestModel("""
+                namespace test
+
+                metaType key string
+
+                type OptionA:
+                  [metadata key]
+                    key string (1..1)
+
+                type OptionB:
+                  [metadata key]
+                    key string (1..1)
+
+                choice SomeChoice:
+                    OptionA
+                    OptionB
+                """).compile();
+
+        String result = model.evaluateExpression(String.class, """
+                SomeChoice { OptionA: OptionA { key: "fieldValue" } with-meta { key: "metaKey" }, ... } ->> key
+                """);
+
+        assertEquals("metaKey", result);
+    }
+
+    @Test
     void keyResolvesThroughNestedChoice() {
         JavaTestModel model = modelService.toJavaTestModel("""
                 namespace test
