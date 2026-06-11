@@ -1,26 +1,14 @@
 package com.regnosys.rosetta.validation;
 
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
-import com.regnosys.rosetta.tests.util.ModelHelper;
-import org.eclipse.xtext.diagnostics.Diagnostic;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
-import org.eclipse.xtext.testing.validation.ValidationTestHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
-import javax.inject.Inject;
-
-import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.ROSETTA_DEEP_FEATURE_CALL;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
 public class ChoiceValidatorTest extends AbstractValidatorTest {
-	@Inject
-	private ValidationTestHelper validationTestHelper;
-
-	@Inject
-	private ModelHelper modelHelper;
 
 	@Test
 	public void testChoiceOptionsDoNotOverlap() {
@@ -108,7 +96,7 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 
 	@Test
 	void testDeepFeatureKeyFailsWhenNotAllLeavesAreKeyed() {
-		var model = modelHelper.parseRosetta("""
+		assertIssues("""
 				metaType key string
 
 				type B:
@@ -129,16 +117,15 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 						result string (0..1)
 					set result:
 						a ->> key
-				""");
-
-		validationTestHelper.assertError(model, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC,
-				"Couldn't resolve reference to RosettaFeature 'key'."
-		);
+				""",
+				"""
+						ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'key'.' at 23:9, length 3, on RosettaDeepFeatureCall
+						""");
 	}
 
 	@Test
 	void testDeepFeatureKeyFailsWhenANestedLeafIsUnkeyed() {
-		var model = modelHelper.parseRosetta("""
+		assertIssues("""
 				metaType key string
 
 				type B:
@@ -167,17 +154,15 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 						result string (0..1)
 					set result:
 						a ->> key
-				""");
-
-		validationTestHelper.assertError(model, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC,
-				"Couldn't resolve reference to RosettaFeature 'key'."
-		);
+				""",
+				"""
+						ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'key'.' at 31:9, length 3, on RosettaDeepFeatureCall
+						""");
 	}
 
 	@Test
 	void testDeepFeatureKeyFailsWhenChoiceIsEmpty() {
-		// An empty choice has no implied key, so `->> key` must not link (the empty choice is itself an error too).
-		var model = modelHelper.parseRosetta("""
+		assertIssues("""
 				metaType key string
 
 				choice A:
@@ -189,16 +174,15 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 						result string (0..1)
 					set result:
 						a ->> key
-				""");
-
-		validationTestHelper.assertError(model, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC,
-				"Couldn't resolve reference to RosettaFeature 'key'."
-		);
+				""",
+				"""
+						ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'key'.' at 14:9, length 3, on RosettaDeepFeatureCall
+						""");
 	}
 
 	@Test
 	void testDeepFeatureCallOnCyclicChoiceProducesLinkingErrorNotStackOverflow() {
-		var model = modelHelper.parseRosetta("""
+		assertIssues("""
 				choice CyclicA:
 					CyclicB
 
@@ -212,10 +196,12 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 						result string (0..1)
 					set result:
 						a ->> someField
+				""", """
+				ERROR (null) 'Cyclic option: CyclicA includes CyclicB includes CyclicA' at 5:2, length 7, on ChoiceOption
+				ERROR (null) 'Duplicate option 'CyclicB'' at 5:2, length 7, on ChoiceOption
+				ERROR (null) 'Cyclic option: CyclicB includes CyclicA includes CyclicB' at 8:2, length 7, on ChoiceOption
+				ERROR (null) 'Duplicate option 'CyclicA'' at 8:2, length 7, on ChoiceOption
+				ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'someField'.' at 16:9, length 9, on RosettaDeepFeatureCall
 				""");
-
-		validationTestHelper.assertError(model, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC,
-				"Couldn't resolve reference to RosettaFeature 'someField'."
-		);
 	}
 }
