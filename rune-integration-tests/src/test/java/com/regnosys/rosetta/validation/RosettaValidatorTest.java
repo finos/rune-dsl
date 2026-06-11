@@ -442,6 +442,29 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
+    void testDeepFeatureCallOnCyclicChoiceProducesLinkingErrorNotStackOverflow() {
+        var model = modelHelper.parseRosetta("""
+				choice CyclicA:
+					CyclicB
+
+				choice CyclicB:
+					CyclicA
+
+				func MyFunc:
+					inputs:
+						a CyclicA (1..1)
+					output:
+						result string (0..1)
+					set result:
+						a ->> someField
+				""");
+
+        validationTestHelper.assertError(model, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC,
+                "Couldn't resolve reference to RosettaFeature 'someField'."
+        );
+    }
+
+    @Test
     void testCannotCallFuncWithoutInput() {
         var model = modelHelper.parseRosetta("""
 				func Foo:
