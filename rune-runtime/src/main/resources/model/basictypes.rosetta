@@ -49,3 +49,6 @@ recordType zonedDateTime
 	time time
 	timezone string
 }
+
+typeAlias calculation:
+	string

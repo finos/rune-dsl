@@ -61,7 +61,25 @@ func MyFunc:
     myOutput string (1..1)
 ```
 
-### 1.3 `metadata`
+### 1.3 `calculation`
+The `calculation` annotation marks a function as a fully implemented calculation.
+
+**Example**
+```haskell
+func FixedAmount:
+  [calculation]
+  inputs:
+    notional number (1..1)
+    rate number (1..1)
+  output:
+    fixedAmount number (1..1)
+
+  set fixedAmount: notional * rate
+```
+
+There is also a built-in `calculation` type alias for `string`, which can be used as an attribute type to indicate that the value represents the output of a calculation.
+
+### 1.4 `metadata`
 The `metadata` annotation defines qualifiers that can be applied to a data type or attribute. 
 
 Rune provides several built-in `metadata` fields:
@@ -79,7 +97,7 @@ Each `metadata` field represents a different qualifier:
 - `scheme` – controls the allowed values for an attribute without needing an enumeration. The attribute is usually a simple `string`, and the annotation tells the system where to source the scheme values.
 - **Other fields** – used for [cross referencing](#3-cross-referencing) between objects.
 
-### 1.4 Using metadata in functions and expressions
+### 1.5 Using metadata in functions and expressions
 You can access metadata values through function inputs or expression outputs that have metadata annotations. 
 
 

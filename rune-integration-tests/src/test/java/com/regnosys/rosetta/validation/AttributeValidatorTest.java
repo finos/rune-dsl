@@ -10,7 +10,15 @@ import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
 public class AttributeValidatorTest extends AbstractValidatorTest {
-    
+
+    @Test
+    void testAttributeOfCalculationTypeIsSupported() {
+    	assertNoIssues("""
+				type Foo:
+					attr calculation (0..1)
+				""");
+    }
+
     @Test
     void testDeepPathInRuleReferenceIsDisallowed() {
     	assertIssues("""

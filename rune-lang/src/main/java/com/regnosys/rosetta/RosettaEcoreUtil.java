@@ -287,6 +287,10 @@ public class RosettaEcoreUtil {
 		return metaAttributeExists(it, attr -> "reference".equals(attr.getName()));
 	}
 	@Deprecated
+	public boolean hasCalculationAnnotation(Annotated it) {
+		return allAnnotations(it, ann -> "calculation".equals(ann.getName())).iterator().hasNext();
+	}
+	@Deprecated
 	private Iterable<AnnotationRef> allAnnotations(Annotated withAnnotations, Predicate<Annotation> filter) {
 		return Iterables.filter(
 				withAnnotations.getAnnotations(),
