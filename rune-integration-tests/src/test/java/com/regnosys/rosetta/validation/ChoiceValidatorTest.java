@@ -1,14 +1,27 @@
 package com.regnosys.rosetta.validation;
 
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
+import com.regnosys.rosetta.tests.util.ModelHelper;
+import org.eclipse.xtext.diagnostics.Diagnostic;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
+import org.eclipse.xtext.testing.validation.ValidationTestHelper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+
+import javax.inject.Inject;
+
+import static com.regnosys.rosetta.rosetta.expression.ExpressionPackage.Literals.ROSETTA_DEEP_FEATURE_CALL;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
 public class ChoiceValidatorTest extends AbstractValidatorTest {
+	@Inject
+	private ValidationTestHelper validationTestHelper;
+
+	@Inject
+	private ModelHelper modelHelper;
+
 	@Test
 	public void testChoiceOptionsDoNotOverlap() {
 		assertIssues("""
@@ -77,9 +90,9 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 				choice Foo:
 					Opt1
 					Bar
-				
+
 				type Opt1:
-				
+
 				choice Bar:
 					Foo
 				""",
@@ -91,5 +104,118 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 			ERROR (null) 'Duplicate option 'Foo'' at 11:2, length 3, on ChoiceOption
 			"""
 			);
+	}
+
+	@Test
+	void testDeepFeatureKeyFailsWhenNotAllLeavesAreKeyed() {
+		var model = modelHelper.parseRosetta("""
+				metaType key string
+
+				type B:
+					[metadata key]
+					field string (1..1)
+
+				type C:
+					field string (1..1)
+
+				choice A:
+					B
+					C
+
+				func MyFunc:
+					inputs:
+						a A (1..1)
+					output:
+						result string (0..1)
+					set result:
+						a ->> key
+				""");
+
+		validationTestHelper.assertError(model, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC,
+				"Couldn't resolve reference to RosettaFeature 'key'."
+		);
+	}
+
+	@Test
+	void testDeepFeatureKeyFailsWhenANestedLeafIsUnkeyed() {
+		var model = modelHelper.parseRosetta("""
+				metaType key string
+
+				type B:
+					[metadata key]
+					field string (1..1)
+
+				type C:
+					field string (1..1)
+
+				type D:
+					[metadata key]
+					field string (1..1)
+
+				choice Inner:
+					B
+					C
+
+				choice A:
+					Inner
+					D
+
+				func MyFunc:
+					inputs:
+						a A (1..1)
+					output:
+						result string (0..1)
+					set result:
+						a ->> key
+				""");
+
+		validationTestHelper.assertError(model, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC,
+				"Couldn't resolve reference to RosettaFeature 'key'."
+		);
+	}
+
+	@Test
+	void testDeepFeatureKeyFailsWhenChoiceIsEmpty() {
+		// An empty choice has no implied key, so `->> key` must not link (the empty choice is itself an error too).
+		var model = modelHelper.parseRosetta("""
+				metaType key string
+
+				choice A:
+
+				func MyFunc:
+					inputs:
+						a A (1..1)
+					output:
+						result string (0..1)
+					set result:
+						a ->> key
+				""");
+
+		validationTestHelper.assertError(model, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC,
+				"Couldn't resolve reference to RosettaFeature 'key'."
+		);
+	}
+
+	@Test
+	void testDeepFeatureCallOnCyclicChoiceProducesLinkingErrorNotStackOverflow() {
+		var model = modelHelper.parseRosetta("""
+				choice CyclicA:
+					CyclicB
+
+				choice CyclicB:
+					CyclicA
+
+				func MyFunc:
+					inputs:
+						a CyclicA (1..1)
+					output:
+						result string (0..1)
+					set result:
+						a ->> someField
+				""");
+
+		validationTestHelper.assertError(model, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC,
+				"Couldn't resolve reference to RosettaFeature 'someField'."
+		);
 	}
 }
