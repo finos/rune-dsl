@@ -801,7 +801,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val lambdaScope = scope.lambdaScope
 		val lambdaParam = new JavaVariable(lambdaScope.createUniqueIdentifier(javaType.rosettaName.toFirstLower), javaType)
 		val resultItemType = typeUtil.STRING
-		val StringConcatenationClient mappingCode = '''"chooseKey", «lambdaParam» -> «scope.getIdentifierOrThrow(t.toDeepPathUtilJavaClass.toDependencyInstance)».chooseKey(«lambdaParam»)'''
+		val StringConcatenationClient mappingCode = '''"metaChooseKey", «lambdaParam» -> «scope.getIdentifierOrThrow(t.toDeepPathUtilJavaClass.toDependencyInstance)».metaChooseKey(«lambdaParam»)'''
 		val StringConcatenationClient right = '''.<«resultItemType»>map(«mappingCode»)'''
 		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtendsWithoutMeta(receiverCode.expressionType.itemType), scope)
 		featureCall(mapperReceiverCode, resultItemType, right, receiverCode, receiverType, false, scope)

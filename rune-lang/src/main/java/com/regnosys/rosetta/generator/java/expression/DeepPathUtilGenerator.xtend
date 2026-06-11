@@ -29,7 +29,6 @@ import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
 import com.regnosys.rosetta.rosetta.simple.Choice
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.types.RObjectFactory
-import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 
 class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaClass<?>> {
 	@Inject extension JavaTypeTranslator
@@ -39,7 +38,7 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 	@Inject extension JavaIdentifierRepresentationService
 	@Inject JavaTypeUtil typeUtil
 	@Inject extension RObjectFactory
-	
+
 	override protected streamObjects(RosettaModel model) {
 		model.elements.stream.filter[it instanceof Data].map[it as Data].map[buildRDataType].filter[
 			isEligibleForDeepFeatureCall || (EObject instanceof Choice && (EObject as Choice).buildRChoiceType.hasImpliedKey)
@@ -69,7 +68,7 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 		])
 		val hasImpliedKey = choiceType.EObject instanceof Choice && (choiceType.EObject as Choice).buildRChoiceType.hasImpliedKey
 		if (hasImpliedKey) {
-			// `chooseKey` delegates to the `chooseKey` of each nested choice option, so we depend on their utils.
+			// `metaChooseKey` delegates to the `metaChooseKey` of each nested choice option, so we depend on their utils.
 			choiceType.allAttributes.map[RMetaAnnotatedType.RType].filter(RChoiceType).forEach[
 				dependencies.add(asRDataType.toDeepPathUtilJavaClass)
 			]
@@ -81,27 +80,27 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 				«FOR dependency : dependencies»
 				private final «dependency» «classScope.getIdentifierOrThrow(dependency.toDependencyInstance)»;
 				«ENDFOR»
-				
+
 				@«javax.inject.Inject»
 				public «javaClass»(«FOR dependency : dependencies SEPARATOR ', '»«dependency» «classScope.getIdentifierOrThrow(dependency.toDependencyInstance)»«ENDFOR») {
 					«FOR dependency : dependencies»
 					this.«classScope.getIdentifierOrThrow(dependency.toDependencyInstance)» = «classScope.getIdentifierOrThrow(dependency.toDependencyInstance)»;
 					«ENDFOR»
 				}
-				
+
 				«ENDIF»
 				«FOR deepFeature : deepFeatures»
 					«val deepFeatureScope = classScope.createMethodScope('''choose«deepFeature.name.toFirstUpper»''')»
 					«val inputParameter = new JavaVariable(deepFeatureScope.createUniqueIdentifier(choiceType.name.toFirstLower), choiceType.toJavaReferenceType)»
 					«val methodBody = deepFeatureToStatement(choiceType, inputParameter, deepFeature, recursiveDeepFeaturesMap, deepFeatureScope.bodyScope)»
 					public «methodBody.expressionType» choose«deepFeature.name.toFirstUpper»(«inputParameter.expressionType» «inputParameter») «methodBody.completeAsReturn»
-					
+
 				«ENDFOR»
 				«IF hasImpliedKey»
-					«val chooseKeyScope = classScope.createMethodScope('chooseKey')»
-					«val keyInputParam = new JavaVariable(chooseKeyScope.createUniqueIdentifier(choiceType.name.toFirstLower), choiceType.toJavaReferenceType)»
-					«val keyMethodBody = chooseKeyToStatement(choiceType, keyInputParam, chooseKeyScope.bodyScope)»
-					public «keyMethodBody.expressionType» chooseKey(«keyInputParam.expressionType» «keyInputParam») «keyMethodBody.completeAsReturn»
+					«val metaChooseKeyScope = classScope.createMethodScope('metaChooseKey')»
+					«val keyInputParam = new JavaVariable(metaChooseKeyScope.createUniqueIdentifier(choiceType.name.toFirstLower), choiceType.toJavaReferenceType)»
+					«val keyMethodBody = metaChooseKeyToStatement(choiceType, keyInputParam, metaChooseKeyScope.bodyScope)»
+					public «keyMethodBody.expressionType» metaChooseKey(«keyInputParam.expressionType» «keyInputParam») «keyMethodBody.completeAsReturn»
 
 				«ENDIF»
 			}
@@ -109,19 +108,33 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 	}
 
 	/**
-	 * Generates the body of {@code chooseKey}, which returns the key of whichever option of the choice is populated.
+	 * Generates the body of {@code metaChooseKey}, which returns the key of whichever option of the choice is populated.
 	 *
 	 * A choice holds exactly one populated option, so we build a chain of if-then-else expressions: for each option,
-	 * if it is populated then read its key, otherwise fall through to the next option. The chain is built back-to-front,
-	 * so each option wraps the previously-built expression as its {@code else} branch.
+	 * if it is populated then read its key, otherwise fall through to the next option.
 	 */
-	private def JavaStatementBuilder chooseKeyToStatement(RDataType choiceType, JavaVariable choiceParameter, JavaStatementScope scope) {
-		val keyType = typeUtil.STRING
+	private def JavaStatementBuilder metaChooseKeyToStatement(RDataType choiceType, JavaVariable choiceParameter, JavaStatementScope scope) {
+		buildOptionChain(choiceType, choiceParameter, [option, optionValue |
+			optionValue.mapExpression[keyAccess(option, it, scope)]
+		], scope).addCoercions(typeUtil.STRING, scope)
+	}
+
+	/**
+	 * Builds the shared if-then-else chain over choice options (back-to-front). For each option, if it is populated
+	 * the result is computed by {@code readStrategy(option, optionVar)}; otherwise the chain falls through to the
+	 * next option. Callers are responsible for adding the final coercion to the desired result type.
+	 */
+	private def JavaStatementBuilder buildOptionChain(
+		RDataType choiceType,
+		JavaVariable inputParameter,
+		(RAttribute, JavaStatementBuilder) => JavaStatementBuilder readStrategy,
+		JavaStatementScope scope
+	) {
 		val options = choiceType.allAttributes.toList
 		var JavaStatementBuilder elseBranch = JavaLiteral.NULL
 		for (option : options.reverseView) {
 			val nextOptionBranch = elseBranch
-			elseBranch = choiceParameter
+			elseBranch = inputParameter
 					.attributeCall(choiceType.withNoMeta, option, false, option.toMetaJavaType, scope)
 					.declareAsVariable(true, option.name.toFirstLower, scope)
 					.mapExpression[optionValue |
@@ -129,12 +142,12 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 							.collapseToSingleExpression(scope)
 							.addCoercions(JavaPrimitiveType.BOOLEAN, scope)
 							.mapExpression[optionIsPopulated |
-								val keyOfOption = optionValue.mapExpression[keyAccess(option, it, scope)]
-								new JavaIfThenElseBuilder(optionIsPopulated, keyOfOption, nextOptionBranch, typeUtil)
+								val readExpr = readStrategy.apply(option, optionValue)
+								new JavaIfThenElseBuilder(optionIsPopulated, readExpr, nextOptionBranch, typeUtil)
 							]
 					]
 		}
-		elseBranch.addCoercions(keyType, scope)
+		elseBranch
 	}
 
 	/**
@@ -143,7 +156,7 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 	 *   <li>A leaf option carries {@code [metadata key]} on its type, so we read it straight from the
 	 *       option's metadata ({@code getMeta().getExternalKey()}).</li>
 	 *   <li>A nested choice option has no key of its own, so we delegate to that choice's generated
-	 *       {@code chooseKey(...)}, which in turn recurses into its populated option.</li>
+	 *       {@code metaChooseKey(...)}, which in turn recurses into its populated option.</li>
 	 * </ul>
 	 */
 	private def JavaExpression keyAccess(RAttribute option, JavaExpression optionMapper, JavaStatementScope scope) {
@@ -152,7 +165,7 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 			val nestedUtil = optionType.asRDataType.toDeepPathUtilJavaClass
 			val nestedChoice = scope.lambdaScope.createUniqueIdentifier("nestedChoice")
 			return JavaExpression.from(
-				'''«optionMapper».map("chooseKey", «nestedChoice» -> «scope.getIdentifierOrThrow(nestedUtil.toDependencyInstance)».chooseKey(«nestedChoice»)).get()''',
+				'''«optionMapper».map("metaChooseKey", «nestedChoice» -> «scope.getIdentifierOrThrow(nestedUtil.toDependencyInstance)».metaChooseKey(«nestedChoice»)).get()''',
 				typeUtil.STRING)
 		}
 		return leafKeyAccess(optionMapper, option.RMetaAnnotatedType.hasAttributeMeta, scope)
@@ -177,40 +190,24 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 	}
 
 	private def JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeaturesMap, JavaStatementScope scope) {
-		val attrs = choiceType.allAttributes.toList
 		val deepFeatureType = deepFeature.toMetaJavaType
-		var JavaStatementBuilder acc = JavaLiteral.NULL
-		for (a : attrs.reverseView) {
-			val currAcc = acc
-			acc = inputParameter
-					.attributeCall(choiceType.withNoMeta, a, false, a.toMetaJavaType, scope)
-					.declareAsVariable(true, a.name.toFirstLower, scope)
-					.mapExpression[attrVar|
-						attrVar.exists(ExistsModifier.NONE, scope)
-							.collapseToSingleExpression(scope)
-							.addCoercions(JavaPrimitiveType.BOOLEAN, scope)
-							.mapExpression[
-								val deepFeatureExpr = if (deepFeature.match(a)) {
-									attrVar
-								} else {
-									val metaRType = a.RMetaAnnotatedType
-									var attrType = metaRType.RType
-									if (attrType instanceof RChoiceType) {
-										attrType = attrType.asRDataType
-									}
-									val needsToGoDownDeeper = recursiveDeepFeaturesMap.get(a).get(deepFeature)
-									val actualFeature = if (needsToGoDownDeeper || !(attrType instanceof RDataType)) {
-										deepFeature
-									} else {
-										(attrType as RDataType).allAttributes.findFirst[name.equals(deepFeature.name)]
-									}
-									attrVar.attributeCall(metaRType, actualFeature, needsToGoDownDeeper, deepFeatureType, scope)
-								}
-								new JavaIfThenElseBuilder(it, deepFeatureExpr, currAcc, typeUtil)
-							]
-					]
-		}
-		val resultType = deepFeature.toMetaJavaType
-		acc.addCoercions(resultType, scope)
+		buildOptionChain(choiceType, inputParameter, [option, attrVar |
+			if (deepFeature.match(option)) {
+				attrVar
+			} else {
+				val metaRType = option.RMetaAnnotatedType
+				var attrType = metaRType.RType
+				if (attrType instanceof RChoiceType) {
+					attrType = attrType.asRDataType
+				}
+				val needsToGoDownDeeper = recursiveDeepFeaturesMap.get(option).get(deepFeature)
+				val actualFeature = if (needsToGoDownDeeper || !(attrType instanceof RDataType)) {
+					deepFeature
+				} else {
+					(attrType as RDataType).allAttributes.findFirst[name.equals(deepFeature.name)]
+				}
+				attrVar.attributeCall(metaRType, actualFeature, needsToGoDownDeeper, deepFeatureType, scope)
+			}
+		], scope).addCoercions(deepFeatureType, scope)
 	}
 }
