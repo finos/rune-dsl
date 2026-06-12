@@ -9,6 +9,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CodeWriterTest {
+    private static final String NEWLINE = System.lineSeparator();
+
     private StringCodeWriter out;
     
     @BeforeEach
@@ -25,7 +27,7 @@ public class CodeWriterTest {
     @Test
     void testWriteln() {
         out.writeln("Hello", " ", "World");
-        assertEquals("Hello World\n", out.toString());
+        assertEquals("Hello World" + NEWLINE, out.toString());
     }
     
     @Test
@@ -36,12 +38,10 @@ public class CodeWriterTest {
             out.writeln("More indented");
         });
         out.writeln("}");
-        assertEquals("""
-                {
-                    Indented
-                    More indented
-                }
-                """, out.toString());
+        assertEquals("{" + NEWLINE
+                + "    Indented" + NEWLINE
+                + "    More indented" + NEWLINE
+                + "}" + NEWLINE, out.toString());
     }
     
     @Test
@@ -55,6 +55,6 @@ public class CodeWriterTest {
         out.write("Line 1");
         out.blank();
         out.write("Line 2");
-        assertEquals("Line 1\n\nLine 2", out.toString());
+        assertEquals("Line 1" + NEWLINE + NEWLINE + "Line 2", out.toString());
     }
 }

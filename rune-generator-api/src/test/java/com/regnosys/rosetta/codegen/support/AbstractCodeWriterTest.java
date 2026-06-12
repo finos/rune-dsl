@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AbstractCodeWriterTest {
+    private static final String NEWLINE = System.lineSeparator();
+
     private StringCodeWriter out;
 
     @BeforeEach
@@ -25,7 +27,7 @@ public class AbstractCodeWriterTest {
         out.write("Hello");
         out.newline();
         out.write("World");
-        assertEquals("Hello\nWorld", out.toString());
+        assertEquals("Hello" + NEWLINE + "World", out.toString());
     }
 
     @Test
@@ -37,7 +39,7 @@ public class AbstractCodeWriterTest {
         out.newline();
         out.indent();
         out.write("Level 2");
-        assertEquals("Level 0\n    Level 1\n        Level 2", out.toString());
+        assertEquals("Level 0" + NEWLINE + "    Level 1" + NEWLINE + "        Level 2", out.toString());
     }
 
     @Test
@@ -47,7 +49,7 @@ public class AbstractCodeWriterTest {
         out.newline();
         out.dedent();
         out.write("Level 0");
-        assertEquals("    Level 1\nLevel 0", out.toString());
+        assertEquals("    Level 1" + NEWLINE + "Level 0", out.toString());
     }
 
     @Test
@@ -70,6 +72,6 @@ public class AbstractCodeWriterTest {
     void testNewlineAtStartDoesNotAddIndent() {
         out.indent();
         out.newline();
-        assertEquals("\n", out.toString());
+        assertEquals(NEWLINE, out.toString());
     }
 }

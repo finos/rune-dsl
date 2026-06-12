@@ -4,7 +4,7 @@ import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.codegen.api.CodeWriter;
 
 public abstract class AbstractCodeWriter implements CodeWriter {
-    private static final String NEWLINE = "\n";
+    private static final String NEWLINE = System.lineSeparator();
     private static final String INDENT = "    ";
 
     private boolean atStartOfLine = true;
