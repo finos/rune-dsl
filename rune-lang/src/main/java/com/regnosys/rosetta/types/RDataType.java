@@ -183,6 +183,10 @@ public class RDataType extends RType implements RObject {
 		return Collections.unmodifiableMap(result);
 	}
 
+	public boolean hasInheritedMetaAttribute(String name) {
+		return getAllSuperTypes().stream().anyMatch(st -> st.hasMetaAttribute(name));
+	}
+
 	/**
 	 * If this data type is a choice, returns the corresponding {@link RChoiceType}; otherwise returns an empty Optional.
 	 */

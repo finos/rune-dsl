@@ -85,12 +85,10 @@ public class RChoiceType extends RType implements RObject {
 				if (!((RChoiceType) optionRType).doHasImpliedKey(visited)) {
 					return false;
 				}
-			} else if (optionRType instanceof RDataType) {
-				RDataType leaf = (RDataType) optionRType;
-				// A leaf is keyed if it (or any of its supertypes) is annotated with [metadata key],
+			} else if (optionRType instanceof RDataType leaf) {
+                // A leaf is keyed if it (or any of its supertypes) is annotated with [metadata key],
 				// mirroring the reference-target check in AttributeValidator.
-				boolean keyed = leaf.hasMetaAttribute("key")
-						|| leaf.getAllSuperTypes().stream().anyMatch(st -> st.hasMetaAttribute("key"));
+				boolean keyed = leaf.hasInheritedMetaAttribute("key");
 				if (!keyed) {
 					return false;
 				}

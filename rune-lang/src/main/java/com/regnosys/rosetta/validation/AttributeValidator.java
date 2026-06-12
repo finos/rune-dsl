@@ -76,7 +76,7 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 			}
 		} else if (attrType instanceof RDataType attrDataType) {
             if (hasReferenceAnnotation
-					&& !(attrDataType.hasMetaAttribute("key") || attrDataType.getAllSuperTypes().stream().anyMatch(st -> st.hasMetaAttribute("key")))) {
+					&& !(attrDataType.hasInheritedMetaAttribute("key"))) {
 				error(attrDataType.getName() + " must be annotated with [metadata key] as reference annotation is used", attr,
 					ROSETTA_TYPED__TYPE_CALL);
 			}
