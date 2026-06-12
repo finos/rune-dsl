@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package com.regnosys.rosetta.generator;
+package com.regnosys.rosetta.generator.java;
 
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
+import org.eclipse.emf.ecore.EObject;
 
-/**
- * An interface to indicate that a class represents a concept in a target language
- * of a generator.
- *
- * When appended to a {com.regnosys.rosetta.generator.TargetLanguageStringConcatenation},
- * `appendTo` will be called instead of `toString`.
- */
-public interface TargetLanguageRepresentation extends com.regnosys.rosetta.codegen.api.TargetLanguageRepresentation {
-	void appendTo(TargetStringConcatenation target);
+import com.regnosys.rosetta.types.RObject;
+import com.rosetta.util.types.JavaTypeDeclaration;
+
+public abstract class FluentRObjectJavaClassGenerator<T extends RObject, C extends JavaTypeDeclaration<?>> extends FluentJavaClassGenerator<T, C> {
+	@Override
+	protected EObject getSource(T object) {
+		return object.getEObject();
+	}
 }

@@ -18,6 +18,7 @@ package com.regnosys.rosetta.generator.java.statement;
 
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
 
@@ -44,5 +45,10 @@ public class JavaAssignment extends JavaStatement {
 		target.append(" = ");
 		target.append(expression);
 		target.append(";");
+	}
+
+	@Override
+	public void render(CodeWriter out) {
+		out.write(variableId, " = ", expression, ";");
 	}
 }

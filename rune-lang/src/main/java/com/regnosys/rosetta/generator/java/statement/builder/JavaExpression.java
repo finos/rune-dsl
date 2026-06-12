@@ -23,6 +23,8 @@ import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.codegen.api.CodeRenderer;
+import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.DebuggingTargetLanguageStringConcatenation;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
@@ -52,6 +54,25 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 			@Override
 			public void appendTo(TargetStringConcatenation target) {
 				target.append(value);
+			}
+
+			@Override
+			public void render(CodeWriter out) {
+				throw new UnsupportedOperationException("Xtend-backed Java expressions cannot be rendered by the fluent code writer.");
+			}
+		};
+	}
+
+	public static JavaExpression from(CodeRenderer value, JavaType type) {
+		return new JavaExpression(type) {
+			@Override
+			public void appendTo(TargetStringConcatenation target) {
+				throw new UnsupportedOperationException("Fluent Java expressions cannot be rendered by Xtend string concatenation.");
+			}
+
+			@Override
+			public void render(CodeWriter out) {
+				value.render(out);
 			}
 		};
 	}

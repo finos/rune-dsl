@@ -23,6 +23,7 @@ import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.statement.JavaAssignment;
@@ -131,6 +132,11 @@ public class JavaConditionalExpression extends JavaStatementBuilder implements J
 		target.append(thenBranch);
 		target.append(" : ");
 		target.append(elseBranch);
+	}
+
+	@Override
+	public void render(CodeWriter out) {
+		out.write(condition, " ? ", thenBranch, " : ", elseBranch);
 	}
 	
 	private JavaExpression toExpression() {

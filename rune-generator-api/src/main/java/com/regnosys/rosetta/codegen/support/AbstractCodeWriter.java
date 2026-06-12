@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.codegen.support;
 
+import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.codegen.api.CodeWriter;
 
 public abstract class AbstractCodeWriter implements CodeWriter {
@@ -13,6 +14,10 @@ public abstract class AbstractCodeWriter implements CodeWriter {
 
     @Override
     public void write(Object object) {
+        if (object instanceof CodeRenderer renderer) {
+            renderer.render(this);
+            return;
+        }
         if (atStartOfLine) {
             writeString(INDENT.repeat(indent));
             atStartOfLine = false;

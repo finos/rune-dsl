@@ -18,6 +18,7 @@ package com.regnosys.rosetta.generator.java.statement;
 
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
 
 /**
@@ -38,5 +39,10 @@ public class JavaExpressionStatement extends JavaStatement {
 	public void appendTo(TargetStringConcatenation target) {
 		target.append(expression);
 		target.append(";");
+	}
+
+	@Override
+	public void render(CodeWriter out) {
+		out.write(expression, ";");
 	}
 }
