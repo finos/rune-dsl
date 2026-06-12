@@ -343,9 +343,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		JavaExpression.from('''«itemType».«feature.convertValue»''', itemType)	
 	}
 	
-	def JavaStatementBuilder metaCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RosettaMetaType feature, boolean isDeep, JavaStatementScope scope) {
+	def JavaStatementBuilder metaCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RosettaMetaType feature, boolean isDeepFeature, JavaStatementScope scope) {
 		val resultItemType = typeProvider.getRTypeOfFeature(feature, null).toJavaReferenceType
-		if (isDeep) {
+		if (isDeepFeature) {
 			choiceFeatureCall(receiverCode, receiverType, false,
 				[t | resultItemType],
 				[t, lambdaParam | {
