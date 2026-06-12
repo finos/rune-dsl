@@ -2,6 +2,14 @@ package com.regnosys.rosetta.generator;
 
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 
+/**
+ * Converts target language representations to a debug string, resolving generated
+ * identifiers to their desired name.
+ *
+ * @deprecated Part of the legacy Xtend template machinery; will be removed once
+ * all generators are migrated to the fluent {@code CodeWriter} API.
+ */
+@Deprecated
 public class DebuggingTargetLanguageStringConcatenation extends TargetLanguageStringConcatenation {
 	private static final ThreadLocal<Integer> recursionDepth = ThreadLocal.withInitial(() -> 0);
 	private static final int MAX_RECURSION_DEPTH = 3;

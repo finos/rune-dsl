@@ -24,6 +24,12 @@ import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenatio
  *
  * When appended to a {com.regnosys.rosetta.generator.TargetLanguageStringConcatenation},
  * `appendTo` will be called instead of `toString`.
+ *
+ * <p>Migration note: this interface ties representations to the legacy Xtend
+ * template machinery. It extends the target-language-agnostic
+ * {@link com.regnosys.rosetta.codegen.api.TargetLanguageRepresentation} as a bridge;
+ * once all generators use the fluent API, implementations should implement that
+ * interface directly and this one (together with {@code appendTo}) will be deleted.
  */
 public interface TargetLanguageRepresentation extends com.regnosys.rosetta.codegen.api.TargetLanguageRepresentation {
 	void appendTo(TargetStringConcatenation target);

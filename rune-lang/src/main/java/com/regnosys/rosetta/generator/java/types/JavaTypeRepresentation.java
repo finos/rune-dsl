@@ -178,6 +178,7 @@ public class JavaTypeRepresentation implements TargetLanguageRepresentation {
 
 		@Override
 		public void visitNullType() {
+			// The null type has no representation - this will throw.
 			out.write(JavaReferenceType.NULL_TYPE.getSimpleName());
 		}
 

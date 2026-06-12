@@ -24,6 +24,18 @@ import com.regnosys.rosetta.generator.java.util.ImportingCodeWriter;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaTypeDeclaration;
 
+/**
+ * Base class for generators that produce a Java class using the fluent
+ * {@link CodeRenderer} API. This is the fluent counterpart of
+ * {@link XtendJavaClassGenerator}, which it will replace once all generators
+ * are migrated.
+ *
+ * <p>The renderer returned by {@link #generateClass} is rendered <em>twice</em>:
+ * a first pass gathers imports and claims identifiers in the file scope, and a
+ * second pass produces the class body with all identifiers resolved. The renderer
+ * must therefore be free of side effects; in particular, all identifiers must be
+ * created in {@code generateClass} itself, never inside the returned renderer.
+ */
 public abstract class FluentJavaClassGenerator<T, C extends JavaTypeDeclaration<?>> extends JavaClassGenerator<T, C> {
 	protected abstract CodeRenderer generateClass(T object, C typeRepresentation, String version, JavaClassScope scope);
 
@@ -33,13 +45,19 @@ public abstract class FluentJavaClassGenerator<T, C extends JavaTypeDeclaration<
 		return buildClass(typeRepresentation.getPackageName(), classCode, scope.getFileScope());
 	}
 
+	/**
+	 * Given the body of a Java class represented as a {@link CodeRenderer},
+	 * generate a full Java class file by adding imports and resolving identifiers.
+	 */
 	protected String buildClass(DottedPath packageName, CodeRenderer classCode, JavaFileScope fileScope) {
 		if (fileScope.isClosed()) {
 			throw new IllegalStateException("The top scope may not be closed, as imports will be added to it.");
 		}
+		// First pass: register identifiers in the file scope and collect imports.
 		ImportingCodeWriter imports = new ImportingCodeWriter(fileScope, false);
 		classCode.render(imports);
 
+		// Second pass: render the class body with all identifiers resolved.
 		ImportingCodeWriter body = new ImportingCodeWriter(fileScope);
 		classCode.render(body);
 

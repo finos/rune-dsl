@@ -6,6 +6,13 @@ import com.rosetta.util.types.JavaTypeDeclaration;
 import jakarta.inject.Inject;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 
+/**
+ * Base class for generators that produce a Java class using Xtend templates.
+ *
+ * @deprecated New generators should extend {@link FluentJavaClassGenerator}.
+ * This class will be removed once all generators are migrated to the fluent API.
+ */
+@Deprecated
 public abstract class XtendJavaClassGenerator<T, C extends JavaTypeDeclaration<?>> extends JavaClassGenerator<T, C> {
 	@Inject
 	private ImportManagerExtension importManager;

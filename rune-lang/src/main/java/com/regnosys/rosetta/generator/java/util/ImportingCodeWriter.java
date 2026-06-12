@@ -33,6 +33,21 @@ import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaParameterizedType;
 import com.rosetta.util.types.JavaType;
 
+/**
+ * A code writer for Java files which resolves written {@link JavaType}s and
+ * reflective {@link Method}s to identifiers in the given file scope, registering
+ * an import for them when possible. The collected imports can be retrieved with
+ * {@link #getImports()} and {@link #getStaticImports()}.
+ *
+ * <p>When constructed with {@code resolveIdentifiers} set to {@code false},
+ * generated identifiers are written using their desired name instead of their
+ * resolved actual name. This is used for the import-gathering pass, which runs
+ * before identifier names are final. See {@link com.regnosys.rosetta.generator.java.FluentJavaClassGenerator}.
+ *
+ * <p>Migration note: this is the fluent counterpart of {@code ImportingStringConcatenation},
+ * and intentionally duplicates its import resolution logic. The latter will be
+ * deleted once all generators use the fluent API.
+ */
 public class ImportingCodeWriter extends StringCodeWriter {
 	private final Map<DottedPath, DottedPath> imports = new HashMap<>();
 	private final Map<DottedPath, DottedPath> staticImports = new HashMap<>();
@@ -51,6 +66,9 @@ public class ImportingCodeWriter extends StringCodeWriter {
 
 	@Override
 	public void write(Object object) {
+		if (object == null) {
+			return;
+		}
 		Object processed = handle(normalize(object));
 		if (!resolveIdentifiers && processed instanceof GeneratedIdentifier identifier) {
 			super.write(identifier.getDesiredName());

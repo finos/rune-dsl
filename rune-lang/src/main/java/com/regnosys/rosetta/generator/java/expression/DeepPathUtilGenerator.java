@@ -16,6 +16,9 @@
 
 package com.regnosys.rosetta.generator.java.expression;
 
+import static org.apache.commons.lang3.StringUtils.capitalize;
+import static org.apache.commons.lang3.StringUtils.uncapitalize;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -25,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.google.common.collect.Lists;
 import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
@@ -33,30 +37,49 @@ import com.regnosys.rosetta.generator.java.scoping.JavaClassScope;
 import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService;
 import com.regnosys.rosetta.generator.java.scoping.JavaMethodScope;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
-import com.regnosys.rosetta.generator.java.types.JavaPojoInterface;
-import com.regnosys.rosetta.generator.java.types.JavaPojoProperty;
-import com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperationType;
+import com.regnosys.rosetta.generator.java.statement.JavaStatement;
+import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder;
+import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral;
+import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder;
+import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable;
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil;
-import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue;
 import com.regnosys.rosetta.rosetta.RosettaModel;
+import com.regnosys.rosetta.rosetta.expression.ExistsModifier;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
+import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RObjectFactory;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil;
 import com.rosetta.util.types.JavaClass;
+import com.rosetta.util.types.JavaPrimitiveType;
 import com.rosetta.util.types.JavaType;
 
 import jakarta.inject.Inject;
 
+/**
+ * Generates a `DeepPathUtil` class for each choice-like type, containing a
+ * `choose<Feature>` method per deep feature which selects the feature's value
+ * from whichever alternative is set.
+ *
+ * <p>This is the first generator migrated from Xtend templates to the fluent
+ * {@link CodeRenderer} API, and serves as the blueprint for migrating the others.
+ * Expression code is built with the existing {@link ExpressionGenerator} and
+ * {@link TypeCoercionService} machinery, so the generated output keeps the exact
+ * semantics of the original Xtend implementation.
+ */
 public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RDataType, JavaClass<?>> {
 	@Inject
 	private JavaTypeTranslator typeTranslator;
 	@Inject
 	private DeepFeatureCallUtil deepFeatureCallUtil;
+	@Inject
+	private ExpressionGenerator expressionGenerator;
+	@Inject
+	private TypeCoercionService typeCoercionService;
 	@Inject
 	private JavaIdentifierRepresentationService identifierService;
 	@Inject
@@ -80,12 +103,14 @@ public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RData
 
 	@Override
 	protected CodeRenderer generateClass(RDataType choiceType, JavaClass<?> javaClass, String version, JavaClassScope classScope) {
-		List<RAttribute> deepFeatures = new ArrayList<>(deepFeatureCallUtil.findDeepFeatures(choiceType));
+		Collection<RAttribute> deepFeatures = deepFeatureCallUtil.findDeepFeatures(choiceType);
 		Set<JavaClass<?>> dependencies = new LinkedHashSet<>();
 		Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeatures = computeRecursiveDeepFeatures(choiceType, deepFeatures, dependencies);
-		dependencies.forEach(dependency -> classScope.createIdentifier(identifierService.toDependencyInstance(dependency), lowerFirst(dependency.getSimpleName())));
+		dependencies.forEach(dependency -> classScope.createIdentifier(identifierService.toDependencyInstance(dependency), uncapitalize(dependency.getSimpleName())));
 
-		List<MethodModel> methods = deepFeatures.stream()
+		// All identifiers and method bodies are created up front: the returned
+		// renderer must be free of side effects, as it is rendered multiple times.
+		List<DeepFeatureMethod> methods = deepFeatures.stream()
 				.map(deepFeature -> createMethod(choiceType, deepFeature, recursiveDeepFeatures, classScope))
 				.toList();
 
@@ -110,53 +135,66 @@ public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RData
 		return result;
 	}
 
-	private MethodModel createMethod(RDataType choiceType, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeatures, JavaClassScope classScope) {
-		String methodName = chooseMethodName(deepFeature);
+	private DeepFeatureMethod createMethod(RDataType choiceType, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeatures, JavaClassScope classScope) {
+		String methodName = "choose" + capitalize(deepFeature.getName());
 		JavaMethodScope methodScope = classScope.createMethodScope(methodName);
-		GeneratedIdentifier inputId = methodScope.createUniqueIdentifier(lowerFirst(choiceType.getName()));
-		JavaStatementScope bodyScope = methodScope.getBodyScope();
-
-		JavaType inputType = typeTranslator.toJavaReferenceType(choiceType);
-		JavaType returnType = typeTranslator.toMetaJavaType(deepFeature);
-		List<BranchModel> branches = choiceType.getAllAttributes().stream()
-				.map(attr -> createBranch(attr, deepFeature, recursiveDeepFeatures, bodyScope))
-				.toList();
-		return new MethodModel(methodName, deepFeature, inputType, returnType, inputId, branches);
+		JavaVariable inputParameter = new JavaVariable(methodScope.createUniqueIdentifier(uncapitalize(choiceType.getName())), typeTranslator.toJavaReferenceType(choiceType));
+		JavaStatementBuilder methodBody = deepFeatureToStatement(choiceType, inputParameter, deepFeature, recursiveDeepFeatures, methodScope.getBodyScope());
+		return new DeepFeatureMethod(methodName, methodBody.getExpressionType(), inputParameter, methodBody.completeAsReturn());
 	}
 
-	private BranchModel createBranch(RAttribute attr, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeatures, JavaStatementScope bodyScope) {
-		JavaType attrType = typeTranslator.toMetaJavaType(attr);
-		GeneratedIdentifier attrId = bodyScope.createUniqueIdentifier(lowerFirst(attr.getName()));
-		boolean recursive = recursiveDeepFeatures.get(attr).get(deepFeature);
-		RAttribute actualFeature = findActualFeature(attr, deepFeature, recursive);
-		return new BranchModel(attr, attrType, attrId, recursive, actualFeature);
-	}
-
-	private RAttribute findActualFeature(RAttribute attr, RAttribute deepFeature, boolean recursive) {
-		RType attrType = normalizeChoiceType(attr.getRMetaAnnotatedType().getRType());
-		if (recursive || !(attrType instanceof RDataType dataType)) {
-			return deepFeature;
+	private JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeatures, JavaStatementScope scope) {
+		List<RAttribute> attrs = new ArrayList<>(choiceType.getAllAttributes());
+		JavaType deepFeatureType = typeTranslator.toMetaJavaType(deepFeature);
+		JavaStatementBuilder acc = JavaLiteral.NULL;
+		for (RAttribute attr : Lists.reverse(attrs)) {
+			JavaStatementBuilder currAcc = acc;
+			acc = expressionGenerator
+					.attributeCall(inputParameter, RMetaAnnotatedType.withNoMeta(choiceType), attr, false, typeTranslator.toMetaJavaType(attr), scope)
+					.declareAsVariable(true, uncapitalize(attr.getName()), scope)
+					.mapExpression(attrVar -> typeCoercionService
+							.addCoercions(
+									expressionGenerator.exists(attrVar, ExistsModifier.NONE, scope).collapseToSingleExpression(scope),
+									JavaPrimitiveType.BOOLEAN,
+									scope)
+							.mapExpression(condition -> new JavaIfThenElseBuilder(
+									condition,
+									deepFeatureValue(attrVar, attr, deepFeature, deepFeatureType, recursiveDeepFeatures, scope),
+									currAcc,
+									typeUtil)));
 		}
-		return dataType.getAllAttributes().stream()
-				.filter(candidate -> candidate.getName().equals(deepFeature.getName()))
-				.findFirst()
-				.orElse(deepFeature);
+		return typeCoercionService.addCoercions(acc, deepFeatureType, scope);
 	}
 
-	private void renderClass(CodeWriter out, JavaClass<?> javaClass, JavaClassScope classScope, Set<JavaClass<?>> dependencies, List<MethodModel> methods) {
+	private JavaStatementBuilder deepFeatureValue(JavaStatementBuilder attrVar, RAttribute attr, RAttribute deepFeature, JavaType deepFeatureType, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeatures, JavaStatementScope scope) {
+		if (deepFeatureCallUtil.match(deepFeature, attr)) {
+			return attrVar;
+		}
+		RMetaAnnotatedType attrMetaType = attr.getRMetaAnnotatedType();
+		RType attrType = normalizeChoiceType(attrMetaType.getRType());
+		boolean needsToGoDownDeeper = recursiveDeepFeatures.get(attr).get(deepFeature);
+		RAttribute actualFeature;
+		if (needsToGoDownDeeper || !(attrType instanceof RDataType dataType)) {
+			actualFeature = deepFeature;
+		} else {
+			actualFeature = dataType.getAllAttributes().stream()
+					.filter(candidate -> candidate.getName().equals(deepFeature.getName()))
+					.findFirst()
+					.orElseThrow(() -> new IllegalStateException("No attribute named " + deepFeature.getName() + " found on " + dataType));
+		}
+		return expressionGenerator.attributeCall(attrVar, attrMetaType, actualFeature, needsToGoDownDeeper, deepFeatureType, scope);
+	}
+
+	private void renderClass(CodeWriter out, JavaClass<?> javaClass, JavaClassScope classScope, Set<JavaClass<?>> dependencies, List<DeepFeatureMethod> methods) {
 		out.writeln("public class ", javaClass, " {");
 		out.indented(() -> {
 			if (!dependencies.isEmpty()) {
 				renderDependencies(out, javaClass, classScope, dependencies);
-				if (!methods.isEmpty()) {
-					out.newline();
-				}
+				out.newline();
 			}
-			for (int i = 0; i < methods.size(); i++) {
-				renderMethod(out, methods.get(i), classScope);
-				if (i < methods.size() - 1) {
-					out.newline();
-				}
+			for (DeepFeatureMethod method : methods) {
+				out.writeln("public ", method.returnType(), " ", method.name(), "(", method.inputParameter().getExpressionType(), " ", method.inputParameter(), ") ", method.body());
+				out.newline();
 			}
 		});
 		out.write("}");
@@ -182,103 +220,6 @@ public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RData
 		return classScope.getIdentifierOrThrow(identifierService.toDependencyInstance(dependency));
 	}
 
-	private void renderMethod(CodeWriter out, MethodModel method, JavaClassScope classScope) {
-		out.write("public ", method.returnType(), " ", method.name(), "(", method.inputType(), " ", method.inputId(), ") ");
-		out.writeln("{");
-		out.indented(() -> {
-			out.writeln("if (", method.inputId(), " == null) {");
-			out.indented(() -> out.writeln("return null;"));
-			out.writeln("}");
-
-			Expression input = new Expression(writer -> writer.write(method.inputId()), method.inputType());
-			for (BranchModel branch : method.branches()) {
-				renderBranch(out, input, method, branch, classScope);
-			}
-			out.writeln("return null;");
-		});
-		out.write("}");
-	}
-
-	private void renderBranch(CodeWriter out, Expression input, MethodModel method, BranchModel branch, JavaClassScope classScope) {
-		Expression attrValue = new Expression(writer -> writer.write(branch.attrId()), branch.attrType());
-		out.write("final ", branch.attrType(), " ", branch.attrId(), " = ");
-		renderGetter(out, input, asPojo(method.inputType()), branch.attr(), branch.attrType());
-		out.writeln(";");
-		out.write("if (");
-		renderExists(out, attrValue);
-		out.writeln(") {");
-		out.indented(() -> {
-			out.write("return ");
-			renderDeepFeatureValue(out, attrValue, method, branch, classScope);
-			out.writeln(";");
-		});
-		out.writeln("}");
-	}
-
-	private void renderDeepFeatureValue(CodeWriter out, Expression attrValue, MethodModel method, BranchModel branch, JavaClassScope classScope) {
-		if (deepFeatureCallUtil.match(method.deepFeature(), branch.attr())) {
-			attrValue.render(out);
-			return;
-		}
-
-		RType attrType = normalizeChoiceType(branch.attr().getRMetaAnnotatedType().getRType());
-		if (!(attrType instanceof RDataType dataType)) {
-			out.write("null");
-			return;
-		}
-
-		Expression receiver = unwrapMetaValue(attrValue);
-		if (branch.recursive()) {
-			JavaClass<?> dependency = typeTranslator.toDeepPathUtilJavaClass(dataType);
-			out.write(dependencyIdentifier(classScope, dependency), ".", chooseMethodName(method.deepFeature()), "(");
-			receiver.render(out);
-			out.write(")");
-		} else {
-			renderNullSafeGetter(out, attrValue, receiver, asPojo(typeTranslator.toJavaReferenceType(dataType)), branch.actualFeature(), method.returnType());
-		}
-	}
-
-	private void renderNullSafeGetter(CodeWriter out, Expression original, Expression receiver, JavaPojoInterface receiverType, RAttribute attr, JavaType expectedType) {
-		if (original.type() instanceof RJavaWithMetaValue) {
-			receiver.render(out);
-			out.write(" == null ? null : ");
-		}
-		renderGetter(out, receiver, receiverType, attr, expectedType);
-	}
-
-	private void renderGetter(CodeWriter out, Expression receiver, JavaPojoInterface receiverType, RAttribute attr, JavaType expectedType) {
-		JavaPojoProperty property = receiverType.findProperty(attr.getName(), expectedType);
-		receiver.render(out);
-		out.write(".", property.getOperationName(JavaPojoPropertyOperationType.GET), "()");
-	}
-
-	private void renderExists(CodeWriter out, Expression expression) {
-		expression.render(out);
-		out.write(" != null");
-		if (typeUtil.isList(expression.type())) {
-			out.write(" && !");
-			expression.render(out);
-			out.write(".isEmpty()");
-		}
-	}
-
-	private Expression unwrapMetaValue(Expression expression) {
-		if (expression.type() instanceof RJavaWithMetaValue metaType) {
-			return new Expression(out -> {
-				expression.render(out);
-				out.write(".getValue()");
-			}, metaType.getValueType());
-		}
-		return expression;
-	}
-
-	private JavaPojoInterface asPojo(JavaType type) {
-		if (type instanceof JavaPojoInterface pojo) {
-			return pojo;
-		}
-		throw new IllegalArgumentException("Expected a Java POJO interface, but got " + type);
-	}
-
 	private RType normalizeChoiceType(RType type) {
 		if (type instanceof RChoiceType choiceType) {
 			return choiceType.asRDataType();
@@ -286,44 +227,10 @@ public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RData
 		return type;
 	}
 
-	private String chooseMethodName(RAttribute deepFeature) {
-		return "choose" + upperFirst(deepFeature.getName());
-	}
-
-	private String lowerFirst(String value) {
-		if (value == null || value.isEmpty()) {
-			return value;
-		}
-		return Character.toLowerCase(value.charAt(0)) + value.substring(1);
-	}
-
-	private String upperFirst(String value) {
-		if (value == null || value.isEmpty()) {
-			return value;
-		}
-		return Character.toUpperCase(value.charAt(0)) + value.substring(1);
-	}
-
-	private record Expression(CodeRenderer renderer, JavaType type) {
-		void render(CodeWriter out) {
-			renderer.render(out);
-		}
-	}
-
-	private record MethodModel(
+	private record DeepFeatureMethod(
 			String name,
-			RAttribute deepFeature,
-			JavaType inputType,
 			JavaType returnType,
-			GeneratedIdentifier inputId,
-			List<BranchModel> branches) {
-	}
-
-	private record BranchModel(
-			RAttribute attr,
-			JavaType attrType,
-			GeneratedIdentifier attrId,
-			boolean recursive,
-			RAttribute actualFeature) {
+			JavaVariable inputParameter,
+			JavaStatement body) {
 	}
 }

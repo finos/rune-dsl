@@ -15,6 +15,12 @@ import com.rosetta.util.types.JavaType;
 import com.regnosys.rosetta.generator.java.types.JavaTypeRepresentation;
 import com.rosetta.util.types.JavaParameterizedType;
 
+/**
+ * @deprecated Part of the legacy Xtend template machinery; superseded by
+ * {@link ImportingCodeWriter} and removed once all generators are migrated
+ * to the fluent {@code CodeWriter} API.
+ */
+@Deprecated
 class ImportingStringConcatenation extends TargetLanguageStringConcatenation {
 	private final Map<DottedPath, DottedPath> imports = new HashMap<>();
 	private final Map<DottedPath, DottedPath> staticImports = new HashMap<>();

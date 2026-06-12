@@ -48,6 +48,14 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 		this.type = type;
 	}
 	
+	/**
+	 * Creates an expression from a legacy Xtend template.
+	 *
+	 * <p>Migration note: prefer {@link #from(CodeRenderer, JavaType)}. This overload
+	 * will be removed once all generators use the fluent API. It is not annotated
+	 * {@code @Deprecated} (yet) to avoid flooding the not-yet-migrated Xtend
+	 * generators with warnings.
+	 */
 	public static JavaExpression from(StringConcatenationClient value, JavaType type) {
 		return new JavaExpression(type) {
 			@Override
@@ -62,6 +70,9 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 		};
 	}
 
+	/**
+	 * Creates an expression from a fluent renderer.
+	 */
 	public static JavaExpression from(CodeRenderer value, JavaType type) {
 		return new JavaExpression(type) {
 			@Override
@@ -138,6 +149,10 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 		return DebuggingTargetLanguageStringConcatenation.convertToDebugString(this);
 	}
 
+	/**
+	 * Migration bridge: renders legacy Xtend template code ({@link StringConcatenationClient})
+	 * into a fluent {@link CodeWriter}. To be removed once all generators use the fluent API.
+	 */
 	private static final class CodeWriterTargetStringConcatenation implements TargetStringConcatenation {
 		private final CodeWriter out;
 		private boolean lineHasContent = false;
@@ -190,6 +205,9 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 
 		@Override
 		public void append(Object object) {
+			if (object == null) {
+				return;
+			}
 			if (object instanceof StringConcatenationClient client) {
 				StringConcatenationClient.appendTo(client, this);
 			} else {
@@ -215,11 +233,10 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 			}
 		}
 
+		// Best-effort heuristic for newLineIfNotEmpty: infers whether the written object
+		// left content on the current line from its toString(), which for identifiers and
+		// renderers may not equal the rendered text. Good enough for the migration bridge.
 		private void markWritten(Object object) {
-			if (object == null) {
-				lineHasContent = true;
-				return;
-			}
 			String value = object.toString();
 			int lastNewline = value.lastIndexOf('\n');
 			if (lastNewline >= 0) {
@@ -230,6 +247,10 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 		}
 	}
 
+	/**
+	 * Migration bridge: lets a fluent {@link CodeRenderer} render into legacy Xtend
+	 * template machinery. To be removed once all generators use the fluent API.
+	 */
 	private static final class TargetStringConcatenationCodeWriter implements CodeWriter {
 		private static final String INDENT = "    ";
 
@@ -243,7 +264,13 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 
 		@Override
 		public void write(Object object) {
-			if (object instanceof CodeRenderer renderer) {
+			if (object == null) {
+				return;
+			}
+			// Legacy representations (e.g. generated identifiers) must go through the
+			// target's own machinery, which defers identifier resolution until scopes
+			// are resolvable and substitutes desired names when debugging.
+			if (object instanceof CodeRenderer renderer && !(object instanceof com.regnosys.rosetta.generator.TargetLanguageRepresentation)) {
 				renderer.render(this);
 				return;
 			}
