@@ -19,7 +19,6 @@ package com.regnosys.rosetta.generator.java.statement.builder;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
@@ -58,7 +57,7 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 
 			@Override
 			public void render(CodeWriter out) {
-				throw new UnsupportedOperationException("Xtend-backed Java expressions cannot be rendered by the fluent code writer.");
+				StringConcatenationClient.appendTo(value, new CodeWriterTargetStringConcatenation(out));
 			}
 		};
 	}
@@ -67,7 +66,7 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 		return new JavaExpression(type) {
 			@Override
 			public void appendTo(TargetStringConcatenation target) {
-				throw new UnsupportedOperationException("Fluent Java expressions cannot be rendered by Xtend string concatenation.");
+				value.render(new TargetStringConcatenationCodeWriter(target));
 			}
 
 			@Override
@@ -137,5 +136,141 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 	@Override
 	public String toString() {
 		return DebuggingTargetLanguageStringConcatenation.convertToDebugString(this);
+	}
+
+	private static final class CodeWriterTargetStringConcatenation implements TargetStringConcatenation {
+		private final CodeWriter out;
+		private boolean lineHasContent = false;
+
+		private CodeWriterTargetStringConcatenation(CodeWriter out) {
+			this.out = out;
+		}
+
+		@Override
+		public int length() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public char charAt(int index) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public CharSequence subSequence(int start, int end) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void newLineIfNotEmpty() {
+			if (lineHasContent) {
+				newLine();
+			}
+		}
+
+		@Override
+		public void newLine() {
+			out.newline();
+			lineHasContent = false;
+		}
+
+		@Override
+		public void appendImmediate(Object object, String indentation) {
+			append(object, indentation);
+		}
+
+		@Override
+		public void append(Object object, String indentation) {
+			if (object instanceof String value) {
+				appendString(value, indentation);
+			} else {
+				append(object);
+			}
+		}
+
+		@Override
+		public void append(Object object) {
+			if (object instanceof StringConcatenationClient client) {
+				StringConcatenationClient.appendTo(client, this);
+			} else {
+				out.write(object);
+				markWritten(object);
+			}
+		}
+
+		private void appendString(String value, String indentation) {
+			String[] lines = value.split("\n", -1);
+			for (int i = 0; i < lines.length; i++) {
+				if (i > 0) {
+					newLine();
+					if (!lines[i].isEmpty() && !indentation.isEmpty()) {
+						out.write(indentation);
+						lineHasContent = true;
+					}
+				}
+				if (!lines[i].isEmpty()) {
+					out.write(lines[i]);
+					lineHasContent = true;
+				}
+			}
+		}
+
+		private void markWritten(Object object) {
+			if (object == null) {
+				lineHasContent = true;
+				return;
+			}
+			String value = object.toString();
+			int lastNewline = value.lastIndexOf('\n');
+			if (lastNewline >= 0) {
+				lineHasContent = lastNewline < value.length() - 1;
+			} else if (!value.isEmpty()) {
+				lineHasContent = true;
+			}
+		}
+	}
+
+	private static final class TargetStringConcatenationCodeWriter implements CodeWriter {
+		private static final String INDENT = "    ";
+
+		private final TargetStringConcatenation target;
+		private int indent = 0;
+		private boolean atStartOfLine = true;
+
+		private TargetStringConcatenationCodeWriter(TargetStringConcatenation target) {
+			this.target = target;
+		}
+
+		@Override
+		public void write(Object object) {
+			if (object instanceof CodeRenderer renderer) {
+				renderer.render(this);
+				return;
+			}
+			if (atStartOfLine) {
+				target.append(INDENT.repeat(indent));
+				atStartOfLine = false;
+			}
+			target.append(object);
+		}
+
+		@Override
+		public void newline() {
+			target.newLine();
+			atStartOfLine = true;
+		}
+
+		@Override
+		public void indent() {
+			indent++;
+		}
+
+		@Override
+		public void dedent() {
+			if (indent == 0) {
+				throw new IllegalStateException("Cannot dedent below zero");
+			}
+			indent--;
+		}
 	}
 }
