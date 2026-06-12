@@ -26,7 +26,6 @@ import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope
 import com.regnosys.rosetta.generator.java.RObjectJavaClassGenerator
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
-import com.regnosys.rosetta.rosetta.simple.Choice
 import com.regnosys.rosetta.rosetta.simple.Data
 import com.regnosys.rosetta.types.RObjectFactory
 
@@ -41,7 +40,7 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 
 	override protected streamObjects(RosettaModel model) {
 		model.elements.stream.filter[it instanceof Data].map[it as Data].map[buildRDataType].filter[
-			isEligibleForDeepFeatureCall || (EObject instanceof Choice && (EObject as Choice).buildRChoiceType.hasImpliedKey)
+			isEligibleForDeepFeatureCall || asChoiceType.map[hasImpliedKey].orElse(false)
 		]
 	}
 	override protected createTypeRepresentation(RDataType choiceType) {
@@ -66,7 +65,7 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 				return false
 			])
 		])
-		val hasImpliedKey = choiceType.EObject instanceof Choice && (choiceType.EObject as Choice).buildRChoiceType.hasImpliedKey
+		val hasImpliedKey = choiceType.asChoiceType.map[hasImpliedKey].orElse(false)
 		if (hasImpliedKey) {
 			// `metaChooseKey` delegates to the `metaChooseKey` of each nested choice option, so we depend on their utils.
 			choiceType.allAttributes.map[RMetaAnnotatedType.RType].filter(RChoiceType).forEach[
