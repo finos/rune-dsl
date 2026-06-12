@@ -733,11 +733,11 @@ class RosettaFormatter extends AbstractRosettaFormatter2 {
 			.format
 		if (ele.identifier !== null) {
 			set(
-				ele.regionFor.keyword(asKeyword_6_1_1_0)
+				ele.regionFor.keyword(asKeyword_6_1_1_0_0)
 					.prepend[newLine]
 					.append[oneSpace]
 					.previousHiddenRegion,
-				ele.regionFor.assignment(identifierAssignment_6_1_1_1).nextHiddenRegion,
+				ele.regionFor.assignment(identifierAssignment_6_1_1_0_1).nextHiddenRegion,
 				[indent]
 			)
 		}
