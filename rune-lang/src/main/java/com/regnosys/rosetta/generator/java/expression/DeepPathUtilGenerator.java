@@ -60,17 +60,6 @@ import com.rosetta.util.types.JavaType;
 
 import jakarta.inject.Inject;
 
-/**
- * Generates a `DeepPathUtil` class for each choice-like type, containing a
- * `choose<Feature>` method per deep feature which selects the feature's value
- * from whichever alternative is set.
- *
- * <p>This is the first generator migrated from Xtend templates to the fluent
- * {@link CodeRenderer} API, and serves as the blueprint for migrating the others.
- * Expression code is built with the existing {@link ExpressionGenerator} and
- * {@link TypeCoercionService} machinery, so the generated output keeps the exact
- * semantics of the original Xtend implementation.
- */
 public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RDataType, JavaClass<?>> {
 	@Inject
 	private JavaTypeTranslator typeTranslator;

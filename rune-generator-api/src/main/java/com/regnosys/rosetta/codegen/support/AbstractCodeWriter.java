@@ -24,11 +24,11 @@ import com.regnosys.rosetta.codegen.api.CodeWriterConfig;
 
 /**
  * Base {@link CodeWriter} implementation handling indentation and line breaks,
- * as configured by a {@link CodeWriterConfig}.
- * Subclasses only need to implement {@link #writeString(String)}.
+ * as configured by a {@link CodeWriterConfig}. Objects other than
+ * {@link CodeRenderer}s are written using their {@code toString} representation.
  *
- * <p>{@link CodeRenderer}s are rendered recursively; all other objects are
- * written using their {@code toString} representation.
+ * <p>Subclasses only need to implement {@link #writeString(String)}, which
+ * determines where the code is written to.
  */
 public abstract class AbstractCodeWriter implements CodeWriter {
     private final CodeWriterConfig config;

@@ -23,15 +23,17 @@ import java.util.function.Consumer;
  * A sink for generated code. Keeps track of the current indentation level,
  * which is applied to the start of each non-empty line.
  *
- * <p>Implementations decide how written objects are converted to text, e.g.,
- * by rendering {@link CodeRenderer}s recursively or by resolving objects
- * to target-language identifiers.
+ * <p>Implementations determine where the code is written to, e.g., to a string
+ * in memory, to a file, or to a socket.
  */
 public interface CodeWriter {
     /* Core API */
 
     /**
-     * Writes a single object. Writing {@code null} is a no-op.
+     * Writes a single object. A {@link CodeRenderer} is rendered recursively;
+     * any other object is converted to text in an implementation-defined way,
+     * e.g., using its {@code toString} representation. Writing {@code null}
+     * is a no-op.
      */
     void write(Object object);
 
