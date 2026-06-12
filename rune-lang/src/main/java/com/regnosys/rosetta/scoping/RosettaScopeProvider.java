@@ -42,10 +42,7 @@ import com.regnosys.rosetta.types.*;
 import com.regnosys.rosetta.types.RMetaAttribute;
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import jakarta.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
@@ -437,7 +434,7 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 			IScope attributeScope = Scopes.scopeFor(Iterables.filter(Iterables.transform(deepFeatureCallUtil.findDeepFeatures(dataView), RAttribute::getEObject), Objects::nonNull));
 			if (choiceType.hasImpliedKey()) {
 				// Surface the `key` meta-feature so `someChoice ->> key` links when every leaf option is keyed.
-				List<RosettaFeature> keyMeta = ecoreUtil.getMetaDescriptions(List.of(new RMetaAttribute("key", null)), context);  //TODO: overload getMetaDescriptions to take name directly
+				List<RosettaFeature> keyMeta = ecoreUtil.getMetaDescriptions(Set.of("key"), context);
 				return Scopes.scopeFor(keyMeta, attributeScope);
 			}
 			return attributeScope;
