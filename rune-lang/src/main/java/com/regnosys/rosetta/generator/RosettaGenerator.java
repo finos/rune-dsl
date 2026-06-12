@@ -8,7 +8,7 @@ import com.regnosys.rosetta.generator.external.ExternalGenerators;
 import com.regnosys.rosetta.generator.java.JavaClassGenerator;
 import com.regnosys.rosetta.generator.java.condition.ConditionGenerator;
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator;
-import com.regnosys.rosetta.generator.java.expression.DeepPathUtilGeneratorFluent;
+import com.regnosys.rosetta.generator.java.expression.DeepPathUtilGenerator;
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator;
 import com.regnosys.rosetta.generator.java.function.LabelProviderGenerator;
 import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator;
@@ -75,7 +75,7 @@ public class RosettaGenerator implements IGenerator2 {
 	@Inject
 	private ReportGenerator reportGenerator;
 	@Inject
-	private DeepPathUtilGeneratorFluent deepPathUtilGenerator;
+	private DeepPathUtilGenerator deepPathUtilGenerator;
 	@Inject
 	private LabelProviderGenerator labelProviderGenerator;
 

@@ -52,7 +52,7 @@ import com.rosetta.util.types.JavaType;
 
 import jakarta.inject.Inject;
 
-public class DeepPathUtilGeneratorFluent extends FluentRObjectJavaClassGenerator<RDataType, JavaClass<?>> {
+public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RDataType, JavaClass<?>> {
 	@Inject
 	private JavaTypeTranslator typeTranslator;
 	@Inject
