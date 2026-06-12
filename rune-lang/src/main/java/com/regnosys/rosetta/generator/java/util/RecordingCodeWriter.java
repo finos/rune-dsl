@@ -17,14 +17,15 @@
 package com.regnosys.rosetta.generator.java.util;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import com.regnosys.rosetta.codegen.api.TargetLanguageRepresentation;
-import com.regnosys.rosetta.codegen.support.StringCodeWriter;
+import com.regnosys.rosetta.codegen.api.CodeRenderer;
+import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.scoping.JavaFileScope;
 import com.regnosys.rosetta.generator.java.types.JavaTypeRepresentation;
@@ -34,34 +35,41 @@ import com.rosetta.util.types.JavaParameterizedType;
 import com.rosetta.util.types.JavaType;
 
 /**
- * A code writer for Java files which resolves written {@link JavaType}s and
- * reflective {@link Method}s to identifiers in the given file scope, registering
- * an import for them when possible. The collected imports can be retrieved with
- * {@link #getImports()} and {@link #getStaticImports()}.
+ * A code writer for Java files which records what is written instead of
+ * producing text immediately. While recording, written {@link JavaType}s and
+ * reflective {@link Method}s are resolved against the file scope, registering
+ * an import for them when possible. The recording can afterwards be written to
+ * another code writer using {@link #replay(CodeWriter)}, at which point all
+ * generated identifiers are resolved to their actual names.
  *
- * <p>When constructed with {@code resolveIdentifiers} set to {@code false},
- * generated identifiers are written using their desired name instead of their
- * resolved actual name. This is used for the import-gathering pass, which runs
- * before identifier names are final. See {@link com.regnosys.rosetta.generator.java.FluentJavaClassGenerator}.
+ * <p>Recording allows a class body to be rendered in a single pass, even though
+ * the imports it determines precede the body in the generated file, and
+ * identifier names can only be resolved once all identifiers in the file have
+ * been claimed.
  *
- * <p>Migration note: this is the fluent counterpart of {@code ImportingStringConcatenation},
- * and intentionally duplicates its import resolution logic. The latter will be
- * deleted once all generators use the fluent API.
+ * <p>Migration note: this is the fluent counterpart of
+ * {@code ImportingStringConcatenation} (which preprocesses and replays in a
+ * similar way), and intentionally duplicates its import resolution logic. The
+ * latter will be deleted once all generators use the fluent API.
  */
-public class ImportingCodeWriter extends StringCodeWriter {
+public class RecordingCodeWriter implements CodeWriter {
 	private final Map<DottedPath, DottedPath> imports = new HashMap<>();
 	private final Map<DottedPath, DottedPath> staticImports = new HashMap<>();
 
+	private final List<Consumer<CodeWriter>> recording = new ArrayList<>();
 	private final JavaFileScope scope;
-	private final boolean resolveIdentifiers;
+	private int indentation = 0;
 
-	public ImportingCodeWriter(JavaFileScope topScope) {
-		this(topScope, true);
+	public RecordingCodeWriter(JavaFileScope topScope) {
+		this.scope = topScope;
 	}
 
-	public ImportingCodeWriter(JavaFileScope topScope, boolean resolveIdentifiers) {
-		this.scope = topScope;
-		this.resolveIdentifiers = resolveIdentifiers;
+	/**
+	 * Writes the recorded code to the given writer, resolving all generated
+	 * identifiers to their actual names.
+	 */
+	public void replay(CodeWriter target) {
+		recording.forEach(op -> op.accept(target));
 	}
 
 	@Override
@@ -70,15 +78,38 @@ public class ImportingCodeWriter extends StringCodeWriter {
 			return;
 		}
 		Object processed = handle(normalize(object));
-		if (!resolveIdentifiers && processed instanceof GeneratedIdentifier identifier) {
-			super.write(identifier.getDesiredName());
+		if (processed instanceof GeneratedIdentifier identifier) {
+			// Identifiers are recorded as is: their actual name is only known
+			// once all identifiers in the file have been claimed.
+			recording.add(target -> target.write(identifier));
 			return;
 		}
-		if (processed instanceof TargetLanguageRepresentation representation) {
-			representation.render(this);
+		if (processed instanceof CodeRenderer renderer) {
+			renderer.render(this);
 			return;
 		}
-		super.write(processed);
+		String text = processed.toString();
+		recording.add(target -> target.write(text));
+	}
+
+	@Override
+	public void newline() {
+		recording.add(CodeWriter::newline);
+	}
+
+	@Override
+	public void indent() {
+		indentation++;
+		recording.add(CodeWriter::indent);
+	}
+
+	@Override
+	public void dedent() {
+		if (indentation == 0) {
+			throw new IllegalStateException("Cannot dedent below zero");
+		}
+		indentation--;
+		recording.add(CodeWriter::dedent);
 	}
 
 	private Object handle(Object object) {

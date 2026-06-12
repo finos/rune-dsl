@@ -97,8 +97,6 @@ public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RData
 		Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeatures = computeRecursiveDeepFeatures(choiceType, deepFeatures, dependencies);
 		dependencies.forEach(dependency -> classScope.createIdentifier(identifierService.toDependencyInstance(dependency), uncapitalize(dependency.getSimpleName())));
 
-		// All identifiers and method bodies are created up front: the returned
-		// renderer must be free of side effects, as it is rendered multiple times.
 		List<DeepFeatureMethod> methods = deepFeatures.stream()
 				.map(deepFeature -> createMethod(choiceType, deepFeature, recursiveDeepFeatures, classScope))
 				.toList();

@@ -18,10 +18,6 @@ package com.regnosys.rosetta.codegen.api;
 
 /**
  * A piece of code that knows how to render itself to a {@link CodeWriter}.
- *
- * <p>Renderers must be free of side effects: a renderer may be rendered
- * multiple times, e.g., once to compute imports and once to produce the
- * actual code.
  */
 @FunctionalInterface
 public interface CodeRenderer {

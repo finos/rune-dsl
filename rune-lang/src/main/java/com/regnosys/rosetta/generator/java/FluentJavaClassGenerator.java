@@ -20,7 +20,7 @@ import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.codegen.support.StringCodeWriter;
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope;
 import com.regnosys.rosetta.generator.java.scoping.JavaFileScope;
-import com.regnosys.rosetta.generator.java.util.ImportingCodeWriter;
+import com.regnosys.rosetta.generator.java.util.RecordingCodeWriter;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaTypeDeclaration;
 
@@ -30,11 +30,11 @@ import com.rosetta.util.types.JavaTypeDeclaration;
  * {@link XtendJavaClassGenerator}, which it will replace once all generators
  * are migrated.
  *
- * <p>The renderer returned by {@link #generateClass} is rendered <em>twice</em>:
- * a first pass gathers imports and claims identifiers in the file scope, and a
- * second pass produces the class body with all identifiers resolved. The renderer
- * must therefore be free of side effects; in particular, all identifiers must be
- * created in {@code generateClass} itself, never inside the returned renderer.
+ * <p>The renderer returned by {@link #generateClass} is rendered once into a
+ * {@link RecordingCodeWriter}, which collects imports and claims identifiers
+ * in the file scope; the recording is then replayed with all identifiers
+ * resolved to produce the final file. Identifiers may therefore be created
+ * while rendering.
  */
 public abstract class FluentJavaClassGenerator<T, C extends JavaTypeDeclaration<?>> extends JavaClassGenerator<T, C> {
 	protected abstract CodeRenderer generateClass(T object, C typeRepresentation, String version, JavaClassScope scope);
@@ -53,24 +53,18 @@ public abstract class FluentJavaClassGenerator<T, C extends JavaTypeDeclaration<
 		if (fileScope.isClosed()) {
 			throw new IllegalStateException("The top scope may not be closed, as imports will be added to it.");
 		}
-		// First pass: register identifiers in the file scope and collect imports.
-		ImportingCodeWriter imports = new ImportingCodeWriter(fileScope, false);
-		classCode.render(imports);
-
-		// Second pass: render the class body with all identifiers resolved.
-		ImportingCodeWriter body = new ImportingCodeWriter(fileScope);
-		classCode.render(body);
+		RecordingCodeWriter recording = new RecordingCodeWriter(fileScope);
+		classCode.render(recording);
 
 		StringCodeWriter result = new StringCodeWriter();
 		result.writeln("package ", packageName, ";");
 		result.newline();
-		imports.getImports().forEach(imp -> result.writeln("import ", imp, ";"));
+		recording.getImports().forEach(imp -> result.writeln("import ", imp, ";"));
 		result.newline();
-		imports.getStaticImports().forEach(imp -> result.writeln("import static ", imp, ";"));
+		recording.getStaticImports().forEach(imp -> result.writeln("import static ", imp, ";"));
 		result.newline();
-		String bodyCode = body.toString();
-		result.write(bodyCode);
-		if (!bodyCode.endsWith("\n")) {
+		recording.replay(result);
+		if (!result.toString().endsWith("\n")) {
 			result.newline();
 		}
 		return result.toString();

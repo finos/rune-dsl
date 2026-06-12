@@ -17,7 +17,7 @@ import com.rosetta.util.types.JavaParameterizedType;
 
 /**
  * @deprecated Part of the legacy Xtend template machinery; superseded by
- * {@link ImportingCodeWriter} and removed once all generators are migrated
+ * {@link RecordingCodeWriter} and removed once all generators are migrated
  * to the fluent {@code CodeWriter} API.
  */
 @Deprecated
