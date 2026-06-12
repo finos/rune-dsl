@@ -40,7 +40,7 @@ public abstract class FluentJavaClassGenerator<T, C extends JavaTypeDeclaration<
 	protected abstract CodeRenderer generateClass(T object, C typeRepresentation, String version, JavaClassScope scope);
 
 	@Override
-	protected String generate(T object, C typeRepresentation, String version, JavaClassScope scope, JavaGeneratorErrorHandler errorHandler) {
+	protected String generate(T object, C typeRepresentation, String version, JavaClassScope scope) {
 		CodeRenderer classCode = generateClass(object, typeRepresentation, version, scope);
 		return buildClass(typeRepresentation.getPackageName(), classCode, scope.getFileScope());
 	}

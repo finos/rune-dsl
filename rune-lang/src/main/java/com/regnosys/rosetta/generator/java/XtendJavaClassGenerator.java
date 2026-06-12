@@ -20,7 +20,7 @@ public abstract class XtendJavaClassGenerator<T, C extends JavaTypeDeclaration<?
 	protected abstract StringConcatenationClient generateClass(T object, C typeRepresentation, String version, JavaClassScope scope);
 
     @Override
-    protected String generate(T object, C typeRepresentation, String version, JavaClassScope scope, JavaGeneratorErrorHandler errorHandler) {
+    protected String generate(T object, C typeRepresentation, String version, JavaClassScope scope) {
         StringConcatenationClient classCode = generateClass(object, typeRepresentation, version, scope);
         return importManager.buildClass(typeRepresentation.getPackageName(), classCode, scope.getFileScope());
     }

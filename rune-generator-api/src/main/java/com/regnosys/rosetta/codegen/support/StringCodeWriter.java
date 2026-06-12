@@ -16,12 +16,21 @@
 
 package com.regnosys.rosetta.codegen.support;
 
+import com.regnosys.rosetta.codegen.api.CodeWriterConfig;
+
 /**
  * A {@link com.regnosys.rosetta.codegen.api.CodeWriter} that accumulates
  * the written code in memory; retrieve it with {@link #toString()}.
  */
 public class StringCodeWriter extends AbstractCodeWriter {
     private final StringBuilder builder = new StringBuilder();
+
+    public StringCodeWriter() {
+    }
+
+    public StringCodeWriter(CodeWriterConfig config) {
+        super(config);
+    }
 
     @Override
     protected void writeString(String str) {

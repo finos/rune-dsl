@@ -16,6 +16,7 @@
 
 package com.regnosys.rosetta.codegen.support;
 
+import com.regnosys.rosetta.codegen.api.CodeWriterConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,8 +24,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AbstractCodeWriterTest {
-    private static final String NEWLINE = System.lineSeparator();
-
     private StringCodeWriter out;
 
     @BeforeEach
@@ -43,7 +42,7 @@ public class AbstractCodeWriterTest {
         out.write("Hello");
         out.newline();
         out.write("World");
-        assertEquals("Hello" + NEWLINE + "World", out.toString());
+        assertEquals("Hello\nWorld", out.toString());
     }
 
     @Test
@@ -55,7 +54,7 @@ public class AbstractCodeWriterTest {
         out.newline();
         out.indent();
         out.write("Level 2");
-        assertEquals("Level 0" + NEWLINE + "    Level 1" + NEWLINE + "        Level 2", out.toString());
+        assertEquals("Level 0\n    Level 1\n        Level 2", out.toString());
     }
 
     @Test
@@ -65,7 +64,7 @@ public class AbstractCodeWriterTest {
         out.newline();
         out.dedent();
         out.write("Level 0");
-        assertEquals("    Level 1" + NEWLINE + "Level 0", out.toString());
+        assertEquals("    Level 1\nLevel 0", out.toString());
     }
 
     @Test
@@ -95,6 +94,23 @@ public class AbstractCodeWriterTest {
     void testNewlineAtStartDoesNotAddIndent() {
         out.indent();
         out.newline();
-        assertEquals(NEWLINE, out.toString());
+        assertEquals("\n", out.toString());
+    }
+
+    @Test
+    void testCustomIndent() {
+        StringCodeWriter tabbed = new StringCodeWriter(CodeWriterConfig.builder().indent("\t").build());
+        tabbed.writeln("{");
+        tabbed.indented(() -> tabbed.writeln("Indented"));
+        tabbed.write("}");
+        assertEquals("{\n\tIndented\n}", tabbed.toString());
+    }
+
+    @Test
+    void testCustomNewline() {
+        StringCodeWriter crlf = new StringCodeWriter(CodeWriterConfig.builder().newline("\r\n").build());
+        crlf.writeln("Hello");
+        crlf.write("World");
+        assertEquals("Hello\r\nWorld", crlf.toString());
     }
 }

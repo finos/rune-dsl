@@ -16,22 +16,33 @@
 
 package com.regnosys.rosetta.codegen.support;
 
+import java.util.Objects;
+
 import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.codegen.api.CodeWriter;
+import com.regnosys.rosetta.codegen.api.CodeWriterConfig;
 
 /**
- * Base {@link CodeWriter} implementation handling indentation and line breaks.
+ * Base {@link CodeWriter} implementation handling indentation and line breaks,
+ * as configured by a {@link CodeWriterConfig}.
  * Subclasses only need to implement {@link #writeString(String)}.
  *
  * <p>{@link CodeRenderer}s are rendered recursively; all other objects are
  * written using their {@code toString} representation.
  */
 public abstract class AbstractCodeWriter implements CodeWriter {
-    private static final String NEWLINE = System.lineSeparator();
-    private static final String INDENT = "    ";
+    private final CodeWriterConfig config;
 
     private boolean atStartOfLine = true;
     private int indent = 0;
+
+    protected AbstractCodeWriter() {
+        this(CodeWriterConfig.DEFAULT);
+    }
+
+    protected AbstractCodeWriter(CodeWriterConfig config) {
+        this.config = Objects.requireNonNull(config);
+    }
 
     protected abstract void writeString(String str);
 
@@ -45,7 +56,7 @@ public abstract class AbstractCodeWriter implements CodeWriter {
             return;
         }
         if (atStartOfLine) {
-            writeString(INDENT.repeat(indent));
+            writeString(config.getIndent().repeat(indent));
             atStartOfLine = false;
         }
         writeString(object.toString());
@@ -53,7 +64,7 @@ public abstract class AbstractCodeWriter implements CodeWriter {
 
     @Override
     public void newline() {
-        writeString(NEWLINE);
+        writeString(config.getNewline());
         atStartOfLine = true;
     }
 

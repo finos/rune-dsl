@@ -25,27 +25,25 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class CodeWriterTest {
-    private static final String NEWLINE = System.lineSeparator();
-
     private StringCodeWriter out;
-    
+
     @BeforeEach
     void setUp() {
         out = new StringCodeWriter();
     }
-    
+
     @Test
     void testMultiWrite() {
         out.write("Hello", " ", "World");
         assertEquals("Hello World", out.toString());
     }
-    
+
     @Test
     void testWriteln() {
         out.writeln("Hello", " ", "World");
-        assertEquals("Hello World" + NEWLINE, out.toString());
+        assertEquals("Hello World\n", out.toString());
     }
-    
+
     @Test
     void testIndented() {
         out.writeln("{");
@@ -54,12 +52,14 @@ public class CodeWriterTest {
             out.writeln("More indented");
         });
         out.writeln("}");
-        assertEquals("{" + NEWLINE
-                + "    Indented" + NEWLINE
-                + "    More indented" + NEWLINE
-                + "}" + NEWLINE, out.toString());
+        assertEquals("""
+                {
+                    Indented
+                    More indented
+                }
+                """, out.toString());
     }
-    
+
     @Test
     void testJoin() {
         out.join(List.of("a", "b", "c"), ", ");
@@ -71,6 +71,6 @@ public class CodeWriterTest {
         out.write("Line 1");
         out.blank();
         out.write("Line 2");
-        assertEquals("Line 1" + NEWLINE + NEWLINE + "Line 2", out.toString());
+        assertEquals("Line 1\n\nLine 2", out.toString());
     }
 }
