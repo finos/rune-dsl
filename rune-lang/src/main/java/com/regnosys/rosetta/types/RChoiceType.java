@@ -15,10 +15,10 @@ import java.util.stream.Stream;
 public class RChoiceType extends RType implements RObject {
 	private final Choice choice;
 
-	//TODO: use this lazy storage pattern for hasImpliedKey
 	private ModelSymbolId symbolId = null;
 	private List<RChoiceOption> ownOptions = null;
 	private RDataType dataTypeView = null;
+	private Boolean hasImpliedKey = null;
 	
 	private final ModelIdProvider modelIdProvider;
 	private final RosettaTypeProvider typeProvider;
@@ -69,7 +69,11 @@ public class RChoiceType extends RType implements RObject {
 	 * Returns false for an empty choice, an unresolved option, or any unkeyed leaf.
 	 */
 	public boolean hasImpliedKey() {
-		return doHasImpliedKey(new HashSet<>());
+		if (hasImpliedKey != null) {
+			return hasImpliedKey;
+		}
+		hasImpliedKey = doHasImpliedKey(new HashSet<>());
+		return hasImpliedKey;
 	}
 	private boolean doHasImpliedKey(Set<RChoiceType> visited) {
 		if (!visited.add(this)) {
