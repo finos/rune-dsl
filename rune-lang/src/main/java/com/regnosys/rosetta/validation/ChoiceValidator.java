@@ -34,7 +34,8 @@ public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
 				Attribute attr = ann.getAttribute();
 				String attrName = attr != null ? attr.getName() : "";
 				String label = attrName.isEmpty() ? "[metadata]" : "[metadata " + attrName + "]";
-				error(label + " annotations are not allowed on a choice type.", ann, null);
+				//TODO: turn this into an error once the syntax is removed from the models
+				warning(label + " annotations are not allowed on a choice type.", ann, null);
 			}
 		}
 	}

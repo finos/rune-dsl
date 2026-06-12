@@ -23,7 +23,7 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 				type OptionB:
 				""",
 				"""
-				ERROR (null) '[metadata key] annotations are not allowed on a choice type.' at 5:2, length 14, on AnnotationRef
+				WARNING (null) '[metadata key] annotations are not allowed on a choice type.' at 5:2, length 14, on AnnotationRef
 				"""
 		);
 	}
