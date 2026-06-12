@@ -24,6 +24,36 @@ public class DeepPathTest {
     private RosettaTestModelService modelService;
 
     @Test
+    void deepPathToKeyOnOptionWithMeta() {
+        JavaTestModel model = modelService.toJavaTestModel("""
+                namespace test
+
+                metaType key string
+                metaType scheme string
+
+                type B:
+                  [metadata key]
+                    field1 string (1..1)
+
+                type C:
+                  [metadata key]
+                    field2 string (1..1)
+
+                choice A:
+                    B
+                    [metadata scheme]
+                    C
+                    [metadata scheme]
+                """).compile();
+
+        String result = model.evaluateExpression(String.class, """
+                A { B: B { field1: "abc123" } with-meta { key: "myKey", scheme: "myScheme" }, ... } ->> key
+                """);
+
+        assertEquals("myKey", result);
+    }
+
+    @Test
     void keyResolvesWhenEveryLeafIsKeyed() {
         JavaTestModel model = modelService.toJavaTestModel("""
                 namespace test
