@@ -36,6 +36,8 @@ import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.CardinalityProvider
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RChoiceType
+import com.regnosys.rosetta.types.RDataType
 import com.regnosys.rosetta.types.RFeature
 import com.regnosys.rosetta.types.RFunction
 import com.regnosys.rosetta.types.RFunctionOrigin
@@ -587,28 +589,49 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 						)
 					]
 			} else {
-				val lambdaScope = scope.lambdaScope
-				val r = lambdaScope.createUniqueIdentifier("r")
-				val m = lambdaScope.createUniqueIdentifier("m")
-				expressionGenerator.javaCode(op.expression, typeProvider.getRMetaAnnotatedType(op.expression).RType.withNoMeta.toJavaReferenceType, scope)
-					.declareAsVariable(true, op.pathHead.name + op.pathTail.map[name.toFirstUpper].join, scope)
-					.mapExpression[
-						JavaExpression.from(
-							'''
-								«metaClass».builder()
-									.setGlobalReference(«Optional».ofNullable(«it»)
-										.map(«r» -> «r».getMeta())
-										.map(«m» -> «m».getGlobalKey())
-										.orElse(null))
-									.setExternalReference(«Optional».ofNullable(«it»)
-										.map(«r» -> «r».getMeta())
-										.map(«m» -> «m».getExternalKey())
-										.orElse(null))
-									.build()
-							''',
-							metaClass
-						)
-					]
+				val exprRType = typeProvider.getRMetaAnnotatedType(op.expression).RType
+				if (exprRType instanceof RChoiceType) {
+					val deepPathUtil = exprRType.asRDataType.toDeepPathUtilJavaClass
+					val lambdaScope = scope.lambdaScope
+					val c = lambdaScope.createUniqueIdentifier(exprRType.asRDataType.name.toFirstLower)
+					expressionGenerator.javaCode(op.expression, typeProvider.getRMetaAnnotatedType(op.expression).RType.withNoMeta.toJavaReferenceType, scope)
+						.declareAsVariable(true, op.pathHead.name + op.pathTail.map[name.toFirstUpper].join, scope)
+						.mapExpression[
+							JavaExpression.from(
+								'''
+									«metaClass».builder()
+										.setExternalReference(«Optional».ofNullable(«it»)
+											.map(«c» -> «scope.getIdentifierOrThrow(deepPathUtil.toDependencyInstance)».metaChooseKey(«c»))
+											.orElse(null))
+										.build()
+								''',
+								metaClass
+							)
+						]
+				} else {
+					val lambdaScope = scope.lambdaScope
+					val r = lambdaScope.createUniqueIdentifier("r")
+					val m = lambdaScope.createUniqueIdentifier("m")
+					expressionGenerator.javaCode(op.expression, typeProvider.getRMetaAnnotatedType(op.expression).RType.withNoMeta.toJavaReferenceType, scope)
+						.declareAsVariable(true, op.pathHead.name + op.pathTail.map[name.toFirstUpper].join, scope)
+						.mapExpression[
+							JavaExpression.from(
+								'''
+									«metaClass».builder()
+										.setGlobalReference(«Optional».ofNullable(«it»)
+											.map(«r» -> «r».getMeta())
+											.map(«m» -> «m».getGlobalKey())
+											.orElse(null))
+										.setExternalReference(«Optional».ofNullable(«it»)
+											.map(«r» -> «r».getMeta())
+											.map(«m» -> «m».getExternalKey())
+											.orElse(null))
+										.build()
+								''',
+								metaClass
+							)
+						]
+				}
 			}
 		} else {
 			expressionGenerator.javaCode(op.expression, op.operationToMetaJavaType, scope)

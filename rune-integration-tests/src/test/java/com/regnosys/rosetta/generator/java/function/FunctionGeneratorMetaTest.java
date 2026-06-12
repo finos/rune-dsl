@@ -29,7 +29,56 @@ public class FunctionGeneratorMetaTest {
     private FunctionGeneratorHelper functionGeneratorHelper;
     @Inject
     private CodeGeneratorTestHelper generatorTestHelper;
-    
+
+    @Test
+    void shouldSupportBaseTypesInChoiceWithKey() {
+        var model = """
+                metaType key string
+                metaType reference string
+
+                type Base:
+                    [metadata key]
+                    field string (1..1)
+                
+                type OptionA extends Base:
+                
+                type OptionB extends Base:
+                
+                choice SomeChoice:
+                    OptionA
+                    OptionB
+                
+                type ResultType:
+                    someChoice SomeChoice (1..1)
+                    [metadata reference]
+                
+                func MyFunc:
+                    output:
+                        result ResultType (1..1)
+                
+                    alias someChoice:
+                        SomeChoice { OptionA: OptionA { field: "test" } with-meta { key: "someKey"}, ... }
+                
+                    set result -> someChoice:
+                        someChoice as-key
+                """;
+
+        var code = generatorTestHelper.generateCode(model);
+
+        var classes = generatorTestHelper.compileToClasses(code);
+
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class);
+
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "ResultType", Map.of(
+                "someChoice", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaSomeChoice", Map.of(
+                        "externalReference", "someKey"
+                ))));
+
+        assertEquals(expected, result);
+    }
+
     @Test
     void canSetEmptyObjectWithMetaFromFunctionCall() {
         var model = """
