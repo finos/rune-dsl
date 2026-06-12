@@ -101,13 +101,18 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 					«val keyMethodBody = metaChooseKeyToStatement(choiceType, keyInputParam, metaChooseKeyScope.bodyScope)»
 					public «keyMethodBody.expressionType» metaChooseKey(«keyInputParam.expressionType» «keyInputParam») «keyMethodBody.completeAsReturn»
 
+					«val metaChooseGlobalKeyScope = classScope.createMethodScope('metaChooseGlobalKey')»
+					«val globalKeyInputParam = new JavaVariable(metaChooseGlobalKeyScope.createUniqueIdentifier(choiceType.name.toFirstLower), choiceType.toJavaReferenceType)»
+					«val globalKeyMethodBody = metaChooseGlobalKeyToStatement(choiceType, globalKeyInputParam, metaChooseGlobalKeyScope.bodyScope)»
+					public «globalKeyMethodBody.expressionType» metaChooseGlobalKey(«globalKeyInputParam.expressionType» «globalKeyInputParam») «globalKeyMethodBody.completeAsReturn»
+
 				«ENDIF»
 			}
 		'''
 	}
 
 	/**
-	 * Generates the body of {@code metaChooseKey}, which returns the key of whichever option of the choice is populated.
+	 * Generates the body of {@code metaChooseKey}, which returns the externalKey of whichever option of the choice is populated.
 	 *
 	 * A choice holds exactly one populated option, so we build a chain of if-then-else expressions: for each option,
 	 * if it is populated then read its key, otherwise fall through to the next option.
@@ -115,6 +120,15 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 	private def JavaStatementBuilder metaChooseKeyToStatement(RDataType choiceType, JavaVariable choiceParameter, JavaStatementScope scope) {
 		buildOptionChain(choiceType, choiceParameter, [option, optionValue |
 			optionValue.mapExpression[keyAccess(option, it, scope)]
+		], scope).addCoercions(typeUtil.STRING, scope)
+	}
+
+	/**
+	 * Generates the body of {@code metaChooseGlobalKey}, which returns the globalKey of whichever option of the choice is populated.
+	 */
+	private def JavaStatementBuilder metaChooseGlobalKeyToStatement(RDataType choiceType, JavaVariable choiceParameter, JavaStatementScope scope) {
+		buildOptionChain(choiceType, choiceParameter, [option, optionValue |
+			optionValue.mapExpression[globalKeyAccess(option, it, scope)]
 		], scope).addCoercions(typeUtil.STRING, scope)
 	}
 
@@ -183,6 +197,27 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 			return optionMapper.mapExpression[JavaExpression.from('''«it».map("getValue", «fieldWithMeta» -> «fieldWithMeta».getValue())«keyChain».get()''', typeUtil.STRING)]
 		}
 		return optionMapper.mapExpression[JavaExpression.from('''«it»«keyChain».get()''', typeUtil.STRING)]
+	}
+
+	private def JavaStatementBuilder globalKeyAccess(RAttribute option, JavaExpression optionMapper, JavaStatementScope scope) {
+		val optionType = option.RMetaAnnotatedType.RType
+		if (optionType instanceof RChoiceType) {
+			val nestedUtil = optionType.asRDataType.toDeepPathUtilJavaClass
+			val nestedChoice = scope.lambdaScope.createUniqueIdentifier("nestedChoice")
+			return JavaExpression.from(
+				'''«optionMapper».map("metaChooseGlobalKey", «nestedChoice» -> «scope.getIdentifierOrThrow(nestedUtil.toDependencyInstance)».metaChooseGlobalKey(«nestedChoice»)).get()''',
+				typeUtil.STRING)
+		}
+		return leafGlobalKeyAccess(optionMapper, option.RMetaAnnotatedType.hasAttributeMeta, scope)
+	}
+
+	private def JavaStatementBuilder leafGlobalKeyAccess(JavaStatementBuilder optionMapper, boolean hasFieldMeta, JavaStatementScope scope) {
+		val globalKeyChain = buildMetaChain("globalKey", scope)
+		if (hasFieldMeta) {
+			val fieldWithMeta = scope.lambdaScope.createUniqueIdentifier("fieldWithMeta")
+			return optionMapper.mapExpression[JavaExpression.from('''«it».map("getValue", «fieldWithMeta» -> «fieldWithMeta».getValue())«globalKeyChain».get()''', typeUtil.STRING)]
+		}
+		return optionMapper.mapExpression[JavaExpression.from('''«it»«globalKeyChain».get()''', typeUtil.STRING)]
 	}
 
 	private def JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeaturesMap, JavaStatementScope scope) {

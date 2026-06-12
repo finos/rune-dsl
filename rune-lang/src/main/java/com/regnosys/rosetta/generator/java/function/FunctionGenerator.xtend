@@ -594,6 +594,7 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 					val deepPathUtil = exprRType.asRDataType.toDeepPathUtilJavaClass
 					val lambdaScope = scope.lambdaScope
 					val c = lambdaScope.createUniqueIdentifier(exprRType.asRDataType.name.toFirstLower)
+					val gc = lambdaScope.createUniqueIdentifier(exprRType.asRDataType.name.toFirstLower)
 					expressionGenerator.javaCode(op.expression, typeProvider.getRMetaAnnotatedType(op.expression).RType.withNoMeta.toJavaReferenceType, scope)
 						.declareAsVariable(true, op.pathHead.name + op.pathTail.map[name.toFirstUpper].join, scope)
 						.mapExpression[
@@ -602,6 +603,9 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 									«metaClass».builder()
 										.setExternalReference(«Optional».ofNullable(«it»)
 											.map(«c» -> «scope.getIdentifierOrThrow(deepPathUtil.toDependencyInstance)».metaChooseKey(«c»))
+											.orElse(null))
+										.setGlobalReference(«Optional».ofNullable(«it»)
+											.map(«gc» -> «scope.getIdentifierOrThrow(deepPathUtil.toDependencyInstance)».metaChooseGlobalKey(«gc»))
 											.orElse(null))
 										.build()
 								''',

@@ -31,6 +31,60 @@ public class FunctionGeneratorMetaTest {
     private CodeGeneratorTestHelper generatorTestHelper;
 
     @Test
+    void shouldSupportBaseTypesInChoiceWithGlobalKey() {
+        var model = """
+                metaType key string
+                metaType reference string
+
+                type Base:
+                    [metadata key]
+                    field string (1..1)
+
+                type OptionA extends Base:
+
+                type OptionB extends Base:
+
+                choice SomeChoice:
+                    OptionA
+                    OptionB
+
+                type ResultType:
+                    someChoice SomeChoice (1..1)
+                    [metadata reference]
+
+                func MyFunc:
+                    inputs:
+                        inputChoice SomeChoice (1..1)
+                    output:
+                        result ResultType (1..1)
+
+                    set result -> someChoice:
+                        inputChoice as-key
+                """;
+
+        var code = generatorTestHelper.generateCode(model);
+        var classes = generatorTestHelper.compileToClasses(code);
+        var myFunc = functionGeneratorHelper.createFunc(classes, "MyFunc");
+
+        var optionA = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "OptionA", Map.of(
+                "field", "test",
+                "meta", MetaFields.builder().setGlobalKey("someGlobalKey").build()
+        ));
+        var inputChoice = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "SomeChoice", Map.of(
+                "optionA", optionA
+        ));
+
+        var result = functionGeneratorHelper.invokeFunc(myFunc, RosettaModelObject.class, inputChoice);
+
+        var expected = generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model"), "ResultType", Map.of(
+                "someChoice", generatorTestHelper.createInstanceUsingBuilder(classes, DottedPath.splitOnDots("com.rosetta.test.model.metafields"), "ReferenceWithMetaSomeChoice", Map.of(
+                        "globalReference", "someGlobalKey"
+                ))));
+
+        assertEquals(expected, result);
+    }
+
+    @Test
     void shouldSupportBaseTypesInChoiceWithKey() {
         var model = """
                 metaType key string
