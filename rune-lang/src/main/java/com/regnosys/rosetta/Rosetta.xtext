@@ -72,7 +72,8 @@ Data:
 
 Choice:
 	'choice' RosettaNamed ':' RosettaDefinable?
-	
+	Annotations*
+
 	attributes+=ChoiceOption*
 ;
 

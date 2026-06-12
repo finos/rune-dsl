@@ -11,6 +11,24 @@ import org.junit.jupiter.api.extension.ExtendWith;
 public class ChoiceValidatorTest extends AbstractValidatorTest {
 
 	@Test
+	public void testMetadataAnnotationsAreNotAllowedOnChoiceTypes() {
+		assertIssues("""
+				choice SomeChoice:
+					[metadata key]
+					OptionA
+					OptionB
+
+				type OptionA:
+
+				type OptionB:
+				""",
+				"""
+				ERROR (null) '[metadata key] annotations are not allowed on a choice type.' at 5:2, length 14, on AnnotationRef
+				"""
+		);
+	}
+
+	@Test
 	public void testChoiceOptionsDoNotOverlap() {
 		assertIssues("""
 				choice Foo:
@@ -202,6 +220,26 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 				ERROR (null) 'Cyclic option: CyclicB includes CyclicA includes CyclicB' at 8:2, length 7, on ChoiceOption
 				ERROR (null) 'Duplicate option 'CyclicA'' at 8:2, length 7, on ChoiceOption
 				ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'someField'.' at 16:9, length 9, on RosettaDeepFeatureCall
+				""");
+	}
+
+	@Test
+	public void supportDeprecatedAnnotationOnChoice() {
+		assertIssues("""
+			choice FooDeprecated:
+			 [deprecated]
+				string
+				int
+
+			func Foo:
+				output:
+					result FooDeprecated (1..1)
+
+				set result:
+					FooDeprecated { string: "My string", ... }
+			""", """
+				INFO (null) 'FooDeprecated is deprecated' at 11:10, length 13, on TypeCall
+				INFO (null) 'FooDeprecated is deprecated' at 14:3, length 13, on TypeCall
 				""");
 	}
 }
