@@ -437,7 +437,7 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 			IScope attributeScope = Scopes.scopeFor(Iterables.filter(Iterables.transform(deepFeatureCallUtil.findDeepFeatures(dataView), RAttribute::getEObject), Objects::nonNull));
 			if (choiceType.hasImpliedKey()) {
 				// Surface the `key` meta-feature so `someChoice ->> key` links when every leaf option is keyed.
-				List<RosettaFeature> keyMeta = ecoreUtil.getMetaDescriptions(List.of(new RMetaAttribute("key", null)), context);
+				List<RosettaFeature> keyMeta = ecoreUtil.getMetaDescriptions(List.of(new RMetaAttribute("key", null)), context);  //TODO: overload getMetaDescriptions to take name directly
 				return Scopes.scopeFor(keyMeta, attributeScope);
 			}
 			return attributeScope;

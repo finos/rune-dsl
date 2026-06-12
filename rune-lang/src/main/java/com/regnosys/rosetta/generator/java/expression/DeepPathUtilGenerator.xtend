@@ -159,7 +159,7 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 	 *       {@code metaChooseKey(...)}, which in turn recurses into its populated option.</li>
 	 * </ul>
 	 */
-	private def JavaExpression keyAccess(RAttribute option, JavaExpression optionMapper, JavaStatementScope scope) {
+	private def JavaStatementBuilder keyAccess(RAttribute option, JavaExpression optionMapper, JavaStatementScope scope) {
 		val optionType = option.RMetaAnnotatedType.RType
 		if (optionType instanceof RChoiceType) {
 			val nestedUtil = optionType.asRDataType.toDeepPathUtilJavaClass
@@ -172,21 +172,18 @@ class DeepPathUtilGenerator extends RObjectJavaClassGenerator<RDataType, JavaCla
 	}
 
 	/**
-	 * Reads {@code getMeta().getExternalKey()} from a leaf option. When the option additionally carries
-	 * field-level metadata, its value is unwrapped via {@code getValue()} before reading the metadata.
+	 * Reads the key from a leaf option via the shared meta-chain builder, which routes through
+	 * {@code PojoPropertyUtil.toPojoPropertyName} to locate the correct getter.
+	 * When the option additionally carries field-level metadata its value is unwrapped via
+	 * {@code getValue()} before reading the metadata.
 	 */
-	private def JavaExpression leafKeyAccess(JavaExpression optionMapper, boolean hasFieldMeta, JavaStatementScope scope) {
-		val meta = scope.lambdaScope.createUniqueIdentifier("withMeta")
-		val metaFields = scope.lambdaScope.createUniqueIdentifier("metaFields")
+	private def JavaStatementBuilder leafKeyAccess(JavaStatementBuilder optionMapper, boolean hasFieldMeta, JavaStatementScope scope) {
+		val keyChain = buildMetaChain("key", scope)
 		if (hasFieldMeta) {
 			val fieldWithMeta = scope.lambdaScope.createUniqueIdentifier("fieldWithMeta")
-			return JavaExpression.from(
-				'''«optionMapper».map("getValue", «fieldWithMeta» -> «fieldWithMeta».getValue()).map("getMeta", «meta» -> «meta».getMeta()).map("getExternalKey", «metaFields» -> «metaFields».getExternalKey()).get()''',
-				typeUtil.STRING)
+			return optionMapper.mapExpression[JavaExpression.from('''«it».map("getValue", «fieldWithMeta» -> «fieldWithMeta».getValue())«keyChain».get()''', typeUtil.STRING)]
 		}
-		return JavaExpression.from(
-			'''«optionMapper».map("getMeta", «meta» -> «meta».getMeta()).map("getExternalKey", «metaFields» -> «metaFields».getExternalKey()).get()''',
-			typeUtil.STRING)
+		return optionMapper.mapExpression[JavaExpression.from('''«it»«keyChain».get()''', typeUtil.STRING)]
 	}
 
 	private def JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeaturesMap, JavaStatementScope scope) {

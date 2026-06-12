@@ -14,7 +14,8 @@ import java.util.stream.Stream;
 
 public class RChoiceType extends RType implements RObject {
 	private final Choice choice;
-	
+
+	//TODO: use this lazy storage pattern for hasImpliedKey
 	private ModelSymbolId symbolId = null;
 	private List<RChoiceOption> ownOptions = null;
 	private RDataType dataTypeView = null;

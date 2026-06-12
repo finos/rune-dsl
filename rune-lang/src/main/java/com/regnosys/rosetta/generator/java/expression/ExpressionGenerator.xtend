@@ -513,18 +513,19 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		'''«CardinalityOperator».«if (cardOp === CardinalityModifier.NONE) defaultOp.toString.toFirstUpper else cardOp.toString.toFirstUpper»'''
 	}
 
-	private def static StringConcatenationClient buildMapFunc(RosettaMetaType meta, JavaStatementScope scope) {
-		if (meta.name == "reference") {
-			val lambdaScope = scope.lambdaScope
-			val lambdaParam = lambdaScope.createUniqueIdentifier("a")
-			'''.map("get«meta.name.toFirstUpper»", «lambdaParam»->«lambdaParam».getExternalReference())'''
+	def StringConcatenationClient buildMetaChain(String metaName, JavaStatementScope scope) {
+		if (metaName == "reference") {
+			val lambdaParam = scope.lambdaScope.createUniqueIdentifier("a")
+			'''.map("get«metaName.toFirstUpper»", «lambdaParam»->«lambdaParam».getExternalReference())'''
 		} else {
-			val lambdaScope1 = scope.lambdaScope
-			val lambdaParam1 = lambdaScope1.createUniqueIdentifier("a")
-			val lambdaScope2 = scope.lambdaScope
-			val lambdaParam2 = lambdaScope2.createUniqueIdentifier("a")
-			'''.map("getMeta", «lambdaParam1»->«lambdaParam1».getMeta()).map("get«meta.name.toFirstUpper»", «lambdaParam2»->«lambdaParam2».get«meta.name.toPojoPropertyName.toFirstUpper»())'''
+			val lambdaParam1 = scope.lambdaScope.createUniqueIdentifier("a")
+			val lambdaParam2 = scope.lambdaScope.createUniqueIdentifier("a")
+			'''.map("getMeta", «lambdaParam1»->«lambdaParam1».getMeta()).map("get«metaName.toFirstUpper»", «lambdaParam2»->«lambdaParam2».get«metaName.toPojoPropertyName.toFirstUpper»())'''
 		}
+	}
+
+	private def StringConcatenationClient buildMapFunc(RosettaMetaType meta, JavaStatementScope scope) {
+		meta.name.buildMetaChain(scope)
 	}
 
 	private def Pair<StringConcatenationClient, JavaType> inlineFunction(InlineFunction ref, JavaType expectedBodyType, Context context) {
@@ -800,7 +801,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val javaType = t.toJavaReferenceType
 		val lambdaScope = scope.lambdaScope
 		val lambdaParam = new JavaVariable(lambdaScope.createUniqueIdentifier(javaType.rosettaName.toFirstLower), javaType)
-		val resultItemType = typeUtil.STRING
+		val resultItemType = typeUtil.STRING //TODO: this shouldn't be hard coded should be derived from the meta feature
 		val StringConcatenationClient mappingCode = '''"metaChooseKey", «lambdaParam» -> «scope.getIdentifierOrThrow(t.toDeepPathUtilJavaClass.toDependencyInstance)».metaChooseKey(«lambdaParam»)'''
 		val StringConcatenationClient right = '''.<«resultItemType»>map(«mappingCode»)'''
 		val mapperReceiverCode = typeCoercionService.addCoercions(receiverCode, MAPPER.wrapExtendsWithoutMeta(receiverCode.expressionType.itemType), scope)
