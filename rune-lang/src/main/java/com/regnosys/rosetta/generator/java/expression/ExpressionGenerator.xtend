@@ -346,6 +346,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	def JavaStatementBuilder metaCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, RosettaMetaType feature, boolean isDeepFeature, JavaStatementScope scope) {
 		val resultItemType = typeProvider.getRTypeOfFeature(feature, null).toJavaReferenceType
 		if (isDeepFeature) {
+			if (feature.name != "key") {
+				throw new UnsupportedOperationException("Unsupported meta type for deep feature call: " + feature.name)
+			}
 			choiceFeatureCall(receiverCode, receiverType, false,
 				[t | resultItemType],
 				[t, lambdaParam | {
