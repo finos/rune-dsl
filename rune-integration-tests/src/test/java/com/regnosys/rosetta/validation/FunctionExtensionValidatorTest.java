@@ -2,7 +2,7 @@ package com.regnosys.rosetta.validation;
 
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
-import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider;
+import com.regnosys.rosetta.config.file.RuneConfigurationFileProvider;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
@@ -21,8 +21,8 @@ public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
         protected Module createRuntimeModule() {
             Module base = super.createRuntimeModule();
             return Modules.override(base).with(
-                    binder -> binder.bind(RosettaConfigurationFileProvider.class)
-                            .toInstance(RosettaConfigurationFileProvider.createFromClasspath("rosetta-config-with-enabled-scopes.yml")));
+                    binder -> binder.bind(RuneConfigurationFileProvider.class)
+                            .toInstance(RuneConfigurationFileProvider.createFromClasspath("rune-config-with-enabled-scopes.yml")));
         }
     }
     

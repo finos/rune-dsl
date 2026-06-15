@@ -26,8 +26,8 @@ import org.eclipse.xtext.validation.IResourceValidator;
 
 import com.google.inject.Binder;
 import com.regnosys.rosetta.cache.RequestScopedCacheModule;
-import com.regnosys.rosetta.config.RosettaConfiguration;
-import com.regnosys.rosetta.config.file.FileBasedRosettaConfigurationProvider;
+import com.regnosys.rosetta.config.RuneConfiguration;
+import com.regnosys.rosetta.config.file.FileBasedRuneConfigurationProvider;
 import com.regnosys.rosetta.derivedstate.RosettaDerivedStateComputer;
 import com.regnosys.rosetta.formatting2.FormatterRequestWithDefaultPreferencesProvider;
 import com.regnosys.rosetta.formatting2.ResourceFormatterService;
@@ -127,8 +127,8 @@ public class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	
 	// Bound explicitly via the Guice Binder because the provider now lives in rune-runtime,
 	// which mandates javax.inject (not the jakarta.inject convention used by Xtext's provide* methods).
-	public void configureRosettaConfiguration(Binder binder) {
-		binder.bind(RosettaConfiguration.class).toProvider(FileBasedRosettaConfigurationProvider.class);
+	public void configureRuneConfiguration(Binder binder) {
+		binder.bind(RuneConfiguration.class).toProvider(FileBasedRuneConfigurationProvider.class);
 	}
 	
 	public Class<? extends ResourceFormatterService> bindResourceFormatterService() {

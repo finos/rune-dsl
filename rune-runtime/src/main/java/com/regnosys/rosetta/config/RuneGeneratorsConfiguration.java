@@ -9,15 +9,15 @@ import javax.inject.Inject;
 
 import com.google.inject.ProvidedBy;
 
-@ProvidedBy(RosettaGeneratorsConfiguration.Provider.class)
-public class RosettaGeneratorsConfiguration {
+@ProvidedBy(RuneGeneratorsConfiguration.Provider.class)
+public class RuneGeneratorsConfiguration {
 	private final Predicate<String> namespaceFilter;
-	private final List<RosettaAttributeReference> doNotPrune;
+	private final List<RuneAttributeReference> doNotPrune;
 
-	public RosettaGeneratorsConfiguration() {
+	public RuneGeneratorsConfiguration() {
 		this(n -> true, Collections.emptyList());
 	}
-	public RosettaGeneratorsConfiguration(Predicate<String> namespaceFilter, List<RosettaAttributeReference> doNotPrune) {
+	public RuneGeneratorsConfiguration(Predicate<String> namespaceFilter, List<RuneAttributeReference> doNotPrune) {
 		Objects.requireNonNull(namespaceFilter);
 		Objects.requireNonNull(doNotPrune);
 		this.namespaceFilter = namespaceFilter;
@@ -28,19 +28,19 @@ public class RosettaGeneratorsConfiguration {
 		return namespaceFilter;
 	}
 	
-	public List<RosettaAttributeReference> doNotPrune() {
+	public List<RuneAttributeReference> doNotPrune() {
 		return doNotPrune;
 	}
 
-	public static class Provider implements javax.inject.Provider<RosettaGeneratorsConfiguration> {
-		private final RosettaConfiguration config;
+	public static class Provider implements javax.inject.Provider<RuneGeneratorsConfiguration> {
+		private final RuneConfiguration config;
 		@Inject
-		public Provider(RosettaConfiguration config) {
+		public Provider(RuneConfiguration config) {
 			this.config = config;
 		}
 		
 		@Override
-		public RosettaGeneratorsConfiguration get() {
+		public RuneGeneratorsConfiguration get() {
 			return config.getGenerators();
 		}
 	}

@@ -11,7 +11,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.regnosys.rosetta.RosettaRuntimeModule;
 import com.regnosys.rosetta.RosettaStandaloneSetup;
-import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider;
+import com.regnosys.rosetta.config.file.RuneConfigurationFileProvider;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 
 public class RosettaCustomConfigInjectorProvider implements IInjectorProvider, IRegistryConfigurator {
@@ -51,7 +51,7 @@ public class RosettaCustomConfigInjectorProvider implements IInjectorProvider, I
 						.getClassLoader();
 			}
 			
-			public Class<? extends RosettaConfigurationFileProvider> bindRosettaConfigurationFileProvider() {
+			public Class<? extends RuneConfigurationFileProvider> bindRuneConfigurationFileProvider() {
 				return CustomConfigFileProvider.class;
 			}
 		};
@@ -72,10 +72,10 @@ public class RosettaCustomConfigInjectorProvider implements IInjectorProvider, I
 		stateAfterInjectorCreation.restoreGlobalState();
 	}
 	
-	private static class CustomConfigFileProvider extends RosettaConfigurationFileProvider {
+	private static class CustomConfigFileProvider extends RuneConfigurationFileProvider {
 		@Override
 		public URL get() {
-			return Thread.currentThread().getContextClassLoader().getResource("rosetta-custom-config.yml");
+			return Thread.currentThread().getContextClassLoader().getResource("rune-custom-config.yml");
 		}
 	}
 }

@@ -8,7 +8,7 @@ import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
-import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider;
+import com.regnosys.rosetta.config.file.RuneConfigurationFileProvider;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
 import com.regnosys.rosetta.rosetta.expression.ExpressionPackage;
 import com.regnosys.rosetta.rosetta.simple.SimplePackage;
@@ -35,7 +35,7 @@ public class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
     public Injector createInjector() {
         return Guice.createInjector(new RosettaRuntimeModule(), binder -> {
             if (configFile != null) {
-                binder.bind(RosettaConfigurationFileProvider.class).toInstance(RosettaConfigurationFileProvider.createFromFile(configFile));
+                binder.bind(RuneConfigurationFileProvider.class).toInstance(RuneConfigurationFileProvider.createFromFile(configFile));
             }
         });
     }
