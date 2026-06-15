@@ -3,11 +3,15 @@ package com.regnosys.rosetta.config.file;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.LinkedHashSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
@@ -59,6 +63,36 @@ public class RuneConfigurationFileProvider implements Provider<URL> {
                     LEGACY_FILE_NAME, FILE_NAME);
         }
         return legacy;
+    }
+
+    /**
+     * Returns every Rune configuration file visible on the classpath, with the primary one (the
+     * value returned by {@link #get()}, i.e. the current project's config) first. Dependency
+     * configs that share an id are shadowed by the current project's. Used to build the union of
+     * {@code serializationConfig} entries across a project and its dependencies.
+     */
+    public Collection<URL> getResources() {
+        LinkedHashSet<URL> resources = new LinkedHashSet<>();
+        URL primary = get();
+        if (primary != null) {
+            resources.add(primary);
+        }
+        if (loadFromClasspath && fileName == null) {
+            addClasspathResources(resources, FILE_NAME);
+            addClasspathResources(resources, LEGACY_FILE_NAME);
+        }
+        return resources;
+    }
+
+    private void addClasspathResources(LinkedHashSet<URL> resources, String name) {
+        try {
+            Enumeration<URL> found = Thread.currentThread().getContextClassLoader().getResources(name);
+            while (found.hasMoreElements()) {
+                resources.add(found.nextElement());
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to enumerate configuration files named " + name, e);
+        }
     }
 
     private URL fromClasspath(String name) {
