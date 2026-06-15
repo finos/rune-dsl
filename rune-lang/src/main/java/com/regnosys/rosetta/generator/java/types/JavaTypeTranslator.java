@@ -309,7 +309,16 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return javaType;
 	}
 	private JavaType toJavaType(RType type) {
+		// The built-in SerializationFormat enum (declared in basictypes.rosetta) is not generated;
+		// it maps onto the canonical hand-written enum com.rosetta.model.lib.transform.SerializationFormat.
+		if (type instanceof REnumType && isBuiltInSerializationFormat((REnumType) type)) {
+			return typeUtil.SERIALIZATION_FORMAT;
+		}
 		return doSwitch(type, null);
+	}
+	private boolean isBuiltInSerializationFormat(REnumType type) {
+		return "SerializationFormat".equals(type.getName())
+				&& DottedPath.splitOnDots("com.rosetta.model").equals(type.getNamespace());
 	}
 	public JavaPojoInterface toJavaType(RDataType type) {
 		return caseDataType(type, null);

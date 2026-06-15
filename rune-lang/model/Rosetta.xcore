@@ -147,6 +147,15 @@ class RosettaEnumValueReference {
 	refers RosettaEnumValue value
 }
 
+/**
+ * A named serialization schema, referenced by transform annotations to declare the
+ * (de)serialization format of a transform function. The `format` refers to a value of
+ * the built-in `SerializationFormat` enum.
+ */
+class Schema extends RosettaRootElement, RosettaNamed {
+	refers RosettaEnumValue format
+}
+
 class RosettaCardinality {
 	int inf
 	int sup

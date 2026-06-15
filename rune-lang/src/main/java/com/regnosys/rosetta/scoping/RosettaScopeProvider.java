@@ -107,6 +107,16 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 					}
 					return IScope.NULLSCOPE;
 				}
+			} else if (reference.equals(SCHEMA__FORMAT)) {
+				// A schema's format refers to a value of the built-in SerializationFormat enum.
+				RosettaModel basicTypes = builtinsService.getBasicTypesModel(context.eResource().getResourceSet());
+				return basicTypes.getElements().stream()
+						.filter(RosettaEnumeration.class::isInstance)
+						.map(RosettaEnumeration.class::cast)
+						.filter(e -> "SerializationFormat".equals(e.getName()))
+						.findFirst()
+						.map(e -> (IScope) Scopes.scopeFor(e.getEnumValues()))
+						.orElse(IScope.NULLSCOPE);
 			} else if (reference.equals(ROSETTA_FEATURE_CALL__FEATURE)) {
 				if (context instanceof RosettaFeatureCall featureCall) {
 					return createExtendedFeatureScope(featureCall.getReceiver(), typeProvider.getRMetaAnnotatedType(featureCall.getReceiver()));

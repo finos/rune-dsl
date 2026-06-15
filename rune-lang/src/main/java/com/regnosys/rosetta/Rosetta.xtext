@@ -167,6 +167,11 @@ RosettaRootElement:
 	| Data
 	| Choice
 	| Function
+	| Schema
+;
+
+Schema:
+	'schema' RosettaNamed format=[RosettaEnumValue|ValidID]
 ;
 
 

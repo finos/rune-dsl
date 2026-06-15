@@ -74,6 +74,7 @@ public class JavaTypeUtil {
 	public final JavaClass<com.rosetta.model.lib.records.Date> DATE = JavaClass.from(com.rosetta.model.lib.records.Date.class);
 	public final JavaClass<LocalDateTime> LOCAL_DATE_TIME = JavaClass.from(LocalDateTime.class);
 	public final JavaClass<ZonedDateTime> ZONED_DATE_TIME = JavaClass.from(ZonedDateTime.class);
+	public final JavaClass<com.rosetta.model.lib.transform.SerializationFormat> SERIALIZATION_FORMAT = JavaClass.from(com.rosetta.model.lib.transform.SerializationFormat.class);
 	
 	public final JavaClass<GlobalKey> GLOBAL_KEY = JavaClass.from(GlobalKey.class);
 	public final JavaClass<GlobalKey.GlobalKeyBuilder> GLOBAL_KEY_BUILDER = JavaClass.from(GlobalKey.GlobalKeyBuilder.class);

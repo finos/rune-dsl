@@ -29,7 +29,7 @@ variables:
   # - keywords that are unambiguous, i.e., all other keywords indicating the start of a root element.
   identifiersConflictingWithNamespace: '{{wordStart}}(scope|version){{wordEnd}}'
   ambiguousRootStart: '{{wordStart}}rule{{wordEnd}}'
-  unambiguousRootStart: '{{wordStart}}(namespace|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|typeAlias|library|reporting|eligibility|metaType|report|annotation|enum|type|choice|func){{wordEnd}}'
+  unambiguousRootStart: '{{wordStart}}(namespace|import|isEvent|isProduct|body|corpus|segment|basicType|recordType|typeAlias|library|reporting|eligibility|metaType|report|annotation|enum|type|choice|func|schema){{wordEnd}}'
   rootStart: '{{ambiguousRootStart}}|{{unambiguousRootStart}}'
   namespaceEnd: (?={{identifiersConflictingWithNamespace}}|{{ambiguousRootStart}}|{{unambiguousRootStart}})
   rootEnd: (?={{ambiguousRootStart}}|{{unambiguousRootStart}})
@@ -156,6 +156,7 @@ repository:
           - include: '#typeDeclaration'
           - include: '#choiceDeclaration'
           - include: '#functionDeclaration'
+          - include: '#rosettaSchema'
 
       rosettaBody:
         name: meta.body.rosetta
@@ -850,6 +851,23 @@ repository:
       choiceOption:
         patterns:
         - include: '#typeCall'
+
+      rosettaSchema:
+        name: meta.schema.rosetta
+        begin: '{{wordStart}}schema{{wordEnd}}'
+        beginCaptures:
+          0: { name: storage.type.schema.rosetta keyword.declaration.schema.rosetta }
+        end: '{{rootEnd}}'
+        patterns:
+        - include: '#comment'
+        - begin: '{{identifier}}'
+          beginCaptures:
+            0: { name: entity.name.schema.rosetta }
+          end: '{{rootEnd}}'
+          patterns:
+          - include: '#comment'
+          - name: variable.other.enummember.rosetta
+            match: '{{identifier}}'
 
       functionDeclaration:
         name: meta.function.rosetta

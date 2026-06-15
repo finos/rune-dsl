@@ -42,6 +42,13 @@ public class RuneConfigurationTest {
 		assertFalse(filter.test("abc.def.sub"));
 
 		assertEquals(java.util.List.of("com.rosetta.model.*", "abc.def"), config.getReadOnlyNamespaces());
+
+		assertEquals(2, config.getSerializationConfig().size());
+		assertEquals("xml-config/fixml-xml-config.json",
+				config.findSerializationConfigById("fixml").orElseThrow().getConfigPath());
+		assertEquals("json-config/my-json-config.json",
+				config.findSerializationConfigById("myJson").orElseThrow().getConfigPath());
+		assertFalse(config.findSerializationConfigById("doesNotExist").isPresent());
 	}
 	
 
