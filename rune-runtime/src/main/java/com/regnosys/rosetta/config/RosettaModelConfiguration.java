@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 import com.regnosys.rosetta.experimental.ExperimentalFeature;
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import com.google.inject.ProvidedBy;
 import org.apache.commons.lang3.Validate;
@@ -29,7 +29,7 @@ public class RosettaModelConfiguration {
         return enableExperimentalFeatures;
     }
 	
-	public static class Provider implements jakarta.inject.Provider<RosettaModelConfiguration>, javax.inject.Provider<RosettaModelConfiguration> {
+	public static class Provider implements javax.inject.Provider<RosettaModelConfiguration> {
 		private final RosettaConfiguration config;
 		@Inject
 		public Provider(RosettaConfiguration config) {
