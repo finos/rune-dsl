@@ -13,5 +13,6 @@ public abstract class RuneConfigurationMixin {
 	public RuneConfigurationMixin(
 			@JsonProperty("model") RuneModelConfiguration model,
 			@JsonProperty("dependencies") List<RuneDependencyConfiguration> dependencies,
-			@JsonProperty("generators") RuneGeneratorsConfiguration generators) {}
+			@JsonProperty("generators") RuneGeneratorsConfiguration generators,
+			@JsonProperty("readOnlyNamespaces") List<String> readOnlyNamespaces) {}
 }
