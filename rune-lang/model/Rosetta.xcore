@@ -137,14 +137,29 @@ class RosettaEnumeration extends RootElement, RosettaType, RosettaDefinable, Ref
 	contains RosettaEnumValue[] enumValues opposite enumeration
 }
 
-class RosettaEnumValue extends RosettaSymbol, RosettaDefinable, RosettaFeature, References, Annotated, SwitchCaseTarget {
+class RosettaEnumValue extends RosettaSymbol, RosettaDefinable, RosettaFeature, References, Annotated, SwitchCaseTarget, SchemaOrFormat {
 	String display
 	container RosettaEnumeration enumeration opposite enumValues
 }
 
+/**
+ * Marker for things a transform annotation can refer to as its (de)serialization target:
+ * either a named `Schema` or a value of the built-in `SerializationFormat` enum.
+ */
+interface SchemaOrFormat {}
+
 class RosettaEnumValueReference {
 	refers RosettaEnumeration enumeration
 	refers RosettaEnumValue value
+}
+
+/**
+ * A named serialization schema, referenced by transform annotations to declare the
+ * (de)serialization format of a transform function. The `format` refers to a value of
+ * the built-in `SerializationFormat` enum.
+ */
+class Schema extends RosettaRootElement, RosettaNamed, SchemaOrFormat {
+	refers RosettaEnumValue format
 }
 
 class RosettaCardinality {
