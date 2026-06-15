@@ -1,10 +1,11 @@
 package com.regnosys.rosetta.config;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 import com.google.inject.ProvidedBy;
 
@@ -14,7 +15,7 @@ public class RosettaGeneratorsConfiguration {
 	private final List<RosettaAttributeReference> doNotPrune;
 
 	public RosettaGeneratorsConfiguration() {
-		this(n -> true, List.of());
+		this(n -> true, Collections.emptyList());
 	}
 	public RosettaGeneratorsConfiguration(Predicate<String> namespaceFilter, List<RosettaAttributeReference> doNotPrune) {
 		Objects.requireNonNull(namespaceFilter);
@@ -31,7 +32,7 @@ public class RosettaGeneratorsConfiguration {
 		return doNotPrune;
 	}
 
-	public static class Provider implements jakarta.inject.Provider<RosettaGeneratorsConfiguration>, javax.inject.Provider<RosettaGeneratorsConfiguration> {
+	public static class Provider implements javax.inject.Provider<RosettaGeneratorsConfiguration> {
 		private final RosettaConfiguration config;
 		@Inject
 		public Provider(RosettaConfiguration config) {

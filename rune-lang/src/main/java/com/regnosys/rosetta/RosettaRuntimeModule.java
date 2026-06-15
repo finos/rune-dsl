@@ -125,8 +125,10 @@ public class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 		return CachingResourceValidator.class;
 	}
 	
-	public Class<? extends Provider<? extends RosettaConfiguration>> provideRosettaConfiguration() {
-		return FileBasedRosettaConfigurationProvider.class;
+	// Bound explicitly via the Guice Binder because the provider now lives in rune-runtime,
+	// which mandates javax.inject (not the jakarta.inject convention used by Xtext's provide* methods).
+	public void configureRosettaConfiguration(Binder binder) {
+		binder.bind(RosettaConfiguration.class).toProvider(FileBasedRosettaConfigurationProvider.class);
 	}
 	
 	public Class<? extends ResourceFormatterService> bindResourceFormatterService() {
