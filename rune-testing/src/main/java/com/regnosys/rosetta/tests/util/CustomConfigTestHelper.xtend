@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.tests.util
 
-import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider
+import com.regnosys.rosetta.config.file.RuneConfigurationFileProvider
 import java.util.List
 import com.google.inject.Injector
 import com.regnosys.rosetta.RosettaRuntimeModule
@@ -9,7 +9,7 @@ import java.util.Map
 
 class CustomConfigTestHelper {
 	static def compileToClassesForModel(List<Map<String, String>> code,
-		Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
+		Class<? extends RuneConfigurationFileProvider> configurationFileProvider) {
 		val codeGeneratorTestHelper = getCodeGeneratorTestHelper(configurationFileProvider)
 		val generatedCode = newHashMap
 		code.forEach[it.forEach[k, v|generatedCode.put(k, v)]]
@@ -17,30 +17,30 @@ class CustomConfigTestHelper {
 	}
 
 	static def generateCodeForModel(CharSequence model,
-		Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
+		Class<? extends RuneConfigurationFileProvider> configurationFileProvider) {
 		val codeGeneratorTestHelper = getCodeGeneratorTestHelper(configurationFileProvider)
 		codeGeneratorTestHelper.generateCode(model)
 	}
 
 	static def generateCodeForModel(List<? extends CharSequence> models,
-		Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
+		Class<? extends RuneConfigurationFileProvider> configurationFileProvider) {
 		val codeGeneratorTestHelper = getCodeGeneratorTestHelper(configurationFileProvider)
 		codeGeneratorTestHelper.generateCode(models)
 	}
 
 	static private def CodeGeneratorTestHelper getCodeGeneratorTestHelper(
-		Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
+		Class<? extends RuneConfigurationFileProvider> configurationFileProvider) {
 		val injector = getInjector(configurationFileProvider)
 		injector.getInstance(CodeGeneratorTestHelper)
 	}
 
-	static private def Injector getInjector(Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
+	static private def Injector getInjector(Class<? extends RuneConfigurationFileProvider> configurationFileProvider) {
 		val provider = createProvider(configurationFileProvider)
 		provider.getInjector
 	}
 
 	static private def RosettaCustomConfigInjectorProvider createProvider(
-		Class<? extends RosettaConfigurationFileProvider> configurationFileProvider) {
+		Class<? extends RuneConfigurationFileProvider> configurationFileProvider) {
 
 		new RosettaCustomConfigInjectorProvider() {
 
@@ -51,7 +51,7 @@ class CustomConfigTestHelper {
 						RosettaTestInjectorProvider.getClassLoader()
 					}
 
-					def Class<? extends RosettaConfigurationFileProvider> bindRosettaConfigurationFileProvider() {
+					def Class<? extends RuneConfigurationFileProvider> bindRuneConfigurationFileProvider() {
 						return configurationFileProvider
 					}
 				}
