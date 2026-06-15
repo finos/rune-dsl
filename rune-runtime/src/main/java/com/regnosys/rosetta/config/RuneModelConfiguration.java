@@ -9,12 +9,12 @@ import javax.inject.Inject;
 import com.google.inject.ProvidedBy;
 import org.apache.commons.lang3.Validate;
 
-@ProvidedBy(RosettaModelConfiguration.Provider.class)
-public class RosettaModelConfiguration {
+@ProvidedBy(RuneModelConfiguration.Provider.class)
+public class RuneModelConfiguration {
 	private final String name;
     private final List<ExperimentalFeature> enableExperimentalFeatures;
 
-	public RosettaModelConfiguration(String name, List<ExperimentalFeature> enableExperimentalFeatures) {
+	public RuneModelConfiguration(String name, List<ExperimentalFeature> enableExperimentalFeatures) {
 		Objects.requireNonNull(name);
         Validate.noNullElements(enableExperimentalFeatures);
 		
@@ -29,15 +29,15 @@ public class RosettaModelConfiguration {
         return enableExperimentalFeatures;
     }
 	
-	public static class Provider implements javax.inject.Provider<RosettaModelConfiguration> {
-		private final RosettaConfiguration config;
+	public static class Provider implements javax.inject.Provider<RuneModelConfiguration> {
+		private final RuneConfiguration config;
 		@Inject
-		public Provider(RosettaConfiguration config) {
+		public Provider(RuneConfiguration config) {
 			this.config = config;
 		}
 		
 		@Override
-		public RosettaModelConfiguration get() {
+		public RuneModelConfiguration get() {
 			return config.getModel();
 		}
 		

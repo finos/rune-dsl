@@ -14,18 +14,18 @@ import org.junit.jupiter.api.Test;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.regnosys.rosetta.RosettaRuntimeModule;
-import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider;
+import com.regnosys.rosetta.config.file.RuneConfigurationFileProvider;
 
-public class RosettaConfigurationTest {
+public class RuneConfigurationTest {
 	@Test
 	public void testConfig() {
 		Injector injector = Guice.createInjector(new RosettaRuntimeModule() {
 			@SuppressWarnings("unused")
-			public Class<? extends RosettaConfigurationFileProvider> bindRosettaConfigurationFileProvider() {
+			public Class<? extends RuneConfigurationFileProvider> bindRuneConfigurationFileProvider() {
 				return MyConfigFileProvider.class;
 			}
 		});
-		RosettaConfiguration config = injector.getInstance(RosettaConfiguration.class);
+		RuneConfiguration config = injector.getInstance(RuneConfiguration.class);
 		
 		assertNotNull(config.getModel());
 		assertEquals("XYZ Model", config.getModel().getName());
@@ -45,10 +45,10 @@ public class RosettaConfigurationTest {
 	
 
 	
-	private static class MyConfigFileProvider extends RosettaConfigurationFileProvider {
+	private static class MyConfigFileProvider extends RuneConfigurationFileProvider {
 		@Override
 		public URL get() {
-			return Thread.currentThread().getContextClassLoader().getResource("rosetta-config-test.yml");
+			return Thread.currentThread().getContextClassLoader().getResource("rune-config-test.yml");
 		}
 	}
 }
