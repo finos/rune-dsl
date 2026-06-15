@@ -568,15 +568,15 @@ class FunctionGeneratorTest {
 	def void testDeepFeatureCallWithMeta() {
 		val code = '''
 			choice Foo:
-				[metadata key]
-				
 			    A
 			    B
 			
 			type A:
+				[metadata key]
 			    attr int (1..1)
 			
 			type B:
+				[metadata key]
 			    attr int (1..1)
 			
 			func Test:

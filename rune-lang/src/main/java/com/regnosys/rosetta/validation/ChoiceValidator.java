@@ -8,6 +8,8 @@ import jakarta.inject.Inject;
 
 import org.eclipse.xtext.validation.Check;
 
+import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
+import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Choice;
 import com.regnosys.rosetta.types.RChoiceOption;
 import com.regnosys.rosetta.types.RChoiceType;
@@ -25,6 +27,18 @@ public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
     @Inject
     private CycleValidationHelper cycleValidationHelper;
 	
+	@Check
+	public void checkChoiceHasNoMetadataAnnotations(Choice choice) {
+		for (AnnotationRef ann : choice.getAnnotations()) {
+			if ("metadata".equals(ann.getAnnotation().getName())) {
+				Attribute attr = ann.getAttribute();
+				String attrName = attr != null ? attr.getName() : "";
+				String label = attrName.isEmpty() ? "[metadata]" : "[metadata " + attrName + "]";
+				error(label + " annotations are not allowed on a choice type.", ann, null);
+			}
+		}
+	}
+
 	@Check
 	public void checkCyclicOptions(Choice choice) {
         cycleValidationHelper.detectMultipleCycles(

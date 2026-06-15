@@ -25,9 +25,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.regnosys.rosetta.rosetta.simple.Choice;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.utils.ModelIdProvider;
 import com.rosetta.model.lib.ModelSymbolId;
@@ -40,6 +42,7 @@ public class RDataType extends RType implements RObject {
 	private Map<String, RAttribute> ownAttributes = null;
 	private Map<String, RAttribute> allAttributes = null;
 	private List<RMetaAttribute> metaAttributes = null;
+	private RChoiceType choiceType = null;
 	
 	private final ModelIdProvider modelIdProvider;
 	private final RObjectFactory objectFactory;
@@ -178,6 +181,24 @@ public class RDataType extends RType implements RObject {
 		}
 		result.putAll(getOwnAttributesAsMap());
 		return Collections.unmodifiableMap(result);
+	}
+
+	public boolean hasInheritedMetaAttribute(String name) {
+		return getAllSuperTypes().stream().anyMatch(st -> st.hasMetaAttribute(name));
+	}
+
+	/**
+	 * If this data type is a choice, returns the corresponding {@link RChoiceType}; otherwise returns an empty Optional.
+	 */
+	public Optional<RChoiceType> asChoiceType() {
+		if (choiceType != null) {
+			return Optional.of(choiceType);
+		}
+		if (data instanceof Choice) {
+			choiceType = objectFactory.buildRChoiceType((Choice) data);
+			return Optional.of(choiceType);
+		}
+		return Optional.empty();
 	}
 
 	@Override

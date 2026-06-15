@@ -26,7 +26,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.stream.Stream;
+
+import org.eclipse.xtend2.lib.StringConcatenationClient;
 
 import com.google.common.collect.Lists;
 import com.regnosys.rosetta.codegen.api.CodeRenderer;
@@ -38,6 +41,7 @@ import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationS
 import com.regnosys.rosetta.generator.java.scoping.JavaMethodScope;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.statement.JavaStatement;
+import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaIfThenElseBuilder;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder;
@@ -82,7 +86,7 @@ public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RData
 				.filter(Data.class::isInstance)
 				.map(Data.class::cast)
 				.map(rObjectFactory::buildRDataType)
-				.filter(deepFeatureCallUtil::isEligibleForDeepFeatureCall);
+				.filter(type -> deepFeatureCallUtil.isEligibleForDeepFeatureCall(type) || hasImpliedKey(type));
 	}
 
 	@Override
@@ -95,13 +99,34 @@ public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RData
 		Collection<RAttribute> deepFeatures = deepFeatureCallUtil.findDeepFeatures(choiceType);
 		Set<JavaClass<?>> dependencies = new LinkedHashSet<>();
 		Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeatures = computeRecursiveDeepFeatures(choiceType, deepFeatures, dependencies);
+
+		boolean hasImpliedKey = hasImpliedKey(choiceType);
+		if (hasImpliedKey) {
+			// `metaChooseKey`/`metaChooseGlobalKey` delegate to the same methods on each nested choice
+			// option, so we depend on their utils.
+			choiceType.getAllAttributes().stream()
+					.map(attr -> attr.getRMetaAnnotatedType().getRType())
+					.filter(RChoiceType.class::isInstance)
+					.map(RChoiceType.class::cast)
+					.forEach(option -> dependencies.add(typeTranslator.toDeepPathUtilJavaClass(option.asRDataType())));
+		}
 		dependencies.forEach(dependency -> classScope.createIdentifier(identifierService.toDependencyInstance(dependency), uncapitalize(dependency.getSimpleName())));
 
-		List<DeepFeatureMethod> methods = deepFeatures.stream()
-				.map(deepFeature -> createMethod(choiceType, deepFeature, recursiveDeepFeatures, classScope))
-				.toList();
+		List<GeneratedMethod> methods = new ArrayList<>();
+		deepFeatures.forEach(deepFeature -> methods.add(createMethod(choiceType, "choose" + capitalize(deepFeature.getName()), classScope,
+				(input, scope) -> deepFeatureToStatement(choiceType, input, deepFeature, recursiveDeepFeatures, scope))));
+		if (hasImpliedKey) {
+			methods.add(createMethod(choiceType, "metaChooseKey", classScope,
+					(input, scope) -> metaKeyToStatement(choiceType, input, "key", "metaChooseKey", scope)));
+			methods.add(createMethod(choiceType, "metaChooseGlobalKey", classScope,
+					(input, scope) -> metaKeyToStatement(choiceType, input, "globalKey", "metaChooseGlobalKey", scope)));
+		}
 
 		return out -> renderClass(out, javaClass, classScope, dependencies, methods);
+	}
+
+	private boolean hasImpliedKey(RDataType type) {
+		return type.asChoiceType().map(RChoiceType::hasImpliedKey).orElse(false);
 	}
 
 	private Map<RAttribute, Map<RAttribute, Boolean>> computeRecursiveDeepFeatures(RDataType choiceType, Collection<RAttribute> deepFeatures, Set<JavaClass<?>> dependencies) {
@@ -122,35 +147,57 @@ public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RData
 		return result;
 	}
 
-	private DeepFeatureMethod createMethod(RDataType choiceType, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeatures, JavaClassScope classScope) {
-		String methodName = "choose" + capitalize(deepFeature.getName());
+	private GeneratedMethod createMethod(RDataType choiceType, String methodName, JavaClassScope classScope, BiFunction<JavaVariable, JavaStatementScope, JavaStatementBuilder> bodyBuilder) {
 		JavaMethodScope methodScope = classScope.createMethodScope(methodName);
 		JavaVariable inputParameter = new JavaVariable(methodScope.createUniqueIdentifier(uncapitalize(choiceType.getName())), typeTranslator.toJavaReferenceType(choiceType));
-		JavaStatementBuilder methodBody = deepFeatureToStatement(choiceType, inputParameter, deepFeature, recursiveDeepFeatures, methodScope.getBodyScope());
-		return new DeepFeatureMethod(methodName, methodBody.getExpressionType(), inputParameter, methodBody.completeAsReturn());
+		JavaStatementBuilder methodBody = bodyBuilder.apply(inputParameter, methodScope.getBodyScope());
+		return new GeneratedMethod(methodName, methodBody.getExpressionType(), inputParameter, methodBody.completeAsReturn());
 	}
 
 	private JavaStatementBuilder deepFeatureToStatement(RDataType choiceType, JavaVariable inputParameter, RAttribute deepFeature, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeatures, JavaStatementScope scope) {
-		List<RAttribute> attrs = new ArrayList<>(choiceType.getAllAttributes());
 		JavaType deepFeatureType = typeTranslator.toMetaJavaType(deepFeature);
-		JavaStatementBuilder acc = JavaLiteral.NULL;
-		for (RAttribute attr : Lists.reverse(attrs)) {
-			JavaStatementBuilder currAcc = acc;
-			acc = expressionGenerator
-					.attributeCall(inputParameter, RMetaAnnotatedType.withNoMeta(choiceType), attr, false, typeTranslator.toMetaJavaType(attr), scope)
-					.declareAsVariable(true, uncapitalize(attr.getName()), scope)
-					.mapExpression(attrVar -> typeCoercionService
+		JavaStatementBuilder chain = buildOptionChain(choiceType, inputParameter,
+				(option, optionValue) -> deepFeatureValue(optionValue, option, deepFeature, deepFeatureType, recursiveDeepFeatures, scope),
+				scope);
+		return typeCoercionService.addCoercions(chain, deepFeatureType, scope);
+	}
+
+	/**
+	 * Generates the body of {@code metaChooseKey}/{@code metaChooseGlobalKey}, which returns the
+	 * (global) key of whichever option of the choice is populated.
+	 */
+	private JavaStatementBuilder metaKeyToStatement(RDataType choiceType, JavaVariable choiceParameter, String metaName, String nestedMethodName, JavaStatementScope scope) {
+		JavaStatementBuilder chain = buildOptionChain(choiceType, choiceParameter,
+				(option, optionValue) -> optionValue.mapExpression(it -> metaKeyAccess(option, it, metaName, nestedMethodName, scope)),
+				scope);
+		return typeCoercionService.addCoercions(chain, typeUtil.STRING, scope);
+	}
+
+	/**
+	 * Builds the shared if-then-else chain over choice options (back-to-front). For each option, if it is
+	 * populated the result is computed by {@code readStrategy}; otherwise the chain falls through to the next
+	 * option. Callers are responsible for adding the final coercion to the desired result type.
+	 */
+	private JavaStatementBuilder buildOptionChain(RDataType choiceType, JavaVariable inputParameter, BiFunction<RAttribute, JavaExpression, JavaStatementBuilder> readStrategy, JavaStatementScope scope) {
+		List<RAttribute> options = new ArrayList<>(choiceType.getAllAttributes());
+		JavaStatementBuilder elseBranch = JavaLiteral.NULL;
+		for (RAttribute option : Lists.reverse(options)) {
+			JavaStatementBuilder nextOptionBranch = elseBranch;
+			elseBranch = expressionGenerator
+					.attributeCall(inputParameter, RMetaAnnotatedType.withNoMeta(choiceType), option, false, typeTranslator.toMetaJavaType(option), scope)
+					.declareAsVariable(true, uncapitalize(option.getName()), scope)
+					.mapExpression(optionValue -> typeCoercionService
 							.addCoercions(
-									expressionGenerator.exists(attrVar, ExistsModifier.NONE, scope).collapseToSingleExpression(scope),
+									expressionGenerator.exists(optionValue, ExistsModifier.NONE, scope).collapseToSingleExpression(scope),
 									JavaPrimitiveType.BOOLEAN,
 									scope)
-							.mapExpression(condition -> new JavaIfThenElseBuilder(
-									condition,
-									deepFeatureValue(attrVar, attr, deepFeature, deepFeatureType, recursiveDeepFeatures, scope),
-									currAcc,
+							.mapExpression(optionIsPopulated -> new JavaIfThenElseBuilder(
+									optionIsPopulated,
+									readStrategy.apply(option, optionValue),
+									nextOptionBranch,
 									typeUtil)));
 		}
-		return typeCoercionService.addCoercions(acc, deepFeatureType, scope);
+		return elseBranch;
 	}
 
 	private JavaStatementBuilder deepFeatureValue(JavaStatementBuilder attrVar, RAttribute attr, RAttribute deepFeature, JavaType deepFeatureType, Map<RAttribute, Map<RAttribute, Boolean>> recursiveDeepFeatures, JavaStatementScope scope) {
@@ -172,14 +219,48 @@ public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RData
 		return expressionGenerator.attributeCall(attrVar, attrMetaType, actualFeature, needsToGoDownDeeper, deepFeatureType, scope);
 	}
 
-	private void renderClass(CodeWriter out, JavaClass<?> javaClass, JavaClassScope classScope, Set<JavaClass<?>> dependencies, List<DeepFeatureMethod> methods) {
+	/**
+	 * Builds the expression that reads the key from a single, populated choice option: a nested choice option
+	 * delegates to that choice's generated {@code metaChooseKey}/{@code metaChooseGlobalKey}, while a leaf option
+	 * reads the key straight from its metadata.
+	 */
+	private JavaStatementBuilder metaKeyAccess(RAttribute option, JavaExpression optionMapper, String metaName, String nestedMethodName, JavaStatementScope scope) {
+		RType optionType = option.getRMetaAnnotatedType().getRType();
+		if (optionType instanceof RChoiceType choice) {
+			JavaClass<?> nestedUtil = typeTranslator.toDeepPathUtilJavaClass(choice.asRDataType());
+			GeneratedIdentifier nestedChoice = scope.lambdaScope().createUniqueIdentifier("nestedChoice");
+			GeneratedIdentifier nestedUtilInstance = scope.getIdentifierOrThrow(identifierService.toDependencyInstance(nestedUtil));
+			return JavaExpression.from(out -> out.write(
+					optionMapper, ".map(\"", nestedMethodName, "\", ", nestedChoice, " -> ",
+					nestedUtilInstance, ".", nestedMethodName, "(", nestedChoice, ")).get()"),
+					typeUtil.STRING);
+		}
+		return leafMetaKeyAccess(optionMapper, metaName, option.getRMetaAnnotatedType().hasAttributeMeta(), scope);
+	}
+
+	/**
+	 * Reads the key from a leaf option via the shared meta-chain builder. When the option additionally carries
+	 * field-level metadata its value is unwrapped via {@code getValue()} before reading the metadata.
+	 */
+	private JavaStatementBuilder leafMetaKeyAccess(JavaStatementBuilder optionMapper, String metaName, boolean hasFieldMeta, JavaStatementScope scope) {
+		JavaExpression metaChain = JavaExpression.from(expressionGenerator.buildMetaChain(metaName, scope), typeUtil.STRING);
+		if (hasFieldMeta) {
+			GeneratedIdentifier fieldWithMeta = scope.lambdaScope().createUniqueIdentifier("fieldWithMeta");
+			return optionMapper.mapExpression(it -> JavaExpression.from(out -> out.write(
+					it, ".map(\"getValue\", ", fieldWithMeta, " -> ", fieldWithMeta, ".getValue())", metaChain, ".get()"),
+					typeUtil.STRING));
+		}
+		return optionMapper.mapExpression(it -> JavaExpression.from(out -> out.write(it, metaChain, ".get()"), typeUtil.STRING));
+	}
+
+	private void renderClass(CodeWriter out, JavaClass<?> javaClass, JavaClassScope classScope, Set<JavaClass<?>> dependencies, List<GeneratedMethod> methods) {
 		out.writeln("public class ", javaClass, " {");
 		out.indented(() -> {
 			if (!dependencies.isEmpty()) {
 				renderDependencies(out, javaClass, classScope, dependencies);
 				out.newline();
 			}
-			for (DeepFeatureMethod method : methods) {
+			for (GeneratedMethod method : methods) {
 				out.writeln("public ", method.returnType(), " ", method.name(), "(", method.inputParameter().getExpressionType(), " ", method.inputParameter(), ") ", method.body());
 				out.newline();
 			}
@@ -214,7 +295,7 @@ public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RData
 		return type;
 	}
 
-	private record DeepFeatureMethod(
+	private record GeneratedMethod(
 			String name,
 			JavaType returnType,
 			JavaVariable inputParameter,

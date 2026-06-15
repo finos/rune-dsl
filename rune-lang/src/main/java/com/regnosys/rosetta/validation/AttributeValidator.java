@@ -65,12 +65,18 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 		RAttribute attribute = rObjectFactory.buildRAttribute(attr);
 		RType attrType = attribute.getRMetaAnnotatedType().getRType();
 
-		if (attrType instanceof RChoiceType) {
-			attrType = ((RChoiceType)attrType).asRDataType();
-		}
-		if (attrType instanceof RDataType attrDataType) {
-            if (ecoreUtil.hasReferenceAnnotation(attr) 
-					&& !(attrDataType.hasMetaAttribute("key") || attrDataType.getAllSuperTypes().stream().anyMatch(st -> st.hasMetaAttribute("key")))) {
+		boolean hasReferenceAnnotation = attribute
+				.getRMetaAnnotatedType()
+				.hasMetaAttribute("reference");
+
+		if (attrType instanceof RChoiceType attrChoiceType) {
+			if (hasReferenceAnnotation && !attrChoiceType.hasImpliedKey()) {
+				error("Choice '" + attrChoiceType.getName() + "' cannot be a [metadata reference] target: every option type must be annotated with [metadata key]", attr,
+					ROSETTA_TYPED__TYPE_CALL);
+			}
+		} else if (attrType instanceof RDataType attrDataType) {
+            if (hasReferenceAnnotation
+					&& !(attrDataType.hasInheritedMetaAttribute("key"))) {
 				error(attrDataType.getName() + " must be annotated with [metadata key] as reference annotation is used", attr,
 					ROSETTA_TYPED__TYPE_CALL);
 			}

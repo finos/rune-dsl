@@ -37,13 +37,12 @@ import com.regnosys.rosetta.rosetta.simple.FunctionDispatch;
 import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.Segment;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
+import com.regnosys.rosetta.rosetta.RosettaFeature;
 import com.regnosys.rosetta.types.*;
+import com.regnosys.rosetta.types.RMetaAttribute;
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import jakarta.inject.Inject;
 import org.eclipse.emf.ecore.EObject;
@@ -115,7 +114,7 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 				return IScope.NULLSCOPE;
 			} else if (reference.equals(ROSETTA_DEEP_FEATURE_CALL__FEATURE)) {
 				if (context instanceof RosettaDeepFeatureCall deepFeatureCall) {
-					return createDeepFeatureScope(typeProvider.getRMetaAnnotatedType(deepFeatureCall.getReceiver()).getRType());
+					return createDeepFeatureScope(typeProvider.getRMetaAnnotatedType(deepFeatureCall.getReceiver()).getRType(), deepFeatureCall);
 				}
 				return IScope.NULLSCOPE;
 			} else if (reference.equals(CHOICE_OPERATION__ATTRIBUTES)) {
@@ -186,7 +185,7 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 			} else if (reference.equals(ANNOTATION_DEEP_PATH__ATTRIBUTE)) {
 				if (context instanceof AnnotationDeepPath adp) {
 					var t = typeProvider.getRMetaAnnotatedType(adp.getReceiver());
-					return createDeepFeatureScope(t.getRType());
+					return createDeepFeatureScope(t.getRType(), adp);
 				}
 				return IScope.NULLSCOPE;
 			} else if (reference.equals(ROSETTA_SYMBOL_REFERENCE__SYMBOL)) {
@@ -429,12 +428,18 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 	}
 
 
-	private IScope createDeepFeatureScope(RType receiverType) {
-		RType t = receiverType;
-		if (receiverType instanceof RChoiceType choice) {
-			t = choice.asRDataType();
+	private IScope createDeepFeatureScope(RType receiverType, EObject context) {
+		if (receiverType instanceof RChoiceType choiceType) {
+			RDataType dataView = choiceType.asRDataType();
+			IScope attributeScope = Scopes.scopeFor(Iterables.filter(Iterables.transform(deepFeatureCallUtil.findDeepFeatures(dataView), RAttribute::getEObject), Objects::nonNull));
+			if (choiceType.hasImpliedKey()) {
+				// Surface the `key` meta-feature so `someChoice ->> key` links when every leaf option is keyed.
+				List<RosettaFeature> keyMeta = ecoreUtil.getMetaDescriptions(Set.of("key"), context);
+				return Scopes.scopeFor(keyMeta, attributeScope);
+			}
+			return attributeScope;
 		}
-		if (t instanceof RDataType dt) {
+		if (receiverType instanceof RDataType dt) {
 			return Scopes.scopeFor(Iterables.filter(Iterables.transform(deepFeatureCallUtil.findDeepFeatures(dt), RAttribute::getEObject), Objects::nonNull));
 		}
 		return IScope.NULLSCOPE;

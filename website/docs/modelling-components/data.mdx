@@ -219,24 +219,17 @@ You define a choice type using the choice keyword, followed by a name and a list
 **Syntax:**
 ```haskell
 choice <TypeName>: <"Description">
-[
-<annotation1>]
-    [
-    <annotation2>]
-        [...]
-        <Type1>
-            <Type2>
-                <
-                ...>
+    <Type1>
+    <Type2>
+    <...>
 ```
 
 **Example:**
 ```haskell
 choice Vehicle:
-[metadata key]
-Car
-Bicycle
-Motorcycle
+    Car
+    Bicycle
+    Motorcycle
 ```
 
 
