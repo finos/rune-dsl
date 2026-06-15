@@ -568,11 +568,23 @@ repository:
           1: { name: punctuation.annotation.end.rosetta }
         patterns:
         - include: '#comment'
+        - include: '#transformAnnotationBody'
         - include: '#prefixAnnotationBody'
         - include: '#referenceAnnotationBody'
         - include: '#ruleReferenceAnnotationBody'
         - include: '#labelAnnotationBody'
         - include: '#customAnnotationBody'
+
+      transformAnnotationBody:
+        name: meta.annotated.transform.rosetta
+        begin: '{{wordStart}}(ingest|enrich|projection){{wordEnd}}'
+        beginCaptures:
+          1: { name: keyword.other.transform.rosetta }
+        end: (?=\])|{{sectionEnd}}
+        patterns:
+        - include: '#comment'
+        - name: variable.other.enummember.rosetta
+          match: '{{identifier}}'
 
       prefixAnnotationBody:
         name: meta.annotated.prefix.rosetta

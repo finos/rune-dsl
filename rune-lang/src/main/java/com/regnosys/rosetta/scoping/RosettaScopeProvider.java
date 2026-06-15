@@ -109,14 +109,10 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 				}
 			} else if (reference.equals(SCHEMA__FORMAT)) {
 				// A schema's format refers to a value of the built-in SerializationFormat enum.
-				RosettaModel basicTypes = builtinsService.getBasicTypesModel(context.eResource().getResourceSet());
-				return basicTypes.getElements().stream()
-						.filter(RosettaEnumeration.class::isInstance)
-						.map(RosettaEnumeration.class::cast)
-						.filter(e -> "SerializationFormat".equals(e.getName()))
-						.findFirst()
-						.map(e -> (IScope) Scopes.scopeFor(e.getEnumValues()))
-						.orElse(IScope.NULLSCOPE);
+				return Scopes.scopeFor(serializationFormatValues(context));
+			} else if (reference.equals(TRANSFORM_ANNOTATION__REF)) {
+				// A transform annotation's ref is either a SerializationFormat value or a named Schema.
+				return Scopes.scopeFor(serializationFormatValues(context), super.getScope(context, reference));
 			} else if (reference.equals(ROSETTA_FEATURE_CALL__FEATURE)) {
 				if (context instanceof RosettaFeatureCall featureCall) {
 					return createExtendedFeatureScope(featureCall.getReceiver(), typeProvider.getRMetaAnnotatedType(featureCall.getReceiver()));
@@ -370,6 +366,16 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 
 	private IScope defaultScope(EObject object, EReference reference) {
 		return super.getScope(object, reference);
+	}
+
+	private Iterable<? extends EObject> serializationFormatValues(EObject context) {
+		RosettaModel basicTypes = builtinsService.getBasicTypesModel(context.eResource().getResourceSet());
+		for (var element : basicTypes.getElements()) {
+			if (element instanceof RosettaEnumeration e && "SerializationFormat".equals(e.getName())) {
+				return e.getEnumValues();
+			}
+		}
+		return java.util.Collections.emptyList();
 	}
 	
 	@Override

@@ -8,6 +8,7 @@ import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RObjectFactory;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.utils.CsvUtil;
+import com.regnosys.rosetta.utils.TransformAnnotationHelper;
 import jakarta.inject.Inject;
 import org.eclipse.xtext.validation.Check;
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
@@ -26,6 +27,8 @@ public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
     private RObjectFactory rObjectFactory;
     @Inject
     private WarningSuppressionHelper warningSuppressionHelper;
+    @Inject
+    private TransformAnnotationHelper transformAnnotationHelper;
 
     @Check
     public void checkFunctionNameStartsWithCapital(Function func) {
@@ -37,7 +40,7 @@ public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
     
     @Check
     public void checkCsvIngestionInput(Function function) {
-        if (hasCsvTransformAnnotation(function, "ingest")) {
+        if (hasCsvTransformAnnotation(function, TransformKind.INGEST)) {
             if (!function.getInputs().isEmpty()) {
                 checkAttributeIsTabular(function.getInputs().get(0), "The input of a CSV ingest function");
             }
@@ -45,7 +48,7 @@ public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
     }
     @Check
     public void checkCsvProjectionOutput(Function function) {
-        if (hasCsvTransformAnnotation(function, "projection")) {
+        if (hasCsvTransformAnnotation(function, TransformKind.PROJECTION)) {
             Attribute output = function.getOutput();
             if (output != null) {
                 checkAttributeIsTabular(output, "The output of a CSV projection function");
@@ -68,12 +71,11 @@ public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
             error(attributeDescription + " must be single cardinality", attribute, SimplePackage.Literals.ATTRIBUTE__CARD);
         }
     }
-    private boolean hasCsvTransformAnnotation(Function function, String transformName) {
-        return functionExtensions.getTransformAnnotations(function)
-                .stream()
-                .filter(a -> a.getAttribute() != null && "CSV".equals(a.getAttribute().getName()))
-                .map(AnnotationRef::getAnnotation)
-                .anyMatch(a -> a != null && transformName.equals(a.getName()));
+    private boolean hasCsvTransformAnnotation(Function function, TransformKind kind) {
+        return transformAnnotationHelper.getTransformAnnotation(function)
+                .filter(a -> a.getKind() == kind)
+                .map(a -> transformAnnotationHelper.hasFormat(a, "CSV"))
+                .orElse(false);
     }
     
     @Check
