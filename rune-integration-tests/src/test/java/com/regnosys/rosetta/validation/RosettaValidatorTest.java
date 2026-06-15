@@ -342,13 +342,13 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
         validationTestHelper.assertNoIssues(expression3);
 
         var expression4 = expressionParser.parseExpression("a ->> B", List.of(context), List.of("a A (1..1)"));
-        validationTestHelper.assertError(expression4, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Attribute 'B'.");
+        validationTestHelper.assertError(expression4, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'B'.");
         var expression5 = expressionParser.parseExpression("a ->> opt2", List.of(context), List.of("a A (1..1)"));
-        validationTestHelper.assertError(expression5, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Attribute 'opt2'.");
+        validationTestHelper.assertError(expression5, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'opt2'.");
         var expression6 = expressionParser.parseExpression("a ->> otherAttr", List.of(context), List.of("a A (1..1)"));
-        validationTestHelper.assertError(expression6, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Attribute 'otherAttr'.");
+        validationTestHelper.assertError(expression6, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'otherAttr'.");
         var expression7 = expressionParser.parseExpression("b ->> opt1", List.of(context), List.of("b B (1..1)"));
-        validationTestHelper.assertError(expression7, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Attribute 'opt1'.");
+        validationTestHelper.assertError(expression7, ROSETTA_DEEP_FEATURE_CALL, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to RosettaFeature 'opt1'.");
     }
 
     @Test

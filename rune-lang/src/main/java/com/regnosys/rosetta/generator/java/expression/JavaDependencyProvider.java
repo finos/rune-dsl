@@ -9,6 +9,7 @@ import org.eclipse.xtext.EcoreUtil2;
 
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
 import com.regnosys.rosetta.rosetta.RosettaRule;
+import com.regnosys.rosetta.rosetta.expression.AsKeyOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaDeepFeatureCall;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
@@ -52,11 +53,16 @@ public class JavaDependencyProvider {
 				.map(typeTranslator::toFunctionJavaClass)
 				.forEach(result::add);
 			deepFeatureCalls.stream()
-				.map(dfc -> typeProvider.getRMetaAnnotatedType(dfc.getReceiver()).getRType())
-				.map(t -> t instanceof RChoiceType ? ((RChoiceType)t).asRDataType() : t)
-				.filter(t -> t instanceof RDataType)
-				.map(t -> typeTranslator.toDeepPathUtilJavaClass((RDataType)t))
-				.forEach(result::add);
+					.map(dfc -> typeProvider.getRMetaAnnotatedType(dfc.getReceiver()).getRType())
+					.map(t -> t instanceof RChoiceType ? ((RChoiceType)t).asRDataType() : t)
+					.filter(t -> t instanceof RDataType)
+					.map(t -> typeTranslator.toDeepPathUtilJavaClass((RDataType)t))
+					.forEach(result::add);
+			EcoreUtil2.eAllOfType(expression, AsKeyOperation.class).stream()
+					.map(op -> typeProvider.getRMetaAnnotatedType(op.getArgument()).getRType())
+					.filter(t -> t instanceof RChoiceType)
+					.map(t -> typeTranslator.toDeepPathUtilJavaClass(((RChoiceType)t).asRDataType()))
+					.forEach(result::add);
 		}
 	}
 

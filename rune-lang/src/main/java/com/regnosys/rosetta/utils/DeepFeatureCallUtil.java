@@ -3,9 +3,11 @@ package com.regnosys.rosetta.utils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import com.regnosys.rosetta.rosetta.expression.OneOfOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
@@ -20,31 +22,38 @@ import com.regnosys.rosetta.types.RType;
 public class DeepFeatureCallUtil {
 	public List<List<RAttribute>> findDeepFeaturePaths(RDataType type, RAttribute deepFeature) {
 		List<List<RAttribute>> result = new ArrayList<>();
-		findDeepFeaturePaths(type, new ArrayList<>(), deepFeature, result);
+		findDeepFeaturePaths(type, new ArrayList<>(), deepFeature, result, new HashSet<>());
 		return result;
 	}
-	private void findDeepFeaturePaths(RDataType currentType, List<RAttribute> currentPath, RAttribute deepFeature, List<List<RAttribute>> paths) {
-		Collection<RAttribute> allAttrs = currentType.getAllAttributes();
-		Optional<RAttribute> matchingAttribute = allAttrs.stream().filter(a -> match(a, deepFeature)).findAny();
-		matchingAttribute
-			.ifPresentOrElse(
-				a -> {
-					currentPath.add(a);
-					paths.add(currentPath);
-				},
-				() -> {
-					allAttrs.forEach(a -> {
-						RType attrType = a.getRMetaAnnotatedType().getRType();
-						if (attrType instanceof RChoiceType) {
-							attrType = ((RChoiceType) attrType).asRDataType();
-						}
-						if (attrType instanceof RDataType) {
-							List<RAttribute> newPath = new ArrayList<>(currentPath);
-							newPath.add(a);
-							findDeepFeaturePaths((RDataType) attrType, newPath, deepFeature, paths);
-						}
+	private void findDeepFeaturePaths(RDataType currentType, List<RAttribute> currentPath, RAttribute deepFeature, List<List<RAttribute>> paths, Set<RDataType> visiting) {
+		if (!visiting.add(currentType)) {
+			return; // cycle guard: currentType is already on the call stack
+		}
+		try {
+			Collection<RAttribute> allAttrs = currentType.getAllAttributes();
+			Optional<RAttribute> matchingAttribute = allAttrs.stream().filter(a -> match(a, deepFeature)).findAny();
+			matchingAttribute
+				.ifPresentOrElse(
+					a -> {
+						currentPath.add(a);
+						paths.add(currentPath);
+					},
+					() -> {
+						allAttrs.forEach(a -> {
+							RType attrType = a.getRMetaAnnotatedType().getRType();
+							if (attrType instanceof RChoiceType) {
+								attrType = ((RChoiceType) attrType).asRDataType();
+							}
+							if (attrType instanceof RDataType) {
+								List<RAttribute> newPath = new ArrayList<>(currentPath);
+								newPath.add(a);
+								findDeepFeaturePaths((RDataType) attrType, newPath, deepFeature, paths, visiting);
+							}
+						});
 					});
-				});
+		} finally {
+			visiting.remove(currentType);
+		}
 	}
 	
 	public Collection<RAttribute> findDeepFeatures(RDataType type) {
@@ -52,43 +61,53 @@ public class DeepFeatureCallUtil {
 	}
 	
 	public Map<String, RAttribute> findDeepFeatureMap(RDataType type) {
-		if (!isEligibleForDeepFeatureCall(type)) {
-			return new HashMap<>();
+		return findDeepFeatureMap(type, new HashSet<>());
+	}
+	private Map<String, RAttribute> findDeepFeatureMap(RDataType type, Set<RDataType> visiting) {
+		if (!visiting.add(type)) {
+			return new HashMap<>(); // cycle guard: type is already on the call stack
 		}
-		
-		Map<String, RAttribute> deepIntersection = null;
-		Map<String, RAttribute> result = new HashMap<>();
-		Collection<RAttribute> allAttributes = type.getAllAttributes();
-		for (RAttribute attr : allAttributes) {
-			result.put(attr.getName(), attr);
-		}
-		for (RAttribute attr : allAttributes) {
+		try {
+			if (!isEligibleForDeepFeatureCall(type)) {
+				return new HashMap<>();
+			}
 
-			RType attrType = attr.getRMetaAnnotatedType().getRType();
-			if (attrType instanceof RChoiceType) {
-				attrType = ((RChoiceType) attrType).asRDataType();
+			Map<String, RAttribute> deepIntersection = null;
+			Map<String, RAttribute> result = new HashMap<>();
+			Collection<RAttribute> allAttributes = type.getAllAttributes();
+			for (RAttribute attr : allAttributes) {
+				result.put(attr.getName(), attr);
 			}
-			Map<String, RAttribute> attrDeepFeatureMap;
-			if (attrType instanceof RDataType) {
-				RDataType attrDataType = (RDataType)attrType;
-				attrDeepFeatureMap = findDeepFeatureMap(attrDataType);
-				for (RAttribute attrFeature : attrDataType.getAllAttributes()) {
-					attrDeepFeatureMap.put(attrFeature.getName(), attrFeature);
+			for (RAttribute attr : allAttributes) {
+
+				RType attrType = attr.getRMetaAnnotatedType().getRType();
+				if (attrType instanceof RChoiceType) {
+					attrType = ((RChoiceType) attrType).asRDataType();
 				}
-			} else {
-				attrDeepFeatureMap = new HashMap<>();
+				Map<String, RAttribute> attrDeepFeatureMap;
+				if (attrType instanceof RDataType) {
+					RDataType attrDataType = (RDataType)attrType;
+					attrDeepFeatureMap = findDeepFeatureMap(attrDataType, visiting);
+					for (RAttribute attrFeature : attrDataType.getAllAttributes()) {
+						attrDeepFeatureMap.put(attrFeature.getName(), attrFeature);
+					}
+				} else {
+					attrDeepFeatureMap = new HashMap<>();
+				}
+				if (deepIntersection == null) {
+					deepIntersection = attrDeepFeatureMap;
+				} else {
+					intersect(deepIntersection, attrDeepFeatureMap);
+				}
+				intersectButRetainAttribute(result, attrDeepFeatureMap, attr);
 			}
-			if (deepIntersection == null) {
-				deepIntersection = attrDeepFeatureMap;
-			} else {
-				intersect(deepIntersection, attrDeepFeatureMap);
+			if (deepIntersection != null) {
+				merge(result, deepIntersection);
 			}
-			intersectButRetainAttribute(result, attrDeepFeatureMap, attr);
+			return result;
+		} finally {
+			visiting.remove(type);
 		}
-		if (deepIntersection != null) {
-			merge(result, deepIntersection);
-		}
-		return result;
 	}
 	private void intersect(Map<String, RAttribute> featuresMapToModify, Map<String, RAttribute> otherFeatureMap) {
 		intersectButRetainAttribute(featuresMapToModify, otherFeatureMap, null);

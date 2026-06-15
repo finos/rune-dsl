@@ -103,19 +103,23 @@ public class RosettaEcoreUtil {
 	 */
     public List<RosettaFeature> getMetaDescriptions(List<RMetaAttribute> metaAttributes, EObject context) {
     	Set<String> metaNames = metaAttributes.stream().map(RMetaAttribute::getName).collect(Collectors.toSet());
- 		if (!metaNames.isEmpty()) {
- 			List<RosettaFeature> result = new ArrayList<>();
- 			for (var mt : configs.findMetaTypes(metaNames, context)) {
-				EObject resolved = EcoreUtil.resolve(mt.getEObjectOrProxy(), context);
-				if (resolved instanceof RosettaFeature) {
-					result.add((RosettaFeature) resolved);
-				}
- 			}
- 			return result;
- 		}
- 		return Collections.emptyList();
+ 		return getMetaDescriptions(metaNames, context);
  	}
-	
+
+	 public List<RosettaFeature> getMetaDescriptions(Set<String> metaNames, EObject context) {
+		 if (!metaNames.isEmpty()) {
+			 List<RosettaFeature> result = new ArrayList<>();
+			 for (var mt : configs.findMetaTypes(metaNames, context)) {
+				 EObject resolved = EcoreUtil.resolve(mt.getEObjectOrProxy(), context);
+				 if (resolved instanceof RosettaFeature) {
+					 result.add((RosettaFeature) resolved);
+				 }
+			 }
+			 return result;
+		 }
+		 return Collections.emptyList();
+	 }
+
 	@Deprecated // Use RDataType#getAllSuperTypes instead
 	public List<Data> getAllSuperTypes(Data data) {
 		Set<Data> reversedResult = new LinkedHashSet<>();
