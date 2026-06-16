@@ -21,6 +21,7 @@ import java.util.Objects;
 
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.TargetLanguageRepresentation;
 import com.rosetta.util.types.JavaArrayType;
 import com.rosetta.util.types.JavaClass;
@@ -51,6 +52,11 @@ public class JavaTypeRepresentation implements TargetLanguageRepresentation {
 	public void appendTo(TargetStringConcatenation target) {
 		type.accept(new ConcatenationVisitor(target));
 	}
+
+	@Override
+	public void render(CodeWriter out) {
+		type.accept(new WriterVisitor(out));
+	}
 	
 	@Override
 	public int hashCode() {
@@ -72,7 +78,7 @@ public class JavaTypeRepresentation implements TargetLanguageRepresentation {
 		public ConcatenationVisitor(TargetStringConcatenation target) {
 			this.target = target;
 		}
-		
+
 		@Override
 		public void visitType(JavaArrayType type) {
 			type.getBaseType().accept(this);
@@ -108,7 +114,7 @@ public class JavaTypeRepresentation implements TargetLanguageRepresentation {
 		public void visitType(JavaTypeVariable type) {
 			target.append(type.getName());
 		}
-		
+
 		@Override
 		public void visitNullType() {
 			// The null type has no representation - this will throw.
@@ -124,6 +130,67 @@ public class JavaTypeRepresentation implements TargetLanguageRepresentation {
 			}
 			if (arg.hasSuperBound()) {
 				target.append(" super ");
+				arg.getBound().get().accept((JavaTypeVisitor)this);
+			}
+		}
+
+		@Override
+		public void visitTypeArgument(JavaReferenceType arg) {
+			arg.accept((JavaTypeVisitor)this);
+		}
+	}
+
+	private static class WriterVisitor implements JavaTypeVisitor, JavaTypeArgumentVisitor {
+		private final CodeWriter out;
+
+		public WriterVisitor(CodeWriter out) {
+			this.out = out;
+		}
+
+		@Override
+		public void visitType(JavaArrayType type) {
+			type.getBaseType().accept(this);
+			out.write("[]");
+		}
+
+		@Override
+		public void visitType(JavaClass<?> type) {
+			out.write(type);
+		}
+
+		@Override
+		public void visitType(JavaParameterizedType<?> type) {
+			type.getGenericTypeDeclaration().getBaseType().accept((JavaTypeVisitor)this);
+			out.write("<");
+			out.join(type.getArguments(), ", ", arg -> arg.accept(this));
+			out.write(">");
+		}
+
+		@Override
+		public void visitType(JavaPrimitiveType type) {
+			out.write(type.getSimpleName());
+		}
+
+		@Override
+		public void visitType(JavaTypeVariable type) {
+			out.write(type.getName());
+		}
+
+		@Override
+		public void visitNullType() {
+			// The null type has no representation - this will throw.
+			out.write(JavaReferenceType.NULL_TYPE.getSimpleName());
+		}
+
+		@Override
+		public void visitTypeArgument(JavaWildcardTypeArgument arg) {
+			out.write("?");
+			if (arg.hasExtendsBound()) {
+				out.write(" extends ");
+				arg.getBound().get().accept((JavaTypeVisitor)this);
+			}
+			if (arg.hasSuperBound()) {
+				out.write(" super ");
 				arg.getBound().get().accept((JavaTypeVisitor)this);
 			}
 		}

@@ -18,6 +18,7 @@ package com.regnosys.rosetta.generator.java.statement;
 
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
 
 /**
@@ -58,6 +59,16 @@ public class JavaIfThenElseStatement extends JavaStatement {
 			target.append(elseBranch);
 		} else {
 			target.append(elseBranch.toBlock());
+		}
+	}
+
+	@Override
+	public void render(CodeWriter out) {
+		out.write("if (", condition, ") ", thenBranch.toBlock(), " else ");
+		if (elseBranch instanceof JavaIfThenElseStatement) {
+			out.write(elseBranch);
+		} else {
+			out.write(elseBranch.toBlock());
 		}
 	}
 }

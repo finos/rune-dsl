@@ -1,0 +1,22 @@
+namespace test.deeppath
+
+choice OuterChoice:
+    InnerChoice
+    Leaf
+
+choice InnerChoice:
+    Option1
+    Option2
+
+type Option1:
+    common string (1..1)
+    items string (0..*)
+    only1 int (0..1)
+
+type Option2:
+    common string (1..1)
+    items string (0..*)
+
+type Leaf:
+    common string (1..1)
+    items string (0..*)

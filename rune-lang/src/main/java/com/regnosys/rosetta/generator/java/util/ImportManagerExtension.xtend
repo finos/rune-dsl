@@ -6,6 +6,12 @@ import com.rosetta.util.types.JavaClass
 import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.generator.java.scoping.JavaFileScope
 
+/**
+ * @deprecated Part of the legacy Xtend template machinery; superseded by
+ * FluentJavaClassGenerator#buildClass and removed once all generators are
+ * migrated to the fluent CodeWriter API.
+ */
+@Deprecated
 class ImportManagerExtension {
 	def method(Class<?> clazz, String methodName) {
 		clazz.methods.findFirst[name == methodName]
