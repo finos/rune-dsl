@@ -5,3 +5,6 @@ generators:
   namespaces:
   - xyz.*   # project namespace
   - abc.def # forked namespace
+readOnlyNamespaces:
+- com.rosetta.model.*
+- abc.def
