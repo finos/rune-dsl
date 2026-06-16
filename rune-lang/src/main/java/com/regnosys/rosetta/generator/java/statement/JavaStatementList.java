@@ -21,6 +21,7 @@ import java.util.Arrays;
 
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.TargetLanguageRepresentation;
 
 public class JavaStatementList extends ArrayList<JavaStatement> implements TargetLanguageRepresentation {
@@ -43,6 +44,16 @@ public class JavaStatementList extends ArrayList<JavaStatement> implements Targe
 			target.append(get(i));
 			if (i < size() - 1) {
 				target.newLine();
+			}
+		}
+	}
+
+	@Override
+	public void render(CodeWriter out) {
+		for (int i = 0; i < size(); i++) {
+			out.write(get(i));
+			if (i < size() - 1) {
+				out.newline();
 			}
 		}
 	}

@@ -134,6 +134,7 @@
     <modules>
         <module>rune-xcore-plugin-dependencies</module>
         <module>rune-runtime</module>
+        <module>rune-generator-api</module>
         <module>rune-lang</module>
         <module>rune-testing</module>
         <module>rune-integration-tests</module>

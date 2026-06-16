@@ -18,6 +18,7 @@ package com.regnosys.rosetta.generator;
 
 import java.util.NoSuchElementException;
 
+import com.regnosys.rosetta.codegen.api.CodeWriter;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 public class GeneratedIdentifier implements TargetLanguageRepresentation {
@@ -42,6 +43,11 @@ public class GeneratedIdentifier implements TargetLanguageRepresentation {
 	public void appendTo(TargetStringConcatenation target) {
 		String actualName = getActualName();
 		target.append(actualName);
+	}
+
+	@Override
+	public void render(CodeWriter out) {
+		out.write(getActualName());
 	}
 	
 	protected String getActualName() {

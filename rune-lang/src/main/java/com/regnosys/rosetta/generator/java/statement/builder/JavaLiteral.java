@@ -3,6 +3,7 @@ package com.regnosys.rosetta.generator.java.statement.builder;
 import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.rosetta.util.types.JavaPrimitiveType;
 import com.rosetta.util.types.JavaReferenceType;
 import com.rosetta.util.types.JavaType;
@@ -31,6 +32,11 @@ public class JavaLiteral extends JavaExpression {
 	@Override
 	public void appendTo(TargetStringConcatenation target) {
 		target.append(representation);
+	}
+
+	@Override
+	public void render(CodeWriter out) {
+		out.write(representation);
 	}
 	
 	@Override

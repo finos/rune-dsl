@@ -22,6 +22,7 @@ import java.util.function.Function;
 
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.statement.JavaLambdaBody;
@@ -103,6 +104,11 @@ public abstract class JavaStatementBuilder {
 						target.append(argList);
 						target.append(", ");
 						target.append(newArg);
+					}
+
+					@Override
+					public void render(CodeWriter out) {
+						out.write(argList, ", ", newArg);
 					}
 				},
 				scope
