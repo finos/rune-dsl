@@ -36,6 +36,10 @@ com.regnosys.rosetta.web/
 .vscode/
 *.swp
 
+# Python
+__pycache__/
+*.pyc
+
 # Docusaurus website
 website/.docusaurus
 website/build

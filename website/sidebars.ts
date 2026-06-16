@@ -100,6 +100,10 @@ const sidebars: SidebarsConfig = {
           type: 'doc',
           id: 'developers/contribute-to-rune',
         },
+        {
+          type: 'doc',
+          id: 'developers/read-only-namespaces',
+        },
       ],
     },
     {
