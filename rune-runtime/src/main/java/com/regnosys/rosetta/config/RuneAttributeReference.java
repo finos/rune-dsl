@@ -3,12 +3,12 @@ package com.regnosys.rosetta.config;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class RosettaAttributeReference {
+public class RuneAttributeReference {
 	private final String type;
 	private final String attribute;
 	
 	@JsonCreator
-	public RosettaAttributeReference(
+	public RuneAttributeReference(
 			@JsonProperty("type") String type,
 			@JsonProperty("attribute") String attribute) {
 		this.type = type;

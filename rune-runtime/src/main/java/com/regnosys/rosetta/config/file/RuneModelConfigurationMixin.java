@@ -6,9 +6,9 @@ import com.regnosys.rosetta.experimental.ExperimentalFeature;
 
 import java.util.List;
 
-public abstract class RosettaModelConfigurationMixin {
+public abstract class RuneModelConfigurationMixin {
 	@JsonCreator
-	public RosettaModelConfigurationMixin(
+	public RuneModelConfigurationMixin(
 			@JsonProperty("name") String name,
             @JsonProperty("enableExperimentalFeatures") List<ExperimentalFeature> enableExperimentalFeatures) {}
 }

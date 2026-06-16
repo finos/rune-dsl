@@ -1,6 +1,6 @@
 package com.regnosys.rosetta.generator.java.object
 
-import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider
+import com.regnosys.rosetta.config.file.RuneConfigurationFileProvider
 import java.net.URL
 import org.junit.jupiter.api.Test
 
@@ -33,15 +33,15 @@ class ModelMetaGeneratorFilteredNamespaceTest {
 		#[model1Code, model2Code].compileToClassesForModel(Model2FileConfigProvider)
 	}
 
-	private static class Model1FileConfigProvider extends RosettaConfigurationFileProvider {
+	private static class Model1FileConfigProvider extends RuneConfigurationFileProvider {
 		override URL get() {
-			Thread.currentThread.contextClassLoader.getResource("rosetta-filtered-config-model1.yml")
+			Thread.currentThread.contextClassLoader.getResource("rune-filtered-config-model1.yml")
 		}
 	}
 
-	private static class Model2FileConfigProvider extends RosettaConfigurationFileProvider {
+	private static class Model2FileConfigProvider extends RuneConfigurationFileProvider {
 		override URL get() {
-			Thread.currentThread.contextClassLoader.getResource("rosetta-filtered-config-model2.yml")
+			Thread.currentThread.contextClassLoader.getResource("rune-filtered-config-model2.yml")
 		}
 	}
 }

@@ -3,7 +3,7 @@
  */
 package com.regnosys.rosetta.generator;
 
-import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration;
+import com.regnosys.rosetta.config.RuneGeneratorsConfiguration;
 import com.regnosys.rosetta.generator.external.ExternalGenerators;
 import com.regnosys.rosetta.generator.java.JavaClassGenerator;
 import com.regnosys.rosetta.generator.java.condition.ConditionGenerator;
@@ -83,7 +83,7 @@ public class RosettaGenerator implements IGenerator2 {
 	private ResourceAwareFSAFactory fsaFactory;
 
 	@Inject
-	private RosettaGeneratorsConfiguration config;
+	private RuneGeneratorsConfiguration config;
 
 	// For files that are ignored during code generation
 	private final Set<String> ignoredFiles = Set.of(

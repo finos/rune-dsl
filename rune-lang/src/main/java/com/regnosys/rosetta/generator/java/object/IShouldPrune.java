@@ -1,7 +1,7 @@
 package com.regnosys.rosetta.generator.java.object;
 
 import com.google.inject.ImplementedBy;
-import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration;
+import com.regnosys.rosetta.config.RuneGeneratorsConfiguration;
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface;
 import com.regnosys.rosetta.generator.java.types.JavaPojoProperty;
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
@@ -21,7 +21,7 @@ public interface IShouldPrune {
 		@Inject
 		private JavaTypeTranslator translator;
 		@Inject
-		private RosettaGeneratorsConfiguration config;
+		private RuneGeneratorsConfiguration config;
 		
 		@Override
 		public boolean shouldBePruned(JavaPojoInterface pojo, JavaPojoProperty prop) {
