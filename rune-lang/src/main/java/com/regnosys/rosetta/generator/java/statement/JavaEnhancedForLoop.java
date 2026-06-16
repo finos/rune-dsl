@@ -2,6 +2,7 @@ package com.regnosys.rosetta.generator.java.statement;
 
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
 import com.rosetta.util.types.JavaType;
@@ -48,5 +49,14 @@ public class JavaEnhancedForLoop extends JavaStatement {
 		// Calling `toBlock()` will make sure that the body is always enclosed in curly braces.
 		// This is a style preference, and is technically not necessary.
 		target.append(forBody.toBlock());
+	}
+
+	@Override
+	public void render(CodeWriter out) {
+		out.write("for (");
+		if (isFinal) {
+			out.write("final ");
+		}
+		out.write(variableType, " ", variableId, " : ", iterableExpression, ") ", forBody.toBlock());
 	}
 }

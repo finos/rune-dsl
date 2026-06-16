@@ -25,6 +25,11 @@ import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+/**
+ * @deprecated Part of the legacy Xtend template machinery; will be removed once
+ * all generators are migrated to the fluent {@code CodeWriter} API.
+ */
+@Deprecated
 public class TargetLanguageStringConcatenation extends StringConcatenation {
 	@Override
 	protected void append(Object object, int index) {

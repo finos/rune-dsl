@@ -18,6 +18,8 @@ package com.regnosys.rosetta.generator.java.statement;
 
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.codegen.api.CodeWriter;
+
 /**
  * Based on the Java specification: https://docs.oracle.com/javase/specs/jls/se11/html/jls-14.html#jls-Block
  * 
@@ -49,6 +51,15 @@ public class JavaBlock extends JavaStatement implements JavaLambdaBody {
 		target.append(statements, "\t");
 		target.newLine();
 		target.append('}');
+	}
+
+	@Override
+	public void render(CodeWriter out) {
+		out.write("{");
+		out.newline();
+		out.indented(() -> out.write(statements));
+		out.newline();
+		out.write("}");
 	}
 	
 	@Override

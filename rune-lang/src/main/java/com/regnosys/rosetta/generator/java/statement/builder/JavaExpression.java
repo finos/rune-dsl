@@ -19,10 +19,11 @@ package com.regnosys.rosetta.generator.java.statement.builder;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.eclipse.xtend2.lib.StringConcatenation;
 import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
+import com.regnosys.rosetta.codegen.api.CodeRenderer;
+import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.DebuggingTargetLanguageStringConcatenation;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
@@ -47,11 +48,41 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 		this.type = type;
 	}
 	
+	/**
+	 * Creates an expression from a legacy Xtend template.
+	 *
+	 * <p>Migration note: prefer {@link #from(CodeRenderer, JavaType)}. This overload
+	 * will be removed once all generators use the fluent API. It is not annotated
+	 * {@code @Deprecated} (yet) to avoid flooding the not-yet-migrated Xtend
+	 * generators with warnings.
+	 */
 	public static JavaExpression from(StringConcatenationClient value, JavaType type) {
 		return new JavaExpression(type) {
 			@Override
 			public void appendTo(TargetStringConcatenation target) {
 				target.append(value);
+			}
+
+			@Override
+			public void render(CodeWriter out) {
+				StringConcatenationClient.appendTo(value, new CodeWriterTargetStringConcatenation(out));
+			}
+		};
+	}
+
+	/**
+	 * Creates an expression from a fluent renderer.
+	 */
+	public static JavaExpression from(CodeRenderer value, JavaType type) {
+		return new JavaExpression(type) {
+			@Override
+			public void appendTo(TargetStringConcatenation target) {
+				value.render(new TargetStringConcatenationCodeWriter(target));
+			}
+
+			@Override
+			public void render(CodeWriter out) {
+				value.render(out);
 			}
 		};
 	}
@@ -116,5 +147,157 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 	@Override
 	public String toString() {
 		return DebuggingTargetLanguageStringConcatenation.convertToDebugString(this);
+	}
+
+	/**
+	 * Migration bridge: renders legacy Xtend template code ({@link StringConcatenationClient})
+	 * into a fluent {@link CodeWriter}. To be removed once all generators use the fluent API.
+	 */
+	private static final class CodeWriterTargetStringConcatenation implements TargetStringConcatenation {
+		private final CodeWriter out;
+		private boolean lineHasContent = false;
+
+		private CodeWriterTargetStringConcatenation(CodeWriter out) {
+			this.out = out;
+		}
+
+		@Override
+		public int length() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public char charAt(int index) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public CharSequence subSequence(int start, int end) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void newLineIfNotEmpty() {
+			if (lineHasContent) {
+				newLine();
+			}
+		}
+
+		@Override
+		public void newLine() {
+			out.newline();
+			lineHasContent = false;
+		}
+
+		@Override
+		public void appendImmediate(Object object, String indentation) {
+			append(object, indentation);
+		}
+
+		@Override
+		public void append(Object object, String indentation) {
+			if (object instanceof String value) {
+				appendString(value, indentation);
+			} else {
+				append(object);
+			}
+		}
+
+		@Override
+		public void append(Object object) {
+			if (object == null) {
+				return;
+			}
+			if (object instanceof StringConcatenationClient client) {
+				StringConcatenationClient.appendTo(client, this);
+			} else {
+				out.write(object);
+				markWritten(object);
+			}
+		}
+
+		private void appendString(String value, String indentation) {
+			String[] lines = value.split("\n", -1);
+			for (int i = 0; i < lines.length; i++) {
+				if (i > 0) {
+					newLine();
+					if (!lines[i].isEmpty() && !indentation.isEmpty()) {
+						out.write(indentation);
+						lineHasContent = true;
+					}
+				}
+				if (!lines[i].isEmpty()) {
+					out.write(lines[i]);
+					lineHasContent = true;
+				}
+			}
+		}
+
+		// Best-effort heuristic for newLineIfNotEmpty: infers whether the written object
+		// left content on the current line from its toString(), which for identifiers and
+		// renderers may not equal the rendered text. Good enough for the migration bridge.
+		private void markWritten(Object object) {
+			String value = object.toString();
+			int lastNewline = value.lastIndexOf('\n');
+			if (lastNewline >= 0) {
+				lineHasContent = lastNewline < value.length() - 1;
+			} else if (!value.isEmpty()) {
+				lineHasContent = true;
+			}
+		}
+	}
+
+	/**
+	 * Migration bridge: lets a fluent {@link CodeRenderer} render into legacy Xtend
+	 * template machinery. To be removed once all generators use the fluent API.
+	 */
+	private static final class TargetStringConcatenationCodeWriter implements CodeWriter {
+		private static final String INDENT = "    ";
+
+		private final TargetStringConcatenation target;
+		private int indent = 0;
+		private boolean atStartOfLine = true;
+
+		private TargetStringConcatenationCodeWriter(TargetStringConcatenation target) {
+			this.target = target;
+		}
+
+		@Override
+		public void write(Object object) {
+			if (object == null) {
+				return;
+			}
+			// Legacy representations (e.g. generated identifiers) must go through the
+			// target's own machinery, which defers identifier resolution until scopes
+			// are resolvable and substitutes desired names when debugging.
+			if (object instanceof CodeRenderer renderer && !(object instanceof com.regnosys.rosetta.generator.TargetLanguageRepresentation)) {
+				renderer.render(this);
+				return;
+			}
+			if (atStartOfLine) {
+				target.append(INDENT.repeat(indent));
+				atStartOfLine = false;
+			}
+			target.append(object);
+		}
+
+		@Override
+		public void newline() {
+			target.newLine();
+			atStartOfLine = true;
+		}
+
+		@Override
+		public void indent() {
+			indent++;
+		}
+
+		@Override
+		public void dedent() {
+			if (indent == 0) {
+				throw new IllegalStateException("Cannot dedent below zero");
+			}
+			indent--;
+		}
 	}
 }
