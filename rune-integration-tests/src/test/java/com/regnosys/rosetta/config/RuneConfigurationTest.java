@@ -40,7 +40,8 @@ public class RuneConfigurationTest {
 		assertFalse(filter.test("foo"));
 		assertTrue(filter.test("abc.def"));
 		assertFalse(filter.test("abc.def.sub"));
-		
+
+		assertEquals(java.util.List.of("com.rosetta.model.*", "abc.def"), config.getReadOnlyNamespaces());
 	}
 	
 

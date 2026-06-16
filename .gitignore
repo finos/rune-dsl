@@ -36,6 +36,10 @@ com.regnosys.rosetta.web/
 .vscode/
 /rosetta-ide/vscode/node_modules/
 
+# Python
+__pycache__/
+*.pyc
+
 # Docusaurus website
 website/.docusaurus
 website/build

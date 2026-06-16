@@ -1,0 +1,84 @@
+---
+title: Read-only namespaces
+sidebar_label: Read-only namespaces
+description: "Use the read-only namespaces GitHub workflow to prevent manual changes to namespaces that are managed externally."
+slug: /developers/read-only-namespaces
+---
+
+# Read-only namespaces
+
+Some namespaces in a model are not authored by hand: they are generated from an external schema —
+for example, a namespace produced by importing an XSD or a JSON schema. The generated Rune is a
+faithful representation of that schema, so editing those files manually would make the model drift
+away from the schema it is meant to mirror, silently breaking the correspondence between them.
+
+To prevent that, such namespaces can be marked as **read-only**. They are listed in the
+`rune-config.yml`, and a supplied GitHub workflow then fails any pull request that hand-edits a
+read-only namespace — until someone deliberately decides to allow it. Nothing is locked forever;
+the check is a safety net that turns an accidental manual edit into a conscious decision (and the
+right way to update a read-only namespace is to re-run the import that generated it).
+
+## Declaring the read-only namespaces
+
+Read-only namespaces are listed under `readOnlyNamespaces` in the `rune-config.yml`. Each entry is a
+[glob pattern](https://en.wikipedia.org/wiki/Glob_(programming)) matched against a file's namespace:
+
+```yaml
+model:
+  name: My Model
+readOnlyNamespaces:
+- com.rosetta.model.*
+- cdm.base.datetime
+```
+
+In the example above, every namespace starting with `com.rosetta.model.` is read-only, as is the
+exact namespace `cdm.base.datetime`.
+
+## Adding the workflow
+
+Add a workflow to the repository (for example `.github/workflows/readonly-namespaces.yml`) that
+calls the reusable workflow on every pull request:
+
+```yaml
+name: Read-only namespaces
+
+on:
+  pull_request:
+
+jobs:
+  readonly-namespaces:
+    uses: finos/rune-dsl/.github/workflows/verify-readonly-namespaces.yml@main
+    with:
+      config-path: rune-config.yml
+```
+
+On each pull request the workflow maps every changed `.rosetta` file to its namespace and fails if
+a change affects a read-only namespace. Concretely, a change is rejected when a file's namespace is
+read-only **before** the change (a file may not be modified, deleted, or moved *out of* a read-only
+namespace) or **after** the change (a file may not be added to, or moved *into*, a read-only
+namespace). It also fails if a configured pattern matches no namespace at all, which catches stale
+or mistyped entries.
+
+## Making an intentional change
+
+Sometimes a read-only namespace genuinely needs to change — for example, when a project admin rolls
+out an updated import. There is no need to remove the workflow or take the namespace out of
+`readOnlyNamespaces`. Instead, the change can be accepted as a deliberate one-off by applying the
+`override-readonly-namespaces` label (or whatever is configured via the `bypass-label` input) to
+the pull request. The next run of the check sees the label, skips the namespace check, and records
+a note explaining why. Because adding a label requires write access, the decision stays visible and
+auditable in the pull request.
+
+Once the change is merged, removing the label restores the check for future pull requests.
+
+## Parameters
+
+The reusable workflow accepts the following inputs under `with:`.
+
+| Input | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `config-path` | Yes | — | Path to the `rune-config.yml` whose `readOnlyNamespaces` list defines the read-only namespaces. |
+| `base-ref` | No | The pull request base branch, otherwise the repository's default branch | The git ref that `HEAD` is compared against to determine which files changed. |
+| `root` | No | `.` | Directory under which to scan for `.rosetta` files (both when matching read-only patterns and when reporting changes). |
+| `checker-ref` | No | `main` | The ref of `finos/rune-dsl` from which the checker script is fetched. Pin this to a tag or commit to fix the version of the check. |
+| `bypass-label` | No | `override-readonly-namespaces` | The pull request label that, when present, skips the check to allow an intentional one-off change to a read-only namespace. |
