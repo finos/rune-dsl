@@ -41,7 +41,7 @@ jobs:
 
           echo "Polling for all modules in version $VERSION"
 
-          for i in {1..30}; do
+          for i in {1..90}; do
             ALL_OK=true
             for ARTIFACT_ID in "${MODULES[@]}"; do
               URL="https://repo1.maven.org/maven2/$GROUP_ID/$ARTIFACT_ID/$VERSION/$ARTIFACT_ID-$VERSION.jar"
@@ -62,7 +62,7 @@ jobs:
             sleep 20
           done
 
-          echo "Release not available after 10 minutes"
+          echo "Release not available after 30 minutes"
           exit 1
 
   backport-publish:
