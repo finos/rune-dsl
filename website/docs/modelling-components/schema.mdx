@@ -1,0 +1,87 @@
+---
+title: Schema
+sidebar_label: Schema
+description: "Declare a named serialization schema that links a wire format to a Rune model, and reference it from transform functions."
+---
+
+A `schema` is a named, reusable declaration of the wire format used to (de)serialize
+the input or output of a transform function (for example an ingestion or a projection).
+Declaring the format as a model element means the linkage between a transform function
+and its format lives in the model itself, rather than being maintained externally.
+
+## 1. Declaring a schema
+
+A schema is a top-level model element introduced with the `schema` keyword, followed by a
+name and a serialization format:
+
+```
+schema fixml XML
+```
+
+The format refers to a value of the built-in `SerializationFormat` enumeration:
+
+| Format | Meaning |
+| --- | --- |
+| `JSON` | JSON, following a standard JSON representation of the model. |
+| `RUNE_JSON` | JSON, following the Rune-specific JSON standard. |
+| `XML` | XML, typically configured by an associated XML configuration file that maps the schema onto the Rune type. |
+| `CSV` | Comma-separated values. Only valid for tabular types, i.e. types whose attributes are all single-cardinality basic types. |
+| `CSV_LABELLED` | Comma-separated values with a header row of human-readable labels. |
+
+## 2. Referencing a schema from a transform function
+
+Transform functions (`ingest`, `projection`, `enrich`) declare the format they read or write
+through a transform annotation. The annotation can reference either a bare format or a schema:
+
+```
+func Ingest_FpmlConfirmationToTradeState:
+    [ingest fixml]
+    inputs:
+        fpmlDocument Document (0..1)
+    output:
+        tradeState TradeState (0..1)
+```
+
+Referencing a schema by name (`[ingest fixml]`) is equivalent to referencing its format
+(`[ingest XML]`), but additionally carries the schema's identity, which is what links it to its
+external configuration (see below). A schema is indexed like any other named model element, so it
+can be referenced from models that depend on the one declaring it.
+
+## 3. Annotations on a schema
+
+A schema can carry annotations.
+
+### 3.1 `[externalConfig]`
+
+The `[externalConfig]` annotation may only be applied to a schema. It signifies that the schema
+has an externally-configured serialization configuration — typically the path to an XML
+configuration file that maps the wire format onto the Rune type. The configuration is supplied
+outside the model and is looked up by the schema's name.
+
+```
+schema fixml XML
+    [externalConfig]
+```
+
+When a referenced schema is marked `[externalConfig]`, its configured config path is included in
+the code generated for the transform function. When the schema is **not** marked
+`[externalConfig]`, no config path is generated, even if one happens to be configured.
+
+Validation keeps the marker and the external configuration in sync:
+
+- A schema marked `[externalConfig]` for which no external serialization configuration is
+  configured is an **error**.
+- An external serialization configuration that is configured for a schema which is **not** marked
+  `[externalConfig]` produces a **warning**, because the configuration would otherwise be silently
+  ignored.
+
+### 3.2 `[deprecated]`
+
+A schema can be marked `[deprecated]` to signal that it will be removed or replaced. Referencing a
+deprecated schema produces a deprecation warning, consistent with deprecating other model elements
+such as types and functions.
+
+```
+schema oldFixml XML
+    [deprecated]
+```
