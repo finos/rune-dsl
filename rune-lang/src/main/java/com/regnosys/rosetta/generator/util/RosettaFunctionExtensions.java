@@ -2,7 +2,6 @@ package com.regnosys.rosetta.generator.util;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import org.eclipse.xtext.EcoreUtil2;
@@ -136,23 +135,6 @@ public class RosettaFunctionExtensions {
             return List.of();
         }
 		return annotations.stream().filter(it -> "qualification".equals(it.getAnnotation().getName())).toList();
-	}
-	
-	public List<AnnotationRef> getTransformAnnotations(Annotated element) {
-        if(element.getAnnotations() == null || element.getAnnotations().isEmpty()) {
-            return List.of();
-        }
-		return element.getAnnotations().stream()
-			.filter(ecoreUtil::isResolved)
-			.filter(it -> {
-                RosettaModel model = it.getAnnotation().getModel();
-                if (model == null) {
-                    return false;
-                }
-                return "com.rosetta.model".equals(model.getName());
-            })
-			.filter(it -> Stream.of("ingest", "enrich", "projection").anyMatch(transformName -> transformName.equals(it.getAnnotation().getName())))
-			.toList();
 	}
 	
 	public List<AnnotationRef> getCreationAnnotations(Annotated element) {
