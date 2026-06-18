@@ -115,6 +115,7 @@ public class FunctionGeneratorHelper {
 			Consumer<RosettaModel> genCall) throws AssertionError {
 		RosettaModel model = modelHelper.parseRosettaWithNoErrors(actualModel);
 		genCall.accept(model);
-		assertEquals(expected.toString(), fsa.getTextFiles().entrySet().iterator().next().getValue());
+		String actual = fsa.getTextFiles().entrySet().iterator().next().getValue().toString();
+		assertEquals(expected.toString(), actual.replace("\r\n", "\n"));
 	}
 }

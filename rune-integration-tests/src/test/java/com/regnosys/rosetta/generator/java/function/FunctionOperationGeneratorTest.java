@@ -46,7 +46,7 @@ func PeriodEnumFunc(in1: PeriodEnum -> MONTH ):
 	alias i: in2 -> frequency
 	set out: i * 30.0
 """);
-        var generated = generatedCode.get("com.rosetta.test.model.functions.PeriodEnumFunc");
+        var generated = generatedCode.get("com.rosetta.test.model.functions.PeriodEnumFunc").replace("\r\n", "\n");
 
         assertEquals(
 """
@@ -279,7 +279,7 @@ func Calc:
 	set res -> res1:  arg1 + arg2\s
 	set res -> res2:  arg1 + arg2\s
 """);
-        var generated = generatedCode.get("com.rosetta.test.model.functions.Calc");
+        var generated = generatedCode.get("com.rosetta.test.model.functions.Calc").replace("\r\n", "\n");
         var expected = """
 package com.rosetta.test.model.functions;
 
@@ -384,7 +384,7 @@ func RTS_22_Fields :
 	set out -> tradingDateTime:
 		tradeDate + tradeTime
 """);
-        var generated = generatedCode.get("com.rosetta.test.model.functions.RTS_22_Fields");
+        var generated = generatedCode.get("com.rosetta.test.model.functions.RTS_22_Fields").replace("\r\n", "\n");
         generatorTestHelper.compileToClasses(generatedCode);
         var expected = """
 package com.rosetta.test.model.functions;
@@ -679,7 +679,7 @@ func MathFunc (in1 : Math -> DECR ):
 	set arg1: SubOne(in2 -> mathInput)
 """);
 
-        var generated = generatedCode.get("com.rosetta.test.model.functions.MathFunc");
+        var generated = generatedCode.get("com.rosetta.test.model.functions.MathFunc").replace("\r\n", "\n");
         assertEquals(
 """
 package com.rosetta.test.model.functions;
