@@ -2,8 +2,6 @@ package com.regnosys.rosetta.utils;
 
 import java.util.Optional;
 
-import com.regnosys.rosetta.config.RuneConfiguration;
-import com.regnosys.rosetta.config.RuneSerializationConfiguration;
 import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.Schema;
 import com.regnosys.rosetta.rosetta.SchemaOrFormat;
@@ -18,12 +16,12 @@ import jakarta.inject.Singleton;
 /**
  * Resolves a function's transform annotation ({@code [ingest ...]}, {@code [projection ...]} or
  * {@code [enrich]}) to its serialization details: the optional schema id, the serialization format,
- * and the optional config file path (looked up by schema id in the Rune configuration).
+ * and the optional config file path (resolved for schemas marked {@code [externalConfig]}).
  */
 @Singleton
 public class TransformAnnotationHelper {
 	@Inject
-	private RuneConfiguration config;
+	private RuneConfigurationHolder configuration;
 
 	public Optional<TransformAnnotation> getTransformAnnotation(Function function) {
 		return function.getTransform().stream().findFirst();
@@ -64,9 +62,9 @@ public class TransformAnnotationHelper {
 	}
 
 	/**
-	 * The classpath location of the schema's config file, looked up by id in the Rune configuration.
-	 * Only resolved for a schema explicitly marked {@code [externalConfig]}; empty otherwise (a bare
-	 * format, or a schema that does not declare external configuration).
+	 * The classpath location of the schema's config file. Only resolved for a schema explicitly marked
+	 * {@code [externalConfig]}; empty otherwise (a bare format, or a schema that does not declare external
+	 * configuration).
 	 */
 	public Optional<String> getConfigPath(TransformAnnotation annotation) {
 		SchemaOrFormat ref = annotation.getRef();
@@ -74,8 +72,8 @@ public class TransformAnnotationHelper {
 			return Optional.empty();
 		}
 		return Optional.ofNullable(schema.getName())
-				.flatMap(config::findSerializationConfigById)
-				.map(RuneSerializationConfiguration::getConfigPath);
+				.flatMap(id -> configuration.get().findSerializationConfigById(id))
+				.map(c -> c.getConfigPath());
 	}
 
 	/** Whether the schema declares the {@code [externalConfig]} annotation. */
