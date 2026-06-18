@@ -64,9 +64,12 @@ public class TypeCoercionTest {
                 target.append(coercedExpr.completeAsReturn());
             }
         };
-        assertEquals(expectedCode,
-                importManager.buildClass(pkg, classCode, scope.getFileScope())
-                        .replace("package test.ns;", "").trim() + System.lineSeparator());
+        // Normalize line endings to '\n' so the comparison holds on Windows, where the
+        // generator emits '\r\n' but the expected text blocks always use '\n'.
+        String actualCode = importManager.buildClass(pkg, classCode, scope.getFileScope())
+                .replace("\r\n", "\n")
+                .replace("package test.ns;", "").trim() + "\n";
+        assertEquals(expectedCode, actualCode);
     }
 
     /**
