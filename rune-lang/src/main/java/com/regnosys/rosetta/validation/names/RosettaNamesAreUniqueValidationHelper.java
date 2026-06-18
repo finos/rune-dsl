@@ -6,6 +6,7 @@ import com.regnosys.rosetta.rosetta.RosettaPackage;
 import com.regnosys.rosetta.rosetta.simple.SimplePackage;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.resource.IEObjectDescription;
@@ -46,6 +47,7 @@ public class RosettaNamesAreUniqueValidationHelper extends NamesAreUniqueValidat
             .put(RosettaPackage.eINSTANCE.getRosettaCorpus(), "corpus")
             .put(RosettaPackage.eINSTANCE.getRosettaSegment(), "segment")
             .put(RosettaPackage.eINSTANCE.getRosettaScope(), "scope")
+            .put(RosettaPackage.eINSTANCE.getSchema(), "schema")
             .put(SimplePackage.eINSTANCE.getAttribute(), "attribute")
             .build();
     
@@ -121,7 +123,29 @@ public class RosettaNamesAreUniqueValidationHelper extends NamesAreUniqueValidat
     
     @Override
     protected boolean isDuplicate(IEObjectDescription description, IEObjectDescription candidate) {
-        return !isInOverriddenNamespace(candidate);
+        if (isInOverriddenNamespace(candidate)) {
+            return false;
+        }
+        // The built-in models (basictypes, annotations) may be present in more than one jar on the
+        // classpath (e.g. a dependency jar alongside a shaded fat jar that bundles it). The same built-in
+        // element across those copies is one logical element, not a genuine duplicate, so don't report it.
+        // TODO: this is a symptom-mask, not a root fix. The duplication comes from the classpath scan
+        //  indexing every physical copy of a builtin '.rosetta' (Xtext StandaloneBuilder for the Maven path;
+        //  BspModelUtils#getRosettaModels for BSP), keyed by physical URI. The cleaner fix is to contribute
+        //  the builtins exactly once under their canonical 'classpath:' URI (see RosettaBuiltinsService) and
+        //  exclude their physical copies from the scan in both discovery paths, so the index never holds two
+        //  copies. That would also drop the RosettaBuiltinsService#getModel filename-scan workaround and,
+        //  unlike this check, cover non-builtin models duplicated across jars (which this does NOT handle).
+        return !(isBuiltin(description) && isBuiltin(candidate));
+    }
+
+    private boolean isBuiltin(IEObjectDescription description) {
+        URI uri = description.getEObjectURI();
+        if (uri == null) {
+            return false;
+        }
+        String resourceName = uri.trimFragment().lastSegment();
+        return "basictypes.rosetta".equals(resourceName) || "annotations.rosetta".equals(resourceName);
     }
     
     private boolean isInOverriddenNamespace(IEObjectDescription description) {

@@ -19,6 +19,7 @@ import com.regnosys.rosetta.config.DefaultRuneConfigurationProvider;
 import com.regnosys.rosetta.config.RuneConfiguration;
 import com.regnosys.rosetta.config.RuneGeneratorsConfiguration;
 import com.regnosys.rosetta.config.RuneModelConfiguration;
+import com.regnosys.rosetta.config.RuneSerializationConfiguration;
 
 public class FileBasedRuneConfigurationProvider implements Provider<RuneConfiguration> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileBasedRuneConfigurationProvider.class);
@@ -34,7 +35,8 @@ public class FileBasedRuneConfigurationProvider implements Provider<RuneConfigur
 		this.mapper = new ObjectMapper(new YAMLFactory())
 				.addMixIn(RuneConfiguration.class, RuneConfigurationMixin.class)
 				.addMixIn(RuneModelConfiguration.class, RuneModelConfigurationMixin.class)
-				.addMixIn(RuneGeneratorsConfiguration.class, RuneGeneratorsConfigurationMixin.class);
+				.addMixIn(RuneGeneratorsConfiguration.class, RuneGeneratorsConfigurationMixin.class)
+				.addMixIn(RuneSerializationConfiguration.class, RuneSerializationConfigurationMixin.class);
 		mapper.configOverride(RuneGeneratorsConfiguration.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
         mapper.configOverride(NamespaceFilter.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
 		mapper.configOverride(List.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));

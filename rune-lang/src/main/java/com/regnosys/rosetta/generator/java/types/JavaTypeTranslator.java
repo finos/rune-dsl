@@ -35,6 +35,9 @@ import com.rosetta.model.lib.functions.LabelProvider;
 import com.rosetta.model.lib.functions.RosettaFunction;
 import com.rosetta.model.lib.meta.RosettaMetaData;
 import com.rosetta.model.lib.reports.ReportFunction;
+import com.rosetta.model.lib.transform.Enrich;
+import com.rosetta.model.lib.transform.Ingest;
+import com.rosetta.model.lib.transform.Projection;
 import com.rosetta.model.lib.validation.Validator;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.*;
@@ -146,6 +149,14 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	
 	public JavaConditionInterface toConditionJavaClass(Condition condition) {
 		return JavaConditionInterface.create(condition, modelIdProvider, typeProvider, typeSystem, typeUtil, this);
+	}
+	public Class<?> toTransformAnnotationClass(TransformKind kind) {
+		switch (kind) {
+			case INGEST: return Ingest.class;
+			case PROJECTION: return Projection.class;
+			case ENRICH: return Enrich.class;
+			default: throw new IllegalArgumentException("Unknown transform kind: " + kind);
+		}
 	}
 	public JavaClass<?> toDeepPathUtilJavaClass(RDataType choiceType) {
 		ModelSymbolId typeId = modelIdProvider.getSymbolId(choiceType.getEObject());
@@ -311,6 +322,10 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	private JavaType toJavaType(RType type) {
 		return doSwitch(type, null);
 	}
+	private boolean isBuiltInSerializationFormat(REnumType type) {
+		return "SerializationFormat".equals(type.getName())
+				&& DottedPath.splitOnDots("com.rosetta.model").equals(type.getNamespace());
+	}
 	public JavaPojoInterface toJavaType(RDataType type) {
 		return caseDataType(type, null);
 	}
@@ -381,6 +396,11 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	@Override
 	protected RJavaEnum caseEnumType(REnumType type, Void context) {
+		if (isBuiltInSerializationFormat(type)) {
+			// The built-in SerializationFormat enum (declared in basictypes.rosetta) is not generated;
+			// it maps onto the canonical hand-written enum com.rosetta.model.lib.transform.SerializationFormat.
+			return new RJavaEnum(type, JavaPackageName.escape(DottedPath.splitOnDots("com.rosetta.model.lib.transform")));
+		}
 		return new RJavaEnum(type);
 	}
 	@Override
