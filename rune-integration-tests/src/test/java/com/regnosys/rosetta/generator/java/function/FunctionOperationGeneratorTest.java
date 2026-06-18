@@ -35,7 +35,7 @@ func DayFraction :
 	output: res number (1..1)
 	alias p: PeriodEnumFunc(in2 -> periodEnum, in2)
 	set res: p / 360
-\t
+
 func PeriodEnumFunc :
 	inputs:
 		in1 PeriodEnum( 1..1 )
@@ -264,7 +264,7 @@ type FuncIn:
 	val1 date (1..1)
 	val2 time (1..1)
 
-type FoncOut:\s
+type FoncOut:
 	res1 dateTime (1..1)
 	res2 dateTime (1..1)
 
@@ -276,8 +276,8 @@ func Calc:
 		res FoncOut(1..1)
 	alias arg1: funIn-> val1
 	alias arg2: funIn-> val2
-	set res -> res1:  arg1 + arg2\s
-	set res -> res2:  arg1 + arg2\s
+	set res -> res1:  arg1 + arg2
+	set res -> res2:  arg1 + arg2
 """);
         var generated = generatedCode.get("com.rosetta.test.model.functions.Calc").replace("\r\n", "\n");
         var expected = """
@@ -485,7 +485,7 @@ type OtherType:
 	[metadata reference]
 	attrMulti WithMeta (0..*)
 	[metadata reference]
-\t
+
 func asKeyUsage:
 	inputs: withMeta WithMeta(0..*)
 	output: out OtherType (0..1)
@@ -656,7 +656,7 @@ type MathInput:
 func AddOne:
 	inputs: arg string (1..1)
 	output: out string (1..1)
-\t\t\t
+
 func SubOne:
 	inputs: arg string (1..1)
 	output: out string (1..1)
@@ -674,7 +674,7 @@ func MathFunc:
 
 func MathFunc (in1 : Math -> INCR ):
 	set arg1: AddOne(in2 -> mathInput)
-\t
+
 func MathFunc (in1 : Math -> DECR ):
 	set arg1: SubOne(in2 -> mathInput)
 """);
@@ -792,7 +792,7 @@ public class MathFunc implements RosettaFunction {
 func Adder :
 	inputs: arg1 int (1..1)
 	output: res int (1..1)
-\t
+
 	alias addedOne: AddOne( 1 )
 	set res: addedOne
 
