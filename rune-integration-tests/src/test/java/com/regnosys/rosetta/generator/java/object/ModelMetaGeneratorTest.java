@@ -163,7 +163,7 @@ class ModelMetaGeneratorTest {
 
 				}
 				""",
-				code.get("com.rosetta.test.model.validation.FooValidator"));
+				code.get("com.rosetta.test.model.validation.FooValidator").replace("\r\n", "\n"));
 		assertEquals("""
 				package com.rosetta.test.model.validation;
 
@@ -210,7 +210,7 @@ class ModelMetaGeneratorTest {
 
 				}
 				""",
-				code.get("com.rosetta.test.model.validation.FooTypeFormatValidator"));
+				code.get("com.rosetta.test.model.validation.FooTypeFormatValidator").replace("\r\n", "\n"));
 
 		Map<String, Class<?>> classes = generatorTestHelper.compileToClasses(code);
 

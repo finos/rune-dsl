@@ -30,7 +30,7 @@ class RosettaProcessorTest {
 		rmo.process(RosettaPath.valueOf("ROOT"), fooProcessor);
 		assertEquals(expected, fooProcessor.getResult().stream()
 				.map(Object::toString)
-				.collect(Collectors.joining(System.lineSeparator())) + System.lineSeparator());
+				.collect(Collectors.joining("\n")) + "\n");
 	}
 
 	@Test
