@@ -37,6 +37,8 @@ import com.regnosys.rosetta.rosetta.RosettaSegmentRef;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
+import com.regnosys.rosetta.rosetta.Schema;
+import com.regnosys.rosetta.rosetta.SchemaOrFormat;
 import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.TypeParameter;
 import com.regnosys.rosetta.rosetta.expression.ClosureParameter;
@@ -53,6 +55,7 @@ import com.regnosys.rosetta.rosetta.simple.Operation;
 import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation;
 import com.regnosys.rosetta.rosetta.simple.Segment;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
+import com.regnosys.rosetta.rosetta.simple.TransformAnnotation;
 import com.regnosys.rosetta.types.CardinalityProvider;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
@@ -132,6 +135,20 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 		return tokens;
 	}
 	
+	@MarkSemanticToken
+	public SemanticToken markTransformAnnotationRef(TransformAnnotation transform) {
+		SchemaOrFormat ref = transform.getRef();
+		if (!extensions.isResolved(ref)) {
+			return null;
+		}
+		if (ref instanceof Schema) {
+			return createSemanticToken(transform, TRANSFORM_ANNOTATION__REF, RosettaSemanticTokenTypesEnum.SCHEMA);
+		} else if (ref instanceof RosettaEnumValue) {
+			return createSemanticToken(transform, TRANSFORM_ANNOTATION__REF, ENUM_MEMBER);
+		}
+		return null;
+	}
+
 	@MarkSemanticToken
 	public SemanticToken markMetaMemberInAnnotation(AnnotationRef annotation) {
 		if (extensions.isResolved(annotation.getAnnotation()) && "metadata".equals(annotation.getAnnotation().getName()) && annotation.getAttribute() != null) {
