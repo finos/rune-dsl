@@ -32,6 +32,12 @@ public class ModelGeneratorUtilTest {
 				.orElseThrow();
 	}
 
+	// The generated javadoc uses the platform line separator (`\r\n` on Windows), while the
+	// expected text blocks always use `\n` (per the JLS), so normalize before comparing.
+	private void assertJavadoc(String expected, CharSequence javaDoc) {
+		assertEquals(expected, javaDoc.toString().replace("\r\n", "\n"));
+	}
+
 	@Test
 	void testDocReferenceJavaDoc() {
 		String model = """
@@ -61,7 +67,7 @@ public class ModelGeneratorUtilTest {
 				 */
 				""";
 
-		assertEquals(expected, javaDoc.toString());
+		assertJavadoc(expected, javaDoc);
 	}
 
 	@Test
@@ -105,7 +111,7 @@ public class ModelGeneratorUtilTest {
 				 */
 				""";
 
-		assertEquals(expected, javaDoc.toString());
+		assertJavadoc(expected, javaDoc);
 	}
 
 	@Test
@@ -139,7 +145,7 @@ public class ModelGeneratorUtilTest {
 				 */
 				""";
 
-		assertEquals(expected, javaDoc.toString());
+		assertJavadoc(expected, javaDoc);
 	}
 
 	@Test
@@ -159,7 +165,7 @@ public class ModelGeneratorUtilTest {
 				 */
 				""";
 
-		assertEquals(expected, javaDoc.toString());
+		assertJavadoc(expected, javaDoc);
 	}
 
 	@Test
@@ -211,7 +217,7 @@ public class ModelGeneratorUtilTest {
 				 */
 				""";
 
-		assertEquals(expected, javaDoc.toString());
+		assertJavadoc(expected, javaDoc);
 	}
 
 }
