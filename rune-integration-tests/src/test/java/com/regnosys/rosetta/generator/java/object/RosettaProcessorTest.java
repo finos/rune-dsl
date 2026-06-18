@@ -28,9 +28,10 @@ class RosettaProcessorTest {
 	private void assertProcessEquals(String expected, RosettaModelObject rmo) {
 		RosettaAttributePathProcessor fooProcessor = new RosettaAttributePathProcessor();
 		rmo.process(RosettaPath.valueOf("ROOT"), fooProcessor);
-		assertEquals(expected, fooProcessor.getResult().stream()
+		String actual = fooProcessor.getResult().stream()
 				.map(Object::toString)
-				.collect(Collectors.joining("\n")) + "\n");
+				.collect(Collectors.joining(System.lineSeparator())) + System.lineSeparator();
+		assertEquals(expected, actual.replace("\r\n", "\n"));
 	}
 
 	@Test
