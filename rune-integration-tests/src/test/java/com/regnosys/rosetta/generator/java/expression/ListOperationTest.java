@@ -39,15 +39,15 @@ public class ListOperationTest {
         type Foo:
         	include boolean (1..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		filteredFoos Foo (0..*)
-        \t
+
         	set filteredFoos:
-        		foos\s
+        		foos
         			filter [ item -> include = True ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
@@ -140,15 +140,15 @@ public class ListOperationTest {
         type Foo:
         	include boolean (1..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		filteredFoos Foo (0..*)
-        \t
+
         	set filteredFoos:
-        		foos\s
+        		foos
         			filter fooItem [ fooItem -> include = True ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
@@ -242,15 +242,15 @@ public class ListOperationTest {
         	include boolean (1..1)
         	include2 boolean (1..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo2 (0..*)
+        	inputs:
+        		foos Foo2 (0..*)
         	output:
         		filteredFoos Foo2 (0..*)
-        \t
+
         	set filteredFoos:
-        		foos\s
+        		foos
         			filter [ item -> include = True and item -> include2 = True ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
@@ -278,15 +278,15 @@ public class ListOperationTest {
         	include boolean (1..1)
         	include2 boolean (1..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo2 (0..*)
+        	inputs:
+        		foos Foo2 (0..*)
         	output:
         		filteredFoos Foo2 (0..*)
-        \t
+
         	set filteredFoos:
-        		foos\s
+        		foos
         			filter [ item -> include = True ]
         			then filter [ item -> include2 = True ]
         """;
@@ -382,15 +382,15 @@ public class ListOperationTest {
         type FooWithScheme:
         	attr string (1..1)
         		[metadata scheme]
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos FooWithScheme (0..*)
+        	inputs:
+        		foos FooWithScheme (0..*)
         	output:
         		filteredFoos FooWithScheme (0..*)
-        \t
+
         	set filteredFoos:
-        		foos\s
+        		foos
         			filter [ item -> attr -> scheme = "foo-scheme" ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
@@ -486,15 +486,15 @@ public class ListOperationTest {
         type FooWithScheme:
         	attr string (1..1)
         		[metadata scheme]
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos FooWithScheme (0..*)
+        	inputs:
+        		foos FooWithScheme (0..*)
         	output:
         		strings string (0..*)
-        \t
+
         	set strings:
-        		foos\s
+        		foos
         			map [ item -> attr ]
         			filter [ item -> scheme = "foo-scheme" ]
         """;
@@ -566,13 +566,13 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterBuiltInTypeList() {
         String model = """
         func FuncFoo:
-        \s	inputs:
-        \s		foos boolean (0..*)
+        	inputs:
+        		foos boolean (0..*)
         	output:
         		filteredFoos boolean (0..*)
-        \t
+
         	set filteredFoos:
-        		foos\s
+        		foos
         			filter [ item = True ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
@@ -644,16 +644,16 @@ public class ListOperationTest {
         type Foo:
         	include boolean (1..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
-        \s		test boolean (1..1)
+        	inputs:
+        		foos Foo (0..*)
+        		test boolean (1..1)
         	output:
         		filteredFoos Foo (0..*)
-        \t
+
         	set filteredFoos:
-        		foos\s
+        		foos
         			filter [ item -> include = test ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
@@ -680,16 +680,16 @@ public class ListOperationTest {
         type Foo:
         	include boolean (1..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		filteredFoosCount int (1..1)
-        \t
+
         	set filteredFoosCount:
-        		foos\s
-        			filter fooItem [ fooItem -> include = True ]\s
+        		foos
+        			filter fooItem [ fooItem -> include = True ]
         			then count
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
@@ -715,33 +715,33 @@ public class ListOperationTest {
         type Foo:
         	include boolean (1..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		filteredFoos Foo (0..*)
-        \t
+
         	set filteredFoos:
-        		foos\s
+        		foos
         			filter [ FuncFooTest( item ) ]
         			then filter [ FuncFooTest2( item ) ]
-        
+
         func FuncFooTest:
-        \s	inputs:
-        \s		foo Foo (1..1)
+        	inputs:
+        		foo Foo (1..1)
         	output:
         		result boolean (0..1)
-        \t
+
         	set result:
         		foo -> include
-        
+
         func FuncFooTest2:
-        \s	inputs:
-        \s		foo Foo (1..1)
+        	inputs:
+        		foo Foo (1..1)
         	output:
         		result boolean (0..1)
-        \t
+
         	set result:
         		foo -> include
         """;
@@ -769,19 +769,19 @@ public class ListOperationTest {
         type Foo:
         	include boolean (1..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
-        \s		test boolean (1..1)
+        	inputs:
+        		foos Foo (0..*)
+        		test boolean (1..1)
         	output:
         		filteredFoos Foo (0..*)
-        \t
+
         	alias testAlias:
         		test
-        \t
+
         	set filteredFoos:
-        		foos\s
+        		foos
         			filter [ item -> include = testAlias ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
@@ -808,17 +808,17 @@ public class ListOperationTest {
         type Foo:
         	include boolean (1..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		filteredFooAttrs string (0..*)
-        \t
+
         	alias filteredFoosAlias:
-        		foos\s
+        		foos
         			filter [ item -> include = True ]
-        \t
+
         	set filteredFooAttrs:
         		filteredFoosAlias -> attr
         """;
@@ -847,22 +847,22 @@ public class ListOperationTest {
         	include boolean (0..1)
         	include2 boolean (0..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo2 (0..*)
-        \s		test boolean (0..1)
-        \s		test2 boolean (0..1)
-        \s		test3 boolean (0..1)
+        	inputs:
+        		foos Foo2 (0..*)
+        		test boolean (0..1)
+        		test2 boolean (0..1)
+        		test3 boolean (0..1)
         	output:
         		foo Foo2 (0..1)
-        \t
+
         	alias filteredFoos:
-        		foos\s
+        		foos
         			filter a [ if test exists then a -> include = test else True ]
         			then filter b [ if test2 exists then b -> include2 = test2 else True ]
         			then filter c [ if test3 exists then c -> include2 = test3 else True ]
-        \t
+
         	set foo:
         		filteredFoos only-element
         """;
@@ -890,22 +890,22 @@ public class ListOperationTest {
         	include boolean (0..1)
         	include2 boolean (0..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo2 (0..*)
-        \s		test boolean (0..1)
-        \s		test2 boolean (0..1)
-        \s		test3 boolean (0..1)
+        	inputs:
+        		foos Foo2 (0..*)
+        		test boolean (0..1)
+        		test2 boolean (0..1)
+        		test3 boolean (0..1)
         	output:
         		foo Foo2 (0..1)
-        \t
+
         	alias filteredFoos:
-        		foos\s
+        		foos
         			filter [ if test exists then item -> include = test else True ]
         			then filter [ if test2 exists then item -> include2 = test2 else True ]
         			then filter [ if test3 exists then item -> include2 = test3 else True ]
-        \t
+
         	set foo:
         		filteredFoos only-element
         """;
@@ -931,19 +931,19 @@ public class ListOperationTest {
         String model = """
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	include boolean (1..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bar Bar (1..1)
+        	inputs:
+        		bar Bar (1..1)
         	output:
         		foos Foo (0..*)
-        \t
+
         	set foos:
-        		bar -> foos\s
+        		bar -> foos
         			extract [ if item -> include = True then Foo { include: include, attr: attr + "_bar" } else item ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
@@ -1039,31 +1039,31 @@ public class ListOperationTest {
         String model = """
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	include boolean (1..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bar Bar (1..1)
+        	inputs:
+        		bar Bar (1..1)
         	output:
         		updatedBar Bar (1..1)
-        \t
+
         	add updatedBar -> foos:
-        		bar -> foos\s
+        		bar -> foos
         			extract [ if item -> include = True then Create_Foo( item -> include, Create_Attr( item -> attr, "_bar" ) ) else item ]
-        
+
         func Create_Foo:
         	inputs:
         		include boolean (1..1)
         		attr string (1..1)
         	output:
         		foo Foo (1..1)
-        \t
+
         	set foo -> include: include
         	set foo -> attr: attr
-        
+
         func Create_Attr:
         	inputs:
         		s1 string (1..1)
@@ -1095,15 +1095,15 @@ public class ListOperationTest {
         type Foo:
         	include boolean (1..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		filteredFoosOnlyElement Foo (0..1)
-        \t
+
         	set filteredFoosOnlyElement:
-        		foos\s
+        		foos
         			filter fooItem [ fooItem -> include = True ]
         			then only-element
         """;
@@ -1130,15 +1130,15 @@ public class ListOperationTest {
         type Foo:
         	include boolean (1..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		filteredFoosDistinct Foo (0..*)
-        \t
+
         	set filteredFoosDistinct:
-        		foos\s
+        		foos
         			filter fooItem [ fooItem -> include = True ]
         			then distinct
         """;
@@ -1169,15 +1169,15 @@ public class ListOperationTest {
         type Foo:
         	include boolean (1..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		filteredFooAttr string (0..*)
-        \t
+
         	set filteredFooAttr:
-        		foos\s
+        		foos
         			filter fooItem [ fooItem -> include = True ]
         				-> attr
         """;
@@ -1204,21 +1204,21 @@ public class ListOperationTest {
         String model = """
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	include boolean (1..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		filteredBars Bar (0..*)
-        \t
+
         	set filteredBars:
-        		bars\s
-        			filter bar [ bar -> foos\s
-        				filter foo [ foo -> include = True ]\s
+        		bars
+        			filter bar [ bar -> foos
+        				filter foo [ foo -> include = True ]
         					then count = 2 ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
@@ -1249,15 +1249,15 @@ public class ListOperationTest {
         String model = """
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		strings string (0..*)
-        \t
+
         	set strings:
-        		foos\s
+        		foos
         			extract [ item -> attr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
@@ -1330,15 +1330,15 @@ public class ListOperationTest {
         String model = """
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		strings string (0..*)
-        \t
+
         	set strings:
-        		foos\s
+        		foos
         			extract foo [ foo -> attr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
@@ -1364,18 +1364,18 @@ public class ListOperationTest {
         String model = """
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		fooCounts int (0..*)
-        \t
+
         	set fooCounts:
-        		bars\s
+        		bars
         			extract bar [ bar -> foos ]
         			then extract fooListItem [ fooListItem count ]
         """;
@@ -1453,18 +1453,18 @@ public class ListOperationTest {
         String model = """
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		fooCounts int (0..*)
-        \t
+
         	set fooCounts:
-        		bars\s
+        		bars
         			extract [ item -> foos ]
         			then extract [ item count ]
         """;
@@ -1490,18 +1490,18 @@ public class ListOperationTest {
         String model = """
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		fooCounts int (0..*)
-        \t
+
         	set fooCounts:
-        		bars\s
+        		bars
         			extract [ item -> foos ]
         			then filter [ item count > 1 ]
         			then extract [ item count ]
@@ -1528,18 +1528,18 @@ public class ListOperationTest {
         String model = """
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		fooCounts int (0..*)
-        \t
+
         	set fooCounts:
-        		bars\s
+        		bars
         			extract a [ a -> foos ]
         			then filter b [ b count > 1 ]
         			then extract c [ c count ]
@@ -1566,18 +1566,18 @@ public class ListOperationTest {
         String model = """
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		foos Foo (0..*)
-        \t
+
         	set foos:
-        		bars\s
+        		bars
         			extract bar [ bar -> foos ]
         			then flatten
         """;
@@ -1673,18 +1673,18 @@ public class ListOperationTest {
         String model = """
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		foos Foo (0..*)
-        \t
+
         	set foos:
-        		bars\s
+        		bars
         			extract [ item -> foos ]
         			then flatten
         """;
@@ -1713,18 +1713,18 @@ public class ListOperationTest {
         String model = """
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		attrs string (0..*)
-        \t
+
         	set attrs:
-        		bars\s
+        		bars
         			extract [ item -> foos ]
         			then flatten
         			then extract [ item -> attr ]
@@ -1807,18 +1807,18 @@ public class ListOperationTest {
         String model = """
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		fooCounts int (0..*)
-        \t
+
         	set fooCounts:
-        		bars\s
+        		bars
         			extract [ item -> foos count ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
@@ -1843,18 +1843,18 @@ public class ListOperationTest {
         String model = """
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		fooCounts int (0..*)
-        \t
+
         	set fooCounts:
-        		bars\s
+        		bars
         			extract bar [ bar -> foos count ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
@@ -1879,38 +1879,38 @@ public class ListOperationTest {
         String model = """
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		updatedBars Bar (0..*)
-        \t
+
         	set updatedBars:
-        		bars\s
-        			extract bar [ bar -> foos\s
+        		bars
+        			extract bar [ bar -> foos
         				extract foo [ NewFoo( foo -> attr + "_bar" ) ]
         			]
         			then extract updatedFoos [ NewBar( updatedFoos ) ]
-        
+
         func NewBar:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		bar Bar (1..1)
-        \t
+
         	set bar -> foos:
         		foos
-        
+
         func NewFoo:
-        \s	inputs:
-        \s		attr string (1..1)
+        	inputs:
+        		attr string (1..1)
         	output:
         		foo Foo (0..1)
-        \t
+
         	set foo -> attr:
         		attr
         """;
@@ -2020,38 +2020,38 @@ public class ListOperationTest {
         String model = """
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		updatedBars Bar (0..*)
-        \t
+
         	set updatedBars:
-        		bars\s
-        			extract bar [\s
-        				NewBar( bar -> foos\s
+        		bars
+        			extract bar [
+        				NewBar( bar -> foos
         					extract foo [ NewFoo( foo -> attr + "_bar" ) ] )
         			]
-        
+
         func NewBar:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		bar Bar (1..1)
-        \t
+
         	set bar -> foos:
         		foos
-        
+
         func NewFoo:
-        \s	inputs:
-        \s		attr string (1..1)
+        	inputs:
+        		attr string (1..1)
         	output:
         		foo Foo (0..1)
-        \t
+
         	set foo -> attr:
         		attr
         """;
@@ -2158,23 +2158,23 @@ public class ListOperationTest {
         String model = """
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		updatedFoos Foo (0..*)
-        \t
+
         	set updatedFoos:
-        		foos\s
+        		foos
         			extract [ NewFoo( item -> attr + "_1" ) ]
-        
+
         func NewFoo:
-        \s	inputs:
-        \s		attr string (1..1)
+        	inputs:
+        		attr string (1..1)
         	output:
         		foo Foo (0..1)
-        \t
+
         	set foo -> attr:
         		attr
         """;
@@ -2207,18 +2207,18 @@ public class ListOperationTest {
         type Foo:
         	include boolean (1..1)
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		newFoos string (0..*)
-        \t
+
         	set newFoos:
-        		foos\s
+        		foos
         			filter [ item -> include = True ]
         			then extract [ item -> attr ]
-        
+
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -2294,27 +2294,27 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithSameNamespace() {
         String model = """
         namespace ns1
-        
+
         type Bar:
         	barAttr string (1..1)
-        
+
         type Foo:
         	fooAttr string (1..1)
-        
+
         func GetFoo:
         	inputs:
         		barAttr string (1..1)
         	output:
         		foo Foo (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		strings string (0..*)
-        \t
+
         	set strings:
-        		bars\s
+        		bars
         			extract [ GetFoo( item -> barAttr ) ]
         			then extract [ item -> fooAttr ]
         """;
@@ -2382,26 +2382,26 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithDifferentNamespace() {
         String model0 = """
         namespace ns1
-        
+
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	attr string (1..1)
         """;
         String model1 = """
         namespace ns2
-        
+
         import ns1.*
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		strings string (0..*)
-        \t
+
         	set strings:
-        		bars\s
+        		bars
         			extract [ item -> foos ]
         			then flatten
         			then extract [ item -> attr ]
@@ -2467,13 +2467,13 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithDifferentNamespace2() {
         String model0 = """
         namespace ns1
-        
+
         type Bar:
         	barAttr string (1..1)
-        
+
         type Foo:
         	fooAttr string (1..1)
-        
+
         func GetFoo:
         	inputs:
         		barAttr string (1..1)
@@ -2482,17 +2482,17 @@ public class ListOperationTest {
         """;
         String model1 = """
         namespace ns2
-        
+
         import ns1.*
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		strings string (0..*)
-        \t
+
         	set strings:
-        		bars\s
+        		bars
         			extract [ GetFoo( item -> barAttr ) ]
         			then extract [ item -> fooAttr ]
         """;
@@ -2561,22 +2561,22 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithDifferentNamespace3() {
         String model0 = """
         namespace ns1
-        
+
         type Bar:
         	barAttr string (1..1)
-        
+
         type Foo:
         	fooAttr string (1..1)
-        
+
         type Baz:
         	fooAttr string (1..1)
-        
+
         func GetFoo:
         	inputs:
         		baz Baz (1..1)
         	output:
         		foo Foo (1..1)
-        
+
         func GetBaz:
         	inputs:
         		attr string (1..1)
@@ -2585,17 +2585,17 @@ public class ListOperationTest {
         """;
         String model1 = """
         namespace ns2
-        
+
         import ns1.*
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		strings string (0..*)
-        \t
+
         	set strings:
-        		bars\s
+        		bars
         			extract [ GetFoo( GetBaz( item -> barAttr ) ) ]
         			then extract [ item -> fooAttr ]
         """;
@@ -2667,14 +2667,14 @@ public class ListOperationTest {
         String model = """
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
-        \s		test string (1..1)
+        	inputs:
+        		foos Foo (0..*)
+        		test string (1..1)
         	output:
         		strings string (0..*)
-        \t
+
         	set strings:
         		if test = "a"
         		then foos extract [ item -> attr + "_a" ]
@@ -2768,11 +2768,11 @@ public class ListOperationTest {
     public void shouldGenerateListJoin() {
         String model = """
         func FuncFoo:
-        \s	inputs:
-        \s		stringList string (0..*)
+        	inputs:
+        		stringList string (0..*)
         	output:
         		concatenatedString string (1..1)
-        \t
+
         	set concatenatedString:
         		stringList
         			join
@@ -2796,11 +2796,11 @@ public class ListOperationTest {
     public void shouldGenerateListJoinWithDelimiter() {
         String model = """
         func FuncFoo:
-        \s	inputs:
-        \s		stringList string (0..*)
+        	inputs:
+        		stringList string (0..*)
         	output:
         		concatenatedString string (1..1)
-        \t
+
         	set concatenatedString:
         		stringList
         			join "_"
@@ -2824,11 +2824,11 @@ public class ListOperationTest {
     public void shouldGenerateListReduceString() {
         String model = """
         func FuncFoo:
-        \s	inputs:
-        \s		stringList string (0..*)
+        	inputs:
+        		stringList string (0..*)
         	output:
         		concatenatedString string (1..1)
-        \t
+
         	set concatenatedString:
         		stringList
         			reduce a, b [ a + b ]
@@ -2900,11 +2900,11 @@ public class ListOperationTest {
     public void shouldGenerateListSumInt() {
         String model = """
         func FuncFoo:
-        \s	inputs:
-        \s		intList int (0..*)
+        	inputs:
+        		intList int (0..*)
         	output:
         		total int (1..1)
-        \t
+
         	set total:
         		intList
         			sum
@@ -2928,11 +2928,11 @@ public class ListOperationTest {
     public void shouldGenerateListSumBigDecimal() {
         String model = """
         func FuncFoo:
-        \s	inputs:
-        \s		numberList number (0..*)
+        	inputs:
+        		numberList number (0..*)
         	output:
         		total number (1..1)
-        \t
+
         	set total:
         		numberList
         			sum
@@ -2956,11 +2956,11 @@ public class ListOperationTest {
     public void shouldGenerateListReduceSum() {
         String model = """
         func FuncFoo:
-        \s	inputs:
-        \s		intList int (0..*)
+        	inputs:
+        		intList int (0..*)
         	output:
         		total int (1..1)
-        \t
+
         	set total:
         		intList
         			reduce a, b [ a + b ]
@@ -2984,11 +2984,11 @@ public class ListOperationTest {
     public void shouldGenerateListFirstInt() {
         String model = """
         func FuncFoo:
-        \s	inputs:
-        \s		intList int (0..*)
+        	inputs:
+        		intList int (0..*)
         	output:
         		firstInt int (1..1)
-        \t
+
         	set firstInt:
         		intList
         			first
@@ -3013,13 +3013,13 @@ public class ListOperationTest {
         String model = """
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		fooList Foo (0..*)
+        	inputs:
+        		fooList Foo (0..*)
         	output:
         		firstFoo Foo (1..1)
-        \t
+
         	set firstFoo:
         		fooList
         			first
@@ -3050,13 +3050,13 @@ public class ListOperationTest {
         String model = """
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		fooList Foo (0..*)
+        	inputs:
+        		fooList Foo (0..*)
         	output:
         		firstFoo Foo (1..1)
-        \t
+
         	set firstFoo:
         		fooList
         			first
@@ -3073,11 +3073,11 @@ public class ListOperationTest {
     public void shouldGenerateListLastInt() {
         String model = """
         func FuncFoo:
-        \s	inputs:
-        \s		intList int (0..*)
+        	inputs:
+        		intList int (0..*)
         	output:
         		lastInt int (1..1)
-        \t
+
         	set lastInt:
         		intList
         			last
@@ -3102,13 +3102,13 @@ public class ListOperationTest {
         String model = """
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		fooList Foo (0..*)
+        	inputs:
+        		fooList Foo (0..*)
         	output:
         		lastFoo Foo (1..1)
-        \t
+
         	set lastFoo:
         		fooList
         			last
@@ -3137,11 +3137,11 @@ public class ListOperationTest {
     public void shouldGenerateListReduceSubtract() {
         String model = """
         func FuncFoo:
-        \s	inputs:
-        \s		intList int (0..*)
+        	inputs:
+        		intList int (0..*)
         	output:
         		total int (1..1)
-        \t
+
         	set total:
         		intList
         			reduce a, b [ a - b ]
@@ -3171,11 +3171,11 @@ public class ListOperationTest {
     public void shouldGenerateEmptyListReduceSum() {
         String model = """
         func FuncFoo:
-        \s	inputs:
-        \s		numberList int (0..*)
+        	inputs:
+        		numberList int (0..*)
         	output:
         		total int (1..1)
-        \t
+
         	set total:
         		numberList
         			reduce a, b [ a + b ]
@@ -3194,11 +3194,11 @@ public class ListOperationTest {
     public void shouldGenerateListReduceProduct() {
         String model = """
         func FuncFoo:
-        \s	inputs:
-        \s		numberList int (0..*)
+        	inputs:
+        		numberList int (0..*)
         	output:
         		total int (1..1)
-        \t
+
         	set total:
         		numberList
         			reduce a, b [ a * b ]
@@ -3222,11 +3222,11 @@ public class ListOperationTest {
     public void shouldGenerateListReduceMaxNumber() {
         String model = """
         func FuncFoo:
-        \s	inputs:
-        \s		numberList int (0..*)
+        	inputs:
+        		numberList int (0..*)
         	output:
         		total int (1..1)
-        \t
+
         	set total:
         		numberList
         			reduce a, b [ if a > b then a else b ]
@@ -3250,15 +3250,15 @@ public class ListOperationTest {
     public void shouldGenerateListReduceMinNumber() {
         String model = """
         func FuncFoo:
-        \s	inputs:
-        \s		numberList int (0..*)
+        	inputs:
+        		numberList int (0..*)
         	output:
         		total int (1..1)
-        \t
+
         	set total:
         		numberList
         			reduce a, b [ Min( a, b ) ]
-        
+
         func Min:
         	inputs:
         		a int (1..1)
@@ -3288,23 +3288,23 @@ public class ListOperationTest {
         String model = """
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		foo Foo (1..1)
-        \t
+
         	set foo:
         		foos
         			reduce foo1, foo2 [ Create_Foo( foo1 -> attr + foo2 -> attr ) ]
-        
+
         func Create_Foo:
-        \s	inputs:
-        \s		attr string (1..1)
+        	inputs:
+        		attr string (1..1)
         	output:
         		foo Foo (1..1)
-        \t
+
         	set foo -> attr: attr
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
@@ -3398,16 +3398,16 @@ public class ListOperationTest {
         String model = """
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		fooCount int (1..1)
-        \t
+
         	set fooCount:
         		bars
         			reduce bar1, bar2 [ if bar1 -> foos count > bar2 -> foos count then bar1 else bar2 ]
@@ -3442,16 +3442,16 @@ public class ListOperationTest {
         String model = """
         type Bar:
         	foos Foo (0..*)
-        
+
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		bars Bar (0..*)
+        	inputs:
+        		bars Bar (0..*)
         	output:
         		attrs string (0..*)
-        \t
+
         	set attrs:
         		bars
         			reduce bar1, bar2 [ if bar1 -> foos count > bar2 -> foos count then bar1 else bar2 ] // max by foo count
@@ -3487,11 +3487,11 @@ public class ListOperationTest {
     public void shouldGenerateListMaxInt() {
         String model = """
         func FuncFoo:
-        \s	inputs:
-        \s		intList int (0..*)
+        	inputs:
+        		intList int (0..*)
         	output:
         		result int (0..1)
-        \t
+
         	set result:
         		intList
         			max
@@ -3516,13 +3516,13 @@ public class ListOperationTest {
         String model = """
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		foo Foo (0..1)
-        \t
+
         	set foo:
         		foos
         			max [ item -> attr ]
@@ -3552,11 +3552,11 @@ public class ListOperationTest {
     public void shouldGenerateListMinBigDecimal() {
         String model = """
         func FuncFoo:
-        \s	inputs:
-        \s		numberList number (0..*)
+        	inputs:
+        		numberList number (0..*)
         	output:
         		result number (0..1)
-        \t
+
         	set result:
         		numberList
         			min
@@ -3581,13 +3581,13 @@ public class ListOperationTest {
         String model = """
         type Foo:
         	attr string (1..1)
-        
+
         func FuncFoo:
-        \s	inputs:
-        \s		foos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
         	output:
         		foo Foo (0..1)
-        \t
+
         	set foo:
         		foos
         			min [ item -> attr ]
@@ -3616,12 +3616,12 @@ public class ListOperationTest {
     @Test
     public void shouldGenerateIntListSort() {
         String model = """
-        func FuncFoo:\s
+        func FuncFoo:
         	inputs:
         		numbers int (0..*)
         	output:
         		sortedNumbers int (0..*)
-        
+
         	set sortedNumbers:
         		numbers sort // sort items
         """;
@@ -3683,14 +3683,14 @@ public class ListOperationTest {
     @Test
     public void shouldGenerateDistinctIntListSort() {
         String model = """
-        func FuncFoo:\s
+        func FuncFoo:
         	inputs:
         		numbers int (0..*)
         	output:
         		sortedNumbers int (0..*)
-        
+
         	set sortedNumbers:
-        		numbers\s
+        		numbers
         			distinct
         			sort
         """;
@@ -3706,12 +3706,12 @@ public class ListOperationTest {
     @Test
     public void shouldGenerateDateListSort() {
         String model = """
-        func FuncFoo:\s
+        func FuncFoo:
         	inputs:
         		dates date (0..*)
         	output:
         		sortedDates date (0..*)
-        
+
         	set sortedDates:
         		dates sort // sort items
         """;
@@ -3734,13 +3734,13 @@ public class ListOperationTest {
         String model = """
         type Foo:
         	attr string (1..1) // single
-        
+
         func FuncFoo:
         	inputs:
         		foos Foo (0..*)
         	output:
         		sortedFoos Foo (0..*)
-        
+
         	set sortedFoos:
         		foos sort [item -> attr] // sort based on item attribute
         """;
@@ -3830,12 +3830,12 @@ public class ListOperationTest {
     @Test
     public void shouldGenerateIntListReverse() {
         String model = """
-        func FuncFoo:\s
+        func FuncFoo:
         	inputs:
         		numbers int (0..*)
         	output:
         		sortedNumbers int (0..*)
-        
+
         	set sortedNumbers:
         		numbers
         			reverse // reverse (no sort)
@@ -3852,14 +3852,14 @@ public class ListOperationTest {
     @Test
     public void shouldGenerateDateListSortThenReverse() {
         String model = """
-        func FuncFoo:\s
+        func FuncFoo:
         	inputs:
         		dates date (0..*)
         	output:
         		sortedDates date (0..*)
-        
+
         	set sortedDates:
-        		dates\s
+        		dates
         			sort // sort items
         			reverse
         """;
@@ -3882,15 +3882,15 @@ public class ListOperationTest {
         String model = """
         type Foo:
         	attr string (1..1) // single
-        
+
         func FuncFoo:
         	inputs:
         		foos Foo (0..*)
         	output:
         		sortedFoos Foo (0..*)
-        
+
         	set sortedFoos:
-        		foos\s
+        		foos
         			sort [item -> attr] // sort based on item attribute
         			reverse
         """;
@@ -3919,15 +3919,15 @@ public class ListOperationTest {
         String model = """
         type Foo:
         	attr string (1..1) // single
-        
+
         func FuncFoo:
         	inputs:
         		foos Foo (0..*)
         	output:
         		sortedFoos Foo (0..*)
-        
+
         	set sortedFoos:
-        		foos\s
+        		foos
         			reverse
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
