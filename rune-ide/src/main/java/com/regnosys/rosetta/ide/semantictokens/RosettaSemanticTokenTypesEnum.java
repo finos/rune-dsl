@@ -35,7 +35,8 @@ public enum RosettaSemanticTokenTypesEnum implements ISemanticTokenType {
 	INLINE_PARAMETER("inlineParameter"),
 	OUTPUT("output"),
 	RULE("rule"),
-	IMPLICIT_VARIABLE("implicitVariable");
+	IMPLICIT_VARIABLE("implicitVariable"),
+	SCHEMA("schema");
 	
 	private final String value;
 	
