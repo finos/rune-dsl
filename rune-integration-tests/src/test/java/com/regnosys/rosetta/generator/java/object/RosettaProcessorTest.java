@@ -30,8 +30,8 @@ class RosettaProcessorTest {
 		rmo.process(RosettaPath.valueOf("ROOT"), fooProcessor);
 		String actual = fooProcessor.getResult().stream()
 				.map(Object::toString)
-				.collect(Collectors.joining(System.lineSeparator())) + System.lineSeparator();
-		assertEquals(expected, actual.replace("\r\n", "\n"));
+				.collect(Collectors.joining("\n")) + "\n";
+		assertEquals(expected, actual);
 	}
 
 	@Test
