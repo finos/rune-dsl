@@ -14,6 +14,7 @@ import com.regnosys.rosetta.rosetta.RosettaEnumValueReference
 import com.regnosys.rosetta.rosetta.RosettaNamed
 import com.regnosys.rosetta.rosetta.RosettaRootElement
 import com.regnosys.rosetta.rosetta.RosettaSynonym
+import com.regnosys.rosetta.rosetta.SchemaOrFormat
 import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions
 import com.regnosys.rosetta.rosetta.RosettaTypedFeature
 import com.regnosys.rosetta.rosetta.RosettaRule
@@ -54,6 +55,21 @@ class AnnotationRef {
 	refers Annotation ^annotation
 	refers Attribute attribute
 	contains AnnotationQualifier[] qualifiers
+}
+
+enum TransformKind {
+	INGEST as "ingest"
+	ENRICH as "enrich"
+	PROJECTION as "projection"
+}
+
+/*
+ * A transform annotation on a function, e.g. `[ingest fixml]`, `[projection XML]` or `[enrich]`.
+ * `ref` (absent for `enrich`) points at a `Schema` or a `SerializationFormat` value.
+ */
+class TransformAnnotation {
+	TransformKind kind
+	refers SchemaOrFormat ref
 }
 
 interface BuiltinAnnotation extends RosettaNamed {
@@ -160,6 +176,7 @@ class ChoiceOption extends Attribute, SwitchCaseTarget {
 
 class Function extends RootElement, RosettaNamed, RosettaCallableWithArgs, References {
 	refers Function superFunction
+	contains TransformAnnotation[] transform
 	contains Attribute[] inputs
 	contains Attribute output
 	contains ShortcutDeclaration[] shortcuts opposite function

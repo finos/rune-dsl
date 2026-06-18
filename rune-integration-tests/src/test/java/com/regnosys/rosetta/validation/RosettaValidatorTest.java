@@ -49,7 +49,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				func Foo:
 					[projection]
 				""", """
-                ERROR (null) 'The `projection` annotation must have a target format such as JSON, XML or CSV' at 5:3, length 10, on AnnotationRef
+                ERROR (null) 'The `projection` annotation must have a target format such as JSON, XML or CSV.' at 5:3, length 10, on TransformAnnotation
                 """);
     }
 
@@ -67,7 +67,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 				func Foo:
 					[ingest]
 				""", """
-                ERROR (null) 'The `ingest` annotation must have a source format such as JSON, XML or CSV' at 5:3, length 6, on AnnotationRef
+                ERROR (null) 'The `ingest` annotation must have a source format such as JSON, XML or CSV.' at 5:3, length 6, on TransformAnnotation
                 """);
     }
 
@@ -78,32 +78,35 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 					[ingest JSON]
 					[enrich]
 				""", """
-                ERROR (null) 'Only one transform annotation allowed.' at 6:2, length 8, on AnnotationRef
+                ERROR (null) 'Only one transform annotation allowed.' at 6:2, length 8, on TransformAnnotation
                 """);
     }
 
     @Test
-    void testTransformAnnotationShouldBeUsedOnFunction() {
+    void testTransformAnnotationCanNotBeUsedOnNonFunction() {
+        // The transform construct ([ingest]/[enrich]/[projection]) is only valid on a function.
+        // On any other element these words parse as a (non-existent) annotation, so they are
+        // reported as unresolved annotation references.
         var model1 = modelHelper.parseRosetta("""
 				type Foo:
 					[ingest JSON]
 				""");
 
-        validationTestHelper.assertError(model1, ROSETTA_NAMED, null, "Transform annotations only allowed on a function.");
+        validationTestHelper.assertError(model1, ANNOTATION_REF, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Annotation 'ingest'.");
 
         var model2 = modelHelper.parseRosetta("""
 				type Foo:
 					[enrich]
 				""");
 
-        validationTestHelper.assertError(model2, ROSETTA_NAMED, null, "Transform annotations only allowed on a function.");
+        validationTestHelper.assertError(model2, ANNOTATION_REF, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Annotation 'enrich'.");
 
         var model3 = modelHelper.parseRosetta("""
 				type Foo:
 					[projection]
 				""");
 
-        validationTestHelper.assertError(model3, ROSETTA_NAMED, null, "Transform annotations only allowed on a function.");
+        validationTestHelper.assertError(model3, ANNOTATION_REF, Diagnostic.LINKING_DIAGNOSTIC, "Couldn't resolve reference to Annotation 'projection'.");
     }
 
     @Test

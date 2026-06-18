@@ -70,6 +70,7 @@ const sidebars: SidebarsConfig = {
         'modelling-components/data-validation',
         'modelling-components/function',
         'modelling-components/mapping',
+        'modelling-components/schema',
         'modelling-components/namespace',
         'modelling-components/reporting',
       ],

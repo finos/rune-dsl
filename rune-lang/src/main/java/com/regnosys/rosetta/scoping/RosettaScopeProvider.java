@@ -59,6 +59,7 @@ import org.eclipse.xtext.scoping.Scopes;
 import org.eclipse.xtext.scoping.impl.FilteringScope;
 import org.eclipse.xtext.scoping.impl.ImportNormalizer;
 import org.eclipse.xtext.scoping.impl.ImportedNamespaceAwareLocalScopeProvider;
+import org.eclipse.xtext.util.IResourceScopeCache;
 import org.eclipse.xtext.util.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,8 +98,12 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 	private DeepFeatureCallUtil deepFeatureCallUtil;
 	@Inject
 	private RObjectFactory rObjectFactory;
-	@Inject 
+	@Inject
 	private RosettaBuiltinsService builtinsService;
+	@Inject
+	private IResourceScopeCache resourceScopeCache;
+
+	private static final String SERIALIZATION_FORMAT_ENUM_CACHE_KEY = "rune.serializationFormatEnum";
 	
 	@Override
 	public IScope getScope(EObject context, EReference reference) {
@@ -111,6 +116,12 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 					}
 					return IScope.NULLSCOPE;
 				}
+			} else if (reference.equals(SCHEMA__FORMAT)) {
+				// A schema's format refers to a value of the built-in SerializationFormat enum.
+				return Scopes.scopeFor(serializationFormatValues(context));
+			} else if (reference.equals(TRANSFORM_ANNOTATION__REF)) {
+				// A transform annotation's ref is either a SerializationFormat value or a named Schema.
+				return Scopes.scopeFor(serializationFormatValues(context), super.getScope(context, reference));
 			} else if (reference.equals(ROSETTA_FEATURE_CALL__FEATURE)) {
 				if (context instanceof RosettaFeatureCall featureCall) {
 					return createExtendedFeatureScope(featureCall.getReceiver(), typeProvider.getRMetaAnnotatedType(featureCall.getReceiver()));
@@ -372,6 +383,21 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 
 	private IScope defaultScope(EObject object, EReference reference) {
 		return super.getScope(object, reference);
+	}
+
+	private Iterable<? extends EObject> serializationFormatValues(EObject context) {
+		RosettaModel basicTypes = builtinsService.getBasicTypesModel(context.eResource().getResourceSet());
+		// The built-in SerializationFormat enum is stable, so its lookup is cached per basictypes resource.
+		RosettaEnumeration serializationFormat = resourceScopeCache.get(SERIALIZATION_FORMAT_ENUM_CACHE_KEY,
+				basicTypes.eResource(), () -> {
+					for (var element : basicTypes.getElements()) {
+						if (element instanceof RosettaEnumeration e && "SerializationFormat".equals(e.getName())) {
+							return e;
+						}
+					}
+					return null;
+				});
+		return serializationFormat == null ? Collections.emptyList() : serializationFormat.getEnumValues();
 	}
 	
 	@Override

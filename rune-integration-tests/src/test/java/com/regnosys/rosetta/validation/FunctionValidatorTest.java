@@ -70,7 +70,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
                        inp Input (1..1)
                 """, """
                 WARNING (null) 'A function should specify an implementation, or they should be annotated with codeImplementation' at 10:6, length 6, on Function
-                ERROR (null) 'Transform functions must have a single input.' at 11:4, length 16, on AnnotationRef
+                ERROR (null) 'Transform functions must have a single input.' at 11:4, length 16, on TransformAnnotation
                 ERROR (null) 'The output of a CSV projection function must be a tabular type. Type `Input` has non-simple attributes: `complexAttr`' at 13:12, length 5, on Attribute
                 """
         );
@@ -121,7 +121,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
                        result string (1..1)
                 """, """
                 WARNING (null) 'A function should specify an implementation, or they should be annotated with codeImplementation' at 7:6, length 6, on Function
-                ERROR (null) 'Transform functions must have a single input.' at 8:4, length 12, on AnnotationRef
+                ERROR (null) 'Transform functions must have a single input.' at 8:4, length 12, on TransformAnnotation
                 """
         );
     }
