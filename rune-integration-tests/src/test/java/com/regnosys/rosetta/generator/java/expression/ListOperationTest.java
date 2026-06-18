@@ -37,18 +37,18 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterListItemParameter() {
         String model = """
         type Foo:
-        \tinclude boolean (1..1)
-        \tattr string (1..1)
+        	include boolean (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tfilteredFoos Foo (0..*)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		filteredFoos Foo (0..*)
         \t
-        \tset filteredFoos:
-        \t\tfoos\s
-        \t\t\tfilter [ item -> include = True ]
+        	set filteredFoos:
+        		foos\s
+        			filter [ item -> include = True ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -74,47 +74,47 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         \t
-        \t@Inject protected ModelObjectValidator objectValidator;
+        	@Inject protected ModelObjectValidator objectValidator;
         
-        \t/**
-        \t* @param foos\s
-        \t* @return filteredFoos\s
-        \t*/
-        \tpublic List<? extends Foo> evaluate(List<? extends Foo> foos) {
-        \t\tList<Foo.FooBuilder> filteredFoosBuilder = doEvaluate(foos);
+        	/**
+        	* @param foos\s
+        	* @return filteredFoos\s
+        	*/
+        	public List<? extends Foo> evaluate(List<? extends Foo> foos) {
+        		List<Foo.FooBuilder> filteredFoosBuilder = doEvaluate(foos);
         \t\t
-        \t\tfinal List<? extends Foo> filteredFoos;
-        \t\tif (filteredFoosBuilder == null) {
-        \t\t\tfilteredFoos = null;
-        \t\t} else {
-        \t\t\tfilteredFoos = filteredFoosBuilder.stream().map(Foo::build).collect(Collectors.toList());
-        \t\t\tobjectValidator.validate(Foo.class, filteredFoos);
-        \t\t}
+        		final List<? extends Foo> filteredFoos;
+        		if (filteredFoosBuilder == null) {
+        			filteredFoos = null;
+        		} else {
+        			filteredFoos = filteredFoosBuilder.stream().map(Foo::build).collect(Collectors.toList());
+        			objectValidator.validate(Foo.class, filteredFoos);
+        		}
         \t\t
-        \t\treturn filteredFoos;
-        \t}
+        		return filteredFoos;
+        	}
         
-        \tprotected abstract List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos);
+        	protected abstract List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
-        \t\t\tif (foos == null) {
-        \t\t\t\tfoos = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<Foo.FooBuilder> filteredFoos = new ArrayList<>();
-        \t\t\treturn assignOutput(filteredFoos, foos);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
+        			if (foos == null) {
+        				foos = Collections.emptyList();
+        			}
+        			List<Foo.FooBuilder> filteredFoos = new ArrayList<>();
+        			return assignOutput(filteredFoos, foos);
+        		}
         \t\t
-        \t\tprotected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
-        \t\t\tfilteredFoos = toBuilder(MapperC.<Foo>of(foos)
-        \t\t\t\t.filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).get()).getMulti());
+        		protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
+        			filteredFoos = toBuilder(MapperC.<Foo>of(foos)
+        				.filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).get()).getMulti());
         \t\t\t
-        \t\t\treturn Optional.ofNullable(filteredFoos)
-        \t\t\t\t.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
-        \t\t\t\t.orElse(null);
-        \t\t}
-        \t}
+        			return Optional.ofNullable(filteredFoos)
+        				.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
+        				.orElse(null);
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -138,18 +138,18 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterListNamedParameter() {
         String model = """
         type Foo:
-        \tinclude boolean (1..1)
-        \tattr string (1..1)
+        	include boolean (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tfilteredFoos Foo (0..*)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		filteredFoos Foo (0..*)
         \t
-        \tset filteredFoos:
-        \t\tfoos\s
-        \t\t\tfilter fooItem [ fooItem -> include = True ]
+        	set filteredFoos:
+        		foos\s
+        			filter fooItem [ fooItem -> include = True ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -175,47 +175,47 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         \t
-        \t@Inject protected ModelObjectValidator objectValidator;
+        	@Inject protected ModelObjectValidator objectValidator;
         
-        \t/**
-        \t* @param foos\s
-        \t* @return filteredFoos\s
-        \t*/
-        \tpublic List<? extends Foo> evaluate(List<? extends Foo> foos) {
-        \t\tList<Foo.FooBuilder> filteredFoosBuilder = doEvaluate(foos);
+        	/**
+        	* @param foos\s
+        	* @return filteredFoos\s
+        	*/
+        	public List<? extends Foo> evaluate(List<? extends Foo> foos) {
+        		List<Foo.FooBuilder> filteredFoosBuilder = doEvaluate(foos);
         \t\t
-        \t\tfinal List<? extends Foo> filteredFoos;
-        \t\tif (filteredFoosBuilder == null) {
-        \t\t\tfilteredFoos = null;
-        \t\t} else {
-        \t\t\tfilteredFoos = filteredFoosBuilder.stream().map(Foo::build).collect(Collectors.toList());
-        \t\t\tobjectValidator.validate(Foo.class, filteredFoos);
-        \t\t}
+        		final List<? extends Foo> filteredFoos;
+        		if (filteredFoosBuilder == null) {
+        			filteredFoos = null;
+        		} else {
+        			filteredFoos = filteredFoosBuilder.stream().map(Foo::build).collect(Collectors.toList());
+        			objectValidator.validate(Foo.class, filteredFoos);
+        		}
         \t\t
-        \t\treturn filteredFoos;
-        \t}
+        		return filteredFoos;
+        	}
         
-        \tprotected abstract List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos);
+        	protected abstract List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
-        \t\t\tif (foos == null) {
-        \t\t\t\tfoos = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<Foo.FooBuilder> filteredFoos = new ArrayList<>();
-        \t\t\treturn assignOutput(filteredFoos, foos);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
+        			if (foos == null) {
+        				foos = Collections.emptyList();
+        			}
+        			List<Foo.FooBuilder> filteredFoos = new ArrayList<>();
+        			return assignOutput(filteredFoos, foos);
+        		}
         \t\t
-        \t\tprotected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
-        \t\t\tfilteredFoos = toBuilder(MapperC.<Foo>of(foos)
-        \t\t\t\t.filterItemNullSafe(fooItem -> areEqual(fooItem.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).get()).getMulti());
+        		protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
+        			filteredFoos = toBuilder(MapperC.<Foo>of(foos)
+        				.filterItemNullSafe(fooItem -> areEqual(fooItem.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).get()).getMulti());
         \t\t\t
-        \t\t\treturn Optional.ofNullable(filteredFoos)
-        \t\t\t\t.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
-        \t\t\t\t.orElse(null);
-        \t\t}
-        \t}
+        			return Optional.ofNullable(filteredFoos)
+        				.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
+        				.orElse(null);
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -239,19 +239,19 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterList2() {
         String model = """
         type Foo2:
-        \tinclude boolean (1..1)
-        \tinclude2 boolean (1..1)
-        \tattr string (1..1)
+        	include boolean (1..1)
+        	include2 boolean (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo2 (0..*)
-        \toutput:
-        \t\tfilteredFoos Foo2 (0..*)
+        \s	inputs:
+        \s		foos Foo2 (0..*)
+        	output:
+        		filteredFoos Foo2 (0..*)
         \t
-        \tset filteredFoos:
-        \t\tfoos\s
-        \t\t\tfilter [ item -> include = True and item -> include2 = True ]
+        	set filteredFoos:
+        		foos\s
+        			filter [ item -> include = True and item -> include2 = True ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -275,20 +275,20 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterList3() {
         String model = """
         type Foo2:
-        \tinclude boolean (1..1)
-        \tinclude2 boolean (1..1)
-        \tattr string (1..1)
+        	include boolean (1..1)
+        	include2 boolean (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo2 (0..*)
-        \toutput:
-        \t\tfilteredFoos Foo2 (0..*)
+        \s	inputs:
+        \s		foos Foo2 (0..*)
+        	output:
+        		filteredFoos Foo2 (0..*)
         \t
-        \tset filteredFoos:
-        \t\tfoos\s
-        \t\t\tfilter [ item -> include = True ]
-        \t\t\tthen filter [ item -> include2 = True ]
+        	set filteredFoos:
+        		foos\s
+        			filter [ item -> include = True ]
+        			then filter [ item -> include2 = True ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -314,49 +314,49 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         \t
-        \t@Inject protected ModelObjectValidator objectValidator;
+        	@Inject protected ModelObjectValidator objectValidator;
         
-        \t/**
-        \t* @param foos\s
-        \t* @return filteredFoos\s
-        \t*/
-        \tpublic List<? extends Foo2> evaluate(List<? extends Foo2> foos) {
-        \t\tList<Foo2.Foo2Builder> filteredFoosBuilder = doEvaluate(foos);
+        	/**
+        	* @param foos\s
+        	* @return filteredFoos\s
+        	*/
+        	public List<? extends Foo2> evaluate(List<? extends Foo2> foos) {
+        		List<Foo2.Foo2Builder> filteredFoosBuilder = doEvaluate(foos);
         \t\t
-        \t\tfinal List<? extends Foo2> filteredFoos;
-        \t\tif (filteredFoosBuilder == null) {
-        \t\t\tfilteredFoos = null;
-        \t\t} else {
-        \t\t\tfilteredFoos = filteredFoosBuilder.stream().map(Foo2::build).collect(Collectors.toList());
-        \t\t\tobjectValidator.validate(Foo2.class, filteredFoos);
-        \t\t}
+        		final List<? extends Foo2> filteredFoos;
+        		if (filteredFoosBuilder == null) {
+        			filteredFoos = null;
+        		} else {
+        			filteredFoos = filteredFoosBuilder.stream().map(Foo2::build).collect(Collectors.toList());
+        			objectValidator.validate(Foo2.class, filteredFoos);
+        		}
         \t\t
-        \t\treturn filteredFoos;
-        \t}
+        		return filteredFoos;
+        	}
         
-        \tprotected abstract List<Foo2.Foo2Builder> doEvaluate(List<? extends Foo2> foos);
+        	protected abstract List<Foo2.Foo2Builder> doEvaluate(List<? extends Foo2> foos);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<Foo2.Foo2Builder> doEvaluate(List<? extends Foo2> foos) {
-        \t\t\tif (foos == null) {
-        \t\t\t\tfoos = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<Foo2.Foo2Builder> filteredFoos = new ArrayList<>();
-        \t\t\treturn assignOutput(filteredFoos, foos);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<Foo2.Foo2Builder> doEvaluate(List<? extends Foo2> foos) {
+        			if (foos == null) {
+        				foos = Collections.emptyList();
+        			}
+        			List<Foo2.Foo2Builder> filteredFoos = new ArrayList<>();
+        			return assignOutput(filteredFoos, foos);
+        		}
         \t\t
-        \t\tprotected List<Foo2.Foo2Builder> assignOutput(List<Foo2.Foo2Builder> filteredFoos, List<? extends Foo2> foos) {
-        \t\t\tfinal MapperC<Foo2> thenArg = MapperC.<Foo2>of(foos)
-        \t\t\t\t.filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude", foo2 -> foo2.getInclude()), MapperS.of(true), CardinalityOperator.All).get());
-        \t\t\tfilteredFoos = toBuilder(thenArg
-        \t\t\t\t.filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude2", foo2 -> foo2.getInclude2()), MapperS.of(true), CardinalityOperator.All).get()).getMulti());
+        		protected List<Foo2.Foo2Builder> assignOutput(List<Foo2.Foo2Builder> filteredFoos, List<? extends Foo2> foos) {
+        			final MapperC<Foo2> thenArg = MapperC.<Foo2>of(foos)
+        				.filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude", foo2 -> foo2.getInclude()), MapperS.of(true), CardinalityOperator.All).get());
+        			filteredFoos = toBuilder(thenArg
+        				.filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude2", foo2 -> foo2.getInclude2()), MapperS.of(true), CardinalityOperator.All).get()).getMulti());
         \t\t\t
-        \t\t\treturn Optional.ofNullable(filteredFoos)
-        \t\t\t\t.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
-        \t\t\t\t.orElse(null);
-        \t\t}
-        \t}
+        			return Optional.ofNullable(filteredFoos)
+        				.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
+        				.orElse(null);
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -380,18 +380,18 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterListWithMetaData() {
         String model = """
         type FooWithScheme:
-        \tattr string (1..1)
-        \t\t[metadata scheme]
+        	attr string (1..1)
+        		[metadata scheme]
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos FooWithScheme (0..*)
-        \toutput:
-        \t\tfilteredFoos FooWithScheme (0..*)
+        \s	inputs:
+        \s		foos FooWithScheme (0..*)
+        	output:
+        		filteredFoos FooWithScheme (0..*)
         \t
-        \tset filteredFoos:
-        \t\tfoos\s
-        \t\t\tfilter [ item -> attr -> scheme = "foo-scheme" ]
+        	set filteredFoos:
+        		foos\s
+        			filter [ item -> attr -> scheme = "foo-scheme" ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -418,47 +418,47 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         \t
-        \t@Inject protected ModelObjectValidator objectValidator;
+        	@Inject protected ModelObjectValidator objectValidator;
         
-        \t/**
-        \t* @param foos\s
-        \t* @return filteredFoos\s
-        \t*/
-        \tpublic List<? extends FooWithScheme> evaluate(List<? extends FooWithScheme> foos) {
-        \t\tList<FooWithScheme.FooWithSchemeBuilder> filteredFoosBuilder = doEvaluate(foos);
+        	/**
+        	* @param foos\s
+        	* @return filteredFoos\s
+        	*/
+        	public List<? extends FooWithScheme> evaluate(List<? extends FooWithScheme> foos) {
+        		List<FooWithScheme.FooWithSchemeBuilder> filteredFoosBuilder = doEvaluate(foos);
         \t\t
-        \t\tfinal List<? extends FooWithScheme> filteredFoos;
-        \t\tif (filteredFoosBuilder == null) {
-        \t\t\tfilteredFoos = null;
-        \t\t} else {
-        \t\t\tfilteredFoos = filteredFoosBuilder.stream().map(FooWithScheme::build).collect(Collectors.toList());
-        \t\t\tobjectValidator.validate(FooWithScheme.class, filteredFoos);
-        \t\t}
+        		final List<? extends FooWithScheme> filteredFoos;
+        		if (filteredFoosBuilder == null) {
+        			filteredFoos = null;
+        		} else {
+        			filteredFoos = filteredFoosBuilder.stream().map(FooWithScheme::build).collect(Collectors.toList());
+        			objectValidator.validate(FooWithScheme.class, filteredFoos);
+        		}
         \t\t
-        \t\treturn filteredFoos;
-        \t}
+        		return filteredFoos;
+        	}
         
-        \tprotected abstract List<FooWithScheme.FooWithSchemeBuilder> doEvaluate(List<? extends FooWithScheme> foos);
+        	protected abstract List<FooWithScheme.FooWithSchemeBuilder> doEvaluate(List<? extends FooWithScheme> foos);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<FooWithScheme.FooWithSchemeBuilder> doEvaluate(List<? extends FooWithScheme> foos) {
-        \t\t\tif (foos == null) {
-        \t\t\t\tfoos = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<FooWithScheme.FooWithSchemeBuilder> filteredFoos = new ArrayList<>();
-        \t\t\treturn assignOutput(filteredFoos, foos);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<FooWithScheme.FooWithSchemeBuilder> doEvaluate(List<? extends FooWithScheme> foos) {
+        			if (foos == null) {
+        				foos = Collections.emptyList();
+        			}
+        			List<FooWithScheme.FooWithSchemeBuilder> filteredFoos = new ArrayList<>();
+        			return assignOutput(filteredFoos, foos);
+        		}
         \t\t
-        \t\tprotected List<FooWithScheme.FooWithSchemeBuilder> assignOutput(List<FooWithScheme.FooWithSchemeBuilder> filteredFoos, List<? extends FooWithScheme> foos) {
-        \t\t\tfilteredFoos = toBuilder(MapperC.<FooWithScheme>of(foos)
-        \t\t\t\t.filterItemNullSafe(item -> areEqual(item.<FieldWithMetaString>map("getAttr", fooWithScheme -> fooWithScheme.getAttr()).map("getMeta", a->a.getMeta()).map("getScheme", a->a.getScheme()), MapperS.of("foo-scheme"), CardinalityOperator.All).get()).getMulti());
+        		protected List<FooWithScheme.FooWithSchemeBuilder> assignOutput(List<FooWithScheme.FooWithSchemeBuilder> filteredFoos, List<? extends FooWithScheme> foos) {
+        			filteredFoos = toBuilder(MapperC.<FooWithScheme>of(foos)
+        				.filterItemNullSafe(item -> areEqual(item.<FieldWithMetaString>map("getAttr", fooWithScheme -> fooWithScheme.getAttr()).map("getMeta", a->a.getMeta()).map("getScheme", a->a.getScheme()), MapperS.of("foo-scheme"), CardinalityOperator.All).get()).getMulti());
         \t\t\t
-        \t\t\treturn Optional.ofNullable(filteredFoos)
-        \t\t\t\t.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
-        \t\t\t\t.orElse(null);
-        \t\t}
-        \t}
+        			return Optional.ofNullable(filteredFoos)
+        				.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
+        				.orElse(null);
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -484,19 +484,19 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterListWithMetaData2() {
         String model = """
         type FooWithScheme:
-        \tattr string (1..1)
-        \t\t[metadata scheme]
+        	attr string (1..1)
+        		[metadata scheme]
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos FooWithScheme (0..*)
-        \toutput:
-        \t\tstrings string (0..*)
+        \s	inputs:
+        \s		foos FooWithScheme (0..*)
+        	output:
+        		strings string (0..*)
         \t
-        \tset strings:
-        \t\tfoos\s
-        \t\t\tmap [ item -> attr ]
-        \t\t\tfilter [ item -> scheme = "foo-scheme" ]
+        	set strings:
+        		foos\s
+        			map [ item -> attr ]
+        			filter [ item -> scheme = "foo-scheme" ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -516,31 +516,31 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         
-        \t/**
-        \t* @param foos\s
-        \t* @return strings\s
-        \t*/
-        \tpublic List<String> evaluate(List<? extends FooWithScheme> foos) {
-        \t\tList<String> stringsHolder = doEvaluate(foos);
-        \t\tList<String> strings = assignOutput(stringsHolder, foos);
+        	/**
+        	* @param foos\s
+        	* @return strings\s
+        	*/
+        	public List<String> evaluate(List<? extends FooWithScheme> foos) {
+        		List<String> stringsHolder = doEvaluate(foos);
+        		List<String> strings = assignOutput(stringsHolder, foos);
         \t\t
-        \t\treturn strings;
-        \t}
+        		return strings;
+        	}
         \t
-        \tprivate List<String> assignOutput(List<String> strings, List<? extends FooWithScheme> foos) {
-        \t\tstrings = MapperC.of(foos)
-        \t\t\t.mapItem(/*MapperS<? extends FooWithScheme>*/ __item -> (MapperS<String>) __item.<FieldWithMetaString>map("getAttr", _fooWithScheme -> _fooWithScheme.getAttr()).<String>map("getValue", _f->_f.getValue())).getMulti();
-        \t\treturn strings;
-        \t}
+        	private List<String> assignOutput(List<String> strings, List<? extends FooWithScheme> foos) {
+        		strings = MapperC.of(foos)
+        			.mapItem(/*MapperS<? extends FooWithScheme>*/ __item -> (MapperS<String>) __item.<FieldWithMetaString>map("getAttr", _fooWithScheme -> _fooWithScheme.getAttr()).<String>map("getValue", _f->_f.getValue())).getMulti();
+        		return strings;
+        	}
         
-        \tprotected abstract List<String> doEvaluate(List<? extends FooWithScheme> foos);
+        	protected abstract List<String> doEvaluate(List<? extends FooWithScheme> foos);
         \t
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<String> doEvaluate(List<? extends FooWithScheme> foos) {
-        \t\t\treturn new ArrayList<>();
-        \t\t}
-        \t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<String> doEvaluate(List<? extends FooWithScheme> foos) {
+        			return new ArrayList<>();
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -566,14 +566,14 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterBuiltInTypeList() {
         String model = """
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos boolean (0..*)
-        \toutput:
-        \t\tfilteredFoos boolean (0..*)
+        \s	inputs:
+        \s		foos boolean (0..*)
+        	output:
+        		filteredFoos boolean (0..*)
         \t
-        \tset filteredFoos:
-        \t\tfoos\s
-        \t\t\tfilter [ item = True ]
+        	set filteredFoos:
+        		foos\s
+        			filter [ item = True ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -594,35 +594,35 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         
-        \t/**
-        \t* @param foos\s
-        \t* @return filteredFoos\s
-        \t*/
-        \tpublic List<Boolean> evaluate(List<Boolean> foos) {
-        \t\tList<Boolean> filteredFoos = doEvaluate(foos);
+        	/**
+        	* @param foos\s
+        	* @return filteredFoos\s
+        	*/
+        	public List<Boolean> evaluate(List<Boolean> foos) {
+        		List<Boolean> filteredFoos = doEvaluate(foos);
         \t\t
-        \t\treturn filteredFoos;
-        \t}
+        		return filteredFoos;
+        	}
         
-        \tprotected abstract List<Boolean> doEvaluate(List<Boolean> foos);
+        	protected abstract List<Boolean> doEvaluate(List<Boolean> foos);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<Boolean> doEvaluate(List<Boolean> foos) {
-        \t\t\tif (foos == null) {
-        \t\t\t\tfoos = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<Boolean> filteredFoos = new ArrayList<>();
-        \t\t\treturn assignOutput(filteredFoos, foos);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<Boolean> doEvaluate(List<Boolean> foos) {
+        			if (foos == null) {
+        				foos = Collections.emptyList();
+        			}
+        			List<Boolean> filteredFoos = new ArrayList<>();
+        			return assignOutput(filteredFoos, foos);
+        		}
         \t\t
-        \t\tprotected List<Boolean> assignOutput(List<Boolean> filteredFoos, List<Boolean> foos) {
-        \t\t\tfilteredFoos = MapperC.<Boolean>of(foos)
-        \t\t\t\t.filterItemNullSafe(item -> areEqual(item, MapperS.of(true), CardinalityOperator.All).get()).getMulti();
+        		protected List<Boolean> assignOutput(List<Boolean> filteredFoos, List<Boolean> foos) {
+        			filteredFoos = MapperC.<Boolean>of(foos)
+        				.filterItemNullSafe(item -> areEqual(item, MapperS.of(true), CardinalityOperator.All).get()).getMulti();
         \t\t\t
-        \t\t\treturn filteredFoos;
-        \t\t}
-        \t}
+        			return filteredFoos;
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -642,19 +642,19 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterListAndInputParameter() {
         String model = """
         type Foo:
-        \tinclude boolean (1..1)
-        \tattr string (1..1)
+        	include boolean (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \s\t\ttest boolean (1..1)
-        \toutput:
-        \t\tfilteredFoos Foo (0..*)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        \s		test boolean (1..1)
+        	output:
+        		filteredFoos Foo (0..*)
         \t
-        \tset filteredFoos:
-        \t\tfoos\s
-        \t\t\tfilter [ item -> include = test ]
+        	set filteredFoos:
+        		foos\s
+        			filter [ item -> include = test ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -678,19 +678,19 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterListAndCount() {
         String model = """
         type Foo:
-        \tinclude boolean (1..1)
-        \tattr string (1..1)
+        	include boolean (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tfilteredFoosCount int (1..1)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		filteredFoosCount int (1..1)
         \t
-        \tset filteredFoosCount:
-        \t\tfoos\s
-        \t\t\tfilter fooItem [ fooItem -> include = True ]\s
-        \t\t\tthen count
+        	set filteredFoosCount:
+        		foos\s
+        			filter fooItem [ fooItem -> include = True ]\s
+        			then count
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -713,37 +713,37 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterListAndFuncCalls() {
         String model = """
         type Foo:
-        \tinclude boolean (1..1)
-        \tattr string (1..1)
+        	include boolean (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tfilteredFoos Foo (0..*)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		filteredFoos Foo (0..*)
         \t
-        \tset filteredFoos:
-        \t\tfoos\s
-        \t\t\tfilter [ FuncFooTest( item ) ]
-        \t\t\tthen filter [ FuncFooTest2( item ) ]
+        	set filteredFoos:
+        		foos\s
+        			filter [ FuncFooTest( item ) ]
+        			then filter [ FuncFooTest2( item ) ]
         
         func FuncFooTest:
-        \s\tinputs:
-        \s\t\tfoo Foo (1..1)
-        \toutput:
-        \t\tresult boolean (0..1)
+        \s	inputs:
+        \s		foo Foo (1..1)
+        	output:
+        		result boolean (0..1)
         \t
-        \tset result:
-        \t\tfoo -> include
+        	set result:
+        		foo -> include
         
         func FuncFooTest2:
-        \s\tinputs:
-        \s\t\tfoo Foo (1..1)
-        \toutput:
-        \t\tresult boolean (0..1)
+        \s	inputs:
+        \s		foo Foo (1..1)
+        	output:
+        		result boolean (0..1)
         \t
-        \tset result:
-        \t\tfoo -> include
+        	set result:
+        		foo -> include
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -767,22 +767,22 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterListAndAliasParameter() {
         String model = """
         type Foo:
-        \tinclude boolean (1..1)
-        \tattr string (1..1)
+        	include boolean (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \s\t\ttest boolean (1..1)
-        \toutput:
-        \t\tfilteredFoos Foo (0..*)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        \s		test boolean (1..1)
+        	output:
+        		filteredFoos Foo (0..*)
         \t
-        \talias testAlias:
-        \t\ttest
+        	alias testAlias:
+        		test
         \t
-        \tset filteredFoos:
-        \t\tfoos\s
-        \t\t\tfilter [ item -> include = testAlias ]
+        	set filteredFoos:
+        		foos\s
+        			filter [ item -> include = testAlias ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -806,21 +806,21 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterAndAlias() {
         String model = """
         type Foo:
-        \tinclude boolean (1..1)
-        \tattr string (1..1)
+        	include boolean (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tfilteredFooAttrs string (0..*)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		filteredFooAttrs string (0..*)
         \t
-        \talias filteredFoosAlias:
-        \t\tfoos\s
-        \t\t\tfilter [ item -> include = True ]
+        	alias filteredFoosAlias:
+        		foos\s
+        			filter [ item -> include = True ]
         \t
-        \tset filteredFooAttrs:
-        \t\tfilteredFoosAlias -> attr
+        	set filteredFooAttrs:
+        		filteredFoosAlias -> attr
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -844,27 +844,27 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithMultipleFilterList() {
         String model = """
         type Foo2:
-        \tinclude boolean (0..1)
-        \tinclude2 boolean (0..1)
-        \tattr string (1..1)
+        	include boolean (0..1)
+        	include2 boolean (0..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo2 (0..*)
-        \s\t\ttest boolean (0..1)
-        \s\t\ttest2 boolean (0..1)
-        \s\t\ttest3 boolean (0..1)
-        \toutput:
-        \t\tfoo Foo2 (0..1)
+        \s	inputs:
+        \s		foos Foo2 (0..*)
+        \s		test boolean (0..1)
+        \s		test2 boolean (0..1)
+        \s		test3 boolean (0..1)
+        	output:
+        		foo Foo2 (0..1)
         \t
-        \talias filteredFoos:
-        \t\tfoos\s
-        \t\t\tfilter a [ if test exists then a -> include = test else True ]
-        \t\t\tthen filter b [ if test2 exists then b -> include2 = test2 else True ]
-        \t\t\tthen filter c [ if test3 exists then c -> include2 = test3 else True ]
+        	alias filteredFoos:
+        		foos\s
+        			filter a [ if test exists then a -> include = test else True ]
+        			then filter b [ if test2 exists then b -> include2 = test2 else True ]
+        			then filter c [ if test3 exists then c -> include2 = test3 else True ]
         \t
-        \tset foo:
-        \t\tfilteredFoos only-element
+        	set foo:
+        		filteredFoos only-element
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -887,27 +887,27 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithMultipleFilterList2() {
         String model = """
         type Foo2:
-        \tinclude boolean (0..1)
-        \tinclude2 boolean (0..1)
-        \tattr string (1..1)
+        	include boolean (0..1)
+        	include2 boolean (0..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo2 (0..*)
-        \s\t\ttest boolean (0..1)
-        \s\t\ttest2 boolean (0..1)
-        \s\t\ttest3 boolean (0..1)
-        \toutput:
-        \t\tfoo Foo2 (0..1)
+        \s	inputs:
+        \s		foos Foo2 (0..*)
+        \s		test boolean (0..1)
+        \s		test2 boolean (0..1)
+        \s		test3 boolean (0..1)
+        	output:
+        		foo Foo2 (0..1)
         \t
-        \talias filteredFoos:
-        \t\tfoos\s
-        \t\t\tfilter [ if test exists then item -> include = test else True ]
-        \t\t\tthen filter [ if test2 exists then item -> include2 = test2 else True ]
-        \t\t\tthen filter [ if test3 exists then item -> include2 = test3 else True ]
+        	alias filteredFoos:
+        		foos\s
+        			filter [ if test exists then item -> include = test else True ]
+        			then filter [ if test2 exists then item -> include2 = test2 else True ]
+        			then filter [ if test3 exists then item -> include2 = test3 else True ]
         \t
-        \tset foo:
-        \t\tfilteredFoos only-element
+        	set foo:
+        		filteredFoos only-element
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -930,21 +930,21 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterListAliasAndOnlyElement() {
         String model = """
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tinclude boolean (1..1)
-        \tattr string (1..1)
+        	include boolean (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbar Bar (1..1)
-        \toutput:
-        \t\tfoos Foo (0..*)
+        \s	inputs:
+        \s		bar Bar (1..1)
+        	output:
+        		foos Foo (0..*)
         \t
-        \tset foos:
-        \t\tbar -> foos\s
-        \t\t\textract [ if item -> include = True then Foo { include: include, attr: attr + "_bar" } else item ]
+        	set foos:
+        		bar -> foos\s
+        			extract [ if item -> include = True then Foo { include: include, attr: attr + "_bar" } else item ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -970,52 +970,52 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         \t
-        \t@Inject protected ModelObjectValidator objectValidator;
+        	@Inject protected ModelObjectValidator objectValidator;
         
-        \t/**
-        \t* @param bar\s
-        \t* @return foos\s
-        \t*/
-        \tpublic List<? extends Foo> evaluate(Bar bar) {
-        \t\tList<Foo.FooBuilder> foosBuilder = doEvaluate(bar);
+        	/**
+        	* @param bar\s
+        	* @return foos\s
+        	*/
+        	public List<? extends Foo> evaluate(Bar bar) {
+        		List<Foo.FooBuilder> foosBuilder = doEvaluate(bar);
         \t\t
-        \t\tfinal List<? extends Foo> foos;
-        \t\tif (foosBuilder == null) {
-        \t\t\tfoos = null;
-        \t\t} else {
-        \t\t\tfoos = foosBuilder.stream().map(Foo::build).collect(Collectors.toList());
-        \t\t\tobjectValidator.validate(Foo.class, foos);
-        \t\t}
+        		final List<? extends Foo> foos;
+        		if (foosBuilder == null) {
+        			foos = null;
+        		} else {
+        			foos = foosBuilder.stream().map(Foo::build).collect(Collectors.toList());
+        			objectValidator.validate(Foo.class, foos);
+        		}
         \t\t
-        \t\treturn foos;
-        \t}
+        		return foos;
+        	}
         
-        \tprotected abstract List<Foo.FooBuilder> doEvaluate(Bar bar);
+        	protected abstract List<Foo.FooBuilder> doEvaluate(Bar bar);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<Foo.FooBuilder> doEvaluate(Bar bar) {
-        \t\t\tList<Foo.FooBuilder> foos = new ArrayList<>();
-        \t\t\treturn assignOutput(foos, bar);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<Foo.FooBuilder> doEvaluate(Bar bar) {
+        			List<Foo.FooBuilder> foos = new ArrayList<>();
+        			return assignOutput(foos, bar);
+        		}
         \t\t
-        \t\tprotected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, Bar bar) {
-        \t\t\tfoos = toBuilder(MapperS.of(bar).<Foo>mapC("getFoos", _bar -> _bar.getFoos())
-        \t\t\t\t.mapItem(item -> {
-        \t\t\t\t\tif (areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
-        \t\t\t\t\t\treturn MapperS.of(Foo.builder()
-        \t\t\t\t\t\t\t.setInclude(item.<Boolean>map("getInclude", foo -> foo.getInclude()).get())
-        \t\t\t\t\t\t\t.setAttr(MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_bar")).get())
-        \t\t\t\t\t\t\t.build());
-        \t\t\t\t\t}
-        \t\t\t\t\treturn item;
-        \t\t\t\t}).getMulti());
+        		protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, Bar bar) {
+        			foos = toBuilder(MapperS.of(bar).<Foo>mapC("getFoos", _bar -> _bar.getFoos())
+        				.mapItem(item -> {
+        					if (areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+        						return MapperS.of(Foo.builder()
+        							.setInclude(item.<Boolean>map("getInclude", foo -> foo.getInclude()).get())
+        							.setAttr(MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_bar")).get())
+        							.build());
+        					}
+        					return item;
+        				}).getMulti());
         \t\t\t
-        \t\t\treturn Optional.ofNullable(foos)
-        \t\t\t\t.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
-        \t\t\t\t.orElse(null);
-        \t\t}
-        \t}
+        			return Optional.ofNullable(foos)
+        				.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
+        				.orElse(null);
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1038,40 +1038,40 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterListAliasAndOnlyElement2() {
         String model = """
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tinclude boolean (1..1)
-        \tattr string (1..1)
+        	include boolean (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbar Bar (1..1)
-        \toutput:
-        \t\tupdatedBar Bar (1..1)
+        \s	inputs:
+        \s		bar Bar (1..1)
+        	output:
+        		updatedBar Bar (1..1)
         \t
-        \tadd updatedBar -> foos:
-        \t\tbar -> foos\s
-        \t\t\textract [ if item -> include = True then Create_Foo( item -> include, Create_Attr( item -> attr, "_bar" ) ) else item ]
+        	add updatedBar -> foos:
+        		bar -> foos\s
+        			extract [ if item -> include = True then Create_Foo( item -> include, Create_Attr( item -> attr, "_bar" ) ) else item ]
         
         func Create_Foo:
-        \tinputs:
-        \t\tinclude boolean (1..1)
-        \t\tattr string (1..1)
-        \toutput:
-        \t\tfoo Foo (1..1)
+        	inputs:
+        		include boolean (1..1)
+        		attr string (1..1)
+        	output:
+        		foo Foo (1..1)
         \t
-        \tset foo -> include: include
-        \tset foo -> attr: attr
+        	set foo -> include: include
+        	set foo -> attr: attr
         
         func Create_Attr:
-        \tinputs:
-        \t\ts1 string (1..1)
-        \t\ts2 string (1..1)
-        \toutput:
-        \t\tout string (1..1)
-        \tset out:
-        \t\ts1 + s2
+        	inputs:
+        		s1 string (1..1)
+        		s2 string (1..1)
+        	output:
+        		out string (1..1)
+        	set out:
+        		s1 + s2
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1093,19 +1093,19 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterListAndOnlyElement() {
         String model = """
         type Foo:
-        \tinclude boolean (1..1)
-        \tattr string (1..1)
+        	include boolean (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tfilteredFoosOnlyElement Foo (0..1)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		filteredFoosOnlyElement Foo (0..1)
         \t
-        \tset filteredFoosOnlyElement:
-        \t\tfoos\s
-        \t\t\tfilter fooItem [ fooItem -> include = True ]
-        \t\t\tthen only-element
+        	set filteredFoosOnlyElement:
+        		foos\s
+        			filter fooItem [ fooItem -> include = True ]
+        			then only-element
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1128,19 +1128,19 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterListAndDistinct() {
         String model = """
         type Foo:
-        \tinclude boolean (1..1)
-        \tattr string (1..1)
+        	include boolean (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tfilteredFoosDistinct Foo (0..*)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		filteredFoosDistinct Foo (0..*)
         \t
-        \tset filteredFoosDistinct:
-        \t\tfoos\s
-        \t\t\tfilter fooItem [ fooItem -> include = True ]
-        \t\t\tthen distinct
+        	set filteredFoosDistinct:
+        		foos\s
+        			filter fooItem [ fooItem -> include = True ]
+        			then distinct
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1167,19 +1167,19 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterListAndPath() {
         String model = """
         type Foo:
-        \tinclude boolean (1..1)
-        \tattr string (1..1)
+        	include boolean (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tfilteredFooAttr string (0..*)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		filteredFooAttr string (0..*)
         \t
-        \tset filteredFooAttr:
-        \t\tfoos\s
-        \t\t\tfilter fooItem [ fooItem -> include = True ]
-        \t\t\t\t-> attr
+        	set filteredFooAttr:
+        		foos\s
+        			filter fooItem [ fooItem -> include = True ]
+        				-> attr
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1203,23 +1203,23 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithNestedFilters() {
         String model = """
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tinclude boolean (1..1)
-        \tattr string (1..1)
+        	include boolean (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tfilteredBars Bar (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		filteredBars Bar (0..*)
         \t
-        \tset filteredBars:
-        \t\tbars\s
-        \t\t\tfilter bar [ bar -> foos\s
-        \t\t\t\tfilter foo [ foo -> include = True ]\s
-        \t\t\t\t\tthen count = 2 ]
+        	set filteredBars:
+        		bars\s
+        			filter bar [ bar -> foos\s
+        				filter foo [ foo -> include = True ]\s
+        					then count = 2 ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1248,17 +1248,17 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithExtractList() {
         String model = """
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tstrings string (0..*)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		strings string (0..*)
         \t
-        \tset strings:
-        \t\tfoos\s
-        \t\t\textract [ item -> attr ]
+        	set strings:
+        		foos\s
+        			extract [ item -> attr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -1277,35 +1277,35 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         
-        \t/**
-        \t* @param foos\s
-        \t* @return strings\s
-        \t*/
-        \tpublic List<String> evaluate(List<? extends Foo> foos) {
-        \t\tList<String> strings = doEvaluate(foos);
+        	/**
+        	* @param foos\s
+        	* @return strings\s
+        	*/
+        	public List<String> evaluate(List<? extends Foo> foos) {
+        		List<String> strings = doEvaluate(foos);
         \t\t
-        \t\treturn strings;
-        \t}
+        		return strings;
+        	}
         
-        \tprotected abstract List<String> doEvaluate(List<? extends Foo> foos);
+        	protected abstract List<String> doEvaluate(List<? extends Foo> foos);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<String> doEvaluate(List<? extends Foo> foos) {
-        \t\t\tif (foos == null) {
-        \t\t\t\tfoos = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<String> strings = new ArrayList<>();
-        \t\t\treturn assignOutput(strings, foos);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<String> doEvaluate(List<? extends Foo> foos) {
+        			if (foos == null) {
+        				foos = Collections.emptyList();
+        			}
+        			List<String> strings = new ArrayList<>();
+        			return assignOutput(strings, foos);
+        		}
         \t\t
-        \t\tprotected List<String> assignOutput(List<String> strings, List<? extends Foo> foos) {
-        \t\t\tstrings = MapperC.<Foo>of(foos)
-        \t\t\t\t.mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
+        		protected List<String> assignOutput(List<String> strings, List<? extends Foo> foos) {
+        			strings = MapperC.<Foo>of(foos)
+        				.mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
         \t\t\t
-        \t\t\treturn strings;
-        \t\t}
-        \t}
+        			return strings;
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1329,17 +1329,17 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithExtractList2() {
         String model = """
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tstrings string (0..*)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		strings string (0..*)
         \t
-        \tset strings:
-        \t\tfoos\s
-        \t\t\textract foo [ foo -> attr ]
+        	set strings:
+        		foos\s
+        			extract foo [ foo -> attr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1363,21 +1363,21 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithExtractListOfListThenExtractToListOfCounts() {
         String model = """
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tfooCounts int (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		fooCounts int (0..*)
         \t
-        \tset fooCounts:
-        \t\tbars\s
-        \t\t\textract bar [ bar -> foos ]
-        \t\t\tthen extract fooListItem [ fooListItem count ]
+        	set fooCounts:
+        		bars\s
+        			extract bar [ bar -> foos ]
+        			then extract fooListItem [ fooListItem count ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -1399,37 +1399,37 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         
-        \t/**
-        \t* @param bars\s
-        \t* @return fooCounts\s
-        \t*/
-        \tpublic List<Integer> evaluate(List<? extends Bar> bars) {
-        \t\tList<Integer> fooCounts = doEvaluate(bars);
+        	/**
+        	* @param bars\s
+        	* @return fooCounts\s
+        	*/
+        	public List<Integer> evaluate(List<? extends Bar> bars) {
+        		List<Integer> fooCounts = doEvaluate(bars);
         \t\t
-        \t\treturn fooCounts;
-        \t}
+        		return fooCounts;
+        	}
         
-        \tprotected abstract List<Integer> doEvaluate(List<? extends Bar> bars);
+        	protected abstract List<Integer> doEvaluate(List<? extends Bar> bars);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<Integer> doEvaluate(List<? extends Bar> bars) {
-        \t\t\tif (bars == null) {
-        \t\t\t\tbars = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<Integer> fooCounts = new ArrayList<>();
-        \t\t\treturn assignOutput(fooCounts, bars);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<Integer> doEvaluate(List<? extends Bar> bars) {
+        			if (bars == null) {
+        				bars = Collections.emptyList();
+        			}
+        			List<Integer> fooCounts = new ArrayList<>();
+        			return assignOutput(fooCounts, bars);
+        		}
         \t\t
-        \t\tprotected List<Integer> assignOutput(List<Integer> fooCounts, List<? extends Bar> bars) {
-        \t\t\tfinal MapperListOfLists<Foo> thenArg = MapperC.<Bar>of(bars)
-        \t\t\t\t.mapItemToList(bar -> bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()));
-        \t\t\tfooCounts = thenArg
-        \t\t\t\t.mapListToItem(fooListItem -> MapperS.of(fooListItem.resultCount())).getMulti();
+        		protected List<Integer> assignOutput(List<Integer> fooCounts, List<? extends Bar> bars) {
+        			final MapperListOfLists<Foo> thenArg = MapperC.<Bar>of(bars)
+        				.mapItemToList(bar -> bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()));
+        			fooCounts = thenArg
+        				.mapListToItem(fooListItem -> MapperS.of(fooListItem.resultCount())).getMulti();
         \t\t\t
-        \t\t\treturn fooCounts;
-        \t\t}
-        \t}
+        			return fooCounts;
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1452,21 +1452,21 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithExtractListOfListThenExtractToListOfCounts2() {
         String model = """
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tfooCounts int (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		fooCounts int (0..*)
         \t
-        \tset fooCounts:
-        \t\tbars\s
-        \t\t\textract [ item -> foos ]
-        \t\t\tthen extract [ item count ]
+        	set fooCounts:
+        		bars\s
+        			extract [ item -> foos ]
+        			then extract [ item count ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1489,22 +1489,22 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithExtractListOfListThenFilterOnCount() {
         String model = """
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tfooCounts int (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		fooCounts int (0..*)
         \t
-        \tset fooCounts:
-        \t\tbars\s
-        \t\t\textract [ item -> foos ]
-        \t\t\tthen filter [ item count > 1 ]
-        \t\t\tthen extract [ item count ]
+        	set fooCounts:
+        		bars\s
+        			extract [ item -> foos ]
+        			then filter [ item count > 1 ]
+        			then extract [ item count ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1527,22 +1527,22 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithMapListOfListThenFilterOnCount2() {
         String model = """
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tfooCounts int (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		fooCounts int (0..*)
         \t
-        \tset fooCounts:
-        \t\tbars\s
-        \t\t\textract a [ a -> foos ]
-        \t\t\tthen filter b [ b count > 1 ]
-        \t\t\tthen extract c [ c count ]
+        	set fooCounts:
+        		bars\s
+        			extract a [ a -> foos ]
+        			then filter b [ b count > 1 ]
+        			then extract c [ c count ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1565,21 +1565,21 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithExtractListOfListsThenFlatten() {
         String model = """
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tfoos Foo (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		foos Foo (0..*)
         \t
-        \tset foos:
-        \t\tbars\s
-        \t\t\textract bar [ bar -> foos ]
-        \t\t\tthen flatten
+        	set foos:
+        		bars\s
+        			extract bar [ bar -> foos ]
+        			then flatten
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -1604,49 +1604,49 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         \t
-        \t@Inject protected ModelObjectValidator objectValidator;
+        	@Inject protected ModelObjectValidator objectValidator;
         
-        \t/**
-        \t* @param bars\s
-        \t* @return foos\s
-        \t*/
-        \tpublic List<? extends Foo> evaluate(List<? extends Bar> bars) {
-        \t\tList<Foo.FooBuilder> foosBuilder = doEvaluate(bars);
+        	/**
+        	* @param bars\s
+        	* @return foos\s
+        	*/
+        	public List<? extends Foo> evaluate(List<? extends Bar> bars) {
+        		List<Foo.FooBuilder> foosBuilder = doEvaluate(bars);
         \t\t
-        \t\tfinal List<? extends Foo> foos;
-        \t\tif (foosBuilder == null) {
-        \t\t\tfoos = null;
-        \t\t} else {
-        \t\t\tfoos = foosBuilder.stream().map(Foo::build).collect(Collectors.toList());
-        \t\t\tobjectValidator.validate(Foo.class, foos);
-        \t\t}
+        		final List<? extends Foo> foos;
+        		if (foosBuilder == null) {
+        			foos = null;
+        		} else {
+        			foos = foosBuilder.stream().map(Foo::build).collect(Collectors.toList());
+        			objectValidator.validate(Foo.class, foos);
+        		}
         \t\t
-        \t\treturn foos;
-        \t}
+        		return foos;
+        	}
         
-        \tprotected abstract List<Foo.FooBuilder> doEvaluate(List<? extends Bar> bars);
+        	protected abstract List<Foo.FooBuilder> doEvaluate(List<? extends Bar> bars);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<Foo.FooBuilder> doEvaluate(List<? extends Bar> bars) {
-        \t\t\tif (bars == null) {
-        \t\t\t\tbars = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<Foo.FooBuilder> foos = new ArrayList<>();
-        \t\t\treturn assignOutput(foos, bars);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<Foo.FooBuilder> doEvaluate(List<? extends Bar> bars) {
+        			if (bars == null) {
+        				bars = Collections.emptyList();
+        			}
+        			List<Foo.FooBuilder> foos = new ArrayList<>();
+        			return assignOutput(foos, bars);
+        		}
         \t\t
-        \t\tprotected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, List<? extends Bar> bars) {
-        \t\t\tfinal MapperListOfLists<Foo> thenArg = MapperC.<Bar>of(bars)
-        \t\t\t\t.mapItemToList(bar -> bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()));
-        \t\t\tfoos = toBuilder(thenArg
-        \t\t\t\t.flattenList().getMulti());
+        		protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, List<? extends Bar> bars) {
+        			final MapperListOfLists<Foo> thenArg = MapperC.<Bar>of(bars)
+        				.mapItemToList(bar -> bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()));
+        			foos = toBuilder(thenArg
+        				.flattenList().getMulti());
         \t\t\t
-        \t\t\treturn Optional.ofNullable(foos)
-        \t\t\t\t.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
-        \t\t\t\t.orElse(null);
-        \t\t}
-        \t}
+        			return Optional.ofNullable(foos)
+        				.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
+        				.orElse(null);
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1672,21 +1672,21 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithExtractListOfListsThenFlatten2() {
         String model = """
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tfoos Foo (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		foos Foo (0..*)
         \t
-        \tset foos:
-        \t\tbars\s
-        \t\t\textract [ item -> foos ]
-        \t\t\tthen flatten
+        	set foos:
+        		bars\s
+        			extract [ item -> foos ]
+        			then flatten
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1712,22 +1712,22 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithExtractListOfListsThenFlatten3() {
         String model = """
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tattrs string (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		attrs string (0..*)
         \t
-        \tset attrs:
-        \t\tbars\s
-        \t\t\textract [ item -> foos ]
-        \t\t\tthen flatten
-        \t\t\tthen extract [ item -> attr ]
+        	set attrs:
+        		bars\s
+        			extract [ item -> foos ]
+        			then flatten
+        			then extract [ item -> attr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -1748,39 +1748,39 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         
-        \t/**
-        \t* @param bars\s
-        \t* @return attrs\s
-        \t*/
-        \tpublic List<String> evaluate(List<? extends Bar> bars) {
-        \t\tList<String> attrs = doEvaluate(bars);
+        	/**
+        	* @param bars\s
+        	* @return attrs\s
+        	*/
+        	public List<String> evaluate(List<? extends Bar> bars) {
+        		List<String> attrs = doEvaluate(bars);
         \t\t
-        \t\treturn attrs;
-        \t}
+        		return attrs;
+        	}
         
-        \tprotected abstract List<String> doEvaluate(List<? extends Bar> bars);
+        	protected abstract List<String> doEvaluate(List<? extends Bar> bars);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<String> doEvaluate(List<? extends Bar> bars) {
-        \t\t\tif (bars == null) {
-        \t\t\t\tbars = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<String> attrs = new ArrayList<>();
-        \t\t\treturn assignOutput(attrs, bars);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<String> doEvaluate(List<? extends Bar> bars) {
+        			if (bars == null) {
+        				bars = Collections.emptyList();
+        			}
+        			List<String> attrs = new ArrayList<>();
+        			return assignOutput(attrs, bars);
+        		}
         \t\t
-        \t\tprotected List<String> assignOutput(List<String> attrs, List<? extends Bar> bars) {
-        \t\t\tfinal MapperListOfLists<Foo> thenArg0 = MapperC.<Bar>of(bars)
-        \t\t\t\t.mapItemToList(item -> item.<Foo>mapC("getFoos", bar -> bar.getFoos()));
-        \t\t\tfinal MapperC<Foo> thenArg1 = thenArg0
-        \t\t\t\t.flattenList();
-        \t\t\tattrs = thenArg1
-        \t\t\t\t.mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
+        		protected List<String> assignOutput(List<String> attrs, List<? extends Bar> bars) {
+        			final MapperListOfLists<Foo> thenArg0 = MapperC.<Bar>of(bars)
+        				.mapItemToList(item -> item.<Foo>mapC("getFoos", bar -> bar.getFoos()));
+        			final MapperC<Foo> thenArg1 = thenArg0
+        				.flattenList();
+        			attrs = thenArg1
+        				.mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
         \t\t\t
-        \t\t\treturn attrs;
-        \t\t}
-        \t}
+        			return attrs;
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1806,20 +1806,20 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithExtractListCount() {
         String model = """
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tfooCounts int (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		fooCounts int (0..*)
         \t
-        \tset fooCounts:
-        \t\tbars\s
-        \t\t\textract [ item -> foos count ]
+        	set fooCounts:
+        		bars\s
+        			extract [ item -> foos count ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1842,20 +1842,20 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithMapListCount2() {
         String model = """
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tfooCounts int (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		fooCounts int (0..*)
         \t
-        \tset fooCounts:
-        \t\tbars\s
-        \t\t\textract bar [ bar -> foos count ]
+        	set fooCounts:
+        		bars\s
+        			extract bar [ bar -> foos count ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -1878,41 +1878,41 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithNestedExtracts() {
         String model = """
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tupdatedBars Bar (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		updatedBars Bar (0..*)
         \t
-        \tset updatedBars:
-        \t\tbars\s
-        \t\t\textract bar [ bar -> foos\s
-        \t\t\t\textract foo [ NewFoo( foo -> attr + "_bar" ) ]
-        \t\t\t]
-        \t\t\tthen extract updatedFoos [ NewBar( updatedFoos ) ]
+        	set updatedBars:
+        		bars\s
+        			extract bar [ bar -> foos\s
+        				extract foo [ NewFoo( foo -> attr + "_bar" ) ]
+        			]
+        			then extract updatedFoos [ NewBar( updatedFoos ) ]
         
         func NewBar:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tbar Bar (1..1)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		bar Bar (1..1)
         \t
-        \tset bar -> foos:
-        \t\tfoos
+        	set bar -> foos:
+        		foos
         
         func NewFoo:
-        \s\tinputs:
-        \s\t\tattr string (1..1)
-        \toutput:
-        \t\tfoo Foo (0..1)
+        \s	inputs:
+        \s		attr string (1..1)
+        	output:
+        		foo Foo (0..1)
         \t
-        \tset foo -> attr:
-        \t\tattr
+        	set foo -> attr:
+        		attr
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -1939,55 +1939,55 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         \t
-        \t@Inject protected ModelObjectValidator objectValidator;
+        	@Inject protected ModelObjectValidator objectValidator;
         \t
-        \t// RosettaFunction dependencies
-        \t//
-        \t@Inject protected NewBar newBar;
-        \t@Inject protected NewFoo newFoo;
+        	// RosettaFunction dependencies
+        	//
+        	@Inject protected NewBar newBar;
+        	@Inject protected NewFoo newFoo;
         
-        \t/**
-        \t* @param bars\s
-        \t* @return updatedBars\s
-        \t*/
-        \tpublic List<? extends Bar> evaluate(List<? extends Bar> bars) {
-        \t\tList<Bar.BarBuilder> updatedBarsBuilder = doEvaluate(bars);
+        	/**
+        	* @param bars\s
+        	* @return updatedBars\s
+        	*/
+        	public List<? extends Bar> evaluate(List<? extends Bar> bars) {
+        		List<Bar.BarBuilder> updatedBarsBuilder = doEvaluate(bars);
         \t\t
-        \t\tfinal List<? extends Bar> updatedBars;
-        \t\tif (updatedBarsBuilder == null) {
-        \t\t\tupdatedBars = null;
-        \t\t} else {
-        \t\t\tupdatedBars = updatedBarsBuilder.stream().map(Bar::build).collect(Collectors.toList());
-        \t\t\tobjectValidator.validate(Bar.class, updatedBars);
-        \t\t}
+        		final List<? extends Bar> updatedBars;
+        		if (updatedBarsBuilder == null) {
+        			updatedBars = null;
+        		} else {
+        			updatedBars = updatedBarsBuilder.stream().map(Bar::build).collect(Collectors.toList());
+        			objectValidator.validate(Bar.class, updatedBars);
+        		}
         \t\t
-        \t\treturn updatedBars;
-        \t}
+        		return updatedBars;
+        	}
         
-        \tprotected abstract List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars);
+        	protected abstract List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars) {
-        \t\t\tif (bars == null) {
-        \t\t\t\tbars = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<Bar.BarBuilder> updatedBars = new ArrayList<>();
-        \t\t\treturn assignOutput(updatedBars, bars);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars) {
+        			if (bars == null) {
+        				bars = Collections.emptyList();
+        			}
+        			List<Bar.BarBuilder> updatedBars = new ArrayList<>();
+        			return assignOutput(updatedBars, bars);
+        		}
         \t\t
-        \t\tprotected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> updatedBars, List<? extends Bar> bars) {
-        \t\t\tfinal MapperListOfLists<Foo> thenArg = MapperC.<Bar>of(bars)
-        \t\t\t\t.mapItemToList(bar -> bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
-        \t\t\t\t\t.mapItem(foo -> MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))));
-        \t\t\tupdatedBars = toBuilder(thenArg
-        \t\t\t\t.mapListToItem(updatedFoos -> MapperS.of(newBar.evaluate(updatedFoos.getMulti()))).getMulti());
+        		protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> updatedBars, List<? extends Bar> bars) {
+        			final MapperListOfLists<Foo> thenArg = MapperC.<Bar>of(bars)
+        				.mapItemToList(bar -> bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
+        					.mapItem(foo -> MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))));
+        			updatedBars = toBuilder(thenArg
+        				.mapListToItem(updatedFoos -> MapperS.of(newBar.evaluate(updatedFoos.getMulti()))).getMulti());
         \t\t\t
-        \t\t\treturn Optional.ofNullable(updatedBars)
-        \t\t\t\t.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
-        \t\t\t\t.orElse(null);
-        \t\t}
-        \t}
+        			return Optional.ofNullable(updatedBars)
+        				.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
+        				.orElse(null);
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -2019,41 +2019,41 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithNestedMaps2() {
         String model = """
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tupdatedBars Bar (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		updatedBars Bar (0..*)
         \t
-        \tset updatedBars:
-        \t\tbars\s
-        \t\t\textract bar [\s
-        \t\t\t\tNewBar( bar -> foos\s
-        \t\t\t\t\textract foo [ NewFoo( foo -> attr + "_bar" ) ] )
-        \t\t\t]
+        	set updatedBars:
+        		bars\s
+        			extract bar [\s
+        				NewBar( bar -> foos\s
+        					extract foo [ NewFoo( foo -> attr + "_bar" ) ] )
+        			]
         
         func NewBar:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tbar Bar (1..1)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		bar Bar (1..1)
         \t
-        \tset bar -> foos:
-        \t\tfoos
+        	set bar -> foos:
+        		foos
         
         func NewFoo:
-        \s\tinputs:
-        \s\t\tattr string (1..1)
-        \toutput:
-        \t\tfoo Foo (0..1)
+        \s	inputs:
+        \s		attr string (1..1)
+        	output:
+        		foo Foo (0..1)
         \t
-        \tset foo -> attr:
-        \t\tattr
+        	set foo -> attr:
+        		attr
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -2079,53 +2079,53 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         \t
-        \t@Inject protected ModelObjectValidator objectValidator;
+        	@Inject protected ModelObjectValidator objectValidator;
         \t
-        \t// RosettaFunction dependencies
-        \t//
-        \t@Inject protected NewBar newBar;
-        \t@Inject protected NewFoo newFoo;
+        	// RosettaFunction dependencies
+        	//
+        	@Inject protected NewBar newBar;
+        	@Inject protected NewFoo newFoo;
         
-        \t/**
-        \t* @param bars\s
-        \t* @return updatedBars\s
-        \t*/
-        \tpublic List<? extends Bar> evaluate(List<? extends Bar> bars) {
-        \t\tList<Bar.BarBuilder> updatedBarsBuilder = doEvaluate(bars);
+        	/**
+        	* @param bars\s
+        	* @return updatedBars\s
+        	*/
+        	public List<? extends Bar> evaluate(List<? extends Bar> bars) {
+        		List<Bar.BarBuilder> updatedBarsBuilder = doEvaluate(bars);
         \t\t
-        \t\tfinal List<? extends Bar> updatedBars;
-        \t\tif (updatedBarsBuilder == null) {
-        \t\t\tupdatedBars = null;
-        \t\t} else {
-        \t\t\tupdatedBars = updatedBarsBuilder.stream().map(Bar::build).collect(Collectors.toList());
-        \t\t\tobjectValidator.validate(Bar.class, updatedBars);
-        \t\t}
+        		final List<? extends Bar> updatedBars;
+        		if (updatedBarsBuilder == null) {
+        			updatedBars = null;
+        		} else {
+        			updatedBars = updatedBarsBuilder.stream().map(Bar::build).collect(Collectors.toList());
+        			objectValidator.validate(Bar.class, updatedBars);
+        		}
         \t\t
-        \t\treturn updatedBars;
-        \t}
+        		return updatedBars;
+        	}
         
-        \tprotected abstract List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars);
+        	protected abstract List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars) {
-        \t\t\tif (bars == null) {
-        \t\t\t\tbars = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<Bar.BarBuilder> updatedBars = new ArrayList<>();
-        \t\t\treturn assignOutput(updatedBars, bars);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<Bar.BarBuilder> doEvaluate(List<? extends Bar> bars) {
+        			if (bars == null) {
+        				bars = Collections.emptyList();
+        			}
+        			List<Bar.BarBuilder> updatedBars = new ArrayList<>();
+        			return assignOutput(updatedBars, bars);
+        		}
         \t\t
-        \t\tprotected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> updatedBars, List<? extends Bar> bars) {
-        \t\t\tupdatedBars = toBuilder(MapperC.<Bar>of(bars)
-        \t\t\t\t.mapItem(bar -> MapperS.of(newBar.evaluate(bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
-        \t\t\t\t\t.mapItem(foo -> MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))).getMulti()))).getMulti());
+        		protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> updatedBars, List<? extends Bar> bars) {
+        			updatedBars = toBuilder(MapperC.<Bar>of(bars)
+        				.mapItem(bar -> MapperS.of(newBar.evaluate(bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
+        					.mapItem(foo -> MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))).getMulti()))).getMulti());
         \t\t\t
-        \t\t\treturn Optional.ofNullable(updatedBars)
-        \t\t\t\t.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
-        \t\t\t\t.orElse(null);
-        \t\t}
-        \t}
+        			return Optional.ofNullable(updatedBars)
+        				.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
+        				.orElse(null);
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -2157,26 +2157,26 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithExtractListModifyItemFunc() {
         String model = """
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tupdatedFoos Foo (0..*)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		updatedFoos Foo (0..*)
         \t
-        \tset updatedFoos:
-        \t\tfoos\s
-        \t\t\textract [ NewFoo( item -> attr + "_1" ) ]
+        	set updatedFoos:
+        		foos\s
+        			extract [ NewFoo( item -> attr + "_1" ) ]
         
         func NewFoo:
-        \s\tinputs:
-        \s\t\tattr string (1..1)
-        \toutput:
-        \t\tfoo Foo (0..1)
+        \s	inputs:
+        \s		attr string (1..1)
+        	output:
+        		foo Foo (0..1)
         \t
-        \tset foo -> attr:
-        \t\tattr
+        	set foo -> attr:
+        		attr
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -2205,19 +2205,19 @@ public class ListOperationTest {
     public void shouldGenerateFunctionWithFilterThenExtract() {
         String model = """
         type Foo:
-        \tinclude boolean (1..1)
-        \tattr string (1..1)
+        	include boolean (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tnewFoos string (0..*)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		newFoos string (0..*)
         \t
-        \tset newFoos:
-        \t\tfoos\s
-        \t\t\tfilter [ item -> include = True ]
-        \t\t\tthen extract [ item -> attr ]
+        	set newFoos:
+        		foos\s
+        			filter [ item -> include = True ]
+        			then extract [ item -> attr ]
         
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
@@ -2240,37 +2240,37 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         
-        \t/**
-        \t* @param foos\s
-        \t* @return newFoos\s
-        \t*/
-        \tpublic List<String> evaluate(List<? extends Foo> foos) {
-        \t\tList<String> newFoos = doEvaluate(foos);
+        	/**
+        	* @param foos\s
+        	* @return newFoos\s
+        	*/
+        	public List<String> evaluate(List<? extends Foo> foos) {
+        		List<String> newFoos = doEvaluate(foos);
         \t\t
-        \t\treturn newFoos;
-        \t}
+        		return newFoos;
+        	}
         
-        \tprotected abstract List<String> doEvaluate(List<? extends Foo> foos);
+        	protected abstract List<String> doEvaluate(List<? extends Foo> foos);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<String> doEvaluate(List<? extends Foo> foos) {
-        \t\t\tif (foos == null) {
-        \t\t\t\tfoos = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<String> newFoos = new ArrayList<>();
-        \t\t\treturn assignOutput(newFoos, foos);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<String> doEvaluate(List<? extends Foo> foos) {
+        			if (foos == null) {
+        				foos = Collections.emptyList();
+        			}
+        			List<String> newFoos = new ArrayList<>();
+        			return assignOutput(newFoos, foos);
+        		}
         \t\t
-        \t\tprotected List<String> assignOutput(List<String> newFoos, List<? extends Foo> foos) {
-        \t\t\tfinal MapperC<Foo> thenArg = MapperC.<Foo>of(foos)
-        \t\t\t\t.filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).get());
-        \t\t\tnewFoos = thenArg
-        \t\t\t\t.mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
+        		protected List<String> assignOutput(List<String> newFoos, List<? extends Foo> foos) {
+        			final MapperC<Foo> thenArg = MapperC.<Foo>of(foos)
+        				.filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).get());
+        			newFoos = thenArg
+        				.mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
         \t\t\t
-        \t\t\treturn newFoos;
-        \t\t}
-        \t}
+        			return newFoos;
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -2296,27 +2296,27 @@ public class ListOperationTest {
         namespace ns1
         
         type Bar:
-        \tbarAttr string (1..1)
+        	barAttr string (1..1)
         
         type Foo:
-        \tfooAttr string (1..1)
+        	fooAttr string (1..1)
         
         func GetFoo:
-        \tinputs:
-        \t\tbarAttr string (1..1)
-        \toutput:
-        \t\tfoo Foo (1..1)
+        	inputs:
+        		barAttr string (1..1)
+        	output:
+        		foo Foo (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tstrings string (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		strings string (0..*)
         \t
-        \tset strings:
-        \t\tbars\s
-        \t\t\textract [ GetFoo( item -> barAttr ) ]
-        \t\t\tthen extract [ item -> fooAttr ]
+        	set strings:
+        		bars\s
+        			extract [ GetFoo( item -> barAttr ) ]
+        			then extract [ item -> fooAttr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("ns1.functions.FuncFoo"));
@@ -2338,41 +2338,41 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         \t
-        \t// RosettaFunction dependencies
-        \t//
-        \t@Inject protected GetFoo getFoo;
+        	// RosettaFunction dependencies
+        	//
+        	@Inject protected GetFoo getFoo;
         
-        \t/**
-        \t* @param bars\s
-        \t* @return strings\s
-        \t*/
-        \tpublic List<String> evaluate(List<? extends Bar> bars) {
-        \t\tList<String> strings = doEvaluate(bars);
+        	/**
+        	* @param bars\s
+        	* @return strings\s
+        	*/
+        	public List<String> evaluate(List<? extends Bar> bars) {
+        		List<String> strings = doEvaluate(bars);
         \t\t
-        \t\treturn strings;
-        \t}
+        		return strings;
+        	}
         
-        \tprotected abstract List<String> doEvaluate(List<? extends Bar> bars);
+        	protected abstract List<String> doEvaluate(List<? extends Bar> bars);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<String> doEvaluate(List<? extends Bar> bars) {
-        \t\t\tif (bars == null) {
-        \t\t\t\tbars = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<String> strings = new ArrayList<>();
-        \t\t\treturn assignOutput(strings, bars);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<String> doEvaluate(List<? extends Bar> bars) {
+        			if (bars == null) {
+        				bars = Collections.emptyList();
+        			}
+        			List<String> strings = new ArrayList<>();
+        			return assignOutput(strings, bars);
+        		}
         \t\t
-        \t\tprotected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
-        \t\t\tfinal MapperC<Foo> thenArg = MapperC.<Bar>of(bars)
-        \t\t\t\t.mapItem(item -> MapperS.of(getFoo.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get())));
-        \t\t\tstrings = thenArg
-        \t\t\t\t.mapItem(item -> item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
+        		protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
+        			final MapperC<Foo> thenArg = MapperC.<Bar>of(bars)
+        				.mapItem(item -> MapperS.of(getFoo.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get())));
+        			strings = thenArg
+        				.mapItem(item -> item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
         \t\t\t
-        \t\t\treturn strings;
-        \t\t}
-        \t}
+        			return strings;
+        		}
+        	}
         }
         """, f);
         codeGeneratorTestHelper.compileToClasses(code);
@@ -2384,10 +2384,10 @@ public class ListOperationTest {
         namespace ns1
         
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         """;
         String model1 = """
         namespace ns2
@@ -2395,16 +2395,16 @@ public class ListOperationTest {
         import ns1.*
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tstrings string (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		strings string (0..*)
         \t
-        \tset strings:
-        \t\tbars\s
-        \t\t\textract [ item -> foos ]
-        \t\t\tthen flatten
-        \t\t\tthen extract [ item -> attr ]
+        	set strings:
+        		bars\s
+        			extract [ item -> foos ]
+        			then flatten
+        			then extract [ item -> attr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model0, model1);
         String f = normalize(code.get("ns2.functions.FuncFoo"));
@@ -2425,39 +2425,39 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         
-        \t/**
-        \t* @param bars\s
-        \t* @return strings\s
-        \t*/
-        \tpublic List<String> evaluate(List<? extends Bar> bars) {
-        \t\tList<String> strings = doEvaluate(bars);
+        	/**
+        	* @param bars\s
+        	* @return strings\s
+        	*/
+        	public List<String> evaluate(List<? extends Bar> bars) {
+        		List<String> strings = doEvaluate(bars);
         \t\t
-        \t\treturn strings;
-        \t}
+        		return strings;
+        	}
         
-        \tprotected abstract List<String> doEvaluate(List<? extends Bar> bars);
+        	protected abstract List<String> doEvaluate(List<? extends Bar> bars);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<String> doEvaluate(List<? extends Bar> bars) {
-        \t\t\tif (bars == null) {
-        \t\t\t\tbars = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<String> strings = new ArrayList<>();
-        \t\t\treturn assignOutput(strings, bars);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<String> doEvaluate(List<? extends Bar> bars) {
+        			if (bars == null) {
+        				bars = Collections.emptyList();
+        			}
+        			List<String> strings = new ArrayList<>();
+        			return assignOutput(strings, bars);
+        		}
         \t\t
-        \t\tprotected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
-        \t\t\tfinal MapperListOfLists<Foo> thenArg0 = MapperC.<Bar>of(bars)
-        \t\t\t\t.mapItemToList(item -> item.<Foo>mapC("getFoos", bar -> bar.getFoos()));
-        \t\t\tfinal MapperC<Foo> thenArg1 = thenArg0
-        \t\t\t\t.flattenList();
-        \t\t\tstrings = thenArg1
-        \t\t\t\t.mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
+        		protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
+        			final MapperListOfLists<Foo> thenArg0 = MapperC.<Bar>of(bars)
+        				.mapItemToList(item -> item.<Foo>mapC("getFoos", bar -> bar.getFoos()));
+        			final MapperC<Foo> thenArg1 = thenArg0
+        				.flattenList();
+        			strings = thenArg1
+        				.mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
         \t\t\t
-        \t\t\treturn strings;
-        \t\t}
-        \t}
+        			return strings;
+        		}
+        	}
         }
         """, f);
         codeGeneratorTestHelper.compileToClasses(code);
@@ -2469,16 +2469,16 @@ public class ListOperationTest {
         namespace ns1
         
         type Bar:
-        \tbarAttr string (1..1)
+        	barAttr string (1..1)
         
         type Foo:
-        \tfooAttr string (1..1)
+        	fooAttr string (1..1)
         
         func GetFoo:
-        \tinputs:
-        \t\tbarAttr string (1..1)
-        \toutput:
-        \t\tfoo Foo (1..1)
+        	inputs:
+        		barAttr string (1..1)
+        	output:
+        		foo Foo (1..1)
         """;
         String model1 = """
         namespace ns2
@@ -2486,15 +2486,15 @@ public class ListOperationTest {
         import ns1.*
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tstrings string (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		strings string (0..*)
         \t
-        \tset strings:
-        \t\tbars\s
-        \t\t\textract [ GetFoo( item -> barAttr ) ]
-        \t\t\tthen extract [ item -> fooAttr ]
+        	set strings:
+        		bars\s
+        			extract [ GetFoo( item -> barAttr ) ]
+        			then extract [ item -> fooAttr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model0, model1);
         String f = normalize(code.get("ns2.functions.FuncFoo"));
@@ -2517,41 +2517,41 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         \t
-        \t// RosettaFunction dependencies
-        \t//
-        \t@Inject protected GetFoo getFoo;
+        	// RosettaFunction dependencies
+        	//
+        	@Inject protected GetFoo getFoo;
         
-        \t/**
-        \t* @param bars\s
-        \t* @return strings\s
-        \t*/
-        \tpublic List<String> evaluate(List<? extends Bar> bars) {
-        \t\tList<String> strings = doEvaluate(bars);
+        	/**
+        	* @param bars\s
+        	* @return strings\s
+        	*/
+        	public List<String> evaluate(List<? extends Bar> bars) {
+        		List<String> strings = doEvaluate(bars);
         \t\t
-        \t\treturn strings;
-        \t}
+        		return strings;
+        	}
         
-        \tprotected abstract List<String> doEvaluate(List<? extends Bar> bars);
+        	protected abstract List<String> doEvaluate(List<? extends Bar> bars);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<String> doEvaluate(List<? extends Bar> bars) {
-        \t\t\tif (bars == null) {
-        \t\t\t\tbars = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<String> strings = new ArrayList<>();
-        \t\t\treturn assignOutput(strings, bars);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<String> doEvaluate(List<? extends Bar> bars) {
+        			if (bars == null) {
+        				bars = Collections.emptyList();
+        			}
+        			List<String> strings = new ArrayList<>();
+        			return assignOutput(strings, bars);
+        		}
         \t\t
-        \t\tprotected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
-        \t\t\tfinal MapperC<Foo> thenArg = MapperC.<Bar>of(bars)
-        \t\t\t\t.mapItem(item -> MapperS.of(getFoo.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get())));
-        \t\t\tstrings = thenArg
-        \t\t\t\t.mapItem(item -> item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
+        		protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
+        			final MapperC<Foo> thenArg = MapperC.<Bar>of(bars)
+        				.mapItem(item -> MapperS.of(getFoo.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get())));
+        			strings = thenArg
+        				.mapItem(item -> item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
         \t\t\t
-        \t\t\treturn strings;
-        \t\t}
-        \t}
+        			return strings;
+        		}
+        	}
         }
         """, f);
         codeGeneratorTestHelper.compileToClasses(code);
@@ -2563,25 +2563,25 @@ public class ListOperationTest {
         namespace ns1
         
         type Bar:
-        \tbarAttr string (1..1)
+        	barAttr string (1..1)
         
         type Foo:
-        \tfooAttr string (1..1)
+        	fooAttr string (1..1)
         
         type Baz:
-        \tfooAttr string (1..1)
+        	fooAttr string (1..1)
         
         func GetFoo:
-        \tinputs:
-        \t\tbaz Baz (1..1)
-        \toutput:
-        \t\tfoo Foo (1..1)
+        	inputs:
+        		baz Baz (1..1)
+        	output:
+        		foo Foo (1..1)
         
         func GetBaz:
-        \tinputs:
-        \t\tattr string (1..1)
-        \toutput:
-        \t\tbaz Baz (1..1)
+        	inputs:
+        		attr string (1..1)
+        	output:
+        		baz Baz (1..1)
         """;
         String model1 = """
         namespace ns2
@@ -2589,15 +2589,15 @@ public class ListOperationTest {
         import ns1.*
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tstrings string (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		strings string (0..*)
         \t
-        \tset strings:
-        \t\tbars\s
-        \t\t\textract [ GetFoo( GetBaz( item -> barAttr ) ) ]
-        \t\t\tthen extract [ item -> fooAttr ]
+        	set strings:
+        		bars\s
+        			extract [ GetFoo( GetBaz( item -> barAttr ) ) ]
+        			then extract [ item -> fooAttr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model0, model1);
         String f = normalize(code.get("ns2.functions.FuncFoo"));
@@ -2621,42 +2621,42 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         \t
-        \t// RosettaFunction dependencies
-        \t//
-        \t@Inject protected GetBaz getBaz;
-        \t@Inject protected GetFoo getFoo;
+        	// RosettaFunction dependencies
+        	//
+        	@Inject protected GetBaz getBaz;
+        	@Inject protected GetFoo getFoo;
         
-        \t/**
-        \t* @param bars\s
-        \t* @return strings\s
-        \t*/
-        \tpublic List<String> evaluate(List<? extends Bar> bars) {
-        \t\tList<String> strings = doEvaluate(bars);
+        	/**
+        	* @param bars\s
+        	* @return strings\s
+        	*/
+        	public List<String> evaluate(List<? extends Bar> bars) {
+        		List<String> strings = doEvaluate(bars);
         \t\t
-        \t\treturn strings;
-        \t}
+        		return strings;
+        	}
         
-        \tprotected abstract List<String> doEvaluate(List<? extends Bar> bars);
+        	protected abstract List<String> doEvaluate(List<? extends Bar> bars);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<String> doEvaluate(List<? extends Bar> bars) {
-        \t\t\tif (bars == null) {
-        \t\t\t\tbars = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<String> strings = new ArrayList<>();
-        \t\t\treturn assignOutput(strings, bars);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<String> doEvaluate(List<? extends Bar> bars) {
+        			if (bars == null) {
+        				bars = Collections.emptyList();
+        			}
+        			List<String> strings = new ArrayList<>();
+        			return assignOutput(strings, bars);
+        		}
         \t\t
-        \t\tprotected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
-        \t\t\tfinal MapperC<Foo> thenArg = MapperC.<Bar>of(bars)
-        \t\t\t\t.mapItem(item -> MapperS.of(getFoo.evaluate(getBaz.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get()))));
-        \t\t\tstrings = thenArg
-        \t\t\t\t.mapItem(item -> item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
+        		protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
+        			final MapperC<Foo> thenArg = MapperC.<Bar>of(bars)
+        				.mapItem(item -> MapperS.of(getFoo.evaluate(getBaz.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get()))));
+        			strings = thenArg
+        				.mapItem(item -> item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
         \t\t\t
-        \t\t\treturn strings;
-        \t\t}
-        \t}
+        			return strings;
+        		}
+        	}
         }
         """, f);
         codeGeneratorTestHelper.compileToClasses(code);
@@ -2666,23 +2666,23 @@ public class ListOperationTest {
     public void shouldGenerateListWithinIf() {
         String model = """
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \s\t\ttest string (1..1)
-        \toutput:
-        \t\tstrings string (0..*)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        \s		test string (1..1)
+        	output:
+        		strings string (0..*)
         \t
-        \tset strings:
-        \t\tif test = "a"
-        \t\tthen foos extract [ item -> attr + "_a" ]
-        \t\telse if test = "b"
-        \t\tthen foos extract [ item -> attr + "_b" ]
-        \t\telse if test = "c"
-        \t\tthen foos extract [ item -> attr + "_c" ]
-        \t\t// default else
+        	set strings:
+        		if test = "a"
+        		then foos extract [ item -> attr + "_a" ]
+        		else if test = "b"
+        		then foos extract [ item -> attr + "_b" ]
+        		else if test = "c"
+        		then foos extract [ item -> attr + "_c" ]
+        		// default else
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -2705,46 +2705,46 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         
-        \t/**
-        \t* @param foos\s
-        \t* @param test\s
-        \t* @return strings\s
-        \t*/
-        \tpublic List<String> evaluate(List<? extends Foo> foos, String test) {
-        \t\tList<String> strings = doEvaluate(foos, test);
+        	/**
+        	* @param foos\s
+        	* @param test\s
+        	* @return strings\s
+        	*/
+        	public List<String> evaluate(List<? extends Foo> foos, String test) {
+        		List<String> strings = doEvaluate(foos, test);
         \t\t
-        \t\treturn strings;
-        \t}
+        		return strings;
+        	}
         
-        \tprotected abstract List<String> doEvaluate(List<? extends Foo> foos, String test);
+        	protected abstract List<String> doEvaluate(List<? extends Foo> foos, String test);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<String> doEvaluate(List<? extends Foo> foos, String test) {
-        \t\t\tif (foos == null) {
-        \t\t\t\tfoos = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<String> strings = new ArrayList<>();
-        \t\t\treturn assignOutput(strings, foos, test);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<String> doEvaluate(List<? extends Foo> foos, String test) {
+        			if (foos == null) {
+        				foos = Collections.emptyList();
+        			}
+        			List<String> strings = new ArrayList<>();
+        			return assignOutput(strings, foos, test);
+        		}
         \t\t
-        \t\tprotected List<String> assignOutput(List<String> strings, List<? extends Foo> foos, String test) {
-        \t\t\tif (areEqual(MapperS.of(test), MapperS.of("a"), CardinalityOperator.All).getOrDefault(false)) {
-        \t\t\t\tstrings = MapperC.<Foo>of(foos)
-        \t\t\t\t\t.mapItem(item -> MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_a"))).getMulti();
-        \t\t\t} else if (areEqual(MapperS.of(test), MapperS.of("b"), CardinalityOperator.All).getOrDefault(false)) {
-        \t\t\t\tstrings = MapperC.<Foo>of(foos)
-        \t\t\t\t\t.mapItem(item -> MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_b"))).getMulti();
-        \t\t\t} else if (areEqual(MapperS.of(test), MapperS.of("c"), CardinalityOperator.All).getOrDefault(false)) {
-        \t\t\t\tstrings = MapperC.<Foo>of(foos)
-        \t\t\t\t\t.mapItem(item -> MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_c"))).getMulti();
-        \t\t\t} else {
-        \t\t\t\tstrings = Collections.<String>emptyList();
-        \t\t\t}
+        		protected List<String> assignOutput(List<String> strings, List<? extends Foo> foos, String test) {
+        			if (areEqual(MapperS.of(test), MapperS.of("a"), CardinalityOperator.All).getOrDefault(false)) {
+        				strings = MapperC.<Foo>of(foos)
+        					.mapItem(item -> MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_a"))).getMulti();
+        			} else if (areEqual(MapperS.of(test), MapperS.of("b"), CardinalityOperator.All).getOrDefault(false)) {
+        				strings = MapperC.<Foo>of(foos)
+        					.mapItem(item -> MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_b"))).getMulti();
+        			} else if (areEqual(MapperS.of(test), MapperS.of("c"), CardinalityOperator.All).getOrDefault(false)) {
+        				strings = MapperC.<Foo>of(foos)
+        					.mapItem(item -> MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_c"))).getMulti();
+        			} else {
+        				strings = Collections.<String>emptyList();
+        			}
         \t\t\t
-        \t\t\treturn strings;
-        \t\t}
-        \t}
+        			return strings;
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -2768,14 +2768,14 @@ public class ListOperationTest {
     public void shouldGenerateListJoin() {
         String model = """
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tstringList string (0..*)
-        \toutput:
-        \t\tconcatenatedString string (1..1)
+        \s	inputs:
+        \s		stringList string (0..*)
+        	output:
+        		concatenatedString string (1..1)
         \t
-        \tset concatenatedString:
-        \t\tstringList
-        \t\t\tjoin
+        	set concatenatedString:
+        		stringList
+        			join
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -2796,14 +2796,14 @@ public class ListOperationTest {
     public void shouldGenerateListJoinWithDelimiter() {
         String model = """
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tstringList string (0..*)
-        \toutput:
-        \t\tconcatenatedString string (1..1)
+        \s	inputs:
+        \s		stringList string (0..*)
+        	output:
+        		concatenatedString string (1..1)
         \t
-        \tset concatenatedString:
-        \t\tstringList
-        \t\t\tjoin "_"
+        	set concatenatedString:
+        		stringList
+        			join "_"
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -2824,14 +2824,14 @@ public class ListOperationTest {
     public void shouldGenerateListReduceString() {
         String model = """
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tstringList string (0..*)
-        \toutput:
-        \t\tconcatenatedString string (1..1)
+        \s	inputs:
+        \s		stringList string (0..*)
+        	output:
+        		concatenatedString string (1..1)
         \t
-        \tset concatenatedString:
-        \t\tstringList
-        \t\t\treduce a, b [ a + b ]
+        	set concatenatedString:
+        		stringList
+        			reduce a, b [ a + b ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -2849,35 +2849,35 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         
-        \t/**
-        \t* @param stringList\s
-        \t* @return concatenatedString\s
-        \t*/
-        \tpublic String evaluate(List<String> stringList) {
-        \t\tString concatenatedString = doEvaluate(stringList);
+        	/**
+        	* @param stringList\s
+        	* @return concatenatedString\s
+        	*/
+        	public String evaluate(List<String> stringList) {
+        		String concatenatedString = doEvaluate(stringList);
         \t\t
-        \t\treturn concatenatedString;
-        \t}
+        		return concatenatedString;
+        	}
         
-        \tprotected abstract String doEvaluate(List<String> stringList);
+        	protected abstract String doEvaluate(List<String> stringList);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected String doEvaluate(List<String> stringList) {
-        \t\t\tif (stringList == null) {
-        \t\t\t\tstringList = Collections.emptyList();
-        \t\t\t}
-        \t\t\tString concatenatedString = null;
-        \t\t\treturn assignOutput(concatenatedString, stringList);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected String doEvaluate(List<String> stringList) {
+        			if (stringList == null) {
+        				stringList = Collections.emptyList();
+        			}
+        			String concatenatedString = null;
+        			return assignOutput(concatenatedString, stringList);
+        		}
         \t\t
-        \t\tprotected String assignOutput(String concatenatedString, List<String> stringList) {
-        \t\t\tconcatenatedString = MapperC.<String>of(stringList)
-        \t\t\t\t.<String>reduce((a, b) -> MapperMaths.<String, String, String>add(a, b)).get();
+        		protected String assignOutput(String concatenatedString, List<String> stringList) {
+        			concatenatedString = MapperC.<String>of(stringList)
+        				.<String>reduce((a, b) -> MapperMaths.<String, String, String>add(a, b)).get();
         \t\t\t
-        \t\t\treturn concatenatedString;
-        \t\t}
-        \t}
+        			return concatenatedString;
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -2900,14 +2900,14 @@ public class ListOperationTest {
     public void shouldGenerateListSumInt() {
         String model = """
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tintList int (0..*)
-        \toutput:
-        \t\ttotal int (1..1)
+        \s	inputs:
+        \s		intList int (0..*)
+        	output:
+        		total int (1..1)
         \t
-        \tset total:
-        \t\tintList
-        \t\t\tsum
+        	set total:
+        		intList
+        			sum
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -2928,14 +2928,14 @@ public class ListOperationTest {
     public void shouldGenerateListSumBigDecimal() {
         String model = """
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tnumberList number (0..*)
-        \toutput:
-        \t\ttotal number (1..1)
+        \s	inputs:
+        \s		numberList number (0..*)
+        	output:
+        		total number (1..1)
         \t
-        \tset total:
-        \t\tnumberList
-        \t\t\tsum
+        	set total:
+        		numberList
+        			sum
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -2956,14 +2956,14 @@ public class ListOperationTest {
     public void shouldGenerateListReduceSum() {
         String model = """
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tintList int (0..*)
-        \toutput:
-        \t\ttotal int (1..1)
+        \s	inputs:
+        \s		intList int (0..*)
+        	output:
+        		total int (1..1)
         \t
-        \tset total:
-        \t\tintList
-        \t\t\treduce a, b [ a + b ]
+        	set total:
+        		intList
+        			reduce a, b [ a + b ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -2984,14 +2984,14 @@ public class ListOperationTest {
     public void shouldGenerateListFirstInt() {
         String model = """
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tintList int (0..*)
-        \toutput:
-        \t\tfirstInt int (1..1)
+        \s	inputs:
+        \s		intList int (0..*)
+        	output:
+        		firstInt int (1..1)
         \t
-        \tset firstInt:
-        \t\tintList
-        \t\t\tfirst
+        	set firstInt:
+        		intList
+        			first
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3012,17 +3012,17 @@ public class ListOperationTest {
     public void shouldGenerateListFirstComplexType() {
         String model = """
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfooList Foo (0..*)
-        \toutput:
-        \t\tfirstFoo Foo (1..1)
+        \s	inputs:
+        \s		fooList Foo (0..*)
+        	output:
+        		firstFoo Foo (1..1)
         \t
-        \tset firstFoo:
-        \t\tfooList
-        \t\t\tfirst
+        	set firstFoo:
+        		fooList
+        			first
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3049,17 +3049,17 @@ public class ListOperationTest {
     public void shouldGenerateListFirstComplexTypeEmptyList() {
         String model = """
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfooList Foo (0..*)
-        \toutput:
-        \t\tfirstFoo Foo (1..1)
+        \s	inputs:
+        \s		fooList Foo (0..*)
+        	output:
+        		firstFoo Foo (1..1)
         \t
-        \tset firstFoo:
-        \t\tfooList
-        \t\t\tfirst
+        	set firstFoo:
+        		fooList
+        			first
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3073,14 +3073,14 @@ public class ListOperationTest {
     public void shouldGenerateListLastInt() {
         String model = """
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tintList int (0..*)
-        \toutput:
-        \t\tlastInt int (1..1)
+        \s	inputs:
+        \s		intList int (0..*)
+        	output:
+        		lastInt int (1..1)
         \t
-        \tset lastInt:
-        \t\tintList
-        \t\t\tlast
+        	set lastInt:
+        		intList
+        			last
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3101,17 +3101,17 @@ public class ListOperationTest {
     public void shouldGenerateListLastComplexType() {
         String model = """
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfooList Foo (0..*)
-        \toutput:
-        \t\tlastFoo Foo (1..1)
+        \s	inputs:
+        \s		fooList Foo (0..*)
+        	output:
+        		lastFoo Foo (1..1)
         \t
-        \tset lastFoo:
-        \t\tfooList
-        \t\t\tlast
+        	set lastFoo:
+        		fooList
+        			last
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3137,14 +3137,14 @@ public class ListOperationTest {
     public void shouldGenerateListReduceSubtract() {
         String model = """
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tintList int (0..*)
-        \toutput:
-        \t\ttotal int (1..1)
+        \s	inputs:
+        \s		intList int (0..*)
+        	output:
+        		total int (1..1)
         \t
-        \tset total:
-        \t\tintList
-        \t\t\treduce a, b [ a - b ]
+        	set total:
+        		intList
+        			reduce a, b [ a - b ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3171,14 +3171,14 @@ public class ListOperationTest {
     public void shouldGenerateEmptyListReduceSum() {
         String model = """
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tnumberList int (0..*)
-        \toutput:
-        \t\ttotal int (1..1)
+        \s	inputs:
+        \s		numberList int (0..*)
+        	output:
+        		total int (1..1)
         \t
-        \tset total:
-        \t\tnumberList
-        \t\t\treduce a, b [ a + b ]
+        	set total:
+        		numberList
+        			reduce a, b [ a + b ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3194,14 +3194,14 @@ public class ListOperationTest {
     public void shouldGenerateListReduceProduct() {
         String model = """
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tnumberList int (0..*)
-        \toutput:
-        \t\ttotal int (1..1)
+        \s	inputs:
+        \s		numberList int (0..*)
+        	output:
+        		total int (1..1)
         \t
-        \tset total:
-        \t\tnumberList
-        \t\t\treduce a, b [ a * b ]
+        	set total:
+        		numberList
+        			reduce a, b [ a * b ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3222,14 +3222,14 @@ public class ListOperationTest {
     public void shouldGenerateListReduceMaxNumber() {
         String model = """
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tnumberList int (0..*)
-        \toutput:
-        \t\ttotal int (1..1)
+        \s	inputs:
+        \s		numberList int (0..*)
+        	output:
+        		total int (1..1)
         \t
-        \tset total:
-        \t\tnumberList
-        \t\t\treduce a, b [ if a > b then a else b ]
+        	set total:
+        		numberList
+        			reduce a, b [ if a > b then a else b ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3250,23 +3250,23 @@ public class ListOperationTest {
     public void shouldGenerateListReduceMinNumber() {
         String model = """
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tnumberList int (0..*)
-        \toutput:
-        \t\ttotal int (1..1)
+        \s	inputs:
+        \s		numberList int (0..*)
+        	output:
+        		total int (1..1)
         \t
-        \tset total:
-        \t\tnumberList
-        \t\t\treduce a, b [ Min( a, b ) ]
+        	set total:
+        		numberList
+        			reduce a, b [ Min( a, b ) ]
         
         func Min:
-        \tinputs:
-        \t\ta int (1..1)
-        \t\tb int (1..1)
-        \toutput:
-        \t\tresult int (1..1)
-        \tset result:
-        \t\tif a > b then b else a
+        	inputs:
+        		a int (1..1)
+        		b int (1..1)
+        	output:
+        		result int (1..1)
+        	set result:
+        		if a > b then b else a
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3287,25 +3287,25 @@ public class ListOperationTest {
     public void shouldGenerateListReduceComplexType() throws Exception {
         String model = """
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tfoo Foo (1..1)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		foo Foo (1..1)
         \t
-        \tset foo:
-        \t\tfoos
-        \t\t\treduce foo1, foo2 [ Create_Foo( foo1 -> attr + foo2 -> attr ) ]
+        	set foo:
+        		foos
+        			reduce foo1, foo2 [ Create_Foo( foo1 -> attr + foo2 -> attr ) ]
         
         func Create_Foo:
-        \s\tinputs:
-        \s\t\tattr string (1..1)
-        \toutput:
-        \t\tfoo Foo (1..1)
+        \s	inputs:
+        \s		attr string (1..1)
+        	output:
+        		foo Foo (1..1)
         \t
-        \tset foo -> attr: attr
+        	set foo -> attr: attr
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -3328,51 +3328,51 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         \t
-        \t@Inject protected ModelObjectValidator objectValidator;
+        	@Inject protected ModelObjectValidator objectValidator;
         \t
-        \t// RosettaFunction dependencies
-        \t//
-        \t@Inject protected Create_Foo create_Foo;
+        	// RosettaFunction dependencies
+        	//
+        	@Inject protected Create_Foo create_Foo;
         
-        \t/**
-        \t* @param foos\s
-        \t* @return foo\s
-        \t*/
-        \tpublic Foo evaluate(List<? extends Foo> foos) {
-        \t\tFoo.FooBuilder fooBuilder = doEvaluate(foos);
+        	/**
+        	* @param foos\s
+        	* @return foo\s
+        	*/
+        	public Foo evaluate(List<? extends Foo> foos) {
+        		Foo.FooBuilder fooBuilder = doEvaluate(foos);
         \t\t
-        \t\tfinal Foo foo;
-        \t\tif (fooBuilder == null) {
-        \t\t\tfoo = null;
-        \t\t} else {
-        \t\t\tfoo = fooBuilder.build();
-        \t\t\tobjectValidator.validate(Foo.class, foo);
-        \t\t}
+        		final Foo foo;
+        		if (fooBuilder == null) {
+        			foo = null;
+        		} else {
+        			foo = fooBuilder.build();
+        			objectValidator.validate(Foo.class, foo);
+        		}
         \t\t
-        \t\treturn foo;
-        \t}
+        		return foo;
+        	}
         
-        \tprotected abstract Foo.FooBuilder doEvaluate(List<? extends Foo> foos);
+        	protected abstract Foo.FooBuilder doEvaluate(List<? extends Foo> foos);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected Foo.FooBuilder doEvaluate(List<? extends Foo> foos) {
-        \t\t\tif (foos == null) {
-        \t\t\t\tfoos = Collections.emptyList();
-        \t\t\t}
-        \t\t\tFoo.FooBuilder foo = Foo.builder();
-        \t\t\treturn assignOutput(foo, foos);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected Foo.FooBuilder doEvaluate(List<? extends Foo> foos) {
+        			if (foos == null) {
+        				foos = Collections.emptyList();
+        			}
+        			Foo.FooBuilder foo = Foo.builder();
+        			return assignOutput(foo, foos);
+        		}
         \t\t
-        \t\tprotected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<? extends Foo> foos) {
-        \t\t\tfoo = toBuilder(MapperC.<Foo>of(foos)
-        \t\t\t\t.<Foo>reduce((foo1, foo2) -> MapperS.of(create_Foo.evaluate(MapperMaths.<String, String, String>add(foo1.<String>map("getAttr", _foo -> _foo.getAttr()), foo2.<String>map("getAttr", _foo -> _foo.getAttr())).get()))).get());
+        		protected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<? extends Foo> foos) {
+        			foo = toBuilder(MapperC.<Foo>of(foos)
+        				.<Foo>reduce((foo1, foo2) -> MapperS.of(create_Foo.evaluate(MapperMaths.<String, String, String>add(foo1.<String>map("getAttr", _foo -> _foo.getAttr()), foo2.<String>map("getAttr", _foo -> _foo.getAttr())).get()))).get());
         \t\t\t
-        \t\t\treturn Optional.ofNullable(foo)
-        \t\t\t\t.map(o -> o.prune())
-        \t\t\t\t.orElse(null);
-        \t\t}
-        \t}
+        			return Optional.ofNullable(foo)
+        				.map(o -> o.prune())
+        				.orElse(null);
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3397,21 +3397,21 @@ public class ListOperationTest {
     public void shouldGenerateListReduceThenMapSingle() {
         String model = """
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tfooCount int (1..1)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		fooCount int (1..1)
         \t
-        \tset fooCount:
-        \t\tbars
-        \t\t\treduce bar1, bar2 [ if bar1 -> foos count > bar2 -> foos count then bar1 else bar2 ]
-        \t\t\tthen extract [ item -> foos count ]
+        	set fooCount:
+        		bars
+        			reduce bar1, bar2 [ if bar1 -> foos count > bar2 -> foos count then bar1 else bar2 ]
+        			then extract [ item -> foos count ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3441,22 +3441,22 @@ public class ListOperationTest {
     public void shouldGenerateListReduceThenExtractList() {
         String model = """
         type Bar:
-        \tfoos Foo (0..*)
+        	foos Foo (0..*)
         
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tbars Bar (0..*)
-        \toutput:
-        \t\tattrs string (0..*)
+        \s	inputs:
+        \s		bars Bar (0..*)
+        	output:
+        		attrs string (0..*)
         \t
-        \tset attrs:
-        \t\tbars
-        \t\t\treduce bar1, bar2 [ if bar1 -> foos count > bar2 -> foos count then bar1 else bar2 ] // max by foo count
-        \t\t\tthen extract [ item -> foos ]
-        \t\t\tthen extract [ item -> attr ]
+        	set attrs:
+        		bars
+        			reduce bar1, bar2 [ if bar1 -> foos count > bar2 -> foos count then bar1 else bar2 ] // max by foo count
+        			then extract [ item -> foos ]
+        			then extract [ item -> attr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3487,14 +3487,14 @@ public class ListOperationTest {
     public void shouldGenerateListMaxInt() {
         String model = """
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tintList int (0..*)
-        \toutput:
-        \t\tresult int (0..1)
+        \s	inputs:
+        \s		intList int (0..*)
+        	output:
+        		result int (0..1)
         \t
-        \tset result:
-        \t\tintList
-        \t\t\tmax
+        	set result:
+        		intList
+        			max
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3515,17 +3515,17 @@ public class ListOperationTest {
     public void shouldGenerateListMaxComplexType() {
         String model = """
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tfoo Foo (0..1)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		foo Foo (0..1)
         \t
-        \tset foo:
-        \t\tfoos
-        \t\t\tmax [ item -> attr ]
+        	set foo:
+        		foos
+        			max [ item -> attr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3552,14 +3552,14 @@ public class ListOperationTest {
     public void shouldGenerateListMinBigDecimal() {
         String model = """
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tnumberList number (0..*)
-        \toutput:
-        \t\tresult number (0..1)
+        \s	inputs:
+        \s		numberList number (0..*)
+        	output:
+        		result number (0..1)
         \t
-        \tset result:
-        \t\tnumberList
-        \t\t\tmin
+        	set result:
+        		numberList
+        			min
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3580,17 +3580,17 @@ public class ListOperationTest {
     public void shouldGenerateListMinComplexType() {
         String model = """
         type Foo:
-        \tattr string (1..1)
+        	attr string (1..1)
         
         func FuncFoo:
-        \s\tinputs:
-        \s\t\tfoos Foo (0..*)
-        \toutput:
-        \t\tfoo Foo (0..1)
+        \s	inputs:
+        \s		foos Foo (0..*)
+        	output:
+        		foo Foo (0..1)
         \t
-        \tset foo:
-        \t\tfoos
-        \t\t\tmin [ item -> attr ]
+        	set foo:
+        		foos
+        			min [ item -> attr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3617,13 +3617,13 @@ public class ListOperationTest {
     public void shouldGenerateIntListSort() {
         String model = """
         func FuncFoo:\s
-        \tinputs:
-        \t\tnumbers int (0..*)
-        \toutput:
-        \t\tsortedNumbers int (0..*)
+        	inputs:
+        		numbers int (0..*)
+        	output:
+        		sortedNumbers int (0..*)
         
-        \tset sortedNumbers:
-        \t\tnumbers sort // sort items
+        	set sortedNumbers:
+        		numbers sort // sort items
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -3641,35 +3641,35 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         
-        \t/**
-        \t* @param numbers\s
-        \t* @return sortedNumbers\s
-        \t*/
-        \tpublic List<Integer> evaluate(List<Integer> numbers) {
-        \t\tList<Integer> sortedNumbers = doEvaluate(numbers);
+        	/**
+        	* @param numbers\s
+        	* @return sortedNumbers\s
+        	*/
+        	public List<Integer> evaluate(List<Integer> numbers) {
+        		List<Integer> sortedNumbers = doEvaluate(numbers);
         \t\t
-        \t\treturn sortedNumbers;
-        \t}
+        		return sortedNumbers;
+        	}
         
-        \tprotected abstract List<Integer> doEvaluate(List<Integer> numbers);
+        	protected abstract List<Integer> doEvaluate(List<Integer> numbers);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<Integer> doEvaluate(List<Integer> numbers) {
-        \t\t\tif (numbers == null) {
-        \t\t\t\tnumbers = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<Integer> sortedNumbers = new ArrayList<>();
-        \t\t\treturn assignOutput(sortedNumbers, numbers);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<Integer> doEvaluate(List<Integer> numbers) {
+        			if (numbers == null) {
+        				numbers = Collections.emptyList();
+        			}
+        			List<Integer> sortedNumbers = new ArrayList<>();
+        			return assignOutput(sortedNumbers, numbers);
+        		}
         \t\t
-        \t\tprotected List<Integer> assignOutput(List<Integer> sortedNumbers, List<Integer> numbers) {
-        \t\t\tsortedNumbers = MapperC.<Integer>of(numbers)
-        \t\t\t\t.sort().getMulti();
+        		protected List<Integer> assignOutput(List<Integer> sortedNumbers, List<Integer> numbers) {
+        			sortedNumbers = MapperC.<Integer>of(numbers)
+        				.sort().getMulti();
         \t\t\t
-        \t\t\treturn sortedNumbers;
-        \t\t}
-        \t}
+        			return sortedNumbers;
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3684,15 +3684,15 @@ public class ListOperationTest {
     public void shouldGenerateDistinctIntListSort() {
         String model = """
         func FuncFoo:\s
-        \tinputs:
-        \t\tnumbers int (0..*)
-        \toutput:
-        \t\tsortedNumbers int (0..*)
+        	inputs:
+        		numbers int (0..*)
+        	output:
+        		sortedNumbers int (0..*)
         
-        \tset sortedNumbers:
-        \t\tnumbers\s
-        \t\t\tdistinct
-        \t\t\tsort
+        	set sortedNumbers:
+        		numbers\s
+        			distinct
+        			sort
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3707,13 +3707,13 @@ public class ListOperationTest {
     public void shouldGenerateDateListSort() {
         String model = """
         func FuncFoo:\s
-        \tinputs:
-        \t\tdates date (0..*)
-        \toutput:
-        \t\tsortedDates date (0..*)
+        	inputs:
+        		dates date (0..*)
+        	output:
+        		sortedDates date (0..*)
         
-        \tset sortedDates:
-        \t\tdates sort // sort items
+        	set sortedDates:
+        		dates sort // sort items
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3733,16 +3733,16 @@ public class ListOperationTest {
     public void shouldGenerateListSortWithAttribute() {
         String model = """
         type Foo:
-        \tattr string (1..1) // single
+        	attr string (1..1) // single
         
         func FuncFoo:
-        \tinputs:
-        \t\tfoos Foo (0..*)
-        \toutput:
-        \t\tsortedFoos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
+        	output:
+        		sortedFoos Foo (0..*)
         
-        \tset sortedFoos:
-        \t\tfoos sort [item -> attr] // sort based on item attribute
+        	set sortedFoos:
+        		foos sort [item -> attr] // sort based on item attribute
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
@@ -3765,47 +3765,47 @@ public class ListOperationTest {
         @ImplementedBy(FuncFoo.FuncFooDefault.class)
         public abstract class FuncFoo implements RosettaFunction {
         \t
-        \t@Inject protected ModelObjectValidator objectValidator;
+        	@Inject protected ModelObjectValidator objectValidator;
         
-        \t/**
-        \t* @param foos\s
-        \t* @return sortedFoos\s
-        \t*/
-        \tpublic List<? extends Foo> evaluate(List<? extends Foo> foos) {
-        \t\tList<Foo.FooBuilder> sortedFoosBuilder = doEvaluate(foos);
+        	/**
+        	* @param foos\s
+        	* @return sortedFoos\s
+        	*/
+        	public List<? extends Foo> evaluate(List<? extends Foo> foos) {
+        		List<Foo.FooBuilder> sortedFoosBuilder = doEvaluate(foos);
         \t\t
-        \t\tfinal List<? extends Foo> sortedFoos;
-        \t\tif (sortedFoosBuilder == null) {
-        \t\t\tsortedFoos = null;
-        \t\t} else {
-        \t\t\tsortedFoos = sortedFoosBuilder.stream().map(Foo::build).collect(Collectors.toList());
-        \t\t\tobjectValidator.validate(Foo.class, sortedFoos);
-        \t\t}
+        		final List<? extends Foo> sortedFoos;
+        		if (sortedFoosBuilder == null) {
+        			sortedFoos = null;
+        		} else {
+        			sortedFoos = sortedFoosBuilder.stream().map(Foo::build).collect(Collectors.toList());
+        			objectValidator.validate(Foo.class, sortedFoos);
+        		}
         \t\t
-        \t\treturn sortedFoos;
-        \t}
+        		return sortedFoos;
+        	}
         
-        \tprotected abstract List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos);
+        	protected abstract List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos);
         
-        \tpublic static class FuncFooDefault extends FuncFoo {
-        \t\t@Override
-        \t\tprotected List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
-        \t\t\tif (foos == null) {
-        \t\t\t\tfoos = Collections.emptyList();
-        \t\t\t}
-        \t\t\tList<Foo.FooBuilder> sortedFoos = new ArrayList<>();
-        \t\t\treturn assignOutput(sortedFoos, foos);
-        \t\t}
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected List<Foo.FooBuilder> doEvaluate(List<? extends Foo> foos) {
+        			if (foos == null) {
+        				foos = Collections.emptyList();
+        			}
+        			List<Foo.FooBuilder> sortedFoos = new ArrayList<>();
+        			return assignOutput(sortedFoos, foos);
+        		}
         \t\t
-        \t\tprotected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> sortedFoos, List<? extends Foo> foos) {
-        \t\t\tsortedFoos = toBuilder(MapperC.<Foo>of(foos)
-        \t\t\t\t.sort(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti());
+        		protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> sortedFoos, List<? extends Foo> foos) {
+        			sortedFoos = toBuilder(MapperC.<Foo>of(foos)
+        				.sort(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti());
         \t\t\t
-        \t\t\treturn Optional.ofNullable(sortedFoos)
-        \t\t\t\t.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
-        \t\t\t\t.orElse(null);
-        \t\t}
-        \t}
+        			return Optional.ofNullable(sortedFoos)
+        				.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
+        				.orElse(null);
+        		}
+        	}
         }
         """, f);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3831,14 +3831,14 @@ public class ListOperationTest {
     public void shouldGenerateIntListReverse() {
         String model = """
         func FuncFoo:\s
-        \tinputs:
-        \t\tnumbers int (0..*)
-        \toutput:
-        \t\tsortedNumbers int (0..*)
+        	inputs:
+        		numbers int (0..*)
+        	output:
+        		sortedNumbers int (0..*)
         
-        \tset sortedNumbers:
-        \t\tnumbers
-        \t\t\treverse // reverse (no sort)
+        	set sortedNumbers:
+        		numbers
+        			reverse // reverse (no sort)
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3853,15 +3853,15 @@ public class ListOperationTest {
     public void shouldGenerateDateListSortThenReverse() {
         String model = """
         func FuncFoo:\s
-        \tinputs:
-        \t\tdates date (0..*)
-        \toutput:
-        \t\tsortedDates date (0..*)
+        	inputs:
+        		dates date (0..*)
+        	output:
+        		sortedDates date (0..*)
         
-        \tset sortedDates:
-        \t\tdates\s
-        \t\t\tsort // sort items
-        \t\t\treverse
+        	set sortedDates:
+        		dates\s
+        			sort // sort items
+        			reverse
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3881,18 +3881,18 @@ public class ListOperationTest {
     public void shouldGenerateListSortWithAttributeThenReverse() {
         String model = """
         type Foo:
-        \tattr string (1..1) // single
+        	attr string (1..1) // single
         
         func FuncFoo:
-        \tinputs:
-        \t\tfoos Foo (0..*)
-        \toutput:
-        \t\tsortedFoos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
+        	output:
+        		sortedFoos Foo (0..*)
         
-        \tset sortedFoos:
-        \t\tfoos\s
-        \t\t\tsort [item -> attr] // sort based on item attribute
-        \t\t\treverse
+        	set sortedFoos:
+        		foos\s
+        			sort [item -> attr] // sort based on item attribute
+        			reverse
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
@@ -3918,17 +3918,17 @@ public class ListOperationTest {
     public void shouldGenerateListReverseComplexType() {
         String model = """
         type Foo:
-        \tattr string (1..1) // single
+        	attr string (1..1) // single
         
         func FuncFoo:
-        \tinputs:
-        \t\tfoos Foo (0..*)
-        \toutput:
-        \t\tsortedFoos Foo (0..*)
+        	inputs:
+        		foos Foo (0..*)
+        	output:
+        		sortedFoos Foo (0..*)
         
-        \tset sortedFoos:
-        \t\tfoos\s
-        \t\t\treverse
+        	set sortedFoos:
+        		foos\s
+        			reverse
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
         var classes = codeGeneratorTestHelper.compileToClasses(code);
