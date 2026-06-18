@@ -27,12 +27,26 @@ public class RuneConfigurationFileProvider implements Provider<URL> {
     // When null, the default name is resolved with a fallback to the legacy name.
     private final String fileName;
     private final boolean loadFromClasspath;
+    // The classloader used to discover configuration files on the classpath. When null, the thread
+    // context classloader is used. In a Maven build the thread context classloader is the plugin
+    // realm, which does not see the project's compile dependencies, so the plugin sets this to a
+    // classloader over the project classpath (see RosettaStandaloneSetup#setClasspathClassLoader).
+    private ClassLoader classLoader;
 
     public static RuneConfigurationFileProvider createFromFile(String fileName) {
         return new RuneConfigurationFileProvider(false, fileName);
     }
     public static RuneConfigurationFileProvider createFromClasspath(String fileName) {
         return new RuneConfigurationFileProvider(true, fileName);
+    }
+
+    /** Sets the classloader used to discover configuration files on the classpath. */
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
+    private ClassLoader resourceClassLoader() {
+        return classLoader != null ? classLoader : Thread.currentThread().getContextClassLoader();
     }
 
     @Inject
@@ -66,10 +80,17 @@ public class RuneConfigurationFileProvider implements Provider<URL> {
     }
 
     /**
-     * Returns every Rune configuration file visible on the classpath, with the primary one (the
-     * value returned by {@link #get()}, i.e. the current project's config) first. Dependency
-     * configs that share an id are shadowed by the current project's. Used to build the union of
-     * {@code serializationConfig} entries across a project and its dependencies.
+     * Returns every Rune configuration file to union, with the primary one (the value returned by
+     * {@link #get()}, i.e. the current project's config) first. Dependency configs that share an id
+     * are shadowed by the current project's. Used to build the union of {@code serializationConfig}
+     * entries across a project and its dependencies.
+     * <p>
+     * Dependency configs are always discovered from the classpath by their canonical names
+     * ({@link #FILE_NAME}/{@link #LEGACY_FILE_NAME}), regardless of how the primary config was
+     * located. This matters for the Maven path: there the current project's config is passed
+     * explicitly (an absolute file path, because at {@code generate-sources} time it is not yet
+     * copied onto the classpath), while its dependencies' configs are available on the classpath
+     * inside their jars. The explicit primary is added first, so it still shadows on id collisions.
      */
     public Collection<URL> getResources() {
         LinkedHashSet<URL> resources = new LinkedHashSet<>();
@@ -77,16 +98,14 @@ public class RuneConfigurationFileProvider implements Provider<URL> {
         if (primary != null) {
             resources.add(primary);
         }
-        if (loadFromClasspath && fileName == null) {
-            addClasspathResources(resources, FILE_NAME);
-            addClasspathResources(resources, LEGACY_FILE_NAME);
-        }
+        addClasspathResources(resources, FILE_NAME);
+        addClasspathResources(resources, LEGACY_FILE_NAME);
         return resources;
     }
 
     private void addClasspathResources(LinkedHashSet<URL> resources, String name) {
         try {
-            Enumeration<URL> found = Thread.currentThread().getContextClassLoader().getResources(name);
+            Enumeration<URL> found = resourceClassLoader().getResources(name);
             while (found.hasMoreElements()) {
                 resources.add(found.nextElement());
             }
@@ -96,7 +115,7 @@ public class RuneConfigurationFileProvider implements Provider<URL> {
     }
 
     private URL fromClasspath(String name) {
-        return Thread.currentThread().getContextClassLoader().getResource(name);
+        return resourceClassLoader().getResource(name);
     }
 
     private URL findFile(String name) {

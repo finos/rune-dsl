@@ -1,12 +1,18 @@
 package com.regnosys.rosetta.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -44,6 +50,51 @@ public class MultiConfigUnionTest {
 				config.findSerializationConfigById("myOtherSchema").orElseThrow().getConfigPath());
 
 		assertEquals(3, config.getSerializationConfig().size());
+	}
+
+	/**
+	 * The Maven path passes the current project's config as an explicit file (because at
+	 * {@code generate-sources} time it is not yet on the classpath), while dependency configs are
+	 * available on the classpath inside dependency jars. {@link RuneConfigurationFileProvider#getResources()}
+	 * must therefore union the classpath dependency configs even when the primary was located as an
+	 * explicit file — otherwise the Maven build never sees a dependency's serializationConfig.
+	 */
+	@Test
+	public void explicitFilePrimaryStillUnionsClasspathDependencyConfigs() throws Exception {
+		String primaryPath = Paths.get(getClass().getResource("/rune-config-test.yml").toURI()).toString();
+		RuneConfigurationFileProvider provider = RuneConfigurationFileProvider.createFromFile(primaryPath);
+
+		URL primary = provider.get();
+		Collection<URL> resources = provider.getResources();
+
+		// The explicit primary is present and comes first (so it shadows on id collisions).
+		assertEquals(primary, resources.iterator().next());
+		// The canonical config on the classpath is discovered as a dependency, even though the
+		// primary was located as an explicit file (this is what was missing before the fix).
+		assertTrue(resources.stream().anyMatch(u -> u.getPath().endsWith("/" + RuneConfigurationFileProvider.FILE_NAME)),
+				"classpath dependency configs should be unioned in the explicit-file (Maven) path");
+	}
+
+	/**
+	 * Dependency configs are discovered through the injected classloader, not the thread context
+	 * classloader. In a Maven build the thread context classloader is the plugin realm (which cannot
+	 * see the project's compile dependencies), so the plugin sets a classloader over the project
+	 * classpath via {@code setClassLoader}; {@code getResources()} must use it.
+	 */
+	@Test
+	public void getResourcesUsesTheInjectedClassLoader(@TempDir Path depClasspathRoot) throws Exception {
+		// A dependency-style config that is only reachable through a dedicated classloader, not the TCCL.
+		Files.writeString(depClasspathRoot.resolve(RuneConfigurationFileProvider.FILE_NAME),
+				"model:\n  name: Dep\nserializationConfig:\n- id: depOnly\n  configPath: dep.json\n");
+		URLClassLoader depClassLoader = new URLClassLoader(new URL[] { depClasspathRoot.toUri().toURL() }, null);
+
+		String primaryPath = Paths.get(getClass().getResource("/rune-config-test.yml").toURI()).toString();
+		RuneConfigurationFileProvider provider = RuneConfigurationFileProvider.createFromFile(primaryPath);
+		provider.setClassLoader(depClassLoader);
+
+		Collection<URL> resources = provider.getResources();
+		assertTrue(resources.contains(depClasspathRoot.resolve(RuneConfigurationFileProvider.FILE_NAME).toUri().toURL()),
+				"getResources() should discover dependency configs via the injected classloader");
 	}
 
 	private static class UnionConfigFileProvider extends RuneConfigurationFileProvider {
