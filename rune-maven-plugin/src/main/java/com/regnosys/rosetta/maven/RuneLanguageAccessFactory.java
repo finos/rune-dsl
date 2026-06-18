@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public class RuneLanguageAccessFactory {
 
-    public Map<String, LanguageAccess> createLanguageAccess(ILanguageConfiguration languageGenConf, String rosettaConfig, ClassLoader compilerClassLoder) {
+    public Map<String, LanguageAccess> createLanguageAccess(ILanguageConfiguration languageGenConf, String rosettaConfig, ClassLoader compilerClassLoder, ClassLoader classpathClassLoader) {
         Map<String, LanguageAccess> result = new HashMap<String, LanguageAccess>();
 
         try {
@@ -44,6 +44,12 @@ public class RuneLanguageAccessFactory {
             RosettaStandaloneSetup setup = (RosettaStandaloneSetup) loadClass.getDeclaredConstructor().newInstance();
             if (rosettaConfig != null) {
                 setup.setConfigFile(rosettaConfig);
+            }
+            // The thread context classloader during the build is the plugin realm, which cannot see the
+            // project's compile dependencies. Hand the config provider a classloader over the project
+            // classpath so dependency serializationConfig entries are discovered and unioned.
+            if (classpathClassLoader != null) {
+                setup.setClasspathClassLoader(classpathClassLoader);
             }
             Injector injector = setup.createInjectorAndDoEMFRegistration();
 
