@@ -880,6 +880,7 @@ repository:
           end: '{{rootEnd}}'
           patterns:
           - include: '#comment'
+          - include: '#annotation'
           - name: variable.other.enummember.rosetta
             match: '{{identifier}}'
 

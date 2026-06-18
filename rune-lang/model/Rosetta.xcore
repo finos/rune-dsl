@@ -158,7 +158,7 @@ class RosettaEnumValueReference {
  * (de)serialization format of a transform function. The `format` refers to a value of
  * the built-in `SerializationFormat` enum.
  */
-class Schema extends RosettaRootElement, RosettaNamed, SchemaOrFormat {
+class Schema extends RosettaRootElement, RosettaNamed, SchemaOrFormat, Annotated {
 	refers RosettaEnumValue format
 }
 

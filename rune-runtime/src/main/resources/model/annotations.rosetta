@@ -18,7 +18,9 @@ annotation qualification: <"Annotation that describes a func that is used for ev
 	Product boolean (0..1)
 	BusinessEvent boolean (0..1)
 
-annotation deprecated: <"Marks a type, function or enum as deprecated and will be removed/replaced.">
+annotation deprecated: <"Marks a type, function, enum or schema as deprecated and will be removed/replaced.">
+
+annotation externalConfig: <"Marks a schema as having an externally-configured serialization config: its config file path is configured externally and is baked into the generated transform annotation.">
 
 annotation codeImplementation: <"Marks the function as statically implemented by model internal code, with no body defined in Rune.">
 

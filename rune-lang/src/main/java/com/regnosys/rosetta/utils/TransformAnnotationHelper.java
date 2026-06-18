@@ -3,9 +3,11 @@ package com.regnosys.rosetta.utils;
 import java.util.Optional;
 
 import com.regnosys.rosetta.config.RuneConfiguration;
+import com.regnosys.rosetta.config.RuneSerializationConfiguration;
 import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.Schema;
 import com.regnosys.rosetta.rosetta.SchemaOrFormat;
+import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.TransformAnnotation;
 import com.rosetta.model.lib.transform.SerializationFormat;
@@ -61,10 +63,25 @@ public class TransformAnnotationHelper {
 		return Optional.empty();
 	}
 
-	/** The classpath location of the schema's config file, looked up by id in the Rune configuration. */
+	/**
+	 * The classpath location of the schema's config file, looked up by id in the Rune configuration.
+	 * Only resolved for a schema explicitly marked {@code [externalConfig]}; empty otherwise (a bare
+	 * format, or a schema that does not declare external configuration).
+	 */
 	public Optional<String> getConfigPath(TransformAnnotation annotation) {
-		return getSchemaId(annotation)
+		SchemaOrFormat ref = annotation.getRef();
+		if (!(ref instanceof Schema schema) || !isExternalConfig(schema)) {
+			return Optional.empty();
+		}
+		return Optional.ofNullable(schema.getName())
 				.flatMap(config::findSerializationConfigById)
-				.map(c -> c.getConfigPath());
+				.map(RuneSerializationConfiguration::getConfigPath);
+	}
+
+	/** Whether the schema declares the {@code [externalConfig]} annotation. */
+	public boolean isExternalConfig(Schema schema) {
+		return schema.getAnnotations().stream()
+				.map(AnnotationRef::getAnnotation)
+				.anyMatch(a -> a != null && "externalConfig".equals(a.getName()));
 	}
 }

@@ -172,6 +172,7 @@ RosettaRootElement:
 
 Schema:
 	'schema' RosettaNamed format=[RosettaEnumValue|ValidID]
+	Annotations*
 ;
 
 enum TransformKind:
