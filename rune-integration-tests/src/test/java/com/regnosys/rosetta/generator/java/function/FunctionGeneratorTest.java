@@ -79,19 +79,19 @@ public class FunctionGeneratorTest {
                 	inputs:
                 		myInput string (1..1)
                 			[metadata scheme]
-                  	output:
-                    	result string (1..1)
-                      		[metadata scheme]
+                	output:
+                	result string (1..1)
+                		[metadata scheme]
                      set result: myInput
 
                 func B:
                 	inputs:
                 		myInput string (1..1)
                 			[metadata scheme]
-                  	output:
-                    	result string (1..1)
-                  	set result:
-                    	A(myInput) -> scheme
+                	output:
+                	result string (1..1)
+                	set result:
+                	A(myInput) -> scheme
                 """);
 
         generatorTestHelper.compileToClasses(code);
@@ -741,7 +741,7 @@ public class FunctionGeneratorTest {
         var code = generatorTestHelper.generateCode("""
                 type A:
                     a string (0..*)
-                    	[metadata reference]
+                	[metadata reference]
 
                 func Test:
                 	output:
@@ -1170,9 +1170,9 @@ public class FunctionGeneratorTest {
                 		result int (0..1)
                 	set result:
                 		42 extract
-                		    if item > 0
-                		    then empty
-                		    else item
+                		if item > 0
+                		then empty
+                		else item
                 """);
         var classes = generatorTestHelper.compileToClasses(code);
 
@@ -1375,9 +1375,9 @@ public class FunctionGeneratorTest {
                 		result string (1..1)
                 	set result:
                 		if True
-                	    then ["Foo", "Bar"]
-                	    else "Bar"
-                	    then join ", "
+                	then ["Foo", "Bar"]
+                	else "Bar"
+                	then join ", "
                 """);
         var classes = generatorTestHelper.compileToClasses(code);
 
@@ -2205,9 +2205,9 @@ public class FunctionGeneratorTest {
     void testSimpleFunctionGeneration() {
         var code = """
                 func FuncFoo:
-                 	inputs:
-                 		name string  (0..1)
-                 		name2 string (0..1)
+                	inputs:
+                		name string  (0..1)
+                		name2 string (0..1)
                 	output:
                 		result string (0..1)
                 """;
@@ -2257,9 +2257,9 @@ public class FunctionGeneratorTest {
     void shouldGenerateFunctionWithStringListOutput() {
         var code = """
                 func FuncFoo:
-                 	inputs:
-                 		name string  (0..1)
-                 		name2 string (0..1)
+                	inputs:
+                		name string  (0..1)
+                		name2 string (0..1)
                 	output:
                 		result string (0..*)
                 """;
@@ -2311,9 +2311,9 @@ public class FunctionGeneratorTest {
     void shouldGenerateFunctionWithNumberListOutput() {
         var code = """
                 func FuncFoo:
-                 	inputs:
-                 		name string  (0..1)
-                 		name2 string (0..1)
+                	inputs:
+                		name string  (0..1)
+                		name2 string (0..1)
                 	output:
                 		result number (0..*)
                 """;
@@ -2366,9 +2366,9 @@ public class FunctionGeneratorTest {
     void shouldGenerateFunctionWithIntListOutput() {
         var code = """
                 func FuncFoo:
-                 	inputs:
-                 		name string  (0..1)
-                 		name2 string (0..1)
+                	inputs:
+                		name string  (0..1)
+                		name2 string (0..1)
                 	output:
                 		result int (0..*)
                 """;
@@ -2420,9 +2420,9 @@ public class FunctionGeneratorTest {
     void shouldGenerateFunctionWithDateListOutput() {
         var code = """
                 func FuncFoo:
-                 	inputs:
-                 		name string  (0..1)
-                 		name2 string (0..1)
+                	inputs:
+                		name string  (0..1)
+                		name2 string (0..1)
                 	output:
                 		result date (0..*)
                 """;
@@ -2683,9 +2683,9 @@ public class FunctionGeneratorTest {
                         import com.rosetta.test.model.agreement.*
 
                         func Create_Agreement:
-                         	inputs:
-                         		party Party (1..1)
-                         	id number (1..1)
+                        	inputs:
+                        		party Party (1..1)
+                        	id number (1..1)
                         	output:
                         		agreement Agreement (1..1)
 
@@ -2727,8 +2727,8 @@ public class FunctionGeneratorTest {
                         		then id is absent
 
                         func Get_Party_Id:
-                         	inputs:
-                         		agreement Agreement (1..1)
+                        	inputs:
+                        		agreement Agreement (1..1)
                         	output:
                         		result MyData (1..1)
 
@@ -2769,8 +2769,8 @@ public class FunctionGeneratorTest {
                         			then id is absent
 
                         func Get_Party_Id:
-                         	inputs:
-                         		agreement Agreement (1..1)
+                        	inputs:
+                        		agreement Agreement (1..1)
                         	output:
                         		result MyData (1..1)
 
@@ -4331,32 +4331,32 @@ public class FunctionGeneratorTest {
     @Test
     void nestedIfElse() {
         var model = modelHelper.parseRosettaWithNoErrors("""
-                namespace "demo"
-                version "${project.version}"
+                  namespace "demo"
+                  version "${project.version}"
 
-                func IfElseTest:
-                inputs:
-                	s1 string (1..1)
-                	s2 string (1..1)
-                output: result string (1..1)
+                  func IfElseTest:
+                  inputs:
+                  	s1 string (1..1)
+                  	s2 string (1..1)
+                  output: result string (1..1)
 
-                set result:
-                	if s1 = "1"
-                		then if s2 = "a"
-                			then "result1a"
-                		else
-                			if s2 = "b"
-                				then "result1b"
-                	else
-                		"result1"
-                	else if s1 = "2" then
-                		if s2 = "a"
-                		then "result2a"
-                		else if s2 = "b"
-                		then "result2b"
-                		else "result2"
-                		  else
-                "result"
+                  set result:
+                  	if s1 = "1"
+                  		then if s2 = "a"
+                  			then "result1a"
+                  		else
+                  			if s2 = "b"
+                  				then "result1b"
+                  	else
+                  		"result1"
+                  	else if s1 = "2" then
+                  		if s2 = "a"
+                  		then "result2a"
+                  		else if s2 = "b"
+                  		then "result2b"
+                  		else "result2"
+                  		else
+                  "result"
                   """);
         generatorTestHelper.compileToClasses(generatorTestHelper.generateCode(model));
     }
@@ -4394,7 +4394,7 @@ public class FunctionGeneratorTest {
                 type PriceQuantity:
                 	[metadata key]
                 	quantity Quantity (0..*)
-                	    [metadata location]
+                	[metadata location]
 
                 type ResolvablePayoutQuantity:
                 	resolvedQuantity Quantity (0..1)
@@ -4410,7 +4410,7 @@ public class FunctionGeneratorTest {
                 		cashflow Cashflow (1..1)
 
                 set cashflow -> payoutQuantity -> resolvedQuantity -> amount:
-                	 x
+                	x
                 """);
         generatorTestHelper.compileToClasses(generatorTestHelper.generateCode(model));
     }
@@ -4419,10 +4419,10 @@ public class FunctionGeneratorTest {
     void ifWithSingleStringType() {
         var model = """
                 func FuncFoo:
-                 	inputs:
-                 		test boolean (1..1)
-                 		t1 string  (1..1)
-                 		t2 string (1..1)
+                	inputs:
+                		test boolean (1..1)
+                		t1 string  (1..1)
+                		t2 string (1..1)
                 	output:
                 		result string (1..1)
 
@@ -4489,10 +4489,10 @@ public class FunctionGeneratorTest {
     void ifWithMultipleStringType() {
         var model = """
                 func FuncFoo:
-                 	inputs:
-                 		test boolean (1..1)
-                 		t1 string  (1..*)
-                 		t2 string (1..*)
+                	inputs:
+                		test boolean (1..1)
+                		t1 string  (1..*)
+                		t2 string (1..*)
                 	output:
                 		result string (1..*)
 
@@ -4568,10 +4568,10 @@ public class FunctionGeneratorTest {
     void ifWithSingleNumberType() {
         var model = """
                 func FuncFoo:
-                 	inputs:
-                 		test boolean (1..1)
-                 		t1 number  (1..1)
-                 		t2 number (1..1)
+                	inputs:
+                		test boolean (1..1)
+                		t1 number  (1..1)
+                		t2 number (1..1)
                 	output:
                 		result number (1..1)
 
@@ -4639,10 +4639,10 @@ public class FunctionGeneratorTest {
     void ifWithMultipleNumberType() {
         var model = """
                 func FuncFoo:
-                 	inputs:
-                 		test boolean (1..1)
-                 		t1 number  (1..*)
-                 		t2 number (1..*)
+                	inputs:
+                		test boolean (1..1)
+                		t1 number  (1..*)
+                		t2 number (1..*)
                 	output:
                 		result number (1..*)
 
@@ -4719,10 +4719,10 @@ public class FunctionGeneratorTest {
     void ifWithSingleDataType() {
         var model = """
                 func FuncFoo:
-                 	inputs:
-                 		test boolean (1..1)
-                 		b1 Bar (1..1)
-                 		b2 Bar (1..1)
+                	inputs:
+                		test boolean (1..1)
+                		b1 Bar (1..1)
+                		b2 Bar (1..1)
                 	output:
                 		result Bar (1..1)
 
@@ -4808,10 +4808,10 @@ public class FunctionGeneratorTest {
     void ifWithMultipleDataTypes() {
         var model = """
                 func FuncFoo:
-                 	inputs:
-                 		test boolean (1..1)
-                 		b1 Bar (1..*)
-                 		b2 Bar (1..*)
+                	inputs:
+                		test boolean (1..1)
+                		b1 Bar (1..*)
+                		b2 Bar (1..*)
                 	output:
                 		result Bar (1..*)
 
@@ -4907,9 +4907,9 @@ public class FunctionGeneratorTest {
     void shouldSetMathsOperation() {
         var model = """
                 func FuncFoo:
-                 	inputs:
-                 		n1 number (1..1)
-                 		n2 number (1..1)
+                	inputs:
+                		n1 number (1..1)
+                		n2 number (1..1)
                 	output:
                 		res number (1..1)
 
@@ -4972,8 +4972,8 @@ public class FunctionGeneratorTest {
                 	outList string (0..*)
 
                 func FuncFoo:
-                 	inputs:
-                 		inList string (0..*)
+                	inputs:
+                		inList string (0..*)
                 	output:
                 		foo Foo (1..1)
 
@@ -5054,8 +5054,8 @@ public class FunctionGeneratorTest {
                 	outList string (0..*)
 
                 func FuncFoo:
-                 	inputs:
-                 		inList string (0..*)
+                	inputs:
+                		inList string (0..*)
                 	output:
                 		foo Foo (1..1)
 
@@ -5136,9 +5136,9 @@ public class FunctionGeneratorTest {
                 	attr string (1..1)
 
                 func FuncFoo:
-                 	inputs:
-                 		foos Foo (0..*)
-                 		newFoo Foo (1..1) <"Add single Foo">
+                	inputs:
+                		foos Foo (0..*)
+                		newFoo Foo (1..1) <"Add single Foo">
                 	output:
                 		mergedFoos Foo (0..*)
 
@@ -5166,9 +5166,9 @@ public class FunctionGeneratorTest {
                 	attr string (1..1)
 
                 func FuncFoo:
-                 	inputs:
-                 		foos Foo (0..*)
-                 		newFoo Foo (1..1) <"Add single Foo">
+                	inputs:
+                		foos Foo (0..*)
+                		newFoo Foo (1..1) <"Add single Foo">
                 	output:
                 		mergedFoos Foo (0..*)
 
@@ -5196,9 +5196,9 @@ public class FunctionGeneratorTest {
                 	attr string (1..1)
 
                 func FuncFoo:
-                 	inputs:
-                 		foos Foo (0..*)
-                 		newFoos Foo (0..*) <"Add Foo list">
+                	inputs:
+                		foos Foo (0..*)
+                		newFoos Foo (0..*) <"Add Foo list">
                 	output:
                 		mergedFoos Foo (0..*)
 
@@ -5224,9 +5224,9 @@ public class FunctionGeneratorTest {
     void shouldMergeBasicTypeList() {
         var model = """
                 func FuncFoo:
-                 	inputs:
-                 		foos string (0..*)
-                 		newFoo string (1..1) <"Add single Foo">
+                	inputs:
+                		foos string (0..*)
+                		newFoo string (1..1) <"Add single Foo">
                 	output:
                 		mergedFoos string (0..*)
 
@@ -5248,9 +5248,9 @@ public class FunctionGeneratorTest {
     void shouldMergeBasicTypeList2() {
         var model = """
                 func FuncFoo:
-                 	inputs:
-                 		foos string (0..*)
-                 		newFoo string (1..1) <"Add single Foo">
+                	inputs:
+                		foos string (0..*)
+                		newFoo string (1..1) <"Add single Foo">
                 	output:
                 		mergedFoos string (0..*)
 
@@ -5272,9 +5272,9 @@ public class FunctionGeneratorTest {
     void shouldMergeBasicTypeList3() {
         var model = """
                 func FuncFoo:
-                 	inputs:
-                 		foos string (0..*)
-                 		newFoos string (0..*) <"Add Foo list">
+                	inputs:
+                		foos string (0..*)
+                		newFoos string (0..*) <"Add Foo list">
                 	output:
                 		mergedFoos string (0..*)
 
@@ -5302,9 +5302,9 @@ public class FunctionGeneratorTest {
                 	attr string (1..1)
 
                 func FuncFoo:
-                 	inputs:
-                 		bar Bar (1..1)
-                 		newFoo Foo (1..1) <"Add single Foo">
+                	inputs:
+                		bar Bar (1..1)
+                		newFoo Foo (1..1) <"Add single Foo">
                 	output:
                 		updatedBar Bar (1..1)
 
@@ -5343,9 +5343,9 @@ public class FunctionGeneratorTest {
                 	attr string (1..1)
 
                 func FuncFoo:
-                 	inputs:
-                 		bar Bar (1..1)
-                 		newFoos Foo (0..*) <"Add Foo list">
+                	inputs:
+                		bar Bar (1..1)
+                		newFoos Foo (0..*) <"Add Foo list">
                 	output:
                 		updatedBar Bar (1..1)
 
@@ -5385,9 +5385,9 @@ public class FunctionGeneratorTest {
                 	attr string (1..1)
 
                 func FuncFoo:
-                 	inputs:
-                 		bar Bar (1..1)
-                 		newFoo Foo (1..1) <"Add single Foo">
+                	inputs:
+                		bar Bar (1..1)
+                		newFoo Foo (1..1) <"Add single Foo">
                 	output:
                 		updatedBar Bar (1..1)
 
@@ -5426,9 +5426,9 @@ public class FunctionGeneratorTest {
                 	attr string (1..1)
 
                 func FuncFoo:
-                 	inputs:
-                 		bar Bar (1..1)
-                 		newFoos Foo (0..*) <"Add Foo list">
+                	inputs:
+                		bar Bar (1..1)
+                		newFoos Foo (0..*) <"Add Foo list">
                 	output:
                 		updatedBar Bar (1..1)
 
@@ -5465,9 +5465,9 @@ public class FunctionGeneratorTest {
                 	attrList string (0..*)
 
                 func FuncFoo:
-                 	inputs:
-                 		baz Baz (1..1)
-                 		s string (1..1) <"Add single">
+                	inputs:
+                		baz Baz (1..1)
+                		s string (1..1) <"Add single">
                 	output:
                 		updatedBaz Baz (1..1)
 
@@ -5498,9 +5498,9 @@ public class FunctionGeneratorTest {
                 	attrList string (0..*)
 
                 func FuncFoo:
-                 	inputs:
-                 		baz Baz (1..1)
-                 		sList string (0..*) <"Add list">
+                	inputs:
+                		baz Baz (1..1)
+                		sList string (0..*) <"Add list">
                 	output:
                 		updatedBaz Baz (1..1)
 
@@ -5531,9 +5531,9 @@ public class FunctionGeneratorTest {
                 	attrList string (0..*)
 
                 func FuncFoo:
-                 	inputs:
-                 		baz Baz (1..1)
-                 		s string (1..1) <"Add single">
+                	inputs:
+                		baz Baz (1..1)
+                		s string (1..1) <"Add single">
                 	output:
                 		updatedBaz Baz (1..1)
 
@@ -5564,9 +5564,9 @@ public class FunctionGeneratorTest {
                 	attrList string (0..*)
 
                 func FuncFoo:
-                 	inputs:
-                 		baz Baz (1..1)
-                 		sList string (0..*) <"Add list">
+                	inputs:
+                		baz Baz (1..1)
+                		sList string (0..*) <"Add list">
                 	output:
                 		updatedBaz Baz (1..1)
 
@@ -5604,9 +5604,9 @@ public class FunctionGeneratorTest {
                 			FuncFoo( attr, "y" )
 
                 func FuncFoo:
-                 	inputs:
-                 		a string (1..1)
-                 		b string (1..1)
+                	inputs:
+                		a string (1..1)
+                		b string (1..1)
                 	output:
                 		result boolean (1..1)
                 """;
