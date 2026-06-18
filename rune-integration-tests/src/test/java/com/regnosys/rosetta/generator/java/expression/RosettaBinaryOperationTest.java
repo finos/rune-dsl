@@ -361,51 +361,49 @@ public class RosettaBinaryOperationTest {
                 """;
         Map<String, String> code = generatorTestHelper.generateCode(model);
         String funcFoo = code.get("com.rosetta.test.model.functions.FuncFoo");
-        // Built line-by-line (rather than a text block) to preserve the exact trailing
-        // whitespace the generator emits on the javadoc and blank-body lines.
-        String expected = String.join("\n",
-                "package com.rosetta.test.model.functions;",
-                "",
-                "import com.google.inject.ImplementedBy;",
-                "import com.rosetta.model.lib.expression.CardinalityOperator;",
-                "import com.rosetta.model.lib.expression.ComparisonResult;",
-                "import com.rosetta.model.lib.functions.RosettaFunction;",
-                "import com.rosetta.model.lib.mapper.MapperS;",
-                "import com.rosetta.test.model.Foo;",
-                "import java.math.BigDecimal;",
-                "",
-                "import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;",
-                "",
-                "@ImplementedBy(FuncFoo.FuncFooDefault.class)",
-                "public abstract class FuncFoo implements RosettaFunction {",
-                "",
-                "\t/**",
-                "\t* @param foo ",
-                "\t* @return result ",
-                "\t*/",
-                "\tpublic Boolean evaluate(Foo foo) {",
-                "\t\tBoolean result = doEvaluate(foo);",
-                "\t\t",
-                "\t\treturn result;",
-                "\t}",
-                "",
-                "\tprotected abstract Boolean doEvaluate(Foo foo);",
-                "",
-                "\tpublic static class FuncFooDefault extends FuncFoo {",
-                "\t\t@Override",
-                "\t\tprotected Boolean doEvaluate(Foo foo) {",
-                "\t\t\tBoolean result = null;",
-                "\t\t\treturn assignOutput(result, foo);",
-                "\t\t}",
-                "\t\t",
-                "\t\tprotected Boolean assignOutput(Boolean result, Foo foo) {",
-                "\t\t\tresult = ComparisonResult.ofNullSafe(MapperS.of(foo).<Boolean>map(\"getAttrBoolean\", _foo -> _foo.getAttrBoolean())).orNullSafe(areEqual(MapperS.of(foo).<BigDecimal>map(\"getAttrNumber\", _foo -> _foo.getAttrNumber()), MapperS.of(BigDecimal.valueOf(5)), CardinalityOperator.All)).get();",
-                "\t\t\t",
-                "\t\t\treturn result;",
-                "\t\t}",
-                "\t}",
-                "}",
-                "");
+        String expected = """
+        package com.rosetta.test.model.functions;
+
+        import com.google.inject.ImplementedBy;
+        import com.rosetta.model.lib.expression.CardinalityOperator;
+        import com.rosetta.model.lib.expression.ComparisonResult;
+        import com.rosetta.model.lib.functions.RosettaFunction;
+        import com.rosetta.model.lib.mapper.MapperS;
+        import com.rosetta.test.model.Foo;
+        import java.math.BigDecimal;
+
+        import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+
+        @ImplementedBy(FuncFoo.FuncFooDefault.class)
+        public abstract class FuncFoo implements RosettaFunction {
+
+        	/**
+        	* @param foo\s
+        	* @return result\s
+        	*/
+        	public Boolean evaluate(Foo foo) {
+        		Boolean result = doEvaluate(foo);
+        \t\t
+        		return result;
+        	}
+
+        	protected abstract Boolean doEvaluate(Foo foo);
+
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected Boolean doEvaluate(Foo foo) {
+        			Boolean result = null;
+        			return assignOutput(result, foo);
+        		}
+        \t\t
+        		protected Boolean assignOutput(Boolean result, Foo foo) {
+        			result = ComparisonResult.ofNullSafe(MapperS.of(foo).<Boolean>map("getAttrBoolean", _foo -> _foo.getAttrBoolean())).orNullSafe(areEqual(MapperS.of(foo).<BigDecimal>map("getAttrNumber", _foo -> _foo.getAttrNumber()), MapperS.of(BigDecimal.valueOf(5)), CardinalityOperator.All)).get();
+        \t\t\t
+        			return result;
+        		}
+        	}
+        }
+        """;
         // Normalize line endings so the comparison holds on Windows, where the generator
         // emits '\r\n' but the expected value is built with '\n'.
         assertEquals(expected, funcFoo.replace("\r\n", "\n"));
@@ -471,47 +469,47 @@ public class RosettaBinaryOperationTest {
                 """;
         Map<String, String> code = generatorTestHelper.generateCode(model);
         String funcFoo = code.get("com.rosetta.test.model.functions.FuncFoo");
-        String expected = String.join("\n",
-                "package com.rosetta.test.model.functions;",
-                "",
-                "import com.google.inject.ImplementedBy;",
-                "import com.rosetta.model.lib.expression.ComparisonResult;",
-                "import com.rosetta.model.lib.functions.RosettaFunction;",
-                "import com.rosetta.model.lib.mapper.MapperS;",
-                "import com.rosetta.test.model.Foo;",
-                "",
-                "import static com.rosetta.model.lib.expression.ExpressionOperators.*;",
-                "",
-                "@ImplementedBy(FuncFoo.FuncFooDefault.class)",
-                "public abstract class FuncFoo implements RosettaFunction {",
-                "",
-                "\t/**",
-                "\t* @param foo ",
-                "\t* @return result ",
-                "\t*/",
-                "\tpublic Boolean evaluate(Foo foo) {",
-                "\t\tBoolean result = doEvaluate(foo);",
-                "\t\t",
-                "\t\treturn result;",
-                "\t}",
-                "",
-                "\tprotected abstract Boolean doEvaluate(Foo foo);",
-                "",
-                "\tpublic static class FuncFooDefault extends FuncFoo {",
-                "\t\t@Override",
-                "\t\tprotected Boolean doEvaluate(Foo foo) {",
-                "\t\t\tBoolean result = null;",
-                "\t\t\treturn assignOutput(result, foo);",
-                "\t\t}",
-                "\t\t",
-                "\t\tprotected Boolean assignOutput(Boolean result, Foo foo) {",
-                "\t\t\tresult = exists(ComparisonResult.of(MapperS.of(foo).<Boolean>map(\"getX1\", _foo -> _foo.getX1())).and(ComparisonResult.of(MapperS.of(foo).<Boolean>map(\"getX2\", _foo -> _foo.getX2())))).get();",
-                "\t\t\t",
-                "\t\t\treturn result;",
-                "\t\t}",
-                "\t}",
-                "}",
-                "");
+        String expected = """
+        package com.rosetta.test.model.functions;
+
+        import com.google.inject.ImplementedBy;
+        import com.rosetta.model.lib.expression.ComparisonResult;
+        import com.rosetta.model.lib.functions.RosettaFunction;
+        import com.rosetta.model.lib.mapper.MapperS;
+        import com.rosetta.test.model.Foo;
+
+        import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+
+        @ImplementedBy(FuncFoo.FuncFooDefault.class)
+        public abstract class FuncFoo implements RosettaFunction {
+
+        	/**
+        	* @param foo\s
+        	* @return result\s
+        	*/
+        	public Boolean evaluate(Foo foo) {
+        		Boolean result = doEvaluate(foo);
+        \t\t
+        		return result;
+        	}
+
+        	protected abstract Boolean doEvaluate(Foo foo);
+
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected Boolean doEvaluate(Foo foo) {
+        			Boolean result = null;
+        			return assignOutput(result, foo);
+        		}
+        \t\t
+        		protected Boolean assignOutput(Boolean result, Foo foo) {
+        			result = exists(ComparisonResult.of(MapperS.of(foo).<Boolean>map("getX1", _foo -> _foo.getX1())).and(ComparisonResult.of(MapperS.of(foo).<Boolean>map("getX2", _foo -> _foo.getX2())))).get();
+        \t\t\t
+        			return result;
+        		}
+        	}
+        }
+        """;
         // Normalize line endings so the comparison holds on Windows, where the generator
         // emits '\r\n' but the expected value is built with '\n'.
         assertEquals(expected, funcFoo.replace("\r\n", "\n"));
@@ -537,47 +535,47 @@ public class RosettaBinaryOperationTest {
                 """;
         Map<String, String> code = generatorTestHelper.generateCode(model);
         String funcFoo = code.get("com.rosetta.test.model.functions.FuncFoo");
-        String expected = String.join("\n",
-                "package com.rosetta.test.model.functions;",
-                "",
-                "import com.google.inject.ImplementedBy;",
-                "import com.rosetta.model.lib.expression.ComparisonResult;",
-                "import com.rosetta.model.lib.functions.RosettaFunction;",
-                "import com.rosetta.model.lib.mapper.MapperS;",
-                "import com.rosetta.test.model.Foo;",
-                "",
-                "import static com.rosetta.model.lib.expression.ExpressionOperators.*;",
-                "",
-                "@ImplementedBy(FuncFoo.FuncFooDefault.class)",
-                "public abstract class FuncFoo implements RosettaFunction {",
-                "",
-                "\t/**",
-                "\t* @param foo ",
-                "\t* @return result ",
-                "\t*/",
-                "\tpublic Boolean evaluate(Foo foo) {",
-                "\t\tBoolean result = doEvaluate(foo);",
-                "\t\t",
-                "\t\treturn result;",
-                "\t}",
-                "",
-                "\tprotected abstract Boolean doEvaluate(Foo foo);",
-                "",
-                "\tpublic static class FuncFooDefault extends FuncFoo {",
-                "\t\t@Override",
-                "\t\tprotected Boolean doEvaluate(Foo foo) {",
-                "\t\t\tBoolean result = null;",
-                "\t\t\treturn assignOutput(result, foo);",
-                "\t\t}",
-                "\t\t",
-                "\t\tprotected Boolean assignOutput(Boolean result, Foo foo) {",
-                "\t\t\tresult = exists(ComparisonResult.of(MapperS.of(foo).<Boolean>mapC(\"getX1\", _foo -> _foo.getX1())).and(ComparisonResult.of(MapperS.of(foo).<Boolean>map(\"getX2\", _foo -> _foo.getX2())))).get();",
-                "\t\t\t",
-                "\t\t\treturn result;",
-                "\t\t}",
-                "\t}",
-                "}",
-                "");
+        String expected = """
+        package com.rosetta.test.model.functions;
+
+        import com.google.inject.ImplementedBy;
+        import com.rosetta.model.lib.expression.ComparisonResult;
+        import com.rosetta.model.lib.functions.RosettaFunction;
+        import com.rosetta.model.lib.mapper.MapperS;
+        import com.rosetta.test.model.Foo;
+
+        import static com.rosetta.model.lib.expression.ExpressionOperators.*;
+
+        @ImplementedBy(FuncFoo.FuncFooDefault.class)
+        public abstract class FuncFoo implements RosettaFunction {
+
+        	/**
+        	* @param foo\s
+        	* @return result\s
+        	*/
+        	public Boolean evaluate(Foo foo) {
+        		Boolean result = doEvaluate(foo);
+        \t\t
+        		return result;
+        	}
+
+        	protected abstract Boolean doEvaluate(Foo foo);
+
+        	public static class FuncFooDefault extends FuncFoo {
+        		@Override
+        		protected Boolean doEvaluate(Foo foo) {
+        			Boolean result = null;
+        			return assignOutput(result, foo);
+        		}
+        \t\t
+        		protected Boolean assignOutput(Boolean result, Foo foo) {
+        			result = exists(ComparisonResult.of(MapperS.of(foo).<Boolean>mapC("getX1", _foo -> _foo.getX1())).and(ComparisonResult.of(MapperS.of(foo).<Boolean>map("getX2", _foo -> _foo.getX2())))).get();
+        \t\t\t
+        			return result;
+        		}
+        	}
+        }
+        """;
         // Normalize line endings so the comparison holds on Windows, where the generator
         // emits '\r\n' but the expected value is built with '\n'.
         assertEquals(expected, funcFoo.replace("\r\n", "\n"));
