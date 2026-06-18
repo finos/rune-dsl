@@ -116,6 +116,6 @@ public class FunctionGeneratorHelper {
 		RosettaModel model = modelHelper.parseRosettaWithNoErrors(actualModel);
 		genCall.accept(model);
 		String actual = fsa.getTextFiles().entrySet().iterator().next().getValue().toString();
-		assertEquals(expected.toString(), actual.replace("\r\n", "\n"));
+		assertEquals(expected.toString().replace("\r\n", "\n"), actual.replace("\r\n", "\n"));
 	}
 }
