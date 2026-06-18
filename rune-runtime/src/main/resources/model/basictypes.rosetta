@@ -52,3 +52,11 @@ recordType zonedDateTime
 
 typeAlias calculation:
 	string
+
+enum SerializationFormat: <"The wire format used to (de)serialize the input or output of a transform function (e.g. an ingestion or projection).">
+	JSON <"JSON, following a standard JSON representation of the model.">
+	RUNE_JSON <"JSON, following the Rune-specific JSON standard.">
+	XML <"XML, typically configured by an associated XML configuration file that maps the schema onto the Rune type.">
+	CSV <"Comma-separated values. Only valid for tabular types, i.e. types whose attributes are all single-cardinality basic types.">
+	CSV_LABELLED <"Comma-separated values with a header row of human-readable labels.">
+
