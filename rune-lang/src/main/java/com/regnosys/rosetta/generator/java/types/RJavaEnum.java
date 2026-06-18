@@ -35,7 +35,15 @@ public class RJavaEnum extends RGeneratedJavaClass<Object> {
 	private List<RJavaEnumValue> enumValues = null;
 
 	public RJavaEnum(REnumType enumeration) {
-		super(JavaPackageName.escape(enumeration.getNamespace()), DottedPath.of(enumeration.getName()));
+		this(enumeration, JavaPackageName.escape(enumeration.getNamespace()));
+	}
+
+	/**
+	 * Creates an enum located in an explicit package rather than the one derived from the model
+	 * namespace. Used for built-in enums that map onto a hand-written runtime type.
+	 */
+	public RJavaEnum(REnumType enumeration, JavaPackageName packageName) {
+		super(packageName, DottedPath.of(enumeration.getName()));
 		this.enumeration = enumeration;
 	}
 	
