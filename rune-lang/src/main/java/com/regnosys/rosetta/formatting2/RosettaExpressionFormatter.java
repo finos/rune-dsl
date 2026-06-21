@@ -730,18 +730,6 @@ public class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 
 	// --- region navigation helpers ---
 
-	private org.eclipse.xtext.formatting2.regionaccess.ISemanticRegionsFinder regionFor(EObject obj) {
-		return textRegionExtensions.regionFor(obj);
-	}
-
-	private IEObjectRegion regionForEObject(EObject obj) {
-		return textRegionExtensions.regionForEObject(obj);
-	}
-
-	private boolean isMultiline(EObject obj) {
-		return textRegionExtensions.isMultiline(obj);
-	}
-
 	private IHiddenRegion getTextRegionExtNextHiddenRegion(EObject obj, IFormattableDocument document) {
 		return formattingUtil.getTextRegionExt(document).nextHiddenRegion(obj);
 	}

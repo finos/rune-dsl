@@ -11,10 +11,7 @@ import org.eclipse.xtext.formatting2.IFormattableDocument;
 import org.eclipse.xtext.formatting2.IHiddenRegionFormatter;
 import org.eclipse.xtext.formatting2.IHiddenRegionFormatting;
 import org.eclipse.xtext.formatting2.ITextReplacer;
-import org.eclipse.xtext.formatting2.regionaccess.IHiddenRegion;
 import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion;
-import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegionsFinder;
-import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
 import com.regnosys.rosetta.rosetta.Import;
@@ -75,85 +72,6 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 	protected void initialize(FormatterRequest request) {
 		super.initialize(request);
 		expressionFormatter.initialize(request);
-	}
-
-	@Override
-	public void format(Object obj, IFormattableDocument document) {
-		if (obj instanceof XtextResource) {
-			_format((XtextResource) obj, document);
-		} else if (obj instanceof RosettaModel) {
-			format((RosettaModel) obj, document);
-		} else if (obj instanceof Import) {
-			format((Import) obj, document);
-		} else if (obj instanceof RosettaScope) {
-			format((RosettaScope) obj, document);
-		} else if (obj instanceof RosettaBasicType) {
-			format((RosettaBasicType) obj, document);
-		} else if (obj instanceof RosettaTypeAlias) {
-			format((RosettaTypeAlias) obj, document);
-		} else if (obj instanceof TypeParameter) {
-			format((TypeParameter) obj, document);
-		} else if (obj instanceof RosettaExternalFunction) {
-			format((RosettaExternalFunction) obj, document);
-		} else if (obj instanceof RosettaParameter) {
-			format((RosettaParameter) obj, document);
-		} else if (obj instanceof RosettaBody) {
-			format((RosettaBody) obj, document);
-		} else if (obj instanceof RosettaCorpus) {
-			format((RosettaCorpus) obj, document);
-		} else if (obj instanceof RosettaSegment) {
-			format((RosettaSegment) obj, document);
-		} else if (obj instanceof Choice) {
-			format((Choice) obj, document);
-		} else if (obj instanceof Data) {
-			// Choice already handled above
-			format((Data) obj, document);
-		} else if (obj instanceof Annotation) {
-			format((Annotation) obj, document);
-		} else if (obj instanceof Attribute) {
-			format((Attribute) obj, document);
-		} else if (obj instanceof TypeCall) {
-			format((TypeCall) obj, document);
-		} else if (obj instanceof TypeCallArgument) {
-			format((TypeCallArgument) obj, document);
-		} else if (obj instanceof Condition) {
-			format((Condition) obj, document);
-		} else if (obj instanceof AnnotationRef) {
-			format((AnnotationRef) obj, document);
-		} else if (obj instanceof Function) {
-			// FunctionDispatch is a subtype of Function and is handled within format(Function, ...)
-			format((Function) obj, document);
-		} else if (obj instanceof RosettaEnumValueReference) {
-			format((RosettaEnumValueReference) obj, document);
-		} else if (obj instanceof ShortcutDeclaration) {
-			format((ShortcutDeclaration) obj, document);
-		} else if (obj instanceof Operation) {
-			format((Operation) obj, document);
-		} else if (obj instanceof Segment) {
-			format((Segment) obj, document);
-		} else if (obj instanceof RosettaDocReference) {
-			format((RosettaDocReference) obj, document);
-		} else if (obj instanceof RosettaEnumeration) {
-			format((RosettaEnumeration) obj, document);
-		} else if (obj instanceof RosettaEnumValue) {
-			format((RosettaEnumValue) obj, document);
-		} else if (obj instanceof RosettaExpression) {
-			format((RosettaExpression) obj, document);
-		} else if (obj instanceof RosettaRule) {
-			format((RosettaRule) obj, document);
-		} else if (obj instanceof RosettaExternalRuleSource) {
-			format((RosettaExternalRuleSource) obj, document);
-		} else if (obj instanceof RosettaExternalClass) {
-			format((RosettaExternalClass) obj, document);
-		} else if (obj instanceof RosettaExternalRegularAttribute) {
-			format((RosettaExternalRegularAttribute) obj, document);
-		} else if (obj instanceof EObject) {
-			// Any other EObject: recurse into its children, mirroring the inherited
-			// AbstractFormatter2._format(EObject, IFormattableDocument) dispatch case.
-			_format((EObject) obj, document);
-		}
-		// Any other (non-EObject) object: no-op (mirrors the inherited
-		// AbstractFormatter2._format(Object, IFormattableDocument) / _format(Void, ...) cases).
 	}
 
 	private void format(RosettaModel rosettaModel, IFormattableDocument document) {
@@ -776,16 +694,6 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 		ISemanticRegion lcurly = document.prepend(regionFor(eObject).keyword("{"), IHiddenRegionFormatter::newLine);
 		ISemanticRegion rcurly = document.prepend(regionFor(eObject).keyword("}"), IHiddenRegionFormatter::newLine);
 		document.interior(lcurly, rcurly, IHiddenRegionFormatter::indent);
-	}
-
-	// --- region navigation helpers ---
-
-	private ISemanticRegionsFinder regionFor(EObject obj) {
-		return textRegionExtensions.regionFor(obj);
-	}
-
-	private IHiddenRegion nextHiddenRegion(EObject obj) {
-		return textRegionExtensions.nextHiddenRegion(obj);
 	}
 
 	private static <T> T headOrNull(List<T> list) {
