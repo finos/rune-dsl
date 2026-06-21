@@ -440,8 +440,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 		document.append(regionFor(ele).keyword(functionGrammarAccess.getFuncKeyword_0()),
 				IHiddenRegionFormatter::oneSpace);
 
-		if (ele instanceof FunctionDispatch) {
-			FunctionDispatch dispatch = (FunctionDispatch) ele;
+		if (ele instanceof FunctionDispatch dispatch) {
 			document.surround(regionFor(ele).keyword(functionGrammarAccess.getLeftParenthesisKeyword_1_1_2()),
 					IHiddenRegionFormatter::noSpace);
 			document.append(
