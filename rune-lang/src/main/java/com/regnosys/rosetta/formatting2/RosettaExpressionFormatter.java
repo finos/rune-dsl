@@ -56,20 +56,14 @@ public class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	private FormattingUtil formattingUtil;
 
 	private boolean isSimple(RosettaExpression expr) {
-		if (expr instanceof RosettaLiteral) {
-			return true;
-		} else if (expr instanceof RosettaImplicitVariable) {
-			return true;
-		} else if (expr instanceof RosettaSymbolReference) {
-			return !((RosettaSymbolReference) expr).isExplicitArguments();
-		} else if (expr instanceof RosettaFeatureCall) {
-			return true;
-		} else if (expr instanceof ArithmeticOperation) {
-			return true;
-		} else if (expr instanceof ComparisonOperation) {
-			return true;
+		if (expr instanceof RosettaSymbolReference ref) {
+			return !ref.isExplicitArguments();
 		}
-		return false;
+		return expr instanceof RosettaLiteral
+				|| expr instanceof RosettaImplicitVariable
+				|| expr instanceof RosettaFeatureCall
+				|| expr instanceof ArithmeticOperation
+				|| expr instanceof ComparisonOperation;
 	}
 
 	private boolean shouldBeOnSingleLine(RosettaExpression expr) {
@@ -78,16 +72,14 @@ public class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		}
 		if (expr instanceof WithMetaOperation) {
 			return true;
-		} else if (expr instanceof RosettaBinaryOperation) {
-			RosettaBinaryOperation op = (RosettaBinaryOperation) expr;
+		} else if (expr instanceof RosettaBinaryOperation op) {
 			return isSimple(op.getLeft()) || isSimple(op.getRight());
-		} else if (expr instanceof RosettaFunctionalOperation) {
-			RosettaFunctionalOperation op = (RosettaFunctionalOperation) expr;
+		} else if (expr instanceof RosettaFunctionalOperation op) {
 			return op.getFunction() == null && isSimple(op.getArgument());
-		} else if (expr instanceof RosettaUnaryOperation) {
-			return isSimple(((RosettaUnaryOperation) expr).getArgument());
-		} else if (expr instanceof ListLiteral) {
-			return ((ListLiteral) expr).getElements().stream().allMatch(this::isSimple);
+		} else if (expr instanceof RosettaUnaryOperation op) {
+			return isSimple(op.getArgument());
+		} else if (expr instanceof ListLiteral op) {
+			return op.getElements().stream().allMatch(this::isSimple);
 		}
 		return false;
 	}
@@ -103,8 +95,8 @@ public class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 
 	@Override
 	public void format(Object obj, IFormattableDocument document) {
-		if (obj instanceof RosettaExpression) {
-			formatExpression((RosettaExpression) obj, document);
+		if (obj instanceof RosettaExpression expr) {
+			formatExpression(expr, document);
 		} else {
 			throw new UnsupportedOperationException(
 					RosettaExpressionFormatter.class.getSimpleName() + " does not support formatting " + obj + ".");
@@ -135,51 +127,49 @@ public class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		}
 	}
 
-	// Dispatch on the dynamic type of the expression, ordered from most specific to least specific
-	// to mirror Xtend's dispatch resolution.
+	// Dispatch on the dynamic type of the expression, ordered from most specific to least specific.
+	// (A pattern switch would be cleaner, but rune-lang is pinned to Java 17 for Xtend interoperability;
+	// once Xtend is removed, this can become a pattern switch.)
+	// The FormattingMode is threaded through as a parameter.
 	private void unsafeFormatExpression(RosettaExpression expr, IFormattableDocument document, FormattingMode mode) {
-		if (expr instanceof WithMetaOperation) {
-			unsafeFormatWithMetaOperation((WithMetaOperation) expr, document, mode);
-		} else if (expr instanceof RosettaConstructorExpression) {
-			unsafeFormatConstructorExpression((RosettaConstructorExpression) expr, document, mode);
-		} else if (expr instanceof ListLiteral) {
-			unsafeFormatListLiteral((ListLiteral) expr, document, mode);
-		} else if (expr instanceof RosettaConditionalExpression) {
-			unsafeFormatConditionalExpression((RosettaConditionalExpression) expr, document, mode);
-		} else if (expr instanceof RosettaFeatureCall) {
-			unsafeFormatFeatureCall((RosettaFeatureCall) expr, document, mode);
-		} else if (expr instanceof RosettaDeepFeatureCall) {
-			unsafeFormatDeepFeatureCall((RosettaDeepFeatureCall) expr, document, mode);
-		} else if (expr instanceof RosettaOnlyExistsExpression) {
-			unsafeFormatOnlyExistsExpression((RosettaOnlyExistsExpression) expr, document, mode);
-		} else if (expr instanceof RosettaCallableReference) {
-			unsafeFormatCallableReference((RosettaCallableReference) expr, document, mode);
-		} else if (expr instanceof ModifiableBinaryOperation) {
-			unsafeFormatModifiableBinaryOperation((ModifiableBinaryOperation) expr, document, mode);
-		} else if (expr instanceof SwitchOperation) {
-			unsafeFormatSwitchOperation((SwitchOperation) expr, document, mode);
-		} else if (expr instanceof RosettaExistsExpression) {
-			unsafeFormatExistsExpression((RosettaExistsExpression) expr, document, mode);
-		} else if (expr instanceof ChoiceOperation) {
-			unsafeFormatChoiceOperation((ChoiceOperation) expr, document, mode);
-		} else if (expr instanceof RosettaAbsentExpression) {
-			unsafeFormatAbsentExpression((RosettaAbsentExpression) expr, document, mode);
-		} else if (expr instanceof RosettaFunctionalOperation) {
-			unsafeFormatFunctionalOperation((RosettaFunctionalOperation) expr, document, mode);
-		} else if (expr instanceof RosettaBinaryOperation) {
-			// ModifiableBinaryOperation already handled above
-			unsafeFormatBinaryOperation((RosettaBinaryOperation) expr, document, mode);
-		} else if (expr instanceof RosettaUnaryOperation) {
-			// RosettaFunctionalOperation, RosettaExistsExpression, ChoiceOperation,
-			// RosettaAbsentExpression and WithMetaOperation already handled above
-			unsafeFormatUnaryOperation((RosettaUnaryOperation) expr, document, mode);
-		} else if (expr instanceof RosettaLiteral) {
-			unsafeFormatLiteral((RosettaLiteral) expr, document, mode);
-		} else if (expr instanceof RosettaImplicitVariable) {
-			unsafeFormatImplicitVariable((RosettaImplicitVariable) expr, document, mode);
+		if (expr instanceof WithMetaOperation e) {
+			unsafeFormatWithMetaOperation(e, document, mode);
+		} else if (expr instanceof RosettaConstructorExpression e) {
+			unsafeFormatConstructorExpression(e, document, mode);
+		} else if (expr instanceof ListLiteral e) {
+			unsafeFormatListLiteral(e, document, mode);
+		} else if (expr instanceof RosettaConditionalExpression e) {
+			unsafeFormatConditionalExpression(e, document, mode);
+		} else if (expr instanceof RosettaFeatureCall e) {
+			unsafeFormatFeatureCall(e, document, mode);
+		} else if (expr instanceof RosettaDeepFeatureCall e) {
+			unsafeFormatDeepFeatureCall(e, document, mode);
+		} else if (expr instanceof RosettaOnlyExistsExpression e) {
+			unsafeFormatOnlyExistsExpression(e, document, mode);
+		} else if (expr instanceof RosettaCallableReference e) {
+			unsafeFormatCallableReference(e, document, mode);
+		} else if (expr instanceof ModifiableBinaryOperation e) {
+			unsafeFormatModifiableBinaryOperation(e, document, mode);
+		} else if (expr instanceof SwitchOperation e) {
+			unsafeFormatSwitchOperation(e, document, mode);
+		} else if (expr instanceof RosettaExistsExpression e) {
+			unsafeFormatExistsExpression(e, document, mode);
+		} else if (expr instanceof ChoiceOperation e) {
+			unsafeFormatChoiceOperation(e, document, mode);
+		} else if (expr instanceof RosettaAbsentExpression e) {
+			unsafeFormatAbsentExpression(e, document, mode);
+		} else if (expr instanceof RosettaFunctionalOperation e) {
+			unsafeFormatFunctionalOperation(e, document, mode);
+		} else if (expr instanceof RosettaBinaryOperation e) {
+			unsafeFormatBinaryOperation(e, document, mode);
+		} else if (expr instanceof RosettaUnaryOperation e) {
+			unsafeFormatUnaryOperation(e, document, mode);
+		} else if (expr instanceof RosettaLiteral e) {
+			unsafeFormatLiteral(e, document, mode);
+		} else if (expr instanceof RosettaImplicitVariable e) {
+			unsafeFormatImplicitVariable(e, document, mode);
 		}
-		// No-op for any other expression type, mirroring Xtend's behaviour for the
-		// (non-existent) default case among the declared dispatch methods.
+		// No-op for any other expression type.
 	}
 
 	private void unsafeFormatWithMetaOperation(WithMetaOperation expr, IFormattableDocument document,
@@ -248,12 +238,12 @@ public class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			}
 		}
 
-		if (expr instanceof RosettaConstructorExpression) {
-			for (ConstructorKeyValuePair pair : ((RosettaConstructorExpression) expr).getValues()) {
+		if (expr instanceof RosettaConstructorExpression constructor) {
+			for (ConstructorKeyValuePair pair : constructor.getValues()) {
 				RosettaExpression value = pair.getValue();
 				if (value instanceof RosettaConstructorExpression
-						|| (value instanceof RosettaUnaryOperation
-								&& ((RosettaUnaryOperation) value).getArgument() instanceof RosettaConstructorExpression)) {
+						|| (value instanceof RosettaUnaryOperation unary
+								&& unary.getArgument() instanceof RosettaConstructorExpression)) {
 					document.append(
 							document.prepend(regionFor(pair).keyword(":"), IHiddenRegionFormatter::noSpace),
 							IHiddenRegionFormatter::newLine);
@@ -268,8 +258,8 @@ public class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 			}
 		}
 
-		if (expr instanceof WithMetaOperation) {
-			for (WithMetaEntry entry : ((WithMetaOperation) expr).getEntries()) {
+		if (expr instanceof WithMetaOperation withMeta) {
+			for (WithMetaEntry entry : withMeta.getEntries()) {
 				document.append(
 						document.prepend(regionFor(entry).keyword(":"), IHiddenRegionFormatter::noSpace),
 						IHiddenRegionFormatter::oneSpace);
@@ -544,9 +534,8 @@ public class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 						doc.set(afterArgument, IHiddenRegionFormatter::newLine);
 
 						boolean leftIsSameOperation;
-						if (expr.getLeft() instanceof RosettaBinaryOperation) {
-							leftIsSameOperation = expr.getOperator()
-									.equals(((RosettaBinaryOperation) expr.getLeft()).getOperator());
+						if (expr.getLeft() instanceof RosettaBinaryOperation leftOp) {
+							leftIsSameOperation = expr.getOperator().equals(leftOp.getOperator());
 						} else {
 							leftIsSameOperation = false;
 						}
@@ -714,8 +703,8 @@ public class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 					if (!isEmpty(expr.getArgument())) {
 						IHiddenRegion afterArgument = getTextRegionExtNextHiddenRegion(expr.getArgument(), doc);
 						RosettaExpression initialArgument = expr.getArgument();
-						while (initialArgument instanceof RosettaUnaryOperation) {
-							initialArgument = ((RosettaUnaryOperation) initialArgument).getArgument();
+						while (initialArgument instanceof RosettaUnaryOperation unary) {
+							initialArgument = unary.getArgument();
 						}
 						if (!isEmpty(initialArgument)) {
 							indentInnerWithoutCurlyBracket(expr, afterArgument, doc);
