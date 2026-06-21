@@ -22,4 +22,12 @@ public class RosettaWorkspaceManager extends WorkspaceManager {
 			super.initialize(baseDir, issueAcceptor, cancelIndicator);
 		}
 	}
+
+	/**
+	 * Re-reads the workspace configuration and rebuilds all sources. Used when the Rune
+	 * configuration file changes, so generation and validation re-run with the new configuration.
+	 */
+	public void rebuildAll(CancelIndicator cancelIndicator) {
+		refreshWorkspaceConfig(cancelIndicator);
+	}
 }

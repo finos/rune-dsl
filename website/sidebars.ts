@@ -69,6 +69,7 @@ const sidebars: SidebarsConfig = {
         'modelling-components/expressions',
         'modelling-components/data-validation',
         'modelling-components/function',
+        'modelling-components/schema',
         'modelling-components/namespace',
         'modelling-components/reporting',
       ],

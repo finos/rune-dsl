@@ -8,3 +8,8 @@ generators:
 readOnlyNamespaces:
 - com.rosetta.model.*
 - abc.def
+serializationConfig:
+- id: myXmlSchema
+  configPath: xml-config/my-xml-schema-config.json
+- id: myJson
+  configPath: json-config/my-json-config.json

@@ -1,0 +1,7 @@
+model:
+  name: Custom config test model
+dependencies:
+generators:
+serializationConfig:
+- id: externalXmlSchema
+  configPath: xml-config/external-xml-schema-config.json
