@@ -28,6 +28,7 @@ import com.regnosys.rosetta.generator.DebuggingTargetLanguageStringConcatenation
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.util.CodeWriterTargetStringConcatenation;
+import com.regnosys.rosetta.generator.java.util.TargetStringConcatenationCodeWriter;
 import com.regnosys.rosetta.generator.java.statement.JavaAssignment;
 import com.regnosys.rosetta.generator.java.statement.JavaExpressionStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaLambdaBody;
@@ -150,57 +151,4 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 		return DebuggingTargetLanguageStringConcatenation.convertToDebugString(this);
 	}
 
-	/**
-	 * Migration bridge: lets a fluent {@link CodeRenderer} render into legacy Xtend
-	 * template machinery. To be removed once all generators use the fluent API.
-	 */
-	private static final class TargetStringConcatenationCodeWriter implements CodeWriter {
-		private static final String INDENT = "    ";
-
-		private final TargetStringConcatenation target;
-		private int indent = 0;
-		private boolean atStartOfLine = true;
-
-		private TargetStringConcatenationCodeWriter(TargetStringConcatenation target) {
-			this.target = target;
-		}
-
-		@Override
-		public void write(Object object) {
-			if (object == null) {
-				return;
-			}
-			// Legacy representations (e.g. generated identifiers) must go through the
-			// target's own machinery, which defers identifier resolution until scopes
-			// are resolvable and substitutes desired names when debugging.
-			if (object instanceof CodeRenderer renderer && !(object instanceof com.regnosys.rosetta.generator.TargetLanguageRepresentation)) {
-				renderer.render(this);
-				return;
-			}
-			if (atStartOfLine) {
-				target.append(INDENT.repeat(indent));
-				atStartOfLine = false;
-			}
-			target.append(object);
-		}
-
-		@Override
-		public void newline() {
-			target.newLine();
-			atStartOfLine = true;
-		}
-
-		@Override
-		public void indent() {
-			indent++;
-		}
-
-		@Override
-		public void dedent() {
-			if (indent == 0) {
-				throw new IllegalStateException("Cannot dedent below zero");
-			}
-			indent--;
-		}
-	}
 }
