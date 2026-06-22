@@ -11,7 +11,6 @@ import com.regnosys.rosetta.generator.java.function.FunctionGenerator;
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope;
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass;
-import com.regnosys.rosetta.generator.java.util.LegacyTemplateRenderer;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.types.RFunction;
@@ -50,9 +49,6 @@ public class RuleGenerator extends FluentRObjectJavaClassGenerator<RFunction, RG
 				new TypeReference<ReportFunction<?, ?>>() {},
 				typeTranslator.toMetaJavaType(rFunction.getInputs().get(0)),
 				typeTranslator.toMetaJavaType(rFunction.getOutput()));
-		// The class body is still produced as a legacy Xtend template by the (not-yet-migrated)
-		// FunctionGenerator; wrap it as a CodeRenderer until that generator is migrated too.
-		return LegacyTemplateRenderer.asCodeRenderer(
-				functionGenerator.rBuildClass(rFunction, clazz, false, List.of(baseInterface), Collections.emptyMap(), true, scope));
+		return functionGenerator.rBuildClass(rFunction, clazz, false, List.of(baseInterface), Collections.emptyMap(), true, scope);
 	}
 }

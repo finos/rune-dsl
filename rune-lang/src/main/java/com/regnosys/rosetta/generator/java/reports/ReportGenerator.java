@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import org.eclipse.xtend2.lib.StringConcatenationClient;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.generator.java.FluentRObjectJavaClassGenerator;
@@ -14,7 +12,6 @@ import com.regnosys.rosetta.generator.java.function.FunctionGenerator;
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope;
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass;
-import com.regnosys.rosetta.generator.java.util.LegacyTemplateRenderer;
 import com.regnosys.rosetta.rosetta.RosettaCorpus;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaReport;
@@ -61,48 +58,39 @@ public class ReportGenerator extends FluentRObjectJavaClassGenerator<RFunction, 
 				typeTranslator.toMetaJavaType(rFunction.getInputs().get(0)),
 				typeTranslator.toMetaJavaType(rFunction.getOutput()));
 
-		Map<Class<?>, StringConcatenationClient> annotations = new LinkedHashMap<>();
+		Map<Class<?>, CodeRenderer> annotations = new LinkedHashMap<>();
 		annotations.put(com.rosetta.model.lib.annotations.RosettaReport.class, reportAnnotation(report));
 		JavaClass<?> labelProviderClass = typeTranslator.toLabelProviderJavaClass(rFunction);
 		annotations.put(RuneLabelProvider.class, labelProviderAnnotation(labelProviderClass));
 
-		// The class body is still produced as a legacy Xtend template by the (not-yet-migrated)
-		// FunctionGenerator; wrap it as a CodeRenderer until that generator is migrated too.
-		return LegacyTemplateRenderer.asCodeRenderer(
-				functionGenerator.rBuildClass(rFunction, clazz, false, List.of(baseInterface), annotations, true, scope));
+		return functionGenerator.rBuildClass(rFunction, clazz, false, List.of(baseInterface), annotations, true, scope);
 	}
 
-	private StringConcatenationClient reportAnnotation(RosettaReport report) {
-		return new StringConcatenationClient() {
-			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				target.append("namespace=\"");
-				target.append(modelIdProvider.toDottedPath(report.getModel()));
-				target.append("\", body=\"");
-				target.append(report.getRegulatoryBody().getBody().getName());
-				target.append("\", corpusList={");
-				List<RosettaCorpus> corpusList = report.getRegulatoryBody().getCorpusList();
-				for (int i = 0; i < corpusList.size(); i++) {
-					if (i > 0) {
-						target.append(", ");
-					}
-					target.append("\"");
-					target.append(corpusList.get(i).getName());
-					target.append("\"");
+	private CodeRenderer reportAnnotation(RosettaReport report) {
+		return out -> {
+			out.write("namespace=\"");
+			out.write(modelIdProvider.toDottedPath(report.getModel()));
+			out.write("\", body=\"");
+			out.write(report.getRegulatoryBody().getBody().getName());
+			out.write("\", corpusList={");
+			List<RosettaCorpus> corpusList = report.getRegulatoryBody().getCorpusList();
+			for (int i = 0; i < corpusList.size(); i++) {
+				if (i > 0) {
+					out.write(", ");
 				}
-				target.append("}");
+				out.write("\"");
+				out.write(corpusList.get(i).getName());
+				out.write("\"");
 			}
+			out.write("}");
 		};
 	}
 
-	private StringConcatenationClient labelProviderAnnotation(JavaClass<?> labelProviderClass) {
-		return new StringConcatenationClient() {
-			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				target.append("labelProvider=");
-				target.append(labelProviderClass);
-				target.append(".class");
-			}
+	private CodeRenderer labelProviderAnnotation(JavaClass<?> labelProviderClass) {
+		return out -> {
+			out.write("labelProvider=");
+			out.write(labelProviderClass);
+			out.write(".class");
 		};
 	}
 }
