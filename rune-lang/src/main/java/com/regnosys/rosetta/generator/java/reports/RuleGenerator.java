@@ -4,14 +4,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.eclipse.xtend2.lib.StringConcatenationClient;
-
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.regnosys.rosetta.generator.java.RObjectJavaClassGenerator;
+import com.regnosys.rosetta.codegen.api.CodeRenderer;
+import com.regnosys.rosetta.generator.java.FluentRObjectJavaClassGenerator;
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator;
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope;
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass;
+import com.regnosys.rosetta.generator.java.util.LegacyTemplateRenderer;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.types.RFunction;
@@ -23,7 +23,7 @@ import com.rosetta.util.types.JavaType;
 
 import jakarta.inject.Inject;
 
-public class RuleGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJavaClass<? extends RosettaFunction>> {
+public class RuleGenerator extends FluentRObjectJavaClassGenerator<RFunction, RGeneratedJavaClass<? extends RosettaFunction>> {
 	@Inject
 	private JavaTypeTranslator typeTranslator;
 	@Inject
@@ -45,11 +45,14 @@ public class RuleGenerator extends RObjectJavaClassGenerator<RFunction, RGenerat
 	}
 
 	@Override
-	protected StringConcatenationClient generateClass(RFunction rFunction, RGeneratedJavaClass<? extends RosettaFunction> clazz, String version, JavaClassScope scope) {
+	protected CodeRenderer generateClass(RFunction rFunction, RGeneratedJavaClass<? extends RosettaFunction> clazz, String version, JavaClassScope scope) {
 		JavaParameterizedType<ReportFunction<?, ?>> baseInterface = JavaParameterizedType.from(
 				new TypeReference<ReportFunction<?, ?>>() {},
 				typeTranslator.toMetaJavaType(rFunction.getInputs().get(0)),
 				typeTranslator.toMetaJavaType(rFunction.getOutput()));
-		return functionGenerator.rBuildClass(rFunction, clazz, false, List.<JavaType>of(baseInterface), Collections.emptyMap(), true, scope);
+		// The class body is still produced as a legacy Xtend template by the (not-yet-migrated)
+		// FunctionGenerator; wrap it as a CodeRenderer until that generator is migrated too.
+		return LegacyTemplateRenderer.asCodeRenderer(
+				functionGenerator.rBuildClass(rFunction, clazz, false, List.<JavaType>of(baseInterface), Collections.emptyMap(), true, scope));
 	}
 }
