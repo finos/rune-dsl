@@ -229,7 +229,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 
 			dependencies.forEach(dep -> classScope.createIdentifier(identifierService.toDependencyInstance(dep), uncapitalize(dep.getSimpleName())));
 
-			JavaClass<?> defaultClass = javaFunctionClass.createNestedClassWithSuperclass(javaFunctionClass.getSimpleName() + "Default", javaFunctionClass);
+			RGeneratedJavaClass<?> defaultClass = javaFunctionClass.createNestedClassWithSuperclass(javaFunctionClass.getSimpleName() + "Default", javaFunctionClass);
 			JavaClassScope defaultClassScope = classScope.createNestedClassScopeAndRegisterIdentifier(defaultClass);
 			JavaType outputType = typeTranslator.toMetaJavaType(output);
 			Map<RShortcut, Boolean> aliasOut = shortcuts.stream()
@@ -381,7 +381,8 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 				});
 				out.newline();
 
-				out.writeln("public static class ", defaultClass.getSimpleName(), " extends ", javaFunctionClass, " {");
+				out.write("public static ", defaultClass.asClassDeclaration());
+				out.writeln(" {");
 				out.indented(() -> {
 					out.writeln("@Override");
 					out.write("protected ", toBuilderType(output), " doEvaluate(");
