@@ -5,9 +5,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.xtend2.lib.StringConcatenationClient;
+import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.regnosys.rosetta.codegen.api.CodeWriter;
+import com.regnosys.rosetta.generator.TargetLanguageRepresentation;
 import com.regnosys.rosetta.generator.java.scoping.JavaPackageName;
+import com.regnosys.rosetta.generator.java.util.TargetStringConcatenationCodeWriter;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaParameterizedType;
@@ -46,26 +50,25 @@ public abstract class RGeneratedJavaClass<T> extends JavaClass<T> {
 		return new SimpleGeneratedJavaClass<>(packageName, this.getNestedTypeName().child(simpleName), null, interf);
 	}
 	
-	public StringConcatenationClient asClassDeclaration() {
-		return new StringConcatenationClient() {
+	public TargetLanguageRepresentation asClassDeclaration() {
+		return new TargetLanguageRepresentation() {
 			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				target.append("class ");
-				target.append(RGeneratedJavaClass.this.getSimpleName());
+			public void render(CodeWriter out) {
+				out.write("class ", RGeneratedJavaClass.this.getSimpleName());
 				JavaClass<?> superclass = RGeneratedJavaClass.this.getSuperclass();
 				if (!JavaClass.OBJECT.equals(superclass)) {
-					target.append(" extends ");
-					target.append(superclass);
+					out.write(" extends ", superclass);
 				}
 				List<JavaClass<?>> interfaces = RGeneratedJavaClass.this.getInterfaces();
 				if (!interfaces.isEmpty()) {
-					target.append(" implements ");
-					target.append(interfaces.get(0));
-					for (int i=1; i<interfaces.size(); i++) {
-						target.append(", ");
-						target.append(interfaces.get(i));
-					}
+					out.write(" implements ");
+					out.join(interfaces, ", ");
 				}
+			}
+
+			@Override
+			public void appendTo(TargetStringConcatenation target) {
+				render(new TargetStringConcatenationCodeWriter(target));
 			}
 		};
 	}
