@@ -46,13 +46,13 @@ public class RuleGenerator extends FluentRObjectJavaClassGenerator<RFunction, RG
 
 	@Override
 	protected CodeRenderer generateClass(RFunction rFunction, RGeneratedJavaClass<? extends RosettaFunction> clazz, String version, JavaClassScope scope) {
-		JavaParameterizedType<ReportFunction<?, ?>> baseInterface = JavaParameterizedType.from(
+		JavaType baseInterface = JavaParameterizedType.from(
 				new TypeReference<ReportFunction<?, ?>>() {},
 				typeTranslator.toMetaJavaType(rFunction.getInputs().get(0)),
 				typeTranslator.toMetaJavaType(rFunction.getOutput()));
 		// The class body is still produced as a legacy Xtend template by the (not-yet-migrated)
 		// FunctionGenerator; wrap it as a CodeRenderer until that generator is migrated too.
 		return LegacyTemplateRenderer.asCodeRenderer(
-				functionGenerator.rBuildClass(rFunction, clazz, false, List.<JavaType>of(baseInterface), Collections.emptyMap(), true, scope));
+				functionGenerator.rBuildClass(rFunction, clazz, false, List.of(baseInterface), Collections.emptyMap(), true, scope));
 	}
 }
