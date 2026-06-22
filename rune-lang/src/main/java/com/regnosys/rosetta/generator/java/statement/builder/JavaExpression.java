@@ -27,6 +27,7 @@ import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.DebuggingTargetLanguageStringConcatenation;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
+import com.regnosys.rosetta.generator.java.util.CodeWriterTargetStringConcatenation;
 import com.regnosys.rosetta.generator.java.statement.JavaAssignment;
 import com.regnosys.rosetta.generator.java.statement.JavaExpressionStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaLambdaBody;
@@ -147,104 +148,6 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 	@Override
 	public String toString() {
 		return DebuggingTargetLanguageStringConcatenation.convertToDebugString(this);
-	}
-
-	/**
-	 * Migration bridge: renders legacy Xtend template code ({@link StringConcatenationClient})
-	 * into a fluent {@link CodeWriter}. To be removed once all generators use the fluent API.
-	 */
-	private static final class CodeWriterTargetStringConcatenation implements TargetStringConcatenation {
-		private final CodeWriter out;
-		private boolean lineHasContent = false;
-
-		private CodeWriterTargetStringConcatenation(CodeWriter out) {
-			this.out = out;
-		}
-
-		@Override
-		public int length() {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public char charAt(int index) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public CharSequence subSequence(int start, int end) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public void newLineIfNotEmpty() {
-			if (lineHasContent) {
-				newLine();
-			}
-		}
-
-		@Override
-		public void newLine() {
-			out.newline();
-			lineHasContent = false;
-		}
-
-		@Override
-		public void appendImmediate(Object object, String indentation) {
-			append(object, indentation);
-		}
-
-		@Override
-		public void append(Object object, String indentation) {
-			if (object instanceof String value) {
-				appendString(value, indentation);
-			} else {
-				append(object);
-			}
-		}
-
-		@Override
-		public void append(Object object) {
-			if (object == null) {
-				return;
-			}
-			if (object instanceof StringConcatenationClient client) {
-				StringConcatenationClient.appendTo(client, this);
-			} else {
-				out.write(object);
-				markWritten(object);
-			}
-		}
-
-		private void appendString(String value, String indentation) {
-			String[] lines = value.split("\n", -1);
-			for (int i = 0; i < lines.length; i++) {
-				if (i > 0) {
-					newLine();
-					if (!lines[i].isEmpty() && !indentation.isEmpty()) {
-						out.write(indentation);
-						lineHasContent = true;
-					}
-				}
-				if (!lines[i].isEmpty()) {
-					out.write(lines[i]);
-					lineHasContent = true;
-				}
-			}
-		}
-
-		// Best-effort heuristic for newLineIfNotEmpty: infers whether the written object
-		// left content on the current line from its toString(), which for identifiers and
-		// renderers may not equal the rendered text. Good enough for the migration bridge.
-		private void markWritten(Object object) {
-			String value = object.toString();
-			int lastNewline = value.lastIndexOf('\n');
-			if (lastNewline >= 0) {
-				lineHasContent = lastNewline < value.length() - 1;
-			} else if (!value.isEmpty()) {
-				lineHasContent = true;
-			}
-		}
 	}
 
 	/**

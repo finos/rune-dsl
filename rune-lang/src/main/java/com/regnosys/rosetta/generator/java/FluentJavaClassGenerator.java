@@ -49,7 +49,7 @@ public abstract class FluentJavaClassGenerator<T, C extends JavaTypeDeclaration<
 	 * Given the body of a Java class represented as a {@link CodeRenderer},
 	 * generate a full Java class file by adding imports and resolving identifiers.
 	 */
-	protected String buildClass(DottedPath packageName, CodeRenderer classCode, JavaFileScope fileScope) {
+	public String buildClass(DottedPath packageName, CodeRenderer classCode, JavaFileScope fileScope) {
 		if (fileScope.isClosed()) {
 			throw new IllegalStateException("The top scope may not be closed, as imports will be added to it.");
 		}
