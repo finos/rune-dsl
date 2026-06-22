@@ -168,10 +168,8 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 	}
 
 	public CodeRenderer rBuildClass(RFunction rFunction, RGeneratedJavaClass<? extends RosettaFunction> javaFunctionClass, boolean isStatic, List<JavaType> functionInterfaces, Map<Class<?>, CodeRenderer> annotations, boolean overridesEvaluate, JavaClassScope classScope) {
-		return out -> {
-			List<JavaClass<?>> dependencies = collectFunctionDependencies(rFunction);
-			renderClassBody(out, rFunction, javaFunctionClass, isStatic, overridesEvaluate, dependencies, functionInterfaces, annotations, classScope);
-		};
+		List<JavaClass<?>> dependencies = collectFunctionDependencies(rFunction);
+		return classBody(rFunction, javaFunctionClass, isStatic, overridesEvaluate, dependencies, functionInterfaces, annotations, classScope);
 	}
 
 	private void addTransformAnnotation(TransformAnnotation transform, Map<Class<?>, CodeRenderer> annotations) {
@@ -212,8 +210,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 		return dependencyProvider.javaDependencies(expressions);
 	}
 
-	private void renderClassBody(
-			CodeWriter out,
+	private CodeRenderer classBody(
 			RFunction function,
 			RGeneratedJavaClass<?> javaFunctionClass,
 			boolean isStatic,
@@ -222,254 +219,254 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 			List<JavaType> functionInterfaces,
 			Map<Class<?>, CodeRenderer> annotations,
 			JavaClassScope classScope) {
-		List<RAttribute> inputs = function.getInputs();
-		RAttribute output = function.getOutput();
-		List<RShortcut> shortcuts = function.getShortcuts();
-		List<ROperation> operations = function.getOperations();
-		List<Condition> preConditions = function.getPreConditions();
-		List<Condition> postConditions = function.getPostConditions();
+		return out -> {
+			List<RAttribute> inputs = function.getInputs();
+			RAttribute output = function.getOutput();
+			List<RShortcut> shortcuts = function.getShortcuts();
+			List<ROperation> operations = function.getOperations();
+			List<Condition> preConditions = function.getPreConditions();
+			List<Condition> postConditions = function.getPostConditions();
 
-		dependencies.forEach(dep -> classScope.createIdentifier(identifierService.toDependencyInstance(dep), uncapitalize(dep.getSimpleName())));
+			dependencies.forEach(dep -> classScope.createIdentifier(identifierService.toDependencyInstance(dep), uncapitalize(dep.getSimpleName())));
 
-		RGeneratedJavaClass<?> defaultClass = javaFunctionClass.createNestedClassWithSuperclass(javaFunctionClass.getSimpleName() + "Default", javaFunctionClass);
-		JavaClassScope defaultClassScope = classScope.createNestedClassScopeAndRegisterIdentifier(defaultClass);
-		JavaType outputType = typeTranslator.toMetaJavaType(output);
-		Map<RShortcut, Boolean> aliasOut = shortcuts.stream()
-				.collect(Collectors.toMap(s -> s, s -> exprHelper.usesOutputParameter(s.getExpression())));
+			JavaClass<?> defaultClass = javaFunctionClass.createNestedClassWithSuperclass(javaFunctionClass.getSimpleName() + "Default", javaFunctionClass);
+			JavaClassScope defaultClassScope = classScope.createNestedClassScopeAndRegisterIdentifier(defaultClass);
+			JavaType outputType = typeTranslator.toMetaJavaType(output);
+			Map<RShortcut, Boolean> aliasOut = shortcuts.stream()
+					.collect(Collectors.toMap(s -> s, s -> exprHelper.usesOutputParameter(s.getExpression())));
 
-		GeneratedIdentifier conditionValidatorId = classScope.createUniqueIdentifier("conditionValidator");
-		GeneratedIdentifier objectValidatorId = classScope.createUniqueIdentifier("objectValidator");
+			GeneratedIdentifier conditionValidatorId = classScope.createUniqueIdentifier("conditionValidator");
+			GeneratedIdentifier objectValidatorId = classScope.createUniqueIdentifier("objectValidator");
 
-		JavaMethodScope evaluateScope = classScope.createMethodScope("evaluate");
-		inputs.forEach(input -> evaluateScope.createIdentifier(input, input.getName()));
-		JavaStatementScope evaluateBodyScope = evaluateScope.getBodyScope();
-		evaluateBodyScope.createIdentifier(output, output.getName());
-		GeneratedIdentifier outputBuilderId = needsBuilder(output)
-				? evaluateBodyScope.createUniqueIdentifier(output.getName() + "Builder")
-				: null;
+			JavaMethodScope evaluateScope = classScope.createMethodScope("evaluate");
+			inputs.forEach(input -> evaluateScope.createIdentifier(input, input.getName()));
+			JavaStatementScope evaluateBodyScope = evaluateScope.getBodyScope();
+			evaluateBodyScope.createIdentifier(output, output.getName());
+			GeneratedIdentifier outputBuilderId = needsBuilder(output)
+					? evaluateBodyScope.createUniqueIdentifier(output.getName() + "Builder")
+					: null;
 
-		JavaMethodScope doEvaluateScope = classScope.createMethodScope("doEvaluate");
-		inputs.forEach(input -> doEvaluateScope.createIdentifier(input, input.getName()));
-		doEvaluateScope.createIdentifier(output, output.getName());
+			JavaMethodScope doEvaluateScope = classScope.createMethodScope("doEvaluate");
+			inputs.forEach(input -> doEvaluateScope.createIdentifier(input, input.getName()));
+			doEvaluateScope.createIdentifier(output, output.getName());
 
-		JavaMethodScope defaultDoEvaluateScope = defaultClassScope.createMethodScope("doEvaluate");
-		inputs.forEach(input -> defaultDoEvaluateScope.createIdentifier(input, input.getName()));
-		defaultDoEvaluateScope.createIdentifier(output, output.getName());
-		JavaStatementScope defaultDoEvaluateBodyScope = defaultDoEvaluateScope.getBodyScope();
+			JavaMethodScope defaultDoEvaluateScope = defaultClassScope.createMethodScope("doEvaluate");
+			inputs.forEach(input -> defaultDoEvaluateScope.createIdentifier(input, input.getName()));
+			defaultDoEvaluateScope.createIdentifier(output, output.getName());
+			JavaStatementScope defaultDoEvaluateBodyScope = defaultDoEvaluateScope.getBodyScope();
 
-		JavaMethodScope assignOutputScope = defaultClassScope.createMethodScope("assignOutput");
-		inputs.forEach(input -> assignOutputScope.createIdentifier(input, input.getName()));
-		assignOutputScope.createIdentifier(output, output.getName());
-		operations.stream()
-				.map(ROperation::getExpression)
-				.filter(e -> implicitVariableUtil.implicitVariableExistsInContext(e))
-				.map(e -> identifierService.getImplicitVarInContext(e))
-				.distinct()
-				.forEach(v -> assignOutputScope.createKeySynonym(v, inputs.get(0)));
-		JavaStatementScope assignOutputBodyScope = assignOutputScope.getBodyScope();
+			JavaMethodScope assignOutputScope = defaultClassScope.createMethodScope("assignOutput");
+			inputs.forEach(input -> assignOutputScope.createIdentifier(input, input.getName()));
+			assignOutputScope.createIdentifier(output, output.getName());
+			operations.stream()
+					.map(ROperation::getExpression)
+					.filter(e -> implicitVariableUtil.implicitVariableExistsInContext(e))
+					.map(e -> identifierService.getImplicitVarInContext(e))
+					.distinct()
+					.forEach(v -> assignOutputScope.createKeySynonym(v, inputs.get(0)));
+			JavaStatementScope assignOutputBodyScope = assignOutputScope.getBodyScope();
 
-		Map<RShortcut, JavaMethodScope> aliasScopes = new java.util.HashMap<>();
-		Map<RShortcut, JavaMethodScope> defaultClassAliasScopes = new java.util.HashMap<>();
-		shortcuts.forEach(alias -> {
-			classScope.createIdentifier(alias, alias.getName());
-
-			JavaMethodScope aliasScope = classScope.createMethodScope(alias.getName());
-			aliasScopes.put(alias, aliasScope);
-
-			JavaMethodScope defaultClassAliasScope = defaultClassScope.createMethodScope(alias.getName());
-			defaultClassAliasScopes.put(alias, defaultClassAliasScope);
-
-			if (aliasUtil.requiresOutput(alias)) {
-				aliasScope.createIdentifier(output, output.getName());
-				defaultClassAliasScope.createIdentifier(output, output.getName());
-			}
-			inputs.forEach(input -> {
-				aliasScope.createIdentifier(input, input.getName());
-				defaultClassAliasScope.createIdentifier(input, input.getName());
-			});
-		});
-
-		annotations.forEach((annotationClass, annotationBody) -> {
-			out.write("@", annotationClass, "(");
-			out.write(annotationBody);
-			out.writeln(")");
-		});
-		out.writeln("@", ImplementedBy.class, "(", defaultClass, ".class)");
-		out.write("public ", isStatic ? "static " : "", "abstract class ", javaFunctionClass.getSimpleName());
-		if (!functionInterfaces.isEmpty()) {
-			out.write(" implements ");
-			out.join(functionInterfaces, ",");
-		}
-		out.writeln(" {");
-		out.indented(() -> {
-			if (!preConditions.isEmpty() || !postConditions.isEmpty()) {
-				out.newline();
-				out.writeln("@", javax.inject.Inject.class, " protected ", ConditionValidator.class, " ", conditionValidatorId, ";");
-			}
-			if (needsBuilder(output)) {
-				out.newline();
-				out.writeln("@", javax.inject.Inject.class, " protected ", ModelObjectValidator.class, " ", objectValidatorId, ";");
-			}
-			if (!dependencies.isEmpty()) {
-				out.newline();
-				out.writeln("// RosettaFunction dependencies");
-				out.writeln("//");
-				dependencies.forEach(dep -> out.writeln("@", javax.inject.Inject.class, " protected ", dep, " ", classScope.getIdentifierOrThrow(identifierService.toDependencyInstance(dep)), ";"));
-			}
-			out.newline();
-
-			out.writeln("/**");
-			inputs.forEach(input -> renderJavadocTag(out, "@param", evaluateScope.getIdentifierOrThrow(input), input.getDefinition()));
-			renderJavadocTag(out, "@return", evaluateBodyScope.getIdentifierOrThrow(output), output.getDefinition());
-			out.writeln(" */");
-			if (overridesEvaluate) {
-				out.writeln("@Override");
-			}
-			out.write("public ", outputType, " evaluate(");
-			renderInputsAsParameters(out, inputs, evaluateScope);
-			out.writeln(") {");
-			out.indented(() -> {
-				if (!preConditions.isEmpty()) {
-					out.writeln("// pre-conditions");
-					preConditions.forEach(cond -> {
-						renderContributeCondition(out, cond, conditionValidatorId, evaluateBodyScope);
-						out.newline();
-					});
-				}
-				out.write(toBuilderType(output), " ", needsBuilder(output) ? outputBuilderId : evaluateBodyScope.getIdentifierOrThrow(output), " = doEvaluate(");
-				renderInputsAsArguments(out, inputs, evaluateBodyScope);
-				out.writeln(");");
-				if (needsBuilder(output)) {
-					out.newline();
-					out.writeln("final ", outputType, " ", evaluateBodyScope.getIdentifierOrThrow(output), ";");
-					out.writeln("if (", outputBuilderId, " == null) {");
-					out.indented(() -> out.writeln(evaluateBodyScope.getIdentifierOrThrow(output), " = null;"));
-					out.writeln("} else {");
-					out.indented(() -> {
-						out.write(evaluateBodyScope.getIdentifierOrThrow(output), " = ", outputBuilderId);
-						if (output.isMulti()) {
-							out.write(".stream().map(", typeTranslator.toJavaReferenceType(output.getRMetaAnnotatedType()), "::build).collect(", Collectors.class, ".toList())");
-						} else {
-							out.write(".build()");
-						}
-						out.writeln(";");
-						out.writeln(objectValidatorId, ".validate(", typeTranslator.toJavaReferenceType(output.getRMetaAnnotatedType()), ".class, ", evaluateBodyScope.getIdentifierOrThrow(output), ");");
-					});
-					out.writeln("}");
-				}
-				if (!postConditions.isEmpty()) {
-					out.newline();
-					out.writeln("// post-conditions");
-					postConditions.forEach(cond -> {
-						renderContributeCondition(out, cond, conditionValidatorId, evaluateBodyScope);
-						out.newline();
-					});
-				}
-				out.writeln("return ", evaluateBodyScope.getIdentifierOrThrow(output), ";");
-			});
-			out.writeln("}");
-			out.newline();
-
-			out.write("protected abstract ", toBuilderType(output), " doEvaluate(");
-			renderInputsAsParameters(out, inputs, doEvaluateScope);
-			out.writeln(");");
-
+			Map<RShortcut, JavaMethodScope> aliasScopes = new java.util.HashMap<>();
+			Map<RShortcut, JavaMethodScope> defaultClassAliasScopes = new java.util.HashMap<>();
 			shortcuts.forEach(alias -> {
-				JavaMethodScope aliasScope = aliasScopes.get(alias);
-				out.newline();
-				out.write("protected abstract ", aliasUtil.getReturnType(alias), " ", classScope.getIdentifierOrThrow(alias), "(");
-				out.write(CodeWriterTargetStringConcatenation.asCodeRenderer(aliasUtil.getParameters(alias, aliasScope)));
-				out.writeln(");");
-			});
-			out.newline();
+				classScope.createIdentifier(alias, alias.getName());
 
-			out.write("public static ");
-			out.write(CodeWriterTargetStringConcatenation.asCodeRenderer(defaultClass.asClassDeclaration()));
+				JavaMethodScope aliasScope = classScope.createMethodScope(alias.getName());
+				aliasScopes.put(alias, aliasScope);
+
+				JavaMethodScope defaultClassAliasScope = defaultClassScope.createMethodScope(alias.getName());
+				defaultClassAliasScopes.put(alias, defaultClassAliasScope);
+
+				if (aliasUtil.requiresOutput(alias)) {
+					aliasScope.createIdentifier(output, output.getName());
+					defaultClassAliasScope.createIdentifier(output, output.getName());
+				}
+				inputs.forEach(input -> {
+					aliasScope.createIdentifier(input, input.getName());
+					defaultClassAliasScope.createIdentifier(input, input.getName());
+				});
+			});
+
+			annotations.forEach((annotationClass, annotationBody) -> {
+				out.write("@", annotationClass, "(");
+				out.write(annotationBody);
+				out.writeln(")");
+			});
+			out.writeln("@", ImplementedBy.class, "(", defaultClass, ".class)");
+			out.write("public ", isStatic ? "static " : "", "abstract class ", javaFunctionClass.getSimpleName());
+			if (!functionInterfaces.isEmpty()) {
+				out.write(" implements ");
+				out.join(functionInterfaces, ",");
+			}
 			out.writeln(" {");
 			out.indented(() -> {
-				out.writeln("@Override");
-				out.write("protected ", toBuilderType(output), " doEvaluate(");
-				renderInputsAsParameters(out, inputs, defaultDoEvaluateScope);
+				if (!preConditions.isEmpty() || !postConditions.isEmpty()) {
+					out.newline();
+					out.writeln("@", javax.inject.Inject.class, " protected ", ConditionValidator.class, " ", conditionValidatorId, ";");
+				}
+				if (needsBuilder(output)) {
+					out.newline();
+					out.writeln("@", javax.inject.Inject.class, " protected ", ModelObjectValidator.class, " ", objectValidatorId, ";");
+				}
+				if (!dependencies.isEmpty()) {
+					out.newline();
+					out.writeln("// RosettaFunction dependencies");
+					out.writeln("//");
+					dependencies.forEach(dep -> out.writeln("@", javax.inject.Inject.class, " protected ", dep, " ", classScope.getIdentifierOrThrow(identifierService.toDependencyInstance(dep)), ";"));
+				}
+				out.newline();
+
+				out.writeln("/**");
+				inputs.forEach(input -> renderJavadocTag(out, "@param", evaluateScope.getIdentifierOrThrow(input), input.getDefinition()));
+				renderJavadocTag(out, "@return", evaluateBodyScope.getIdentifierOrThrow(output), output.getDefinition());
+				out.writeln(" */");
+				if (overridesEvaluate) {
+					out.writeln("@Override");
+				}
+				out.write("public ", outputType, " evaluate(");
+				renderInputsAsParameters(out, inputs, evaluateScope);
 				out.writeln(") {");
 				out.indented(() -> {
-					inputs.stream().filter(RAttribute::isMulti).forEach(input -> {
-						out.writeln("if (", defaultDoEvaluateBodyScope.getIdentifierOrThrow(input), " == null) {");
-						out.indented(() -> out.writeln(defaultDoEvaluateBodyScope.getIdentifierOrThrow(input), " = ", Collections.class, ".emptyList();"));
-						out.writeln("}");
-					});
-					out.write(toBuilderType(output), " ", defaultDoEvaluateBodyScope.getIdentifierOrThrow(output), " = ");
-					if (output.isMulti()) {
-						out.write("new ", ArrayList.class, "<>()");
-					} else if (needsBuilder(output)) {
-						out.write(typeTranslator.toListOrSingleJavaType(output.getRMetaAnnotatedType(), output.isMulti()), ".builder()");
-					} else {
-						out.write("null");
+					if (!preConditions.isEmpty()) {
+						out.writeln("// pre-conditions");
+						preConditions.forEach(cond -> {
+							renderContributeCondition(out, cond, conditionValidatorId, evaluateBodyScope);
+							out.newline();
+						});
 					}
-					out.writeln(";");
-					out.write("return assignOutput(", defaultDoEvaluateBodyScope.getIdentifierOrThrow(output));
+					out.write(toBuilderType(output), " ", needsBuilder(output) ? outputBuilderId : evaluateBodyScope.getIdentifierOrThrow(output), " = doEvaluate(");
+					renderInputsAsArguments(out, inputs, evaluateBodyScope);
+					out.writeln(");");
+					if (needsBuilder(output)) {
+						out.newline();
+						out.writeln("final ", outputType, " ", evaluateBodyScope.getIdentifierOrThrow(output), ";");
+						out.writeln("if (", outputBuilderId, " == null) {");
+						out.indented(() -> out.writeln(evaluateBodyScope.getIdentifierOrThrow(output), " = null;"));
+						out.writeln("} else {");
+						out.indented(() -> {
+							out.write(evaluateBodyScope.getIdentifierOrThrow(output), " = ", outputBuilderId);
+							if (output.isMulti()) {
+								out.write(".stream().map(", typeTranslator.toJavaReferenceType(output.getRMetaAnnotatedType()), "::build).collect(", Collectors.class, ".toList())");
+							} else {
+								out.write(".build()");
+							}
+							out.writeln(";");
+							out.writeln(objectValidatorId, ".validate(", typeTranslator.toJavaReferenceType(output.getRMetaAnnotatedType()), ".class, ", evaluateBodyScope.getIdentifierOrThrow(output), ");");
+						});
+						out.writeln("}");
+					}
+					if (!postConditions.isEmpty()) {
+						out.newline();
+						out.writeln("// post-conditions");
+						postConditions.forEach(cond -> {
+							renderContributeCondition(out, cond, conditionValidatorId, evaluateBodyScope);
+							out.newline();
+						});
+					}
+					out.writeln("return ", evaluateBodyScope.getIdentifierOrThrow(output), ";");
+				});
+				out.writeln("}");
+				out.newline();
+
+				out.write("protected abstract ", toBuilderType(output), " doEvaluate(");
+				renderInputsAsParameters(out, inputs, doEvaluateScope);
+				out.writeln(");");
+
+				shortcuts.forEach(alias -> {
+					JavaMethodScope aliasScope = aliasScopes.get(alias);
+					out.newline();
+					out.write("protected abstract ", aliasUtil.getReturnType(alias), " ", classScope.getIdentifierOrThrow(alias), "(");
+					out.write(CodeWriterTargetStringConcatenation.asCodeRenderer(aliasUtil.getParameters(alias, aliasScope)));
+					out.writeln(");");
+				});
+				out.newline();
+
+				out.writeln("public static class ", defaultClass.getSimpleName(), " extends ", javaFunctionClass, " {");
+				out.indented(() -> {
+					out.writeln("@Override");
+					out.write("protected ", toBuilderType(output), " doEvaluate(");
+					renderInputsAsParameters(out, inputs, defaultDoEvaluateScope);
+					out.writeln(") {");
+					out.indented(() -> {
+						inputs.stream().filter(RAttribute::isMulti).forEach(input -> {
+							out.writeln("if (", defaultDoEvaluateBodyScope.getIdentifierOrThrow(input), " == null) {");
+							out.indented(() -> out.writeln(defaultDoEvaluateBodyScope.getIdentifierOrThrow(input), " = ", Collections.class, ".emptyList();"));
+							out.writeln("}");
+						});
+						out.write(toBuilderType(output), " ", defaultDoEvaluateBodyScope.getIdentifierOrThrow(output), " = ");
+						if (output.isMulti()) {
+							out.write("new ", ArrayList.class, "<>()");
+						} else if (needsBuilder(output)) {
+							out.write(typeTranslator.toListOrSingleJavaType(output.getRMetaAnnotatedType(), output.isMulti()), ".builder()");
+						} else {
+							out.write("null");
+						}
+						out.writeln(";");
+						out.write("return assignOutput(", defaultDoEvaluateBodyScope.getIdentifierOrThrow(output));
+						if (!inputs.isEmpty()) {
+							out.write(", ");
+						}
+						renderInputsAsArguments(out, inputs, defaultDoEvaluateBodyScope);
+						out.writeln(");");
+					});
+					out.writeln("}");
+					out.newline();
+
+					out.write("protected ", toBuilderType(output), " assignOutput(", toBuilderType(output), " ", assignOutputScope.getIdentifierOrThrow(output));
 					if (!inputs.isEmpty()) {
 						out.write(", ");
 					}
-					renderInputsAsArguments(out, inputs, defaultDoEvaluateBodyScope);
-					out.writeln(");");
-				});
-				out.writeln("}");
-				out.newline();
-
-				out.write("protected ", toBuilderType(output), " assignOutput(", toBuilderType(output), " ", assignOutputScope.getIdentifierOrThrow(output));
-				if (!inputs.isEmpty()) {
-					out.write(", ");
-				}
-				renderInputsAsParameters(out, inputs, assignOutputScope);
-				out.writeln(") {");
-				boolean functionHasDeepOperations = operations.stream().anyMatch(o -> o.getPathTail().size() > 0);
-				out.indented(() -> {
-					operations.forEach(operation -> {
-						out.write(assign(assignOutputBodyScope, operation, function, aliasOut, output, functionHasDeepOperations).asStatementList());
-						out.newline();
-					});
-					if (!needsBuilder(output)) {
-						out.writeln("return ", assignOutputBodyScope.getIdentifierOrThrow(output), ";");
-					} else {
-						out.write("return ", Optional.class, ".ofNullable(", assignOutputBodyScope.getIdentifierOrThrow(output), ")");
-						out.newline();
-						if (output.isMulti()) {
-							out.write("    .map(o -> o.stream().map(i -> i.prune()).collect(", Collectors.class, ".toList()))");
+					renderInputsAsParameters(out, inputs, assignOutputScope);
+					out.writeln(") {");
+					boolean functionHasDeepOperations = operations.stream().anyMatch(o -> o.getPathTail().size() > 0);
+					out.indented(() -> {
+						operations.forEach(operation -> {
+							out.write(assign(assignOutputBodyScope, operation, function, aliasOut, output, functionHasDeepOperations).asStatementList());
+							out.newline();
+						});
+						if (!needsBuilder(output)) {
+							out.writeln("return ", assignOutputBodyScope.getIdentifierOrThrow(output), ";");
 						} else {
-							out.write("    .map(o -> o.prune())");
+							out.write("return ", Optional.class, ".ofNullable(", assignOutputBodyScope.getIdentifierOrThrow(output), ")");
+							out.newline();
+							if (output.isMulti()) {
+								out.write("    .map(o -> o.stream().map(i -> i.prune()).collect(", Collectors.class, ".toList()))");
+							} else {
+								out.write("    .map(o -> o.prune())");
+							}
+							out.newline();
+							out.writeln("    .orElse(null);");
 						}
+					});
+					out.writeln("}");
+
+					shortcuts.forEach(alias -> {
+						JavaMethodScope aliasScope = defaultClassAliasScopes.get(alias);
+						JavaType returnType = aliasUtil.getReturnType(alias);
+						JavaStatementBuilder body = expressionGenerator.javaCode(alias.getExpression(), returnType, aliasScope.getBodyScope());
+						JavaStatementBuilder safeBody = aliasUtil.requiresOutput(alias)
+								? body.mapExpressionIfNotNull(it -> JavaExpression.from(o -> o.write("toBuilder(", it, ")"), returnType))
+								: body;
 						out.newline();
-						out.writeln("    .orElse(null);");
-					}
+						out.writeln("@Override");
+						out.write("protected ", returnType, " ", defaultClassScope.getIdentifierOrThrow(alias), "(");
+						out.write(CodeWriterTargetStringConcatenation.asCodeRenderer(aliasUtil.getParameters(alias, aliasScope)));
+						out.write(") ");
+						out.writeln(safeBody.completeAsReturn().toBlock());
+					});
 				});
 				out.writeln("}");
 
-				shortcuts.forEach(alias -> {
-					JavaMethodScope aliasScope = defaultClassAliasScopes.get(alias);
-					JavaType returnType = aliasUtil.getReturnType(alias);
-					JavaStatementBuilder body = expressionGenerator.javaCode(alias.getExpression(), returnType, aliasScope.getBodyScope());
-					JavaStatementBuilder safeBody = aliasUtil.requiresOutput(alias)
-							? body.mapExpressionIfNotNull(it -> JavaExpression.from(o -> o.write("toBuilder(", it, ")"), returnType))
-							: body;
+				if (functionExtensions.isQualifierFunction(function)) {
 					out.newline();
 					out.writeln("@Override");
-					out.write("protected ", returnType, " ", defaultClassScope.getIdentifierOrThrow(alias), "(");
-					out.write(CodeWriterTargetStringConcatenation.asCodeRenderer(aliasUtil.getParameters(alias, aliasScope)));
-					out.write(") ");
-					out.writeln(safeBody.completeAsReturn().toBlock());
-				});
+					out.writeln("public String getNamePrefix() {");
+					out.indented(() -> out.writeln("return \"", functionExtensions.getQualifierAnnotations(function.getAnnotations()).get(0).getAnnotation().getPrefix(), "\";"));
+					out.writeln("}");
+				}
 			});
-			out.writeln("}");
-
-			if (functionExtensions.isQualifierFunction(function)) {
-				out.newline();
-				out.writeln("@Override");
-				out.writeln("public String getNamePrefix() {");
-				out.indented(() -> out.writeln("return \"", functionExtensions.getQualifierAnnotations(function.getAnnotations()).get(0).getAnnotation().getPrefix(), "\";"));
-				out.writeln("}");
-			}
-		});
-		out.write("}");
+			out.write("}");
+		};
 	}
 
 	private CodeRenderer dispatchClassBody(Function function, RGeneratedJavaClass<? extends RosettaFunction> javaFunctionClass, JavaClassScope classScope, String version) {
