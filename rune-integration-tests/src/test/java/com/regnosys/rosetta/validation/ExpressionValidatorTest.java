@@ -24,7 +24,7 @@ public class ExpressionValidatorTest {
     private RosettaTestModelService modelService;
 
     @Test
-    void onlyExistOnChoiceTypeShouldWarn() {
+    void onlyExistOnChoiceTypeShouldError() {
         RosettaExpression expr = modelService.toTestModel("""
                     type OptionA:
                         a string (1..1)
@@ -43,12 +43,12 @@ public class ExpressionValidatorTest {
                     foo -> OptionB only exists
                 """, "foo Foo (1..1)");
 
-        validationTestHelper.assertWarning(expr, ROSETTA_ONLY_EXISTS_EXPRESSION, null,
-                "Using only exist on a choice option is deprecated");
+        validationTestHelper.assertError(expr, ROSETTA_ONLY_EXISTS_EXPRESSION, null,
+                "Using only exist on a choice option is not allowed");
     }
 
     @Test
-    void pathUsageOnChoiceTypesShouldWarn() {
+    void pathUsageOnChoiceTypesShouldError() {
         RosettaExpression expr = modelService.toTestModel("""
                     type OptionA:
                         a string (1..1)
@@ -67,8 +67,8 @@ public class ExpressionValidatorTest {
                     foo -> OptionB
                 """, "foo Foo (1..1)");
 
-        validationTestHelper.assertWarning(expr, ROSETTA_FEATURE_CALL, null,
-                "Using the path operator on a choice type is deprecated. Use the switch operator instead");
+        validationTestHelper.assertError(expr, ROSETTA_FEATURE_CALL, null,
+                "Using the path operator on a choice type is not allowed. Use the switch operator instead");
     }
 
     @Test

@@ -1033,35 +1033,6 @@ public class FunctionGeneratorTest {
         );
     }
 
-    //TODO: remove this when deep path on choice has been set back to error
-    @Test
-    void testChoiceAttributeAccess() {
-        var code = generatorTestHelper.generateCode("""
-                type A:
-                	b B (1..1)
-
-                type B:
-                	val boolean (0..1)
-
-                choice AB:
-                	A
-                	B
-
-                func Foo:
-                	inputs:
-                		ab AB (1..1)
-                	output:
-                		result boolean (1..1)
-
-                	set result:
-                		if ab -> A exists
-                		then ab -> A -> b -> val
-                		else if ab -> B exists
-                		then ab -> B -> val
-                """);
-        generatorTestHelper.compileToClasses(code);
-    }
-
     @Test
     void handlesNullWhenConstructingRecords() {
         var code = generatorTestHelper.generateCode("""
