@@ -2,6 +2,7 @@ package com.regnosys.rosetta.generator.java.expression;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.inject.Inject;
 
@@ -148,6 +149,111 @@ public class AsOperationTest {
                 """);
 
         assertEquals("myScheme", result);
+    }
+
+    @Test
+    void asChoiceOptionThatExtendsSiblingOptionShouldNotThrow() {
+        JavaTestModel model = modelService.toJavaTestModel("""
+                namespace test
+
+                choice Foo:
+                    Bar
+                    Qux
+
+                type Bar:
+                    barAttr string (0..1)
+
+                type Qux extends Bar:
+                    quxAttr string (0..1)
+                """).compile();
+
+        Boolean result = model.evaluateExpression(Boolean.class, """
+                Foo { Bar: Bar { barAttr: "x" }, ... } as Qux is absent
+                """);
+
+        assertTrue(result);
+    }
+
+    @Test
+    void asNestedChoiceOptionThatExtendsSiblingOptionShouldNotThrow() {
+        JavaTestModel model = modelService.toJavaTestModel("""
+                namespace test
+
+                type Product:
+        		   economicTerms EconomicTerms (0..1)
+
+                type EconomicTerms:
+        		   payout PayoutChoice (0..1)
+
+                choice PayoutChoice:
+                    InterestRatePayout
+                    OtherPayout
+
+                type InterestRatePayout:
+        		    rateSpecification RateSpecficationChoice (0..1)
+
+                type OtherPayout:
+                    attr int (0..1)
+
+                choice RateSpecficationChoice:
+                    FloatingRateSpecification
+                    InflationRateSpecification
+
+                type FloatingRateSpecification:
+                    attr1 int (0..1)
+
+                type InflationRateSpecification extends FloatingRateSpecification:
+                    attr2 int (0..1)
+     """).compile();
+
+        Boolean result = model.evaluateExpression(Boolean.class, """
+                Product {
+                    economicTerms: EconomicTerms {
+                        payout: PayoutChoice {
+                            InterestRatePayout: InterestRatePayout {
+                                rateSpecification: RateSpecficationChoice {
+                                    FloatingRateSpecification: FloatingRateSpecification { attr1: 1 },
+                                    ...
+                                }
+                            },
+                            ...
+                        }
+                    }
+                } -> economicTerms -> payout as InterestRatePayout -> rateSpecification as InflationRateSpecification is absent
+                """);
+        assertTrue(result);
+    }
+
+    @Test
+    void asChoiceOptionReachableViaSiblingSupertypeShouldNotThrow() {
+        JavaTestModel model = modelService.toJavaTestModel("""
+                namespace test
+
+                choice Outer:
+                    Inner
+                    Base
+
+                choice Inner:
+                    Derived
+                    Sibling
+
+                type Base:
+                    baseAttr int (0..1)
+
+                type Derived extends Base:
+                    derivedAttr int (0..1)
+
+                type Sibling:
+                    siblingAttr int (0..1)
+                """).compile();
+
+        // The Outer holds a plain `Base`. `as Derived is absent` should return true (a Base is not a
+        // Derived), not throw a ClassCastException.
+        Boolean result = model.evaluateExpression(Boolean.class, """
+                Outer { Base: Base { baseAttr: 1 }, ... } as Derived is absent
+                """);
+
+        assertTrue(result);
     }
 
     @Test

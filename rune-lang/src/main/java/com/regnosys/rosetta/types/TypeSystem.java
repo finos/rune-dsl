@@ -357,9 +357,13 @@ public class TypeSystem {
 		RChoiceType currentChoice = from;
 		while (true) {
 			RChoiceType choiceToSearch = currentChoice;
+			// Among the options whose type is a supertype of `target`, pick the most specific one (an exact
+			// match wins). Otherwise, when an option's type is a supertype of a sibling option's type, the
+			// less specific option could be selected, producing a navigation to the wrong option attribute
+			// followed by an unsafe downcast.
 			RChoiceOption option = choiceToSearch.getOwnOptions().stream()
 					.filter(o -> isSubtypeOf(target, o.getType().getRType(), false))
-					.findFirst()
+					.reduce((a, b) -> isSubtypeOf(a.getType().getRType(), b.getType().getRType(), false) ? a : b)
 					.orElseThrow(() -> new IllegalStateException(
 							"Did not find an option of " + choiceToSearch + " that is a supertype of " + target));
 			result.add(option);
