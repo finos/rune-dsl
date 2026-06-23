@@ -86,7 +86,7 @@ Workflow {
 			}
 			formatter = {
 				generateStub = true
-				generateXtendStub = true
+				generateXtendStub = false
 			}
 			fragment = ParserCompressorFragment {
 				// Enabled to produce shorter Java code and ease debugging at the expense of a little uglier (because more dense) code

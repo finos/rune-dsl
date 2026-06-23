@@ -48,160 +48,67 @@ To migrate a non-test file, perform the following steps:
 7. Tick off the file in the migration plan. If you failed to migrate anything, make a note of it.
 
 
-## Files to Migrate
+## Status
 
-### rune-ide (10 files)
+The bulk of the migration is complete. Everything below has been converted to Java
+and its `.xtend` source removed:
 
-#### Project Files (0 files)
+- **rune-ide** — all test classes (`ContentAssistTest`, `QuickFixTest`, `FormattingTest`,
+  `RosettaDocumentationProviderTest`, `InlayHintTest`, `Issue785`, `SemanticTokenTest`,
+  `HandleParseErrorGracefullyTest`, `AbstractRosettaLanguageServerTest`,
+  `AbstractRosettaLanguageServerValidationTest`).
+- **rune-integration-tests** — all test classes and helpers, including the large
+  generator-regression tests (`FunctionGeneratorTest`, `FunctionOperationGeneratorTest`,
+  `FunctionGeneratorHelper`, `ListOperationTest`, `RosettaBinaryOperationTest`,
+  `TypeCoercionTest`, the `object` generator tests, the `qualify` tests,
+  `DocReferenceTest`, `DocumentationSamples`, `RosettaExpressionsTest`,
+  `ExpressionParserTest`, `RosettaTypeProviderXtendTest`, `ModelGeneratorUtilTest`, …).
+- **rune-testing** — all helpers (`CodeGeneratorTestHelper`, `CustomConfigTestHelper`,
+  `ExpressionJavaEvaluatorService`, `ExpressionValidationHelper`, `ExpressionParser`,
+  `ModelHelper`).
+- **rune-runtime** — `MapperMaths`.
+- **rune-lang** — the formatters (`RosettaFormatter`, `RosettaExpressionFormatter`),
+  `BindableType`, `TestResourceAwareFSAFactory`, and the previously-migrated
+  infrastructure (`RosettaGenerator`, `RosettaInternalGenerator`,
+  `ImportingStringConcatenation`, `DeepPathUtilGenerator`, `ValidatorsGenerator`,
+  `RosettaAttributeExtensions`, `RosettaFunctionExtensions`, `RosettaQualifiedNameProvider`,
+  …).
+- **rune-tools** — `UnnecessaryElementsRemoverTest`.
 
-No project files to migrate.
+## Remaining Xtend files
 
-#### Test Files (10 files)
+What remains are the **code generators** (and the xcore serializer fragment). These
+are being migrated to the fluent `CodeRenderer`/`CodeWriter` API rather than
+transcribed as plain Java — see the `migrate-xtend-generator` skill and the reference
+migration `DeepPathUtilGenerator` (PR #1255). Removing these is the last step before
+Xtend can be dropped as a dependency, which also lets `rune-lang` move off Java 17
+(it is currently pinned there for Xtend interoperability).
 
-##### Files without usage of string template features (7 files)
-- [x] ContentAssistTest
-- [ ] FormattingTest
-- [ ] RosettaDocumentationProviderTest
-- [ ] InlayHintTest
-- [ ] Issue785
-- [x] QuickFixTest
-- [ ] SemanticTokenTest
+### rune-lang — code generators
+- [ ] generator/java/condition/ConditionGenerator
+- [ ] generator/java/enums/EnumGenerator
+- [ ] generator/java/expression/ExpressionGenerator
+- [ ] generator/java/expression/TypeCoercionService
+- [ ] generator/java/function/FunctionGenerator
+- [ ] generator/java/function/LabelProviderGenerator
+- [ ] generator/java/object/JavaPackageInfoGenerator
+- [ ] generator/java/object/MetaFieldGenerator
+- [ ] generator/java/object/ModelMetaGenerator
+- [ ] generator/java/object/ModelObjectBoilerPlate
+- [ ] generator/java/object/ModelObjectBuilderGenerator
+- [ ] generator/java/object/ModelObjectGenerator
+- [ ] generator/java/object/validators/CardinalityValidatorGenerator
+- [ ] generator/java/object/validators/OnlyExistsValidatorGenerator
+- [ ] generator/java/object/validators/TypeFormatValidatorGenerator
+- [ ] generator/java/reports/ReportGenerator
+- [ ] generator/java/reports/RuleGenerator
 
-##### Files with usage of string template features (3 files)
-- [ ] HandleParseErrorGracefullyTest
-- [x] AbstractRosettaLanguageServerTest
-- [x] AbstractRosettaLanguageServerValidationTest
+### rune-lang — generator utilities/helpers
+- [ ] generator/java/enums/EnumHelper
+- [ ] generator/java/util/ImportManagerExtension
+- [ ] generator/java/util/ModelGeneratorUtil
+- [ ] generator/java/util/RecordJavaUtil
+- [ ] generator/java/util/RosettaGrammarUtil
 
-### rune-integration-tests (37 files)
-
-#### Project Files (0 files)
-
-No project files to migrate.
-
-#### Test Files (37 files)
-
-##### Files without usage of string template features (32 files)
-- [ ] DocReferenceTest
-- [x] ExpressionFormatterTestHelper
-- [x] RosettaExpressionFormattingTest
-- [x] RosettaFormattingTest
-- [ ] ListOperationTest
-- [x] RosettaCountOperationTest
-- [ ] CalculationFunctionGeneratorTest
-- [ ] FunctionGeneratorHelper
-- [ ] FunctionGeneratorTest
-- [ ] EnumGeneratorTest
-- [ ] ExternalHashcodeGeneratorTest
-- [ ] GlobalKeyGeneratorTest
-- [ ] ModelMetaGeneratorFilteredNamespaceTest
-- [ ] ModelMetaGeneratorTest
-- [ ] ModelObjectBoilerPlateTest
-- [ ] ModelObjectBuilderGeneratorTest
-- [ ] RosettaExtensionsTest
-- [ ] RosettaModelTest
-- [ ] RosettaObjectInheritanceGeneratorTest
-- [ ] RosettaProcessorTest
-- [ ] QualifyTestHelper
-- [ ] RosettaQualifyEventTest
-- [ ] RosettaQualifyProductTest
-- [ ] ModelGeneratorUtilTest
-- [x] Issue844
-- [x] Issue868
-- [x] RosettaFragmentProviderTest
-- [ ] RosettaExpressionsTest
-- [ ] ExpressionParserTest
-- [ ] RosettaTypeProviderXtendTest
-- [x] SubtypeRelationTest
-- [x] ChoiceValidatorTest
-- [x] EnumValidatorTest
-- [x] RosettaValidatorTest
-- [x] TypeValidatorTest
-
-##### Files with usage of string template features (5 files)
-- [ ] DocumentationSamples
-- [x] ExpressionGeneratorTest
-- [ ] RosettaBinaryOperationTest
-- [x] RosettaExistsExpressionTest
-- [ ] ModelObjectGeneratorTest
-
-### rune-lang (35 files)
-
-#### Project Files (35 files)
-
-##### Files without usage of string template features (14 files)
-- [ ] RosettaFormatter
-- [x] RosettaGenerator
-- [x] RosettaInternalGenerator
-- [x] RosettaOutputConfigurationProvider
-- [ ] EnumHelper
-- [x] JavaDependencyProvider
-- [ ] RuleGenerator
-- [x] ImportingStringConcatenation
-- [ ] RosettaGrammarUtil
-- [ ] ExpandedAttribute
-- [ ] TestResourceAwareFSAFactory
-- [x] RosettaAttributeExtensions
-- [x] RosettaFunctionExtensions
-- [x] RosettaQualifiedNameProvider
-
-##### Files with usage of string template features (21 files)
-- [ ] RosettaExpressionFormatter
-- [ ] ConditionGenerator
-- [ ] EnumGenerator
-- [ ] DeepPathUtilGenerator
-- [ ] ExpressionGenerator
-- [ ] TypeCoercionService
-- [ ] FunctionGenerator
-- [ ] LabelProviderGenerator
-- [ ] JavaPackageInfoGenerator
-- [ ] MetaFieldGenerator
-- [ ] ModelMetaGenerator
-- [ ] ModelObjectBoilerPlate
-- [ ] ModelObjectBuilderGenerator
-- [ ] ModelObjectGenerator
-- [x] ValidatorsGenerator
-- [ ] ReportGenerator
-- [ ] ImportManagerExtension
-- [ ] ModelGeneratorUtil
-- [ ] RecordJavaUtil
-- [x] IterableUtil
-- [x] RosettaSimpleValidator
-
-### rune-runtime (1 file)
-
-#### Project Files (1 file)
-
-##### Files with usage of string template features (1 file)
-- [ ] MapperMaths
-
-### rune-testing (6 files)
-
-#### Project Files (6 files)
-
-##### Files without usage of string template features (3 files)
-- [ ] CustomConfigTestHelper
-- [x] ExpressionParser
-- [ ] ExpressionValidationHelper
-
-##### Files with usage of string template features (3 files)
-- [ ] CodeGeneratorTestHelper
-- [ ] ExpressionJavaEvaluatorService
-- [x] ModelHelper
-
-### rune-tools (1 file)
-
-#### Project Files (0 files)
-
-No project files to migrate.
-
-#### Test Files (1 file)
-
-##### Files with usage of string template features (1 file)
-- [x] UnnecessaryElementsRemoverTest
-
-### rune-xcore-plugin-dependencies (1 file)
-
-#### Project Files (1 file)
-
-##### Files with usage of string template features (1 file)
-- [ ] RosettaSerializerFragment
+### rune-xcore-plugin-dependencies
+- [ ] xcore/generator/serializer/RosettaSerializerFragment

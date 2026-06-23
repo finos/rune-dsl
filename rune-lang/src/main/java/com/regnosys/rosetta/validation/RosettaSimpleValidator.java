@@ -616,41 +616,34 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
     }
 
     @Check
-    public void checkTransformAnnotations(Annotated ele) {
-        List<AnnotationRef> annotations = rosettaFunctionExtensions.getTransformAnnotations(ele);
+    public void checkTransformAnnotations(Function func) {
+        List<TransformAnnotation> annotations = func.getTransform();
         if (annotations.isEmpty()) return;
 
-        if (!(ele instanceof Function func)) {
-            error("Transform annotations only allowed on a function.", RosettaPackage.Literals.ROSETTA_NAMED__NAME);
-            return;
-        }
         if (annotations.size() > 1) {
             // Keep first, error on the rest
             annotations.stream().skip(1).forEach(it ->
                     error("Only one transform annotation allowed.", it, null)
             );
         }
-        AnnotationRef annotationRef = annotations.get(0);
+        TransformAnnotation annotation = annotations.get(0);
         // A transformation may only have a single input
         func.getInputs().stream().skip(1)
                 .forEach(i -> error("Transform functions may only have a single input.", i, null));
-        if (func.getOutput() != null) {
-            if (func.getInputs().isEmpty()) {
-                error("Transform functions must have a single input.", annotationRef, null);
-            }
+        if (func.getOutput() != null && func.getInputs().isEmpty()) {
+            error("Transform functions must have a single input.", annotation, null);
         }
-        String name = annotationRef.getAnnotation().getName();
-        if (Objects.equals(name, "ingest")) {
-            if (annotationRef.getAttribute() == null) {
-                error("The `ingest` annotation must have a source format such as JSON, XML or CSV",
-                        annotationRef, SimplePackage.Literals.ANNOTATION_REF__ANNOTATION);
+        TransformKind kind = annotation.getKind();
+        if (kind == TransformKind.ENRICH) {
+            if (annotation.getRef() != null) {
+                error("The `enrich` annotation must not reference a schema or format.",
+                        annotation, SimplePackage.Literals.TRANSFORM_ANNOTATION__REF);
             }
-        }
-        if (Objects.equals(name, "projection")) {
-            if (annotationRef.getAttribute() == null) {
-                error("The `projection` annotation must have a target format such as JSON, XML or CSV",
-                        annotationRef, SimplePackage.Literals.ANNOTATION_REF__ANNOTATION);
-            }
+        } else if (annotation.getRef() == null) {
+            String direction = kind == TransformKind.INGEST ? "source" : "target";
+            error("The `" + kind.getLiteral() + "` annotation must have a " + direction
+                    + " format such as JSON, XML or CSV.",
+                    annotation, SimplePackage.Literals.TRANSFORM_ANNOTATION__KIND);
         }
     }
 

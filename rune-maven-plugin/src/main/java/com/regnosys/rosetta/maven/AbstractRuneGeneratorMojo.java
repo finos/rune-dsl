@@ -34,6 +34,10 @@ import org.eclipse.xtext.maven.Language;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -128,7 +132,7 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
         language.setJavaSupport(false);
 
         Map<String, LanguageAccess> languages = new RuneLanguageAccessFactory()
-                .createLanguageAccess(language, rosettaConfig, this.getClass().getClassLoader());
+                .createLanguageAccess(language, rosettaConfig, this.getClass().getClassLoader(), createClasspathClassLoader());
         Injector injector = Guice.createInjector(createModule());
         RuneStandaloneBuilder builder = injector.getInstance(RuneStandaloneBuilder.class);
         builder.setBaseDir(getProject().getBasedir().getAbsolutePath());
@@ -222,5 +226,23 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
             classpathElements.addAll(pluginClasspathElements);
         }
         return classpathElements;
+    }
+
+    /**
+     * Builds a classloader over the project's compile classpath, with the plugin realm as parent.
+     * The config provider uses this to discover dependency configuration files, which the plugin
+     * realm's (thread context) classloader cannot see.
+     */
+    private ClassLoader createClasspathClassLoader() {
+        Set<String> entries = getClasspathEntries();
+        List<URL> urls = new ArrayList<>(entries.size());
+        for (String entry : entries) {
+            try {
+                urls.add(new File(entry).toURI().toURL());
+            } catch (MalformedURLException e) {
+                getLog().warn("Skipping malformed classpath entry " + entry, e);
+            }
+        }
+        return new URLClassLoader(urls.toArray(new URL[0]), this.getClass().getClassLoader());
     }
 }

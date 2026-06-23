@@ -1,0 +1,7 @@
+model:
+  name: Dependency Model
+serializationConfig:
+- id: myXmlSchema
+  configPath: dependency/should-be-shadowed-by-current-project.json
+- id: myOtherSchema
+  configPath: xml-config/my-other-schema-config.json

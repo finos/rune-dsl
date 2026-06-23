@@ -21,6 +21,7 @@ import org.eclipse.emf.ecore.EValidator;
 public class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
 
     private String configFile;
+    private ClassLoader classpathClassLoader;
 
     public static void doSetup() {
         new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration();
@@ -31,11 +32,28 @@ public class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
         return this;
     }
 
+    /**
+     * Sets the classloader used to discover configuration files (and their dependency configs) on
+     * the classpath. In a Maven build the thread context classloader is the plugin realm, which does
+     * not see the project's compile dependencies, so the plugin passes a classloader over the project
+     * classpath here so that dependency {@code serializationConfig} entries are unioned in.
+     */
+    public RosettaStandaloneSetup setClasspathClassLoader(ClassLoader classpathClassLoader) {
+        this.classpathClassLoader = classpathClassLoader;
+        return this;
+    }
+
     @Override
     public Injector createInjector() {
         return Guice.createInjector(new RosettaRuntimeModule(), binder -> {
-            if (configFile != null) {
-                binder.bind(RuneConfigurationFileProvider.class).toInstance(RuneConfigurationFileProvider.createFromFile(configFile));
+            if (configFile != null || classpathClassLoader != null) {
+                RuneConfigurationFileProvider fileProvider = configFile != null
+                        ? RuneConfigurationFileProvider.createFromFile(configFile)
+                        : new RuneConfigurationFileProvider();
+                if (classpathClassLoader != null) {
+                    fileProvider.setClassLoader(classpathClassLoader);
+                }
+                binder.bind(RuneConfigurationFileProvider.class).toInstance(fileProvider);
             }
         });
     }
