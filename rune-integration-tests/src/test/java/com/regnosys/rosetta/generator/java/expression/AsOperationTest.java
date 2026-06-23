@@ -8,6 +8,7 @@ import javax.inject.Inject;
 
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -221,6 +222,38 @@ public class AsOperationTest {
                     }
                 } -> economicTerms -> payout as InterestRatePayout -> rateSpecification as InflationRateSpecification is absent
                 """);
+        assertTrue(result);
+    }
+
+    @Test
+    void asChoiceOptionReachableViaSiblingSupertypeShouldNotThrow() {
+        JavaTestModel model = modelService.toJavaTestModel("""
+                namespace test
+
+                choice Outer:
+                    Inner
+                    Base
+
+                choice Inner:
+                    Derived
+                    Sibling
+
+                type Base:
+                    baseAttr int (0..1)
+
+                type Derived extends Base:
+                    derivedAttr int (0..1)
+
+                type Sibling:
+                    siblingAttr int (0..1)
+                """).compile();
+
+        // The Outer holds a plain `Base`. `as Derived is absent` should return true (a Base is not a
+        // Derived), not throw a ClassCastException.
+        Boolean result = model.evaluateExpression(Boolean.class, """
+                Outer { Base: Base { baseAttr: 1 }, ... } as Derived is absent
+                """);
+
         assertTrue(result);
     }
 
