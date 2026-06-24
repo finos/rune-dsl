@@ -129,6 +129,39 @@ public class RosettaFormattingTest {
 	}
 
 	@Test
+	void testFormatSchemaWithAnnotationOnIndentedLine() {
+		formatAndAssert("""
+				namespace test
+				version "1"
+
+
+				schema   fixml   XML   [deprecated]
+				""", """
+				namespace test
+				version "1"
+
+				schema fixml XML
+					[deprecated]
+				""");
+	}
+
+	@Test
+	void testFormatSchemaWithoutAnnotation() {
+		formatAndAssert("""
+				namespace test
+				version "1"
+
+
+				schema   fixml    XML
+				""", """
+				namespace test
+				version "1"
+
+				schema fixml XML
+				""");
+	}
+
+	@Test
 	void testFormatTypeAliasWithDocumentation() {
 		formatAndAssert("""
 				namespace test
