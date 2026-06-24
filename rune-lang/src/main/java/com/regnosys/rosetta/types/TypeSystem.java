@@ -346,34 +346,42 @@ public class TypeSystem {
 	}
 	
 	/**
-	 * Find the path of choice options leading from the given choice type to the option whose type is the
-	 * closest supertype of {@code target}, descending into nested choice types as needed. The returned
-	 * list starts at an option of {@code from} and ends at the matched option.
+	 * Find the path of choice options leading from the given choice type to the option whose type is exactly
+	 * {@code target}, descending into nested choice types as needed. The returned list starts at an option of
+	 * {@code from} and ends at the option whose type equals {@code target}.
 	 *
-	 * {@code target} must be a subtype of {@code from}.
+	 * {@code target} must be the type of one of the (possibly nested) options of {@code from} - which is what
+	 * the scope provider guarantees for the `as` and `switch` operators. Because the path always ends on an
+	 * exact match, navigating it never requires an unsafe downcast: a supertype option (e.g. one whose type
+	 * is a supertype of a sibling option's type) is never selected in place of the requested option.
 	 */
 	public List<RChoiceOption> findChoiceOptionPath(RChoiceType from, RType target) {
-		List<RChoiceOption> result = new ArrayList<>();
-		RChoiceType currentChoice = from;
-		while (true) {
-			RChoiceType choiceToSearch = currentChoice;
-			// Among the options whose type is a supertype of `target`, pick the most specific one (an exact
-			// match wins). Otherwise, when an option's type is a supertype of a sibling option's type, the
-			// less specific option could be selected, producing a navigation to the wrong option attribute
-			// followed by an unsafe downcast.
-			RChoiceOption option = choiceToSearch.getOwnOptions().stream()
-					.filter(o -> isSubtypeOf(target, o.getType().getRType(), false))
-					.reduce((a, b) -> isSubtypeOf(a.getType().getRType(), b.getType().getRType(), false) ? a : b)
-					.orElseThrow(() -> new IllegalStateException(
-							"Did not find an option of " + choiceToSearch + " that is a supertype of " + target));
-			result.add(option);
+		List<RChoiceOption> path = findChoiceOptionPath(from, target, new ArrayList<>());
+		if (path == null) {
+			throw new IllegalStateException(
+					"Did not find an option of " + from + " whose type is " + target);
+		}
+		return path;
+	}
+	private List<RChoiceOption> findChoiceOptionPath(RChoiceType from, RType target, List<RChoiceOption> prefix) {
+		for (RChoiceOption option : from.getOwnOptions()) {
 			RType optionType = stripFromTypeAliases(option.getType().getRType());
-			if (optionType instanceof RChoiceType && !target.equals(optionType)) {
-				currentChoice = (RChoiceType) optionType;
-			} else {
+			if (target.equals(optionType)) {
+				List<RChoiceOption> result = new ArrayList<>(prefix);
+				result.add(option);
 				return result;
 			}
+			// Only descend into an option whose (nested) choice could contain the target.
+			if (optionType instanceof RChoiceType && isSubtypeOf(target, optionType, false)) {
+				List<RChoiceOption> extendedPrefix = new ArrayList<>(prefix);
+				extendedPrefix.add(option);
+				List<RChoiceOption> result = findChoiceOptionPath((RChoiceType) optionType, target, extendedPrefix);
+				if (result != null) {
+					return result;
+				}
+			}
 		}
+		return null;
 	}
 
 	public AliasHierarchy computeAliasHierarchy(RType t) {
