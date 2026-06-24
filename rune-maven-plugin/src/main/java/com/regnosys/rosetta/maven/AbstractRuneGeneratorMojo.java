@@ -59,6 +59,18 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
     @Parameter
     private String classPathLookupFilter;
 
+    /**
+     * Path to the Rune configuration file.
+     */
+    @Parameter
+    private String runeConfig;
+
+    /**
+     * @deprecated Use {@code runeConfig} instead. This parameter is kept for backwards
+     * compatibility and will be removed in a future release. If both are set, {@code runeConfig}
+     * takes precedence.
+     */
+    @Deprecated
     @Parameter
     private String rosettaConfig;
 
@@ -111,6 +123,25 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
         return new RuneMavenStandaloneBuilderModule();
     }
 
+    /**
+     * Resolves the configuration file path, preferring the {@code runeConfig} parameter and
+     * falling back to the deprecated {@code rosettaConfig} parameter for backwards compatibility.
+     */
+    private String resolveConfig() {
+        if (runeConfig != null) {
+            if (rosettaConfig != null) {
+                getLog().warn("Both 'runeConfig' and the deprecated 'rosettaConfig' parameters are set; "
+                        + "using 'runeConfig' and ignoring 'rosettaConfig'.");
+            }
+            return runeConfig;
+        }
+        if (rosettaConfig != null) {
+            getLog().warn("The 'rosettaConfig' parameter is deprecated; use 'runeConfig' instead.");
+            return rosettaConfig;
+        }
+        return null;
+    }
+
     @Override
     public MavenProject getProject() {
         return project;
@@ -131,8 +162,9 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
         // This saves time and memory during the build.
         language.setJavaSupport(false);
 
+        String resolvedConfig = resolveConfig();
         Map<String, LanguageAccess> languages = new RuneLanguageAccessFactory()
-                .createLanguageAccess(language, rosettaConfig, this.getClass().getClassLoader(), createClasspathClassLoader());
+                .createLanguageAccess(language, resolvedConfig, this.getClass().getClassLoader(), createClasspathClassLoader());
         Injector injector = Guice.createInjector(createModule());
         RuneStandaloneBuilder builder = injector.getInstance(RuneStandaloneBuilder.class);
         builder.setBaseDir(getProject().getBasedir().getAbsolutePath());

@@ -256,6 +256,72 @@ public class AsOperationTest {
         assertTrue(result);
     }
 
+    private JavaTestModel siblingSupertypeAcrossBranchesModel() {
+        // `Bar` is reachable both directly (via Inner1) and as a subtype of `Foo` (via Inner2). The extra
+        // options `A`/`B` make `Inner1` and `Inner2` incomparable subtype-wise, so the path finder cannot
+        // lean on "most specific" to disambiguate and must navigate to the exact requested option.
+        return modelService.toJavaTestModel("""
+                namespace test
+
+                type Foo:
+
+                type Bar extends Foo:
+                    barAttr int (0..1)
+
+                type Qux extends Foo:
+                    quxAttr int (0..1)
+
+                type A:
+
+                type B:
+
+                choice Outer:
+                    Inner1
+                    Inner2
+
+                choice Inner1:
+                    Bar
+                    A
+
+                choice Inner2:
+                    Foo
+                    B
+                """).compile();
+    }
+
+    @Test
+    void asNavigatesToExactOptionWhenSiblingBranchesAreIncomparable() {
+        JavaTestModel model = siblingSupertypeAcrossBranchesModel();
+        // Value is stored under Inner1.Bar -> `as Bar` must navigate to the exact Inner1.Bar option and
+        // yield that Bar. Picking the sibling supertype branch (Inner2.Foo) instead would wrongly return null.
+        Integer result = model.evaluateExpression(Integer.class, """
+                Outer { Inner1: Inner1 { Bar: Bar { barAttr: 1 }, ... }, ... } as Bar -> barAttr
+                """);
+        assertEquals(1, result);
+    }
+
+    @Test
+    void asToOptionInUnselectedBranchIsAbsentAndDoesNotThrow() {
+        JavaTestModel model = siblingSupertypeAcrossBranchesModel();
+        // Value is a Qux stored under Inner2.Foo -> `as Bar` navigates to the (absent) Inner1.Bar option,
+        // so the result is absent and no ClassCastException is thrown.
+        Boolean result = model.evaluateExpression(Boolean.class, """
+                Outer { Inner2: Inner2 { Foo: Qux { quxAttr: 2 }, ... }, ... } as Bar is absent
+                """);
+        assertTrue(result);
+    }
+
+    @Test
+    void asDoesNotMatchSubtypeStoredUnderSiblingSupertypeOption() {
+        JavaTestModel model = siblingSupertypeAcrossBranchesModel();
+        // A Bar stored under the Inner2.Foo slot lives in a different option than Inner1.Bar, so `as Bar`
+        // (which navigates to the exact Inner1.Bar option) yields absent.
+        Boolean result = model.evaluateExpression(Boolean.class, """
+                Outer { Inner2: Inner2 { Foo: Bar { barAttr: 3 }, ... }, ... } as Bar is absent
+                """);
+        assertTrue(result);
+    }
+
     @Test
     void asNestedChoiceOptionTest() {
         JavaTestModel model = modelService.toJavaTestModel("""
