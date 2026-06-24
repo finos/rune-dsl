@@ -1208,7 +1208,10 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	 * path of option attributes. Shared by the `as` and `switch` operators.
 	 */
 	private def JavaStatementBuilder navigateToChoiceOption(JavaStatementBuilder choiceArg, RChoiceType choiceType, RChoiceOption goal, Context context) {
-		val optionPath = findChoiceOptionPath(choiceType, goal.type.RType.stripFromTypeAliases)
+		val goalRType = goal.type.RType.stripFromTypeAliases
+		// The path ends on the option whose type is exactly `goalRType`, so the navigated value is already of
+		// the requested type - no downcast is needed.
+		val optionPath = findChoiceOptionPath(choiceType, goalRType)
 		optionPath.fold(choiceArg, [acc, opt|
 			acc.attributeCall(opt.choiceType.withNoMeta, (opt.EObject as ChoiceOption).buildRAttribute, false, context.expectedType, context.scope)
 		])
