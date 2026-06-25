@@ -26,6 +26,7 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.DiagnosticTag;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesRegistrationOptions;
@@ -79,6 +80,7 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl implements Ros
 		Diagnostic diagnostic = super.toDiagnostic(issue);
 		if (RosettaIssueCodes.UNUSED_FUNCTION.equals(issue.getCode())) {
 			diagnostic.setTags(List.of(DiagnosticTag.Unnecessary));
+			diagnostic.setSeverity(DiagnosticSeverity.Hint);
 		}
 		return diagnostic;
 	}
