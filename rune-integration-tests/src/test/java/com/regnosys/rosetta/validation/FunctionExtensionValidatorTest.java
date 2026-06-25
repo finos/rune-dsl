@@ -55,6 +55,7 @@ public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
 				version "1"
 				
 				func Foo:
+					[suppressWarnings unused]
 					output:
 						result int (1..1)
 					set result: 0
@@ -64,7 +65,7 @@ public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
 						result int (1..1)
 					set result: 42
 				""", """
-				ERROR (null) 'You can only extend a function in a file with a scope' at 9:18, length 3, on Function
+				ERROR (null) 'You can only extend a function in a file with a scope' at 10:18, length 3, on Function
 				""");
 	}
 
@@ -166,11 +167,12 @@ public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
 				version "1"
 				
 				func Foo:
+					[suppressWarnings unused]
 					output:
 						result int (1..1)
 					set result: super()
 				""","""
-				ERROR (null) 'Calling `super` is only allowed when extending a function' at 7:14, length 5, on RosettaSuperCall
+				ERROR (null) 'Calling `super` is only allowed when extending a function' at 8:14, length 5, on RosettaSuperCall
 				""");
     }
 
@@ -181,11 +183,13 @@ public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
 				version "1"
 				
 				func Foo:
-				    output:
+					[suppressWarnings unused]
+			    output:
 						result int (1..1)
 					set result: 0
 				
 				func Qux:
+					[suppressWarnings unused]
 					output:
 						result int (1..1)
 					set result: Bar()

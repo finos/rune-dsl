@@ -2,6 +2,7 @@ package com.regnosys.rosetta.validation;
 
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
+import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
 import com.regnosys.rosetta.rosetta.simple.*;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RDataType;
@@ -14,6 +15,7 @@ import jakarta.inject.Inject;
 import org.eclipse.xtext.validation.Check;
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
 
+import org.eclipse.emf.ecore.resource.Resource;
 import org.w3c.dom.Attr;
 
 import java.util.List;
@@ -79,6 +81,57 @@ public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
                 .orElse(false);
     }
     
+    @Check
+    public void checkUnusedFunction(Function function) {
+        // Only check top-level functions (not function extensions)
+        if (function.getSuperFunction() != null) {
+            return;
+        }
+        // Allow explicit opt-out via [suppressWarnings unused]
+        if (warningSuppressionHelper.isUnusedSuppressed(function)) {
+            return;
+        }
+        // Skip functions with a transform annotation (ingest/projection) — these
+        // are entry points called from outside the model.
+        if (!function.getTransform().isEmpty()) {
+            return;
+        }
+        // Skip functions with no body and no codeImplementation — they will already be
+        // reported by warnWhenEmptyFunctionsDontHaveCodeImplementationAnnotation.
+        if (function.getOutput() != null
+                && function.getOutput().getName() != null
+                && function.getOperations().isEmpty()) {
+            return;
+        }
+        Resource resource = function.eResource();
+        if (resource == null || resource.getResourceSet() == null) {
+            return;
+        }
+        boolean isReferenced = false;
+        for (Resource r : resource.getResourceSet().getResources()) {
+            if (r.getContents().isEmpty()) {
+                continue;
+            }
+            java.util.Iterator<org.eclipse.emf.ecore.EObject> iter = r.getAllContents();
+            while (iter.hasNext()) {
+                org.eclipse.emf.ecore.EObject obj = iter.next();
+                if (obj instanceof RosettaSymbolReference ref
+                        && !ref.eIsProxy()
+                        && function.equals(ref.getSymbol())) {
+                    isReferenced = true;
+                    break;
+                }
+            }
+            if (isReferenced) {
+                break;
+            }
+        }
+        if (!isReferenced) {
+            warning("Function '" + function.getName() + "' is never used",
+                    function, RosettaPackage.Literals.ROSETTA_NAMED__NAME, RosettaIssueCodes.UNUSED_FUNCTION);
+        }
+    }
+
     @Check
     public void warnWhenEmptyFunctionsDontHaveCodeImplementationAnnotation(Function function) {
         if (function.getOutput() != null && function.getOutput().getName() != null) {
