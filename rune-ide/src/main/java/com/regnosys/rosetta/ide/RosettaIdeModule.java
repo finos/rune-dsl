@@ -5,7 +5,9 @@
 package com.regnosys.rosetta.ide;
 
 import com.regnosys.rosetta.ide.symbol.RosettaDocumentSymbolService;
+import com.regnosys.rosetta.ide.validation.UnusedFunctionResourceValidator;
 import org.eclipse.xtext.documentation.IEObjectDocumentationProvider;
+import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.generator.IContextualOutputConfigurationProvider;
 import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalProvider;
 import org.eclipse.xtext.ide.editor.quickfix.IQuickFixProvider;
@@ -143,5 +145,14 @@ public class RosettaIdeModule extends AbstractRosettaIdeModule {
     
     public Class<? extends DocumentSymbolService> bindDocumentSymbolService() {
         return RosettaDocumentSymbolService.class;
+    }
+
+    /**
+     * Editor-only override: augment validation with "unused function" diagnostics. Bound here (the IDE
+     * injector) rather than in the runtime module so the markers appear in the language server only,
+     * and never as build/test validation issues.
+     */
+    public Class<? extends IResourceValidator> bindIResourceValidator() {
+        return UnusedFunctionResourceValidator.class;
     }
 }

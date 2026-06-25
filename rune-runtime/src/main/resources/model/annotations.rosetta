@@ -26,4 +26,6 @@ annotation codeImplementation: <"Marks the function as statically implemented by
 
 annotation suppressWarnings:
     capitalisation boolean (0..1)
-    unused boolean (0..1)
+
+annotation suppressUnused: <"Opt out of the 'unused function' editor marker for a function that has no callers in the model (e.g. a public entry point used by downstream models or generated code).">
+
