@@ -15,10 +15,16 @@ import jakarta.inject.Inject;
 import org.eclipse.xtext.validation.Check;
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
 
+import org.eclipse.emf.common.util.TreeIterator;
+import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.w3c.dom.Attr;
+import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.xtext.util.IResourceScopeCache;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
@@ -32,6 +38,15 @@ public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
     private WarningSuppressionHelper warningSuppressionHelper;
     @Inject
     private TransformAnnotationHelper transformAnnotationHelper;
+    @Inject
+    private IResourceScopeCache cache;
+
+    /**
+     * Cache key for the set of function URIs that are referenced (called) anywhere in the resource set.
+     * The set is computed once per validated resource and reused across every function in it.
+     */
+    private static final String REFERENCED_FUNCTIONS_CACHE_KEY =
+            "com.regnosys.rosetta.validation.FunctionValidator.referencedFunctions";
 
     @Check
     public void checkFunctionNameStartsWithCapital(Function func) {
@@ -107,29 +122,49 @@ public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
         if (resource == null || resource.getResourceSet() == null) {
             return;
         }
-        boolean isReferenced = false;
-        for (Resource r : resource.getResourceSet().getResources()) {
-            if (r.getContents().isEmpty()) {
-                continue;
-            }
-            java.util.Iterator<org.eclipse.emf.ecore.EObject> iter = r.getAllContents();
-            while (iter.hasNext()) {
-                org.eclipse.emf.ecore.EObject obj = iter.next();
-                if (obj instanceof RosettaSymbolReference ref
-                        && !ref.eIsProxy()
-                        && function.equals(ref.getSymbol())) {
-                    isReferenced = true;
-                    break;
-                }
-            }
-            if (isReferenced) {
-                break;
-            }
-        }
-        if (!isReferenced) {
+        if (!getReferencedFunctionUris(resource).contains(EcoreUtil.getURI(function))) {
             warning("Function '" + function.getName() + "' is never used",
                     function, RosettaPackage.Literals.ROSETTA_NAMED__NAME, RosettaIssueCodes.UNUSED_FUNCTION);
         }
+    }
+
+    /**
+     * Collects the URIs of every function that is the target of a symbol reference (i.e. is called)
+     * anywhere in the resource set.
+     *
+     * <p>The previous implementation re-walked every AST node of every resource <em>per function</em>,
+     * giving O(functions × nodes) behaviour on every validation. This walks the resource set once,
+     * caches the resulting set per validated resource via {@link IResourceScopeCache}, and turns each
+     * subsequent per-function check into an O(1) set lookup.
+     *
+     * <p>Note: the cross-reference index cannot be used here. Rosetta's
+     * {@code RosettaResourceDescriptionStrategy} deliberately does not descend into expressions, so
+     * function-call ({@code RosettaSymbolReference}) references are absent from the index. The live AST
+     * is therefore the only source that sees function usages.
+     *
+     * <p>The set is cached per validated resource and evicted when that resource changes. Trade-off:
+     * adding the first call from <em>another</em> file does not evict this resource's cache, so the
+     * marker may briefly lag until this file is next touched — acceptable for a {@code Hint}-level
+     * marker, and it self-heals on the next edit.
+     */
+    private Set<URI> getReferencedFunctionUris(Resource resource) {
+        return cache.get(REFERENCED_FUNCTIONS_CACHE_KEY, resource, () -> {
+            Set<URI> referenced = new HashSet<>();
+            for (Resource r : resource.getResourceSet().getResources()) {
+                if (r.getContents().isEmpty()) {
+                    continue;
+                }
+                for (TreeIterator<EObject> it = r.getAllContents(); it.hasNext();) {
+                    EObject obj = it.next();
+                    if (obj instanceof RosettaSymbolReference ref
+                            && !ref.eIsProxy()
+                            && ref.getSymbol() instanceof Function calledFunction) {
+                        referenced.add(EcoreUtil.getURI(calledFunction));
+                    }
+                }
+            }
+            return referenced;
+        });
     }
 
     @Check
