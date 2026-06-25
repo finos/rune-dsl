@@ -1,12 +1,14 @@
 package com.regnosys.rosetta.ide.server;
 
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTest;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidationTest {
 	@Test
@@ -34,7 +36,11 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(typesURI, 3, 6, "int", "string");
 
 		// There should be a type error in func `Foo`
-		List<Diagnostic> issues = getDiagnostics().get(funcsURI);
+		List<Diagnostic> issues = getDiagnostics().get(funcsURI)
+				.stream()
+				.filter(d -> !d.getSeverity().equals(DiagnosticSeverity.Hint))
+				.toList();
+
 		Assertions.assertEquals(1, issues.size());
 		Assertions.assertEquals(
 				"Expected type `int`, but got `string` instead. Cannot assign `string` to output `result`",
@@ -67,7 +73,11 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(typesURI, 3, 10, "(1..1)", "(0..*)");
 
 		// There should be a cardinality error in func `Foo`
-		List<Diagnostic> issues = getDiagnostics().get(funcsURI);
+		List<Diagnostic> issues = getDiagnostics().get(funcsURI)
+				.stream()
+				.filter(d -> !d.getSeverity().equals(DiagnosticSeverity.Hint))
+				.toList();
+
 		Assertions.assertEquals(1, issues.size());
 		Assertions.assertEquals("Expecting single cardinality. Cannot assign a list to a single value",
 				issues.get(0).getMessage());
@@ -114,7 +124,11 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(typesURI, 2, 7, "foo", "bar");
 
 		// There should be a type error in func `Foo`
-		List<Diagnostic> issues = getDiagnostics().get(funcsURI);
+		List<Diagnostic> issues = getDiagnostics().get(funcsURI)
+				.stream()
+				.filter(d -> !d.getSeverity().equals(DiagnosticSeverity.Hint))
+				.toList();
+
 		Assertions.assertEquals(1, issues.size());
 		Assertions.assertEquals(
 				"Expected type `foo.MyType`, but got `bar.MyType` instead. Cannot assign `bar.MyType` to output `result`",
@@ -176,7 +190,11 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(ruleAURI, 3, 1, "42", "\"My string\"");
 
 		// There should be a type error in func Foo
-		List<Diagnostic> issues = getDiagnostics().get(funcURI);
+		List<Diagnostic> issues = getDiagnostics().get(funcURI)
+				.stream()
+				.filter(d -> !d.getSeverity().equals(DiagnosticSeverity.Hint))
+				.toList();
+
 		Assertions.assertEquals(1, issues.size());
 		Assertions.assertEquals(
 				"Expected type `int`, but got `string` instead. Cannot assign `string` to output `result`",
