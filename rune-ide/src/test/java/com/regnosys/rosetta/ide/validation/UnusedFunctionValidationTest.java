@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTest;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class UnusedFunctionValidationTest extends AbstractRosettaLanguageServerValidationTest {
 
 	@Test
@@ -74,5 +76,85 @@ public class UnusedFunctionValidationTest extends AbstractRosettaLanguageServerV
 		List<Diagnostic> forUri = diagnostics.get(uri);
 		Assertions.assertTrue(forUri == null || forUri.isEmpty(),
 				"Expected no diagnostics for a function annotated with [suppressUnused]");
+	}
+
+	/**
+	 * [ingest XML] functions are called from outside the model (by the runtime), so they must not be
+	 * flagged as unused. This test also verifies that `XML` resolves without a linking error — if
+	 * basictypes.rosetta is not loaded properly, assertNoIssues() would fail with a Linking diagnostic.
+	 */
+	@Test
+	void ingestAnnotatedFunctionIsNotMarkedAsUnused() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				type Foo:
+					a string (1..1)
+
+				func IngestFoo:
+					[ingest XML]
+					inputs:
+						input string (1..1)
+					output:
+						result Foo (1..1)
+					set result: Foo { a: input }
+				""");
+
+		assertNoIssues();
+
+		Map<String, List<Diagnostic>> diagnostics = getDiagnostics();
+		List<Diagnostic> forUri = diagnostics.get(uri);
+		assertTrue(forUri == null || forUri.isEmpty(),
+				"Expected no diagnostics for a function annotated with [ingest XML]");
+	}
+
+	@Test
+	void enrichAnnotatedFunctionIsNotMarkedAsUnused() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				type Foo:
+					a string (1..1)
+
+				func EnrichFoo:
+					[enrich]
+					inputs:
+						input Foo (1..1)
+					output:
+						result Foo (1..1)
+					set result: input
+				""");
+
+		assertNoIssues();
+
+		Map<String, List<Diagnostic>> diagnostics = getDiagnostics();
+		List<Diagnostic> forUri = diagnostics.get(uri);
+		assertTrue(forUri == null || forUri.isEmpty(),
+				"Expected no diagnostics for a function annotated with [enrich]");
+	}
+
+	@Test
+	void projectionAnnotatedFunctionIsNotMarkedAsUnused() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				type Foo:
+					a string (1..1)
+
+				func ProjectFoo:
+					[projection XML]
+					inputs:
+						input Foo (1..1)
+					output:
+						result string (1..1)
+					set result: input -> a
+				""");
+
+		assertNoIssues();
+
+		Map<String, List<Diagnostic>> diagnostics = getDiagnostics();
+		List<Diagnostic> forUri = diagnostics.get(uri);
+		assertTrue(forUri == null || forUri.isEmpty(),
+				"Expected no diagnostics for a function annotated with [projection XML]");
 	}
 }
