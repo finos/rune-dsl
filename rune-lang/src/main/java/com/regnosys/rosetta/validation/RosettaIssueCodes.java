@@ -45,4 +45,6 @@ public interface RosettaIssueCodes {
 	static final String MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT = PREFIX + "missingAttributes";
 
     static final String CHANGED_EXTENDED_FUNCTION_PARAMETERS = PREFIX + "changedExtendedFunctionParameters";
+
+	static final String UNUSED_FUNCTION = PREFIX + "unusedFunction";
 }

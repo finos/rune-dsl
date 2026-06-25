@@ -28,6 +28,9 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionParams;
+import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.eclipse.lsp4j.DiagnosticTag;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesRegistrationOptions;
 import org.eclipse.lsp4j.FileSystemWatcher;
@@ -52,10 +55,12 @@ import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2;
 import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2.Options;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.CancelIndicator;
+import org.eclipse.xtext.validation.Issue;
 
 import com.regnosys.rosetta.formatting2.FormattingOptionsService;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsResolver;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsService;
+import com.regnosys.rosetta.validation.RosettaIssueCodes;
 import com.regnosys.rosetta.ide.overrides.IParentsService;
 import com.regnosys.rosetta.ide.overrides.ParentsParams;
 import com.regnosys.rosetta.ide.overrides.ParentsResult;
@@ -86,6 +91,16 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl implements Ros
 	@Inject
 	void warmupSerializer(SerializerWarmUpService warmUpService) {
 		warmUpService.warmUp();
+	}
+
+	@Override
+	protected Diagnostic toDiagnostic(Issue issue) {
+		Diagnostic diagnostic = super.toDiagnostic(issue);
+		if (RosettaIssueCodes.UNUSED_FUNCTION.equals(issue.getCode())) {
+			diagnostic.setTags(List.of(DiagnosticTag.Unnecessary));
+			diagnostic.setSeverity(DiagnosticSeverity.Hint);
+		}
+		return diagnostic;
 	}
 
 	@Override

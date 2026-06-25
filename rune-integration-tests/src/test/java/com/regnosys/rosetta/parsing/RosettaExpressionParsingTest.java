@@ -100,6 +100,7 @@ public class RosettaExpressionParsingTest {
 				FOO2
 			
 			func OutputOfFunction:
+				[suppressWarnings unused]
 				output:
 					result FooEnum (1..1)
 				set result:

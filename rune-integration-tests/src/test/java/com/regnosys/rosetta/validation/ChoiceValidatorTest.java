@@ -129,6 +129,7 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 					C
 
 				func MyFunc:
+					[suppressWarnings unused]
 					inputs:
 						a A (1..1)
 					output:
@@ -137,7 +138,7 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 						a ->> key
 				""",
 				"""
-						ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'key'.' at 23:9, length 3, on RosettaDeepFeatureCall
+						ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'key'.' at 24:9, length 3, on RosettaDeepFeatureCall
 						""");
 	}
 
@@ -166,6 +167,7 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 					D
 
 				func MyFunc:
+					[suppressWarnings unused]
 					inputs:
 						a A (1..1)
 					output:
@@ -174,7 +176,7 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 						a ->> key
 				""",
 				"""
-						ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'key'.' at 31:9, length 3, on RosettaDeepFeatureCall
+						ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'key'.' at 32:9, length 3, on RosettaDeepFeatureCall
 						""");
 	}
 
@@ -186,6 +188,7 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 				choice A:
 
 				func MyFunc:
+					[suppressWarnings unused]
 					inputs:
 						a A (1..1)
 					output:
@@ -194,7 +197,7 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 						a ->> key
 				""",
 				"""
-						ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'key'.' at 14:9, length 3, on RosettaDeepFeatureCall
+						ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'key'.' at 15:9, length 3, on RosettaDeepFeatureCall
 						""");
 	}
 
@@ -208,6 +211,7 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 					CyclicA
 
 				func MyFunc:
+					[suppressWarnings unused]
 					inputs:
 						a CyclicA (1..1)
 					output:
@@ -219,7 +223,7 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 				ERROR (null) 'Duplicate option 'CyclicB'' at 5:2, length 7, on ChoiceOption
 				ERROR (null) 'Cyclic option: CyclicB includes CyclicA includes CyclicB' at 8:2, length 7, on ChoiceOption
 				ERROR (null) 'Duplicate option 'CyclicA'' at 8:2, length 7, on ChoiceOption
-				ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'someField'.' at 16:9, length 9, on RosettaDeepFeatureCall
+				ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'someField'.' at 17:9, length 9, on RosettaDeepFeatureCall
 				""");
 	}
 
@@ -232,14 +236,15 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 				int
 
 			func Foo:
+				[suppressWarnings unused]
 				output:
 					result FooDeprecated (1..1)
 
 				set result:
 					FooDeprecated { string: "My string", ... }
 			""", """
-				INFO (null) 'FooDeprecated is deprecated' at 11:10, length 13, on TypeCall
-				INFO (null) 'FooDeprecated is deprecated' at 14:3, length 13, on TypeCall
+				INFO (null) 'FooDeprecated is deprecated' at 12:10, length 13, on TypeCall
+				INFO (null) 'FooDeprecated is deprecated' at 15:3, length 13, on TypeCall
 				""");
 	}
 }

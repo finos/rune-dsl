@@ -21,6 +21,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 				namespace test
 
 				func Foo:
+					[suppressWarnings unused]
 					inputs: input A (1..1)
 					output: result int (1..1)
 
@@ -53,6 +54,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 				namespace test
 
 				func Foo:
+					[suppressWarnings unused]
 					inputs: input A (1..1)
 					output: result int (1..1)
 
@@ -99,6 +101,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 				import foo.MyType
 
 				func Foo:
+					[suppressWarnings unused]
 					inputs: input A (1..1)
 					output: result MyType (1..1)
 
@@ -162,6 +165,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 				namespace test
 
 				func Foo:
+					[suppressWarnings unused]
 					output:
 						result int (1..1)
 					set result:
