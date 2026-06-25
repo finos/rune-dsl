@@ -25,6 +25,11 @@ import jakarta.inject.Inject;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionParams;
+import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticTag;
+import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
+import org.eclipse.lsp4j.DidChangeWatchedFilesRegistrationOptions;
+import org.eclipse.lsp4j.FileSystemWatcher;
 import org.eclipse.lsp4j.FormattingOptions;
 import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.InlayHintParams;
@@ -41,10 +46,12 @@ import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2;
 import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2.Options;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.util.CancelIndicator;
+import org.eclipse.xtext.validation.Issue;
 
 import com.regnosys.rosetta.formatting2.FormattingOptionsService;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsResolver;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsService;
+import com.regnosys.rosetta.validation.RosettaIssueCodes;
 import com.regnosys.rosetta.ide.overrides.IParentsService;
 import com.regnosys.rosetta.ide.overrides.ParentsParams;
 import com.regnosys.rosetta.ide.overrides.ParentsResult;
@@ -65,6 +72,70 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl implements Ros
 	@Inject
 	void warmupSerializer(SerializerWarmUpService warmUpService) {
 		warmUpService.warmUp();
+	}
+
+	@Override
+	protected Diagnostic toDiagnostic(Issue issue) {
+		Diagnostic diagnostic = super.toDiagnostic(issue);
+		if (RosettaIssueCodes.UNUSED_FUNCTION.equals(issue.getCode())) {
+			diagnostic.setTags(List.of(DiagnosticTag.Unnecessary));
+		}
+		return diagnostic;
+	}
+
+	@Override
+	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
+		this.clientCapabilities = params.getCapabilities();
+		return super.initialize(params);
+	}
+
+	@Override
+	public void initialized(InitializedParams params) {
+		super.initialized(params);
+		registerConfigurationFileWatcher();
+	}
+
+	/**
+	 * Asks the client to notify us (via {@code workspace/didChangeWatchedFiles}) when a Rune
+	 * configuration file changes, so we can hot-reload it. No-op when the client cannot dynamically
+	 * register capabilities (e.g. a minimal LSP/BSP host client), in which case hot-reload is simply
+	 * unavailable.
+	 */
+	protected void registerConfigurationFileWatcher() {
+		if (!supportsWatchedFilesDynamicRegistration()) {
+			return;
+		}
+		List<FileSystemWatcher> watchers = CONFIG_FILE_NAMES.stream()
+				.map(name -> new FileSystemWatcher(Either.forLeft("**/" + name)))
+				.collect(Collectors.toList());
+		Registration registration = new Registration(UUID.randomUUID().toString(),
+				"workspace/didChangeWatchedFiles",
+				new DidChangeWatchedFilesRegistrationOptions(watchers));
+		getLanguageClient().registerCapability(new RegistrationParams(List.of(registration)));
+	}
+
+	private boolean supportsWatchedFilesDynamicRegistration() {
+		return clientCapabilities != null
+				&& clientCapabilities.getWorkspace() != null
+				&& clientCapabilities.getWorkspace().getDidChangeWatchedFiles() != null
+				&& Boolean.TRUE.equals(clientCapabilities.getWorkspace().getDidChangeWatchedFiles().getDynamicRegistration());
+	}
+
+	@Override
+	public void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
+		boolean configChanged = params.getChanges().stream().anyMatch(change -> isConfigFile(change.getUri()));
+		if (configChanged) {
+			// Reload the configuration and rebuild everything so generation and validation re-run with it.
+			runeConfigurationHolder.reload();
+			if (getWorkspaceManager() instanceof RosettaWorkspaceManager workspaceManager) {
+				workspaceManager.rebuildAll(CancelIndicator.NullImpl);
+			}
+		}
+		super.didChangeWatchedFiles(params);
+	}
+
+	private boolean isConfigFile(String uri) {
+		return uri != null && CONFIG_FILE_NAMES.stream().anyMatch(uri::endsWith);
 	}
 	
 	@Override

@@ -15,6 +15,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
         assertNoIssues("""
                 func myFunc:
                   [suppressWarnings capitalisation]
+                  [suppressWarnings unused]
                    output:
                        result string (1..1)
                 
@@ -26,6 +27,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     void functionNameShouldStartWithUpperCase() {
         assertIssues("""
                 func myFunc:
+                   [suppressWarnings unused]
                    output:
                        result string (1..1)
                 
@@ -131,6 +133,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
         assertNoIssues("""
             func Foo:
               [codeImplementation]
+              [suppressWarnings unused]
               output:
                 result string (1..1)
             """);
@@ -148,16 +151,59 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
+    void functionWithCalculationAnnotationShouldNotIssue() {
+        assertNoIssues("""
+            func Calc:
+              [calculation]
+              [suppressWarnings unused]
+              output:
+                result string (1..1)
+
+              set result: "output"
+            """);
+    }
+
+    @Test
     void functionWithCodeImplementationAnnotationAndBodyShouldWarn() {
         assertIssues("""
             func Foo:
               [codeImplementation]
+              [suppressWarnings unused]
               output:
                 result string (1..1)
             
               set result: "output"
             """, """
             WARNING (null) 'Functions annotated with codeImplementation should not have any setter operations as they will be overriden' at 4:6, length 3, on Function
+            """);
+    }
+
+    @Test
+    void unusedFunctionShouldWarn() {
+        assertIssues("""
+            func MyUnusedFunc:
+              output:
+                result string (1..1)
+              set result: "output"
+            """, """
+            WARNING (RosettaIssueCodes.unusedFunction) 'Function 'MyUnusedFunc' is never used' at 4:6, length 12, on Function
+            """);
+    }
+
+    @Test
+    void usedFunctionShouldNotWarnAsUnused() {
+        assertIssues("""
+            func MyUsedFunc:
+              output:
+                result string (1..1)
+              set result: "output"
+
+            func Caller:
+              output:
+                result string (1..1)
+              set result: MyUsedFunc()
+            """, """
+            WARNING (RosettaIssueCodes.unusedFunction) 'Function 'Caller' is never used' at 9:6, length 6, on Function
             """);
     }
 }

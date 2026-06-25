@@ -39,3 +39,4 @@ annotation codeImplementation: <"Marks the function as statically implemented by
 
 annotation suppressWarnings:
     capitalisation boolean (0..1)
+    unused boolean (0..1)
