@@ -44,6 +44,7 @@ public class ExpressionParserTest {
 					attr int (0..1)
 
 				func Bar:
+					[suppressWarnings unused]
 					inputs:
 						foo Foo (1..1)
 					output:

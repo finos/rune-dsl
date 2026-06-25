@@ -184,7 +184,7 @@ public class FunctionExtensionValidatorTest extends AbstractValidatorTest {
 				
 				func Foo:
 					[suppressWarnings unused]
-			    output:
+					output:
 						result int (1..1)
 					set result: 0
 				

@@ -29,6 +29,7 @@ public class FunctionGeneratorAliasTest {
     void shouldSupportDependencyInAlias() {
         var model = modelService.toJavaTestModel("""
 				func Foo:
+					[suppressWarnings unused]
 					output:
 						result int (1..1)
 				
@@ -55,6 +56,7 @@ public class FunctionGeneratorAliasTest {
 					attr string (1..1)
 
 				func FuncFoo:
+				 	[suppressWarnings unused]
 				 	inputs:
 				 		newFoos Foo (0..*)
 				 		test boolean (1..1)
@@ -99,6 +101,7 @@ public class FunctionGeneratorAliasTest {
 					attr string (1..1)
 
 				func FuncFoo:
+				 	[suppressWarnings unused]
 				 	inputs:
 				 		newFoos Foo (0..*)
 				 		test boolean (1..1)

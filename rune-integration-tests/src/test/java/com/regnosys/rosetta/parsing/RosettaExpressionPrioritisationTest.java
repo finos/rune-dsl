@@ -28,6 +28,7 @@ public class RosettaExpressionPrioritisationTest {
 			type Bar:
 				a string (0..*)
 			func F:
+				[suppressWarnings unused]
 				inputs: a string (1..1)
 				output: result Bar (0..*)
 				add result -> a: a
@@ -55,6 +56,7 @@ public class RosettaExpressionPrioritisationTest {
 			type Bar:
 				a string (0..*)
 			func F:
+				[suppressWarnings unused]
 				inputs: bar Bar (1..1)
 				output: result boolean (1..1)
 				set result: bar -> a any = "foo"

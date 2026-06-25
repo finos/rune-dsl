@@ -508,22 +508,22 @@ public class AttributeValidatorTest extends AbstractValidatorTest {
     void supportDeprecatedAnnotationOnAttribute() {
 		assertIssues("""
 				type Foo:
-	            	attr int (1..1)
-	            		[deprecated]
-	            	otherAttr int (1..1)
-	            
-             func Bar:
-             	[suppressWarnings unused]
-             	inputs:
-             		foo Foo (1..1)
-             	output:
-             		result int (1..1)
-            	
-             	set result:
-             		foo -> attr
+					attr int (1..1)
+						[deprecated]
+					otherAttr int (1..1)
+				
+				func Bar:
+					[suppressWarnings unused]
+					inputs:
+						foo Foo (1..1)
+					output:
+						result int (1..1)
+				
+					set result:
+						foo -> attr
 				""",
 				"""
-				INFO (null) 'attr is deprecated' at 17:19, length 4, on RosettaFeatureCall
+				INFO (null) 'attr is deprecated' at 17:10, length 4, on RosettaFeatureCall
 				"""
 			);
     }
@@ -538,15 +538,15 @@ public class AttributeValidatorTest extends AbstractValidatorTest {
 				type Bar extends Foo:
 					override attr string (1..1)
 				
- 				func Test:
- 					[suppressWarnings unused]
- 					inputs:
- 						bar Bar (1..1)
- 					output:
- 						result string (1..1)
-					
- 					set result:
- 						bar -> attr
+				func Test:
+					[suppressWarnings unused]
+					inputs:
+						bar Bar (1..1)
+					output:
+						result string (1..1)
+				
+					set result:
+						bar -> attr
 				""",
 				"""
 				INFO (null) 'attr is deprecated' at 9:11, length 4, on Attribute

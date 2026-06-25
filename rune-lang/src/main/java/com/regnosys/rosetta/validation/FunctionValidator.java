@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.validation;
 
+import com.google.common.collect.Streams;
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
 import com.regnosys.rosetta.rosetta.expression.RosettaSymbolReference;
@@ -15,14 +16,11 @@ import jakarta.inject.Inject;
 import org.eclipse.xtext.validation.Check;
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
 
-import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.util.IResourceScopeCache;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -148,23 +146,15 @@ public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
      * marker, and it self-heals on the next edit.
      */
     private Set<URI> getReferencedFunctionUris(Resource resource) {
-        return cache.get(REFERENCED_FUNCTIONS_CACHE_KEY, resource, () -> {
-            Set<URI> referenced = new HashSet<>();
-            for (Resource r : resource.getResourceSet().getResources()) {
-                if (r.getContents().isEmpty()) {
-                    continue;
-                }
-                for (TreeIterator<EObject> it = r.getAllContents(); it.hasNext();) {
-                    EObject obj = it.next();
-                    if (obj instanceof RosettaSymbolReference ref
-                            && !ref.eIsProxy()
-                            && ref.getSymbol() instanceof Function calledFunction) {
-                        referenced.add(EcoreUtil.getURI(calledFunction));
-                    }
-                }
-            }
-            return referenced;
-        });
+        return cache.get(REFERENCED_FUNCTIONS_CACHE_KEY, resource, () ->
+            resource.getResourceSet().getResources().stream()
+                .filter(r -> !r.getContents().isEmpty())
+                .flatMap(r -> Streams.stream(r.getAllContents()))
+                .filter(obj -> obj instanceof RosettaSymbolReference ref && !ref.eIsProxy())
+                .map(obj -> ((RosettaSymbolReference) obj).getSymbol())
+                .filter(symbol -> symbol instanceof Function)
+                .map(EcoreUtil::getURI)
+                .collect(Collectors.toSet()));
     }
 
     @Check

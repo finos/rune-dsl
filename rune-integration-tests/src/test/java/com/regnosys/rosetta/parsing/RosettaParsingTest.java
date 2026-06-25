@@ -51,6 +51,7 @@ public class RosettaParsingTest {
 				C
 
 			func MyFunc:
+				[suppressWarnings unused]
 				inputs:
 					a A (1..1)
 				output:
@@ -78,6 +79,7 @@ public class RosettaParsingTest {
                 import other.* as other
         
                 func MyFunc:
+                    [suppressWarnings unused]
                     inputs:
                         baz other.Baz (1..1)
                     output:
@@ -102,12 +104,13 @@ public class RosettaParsingTest {
 					VALUE2
 	
 				func MyFunc:
+					[suppressWarnings unused]
 					output:
 						result FooEnum (0..1)
 					set result -> VALUE1: empty
 				""",
 				"""
-				ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'VALUE1'.' at 11:16, length 6, on Segment
+				ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Linking) 'Couldn't resolve reference to RosettaFeature 'VALUE1'.' at 12:16, length 6, on Segment
 				""");
 	}
 
@@ -199,6 +202,7 @@ public class RosettaParsingTest {
 	void canPassMetadataToFunctions() {
 		assertNoIssues("""
 			func MyFunc:
+			    [suppressWarnings unused]
 			    inputs:
 			        myInput string (1..1)
 			        [metadata scheme]
@@ -218,6 +222,7 @@ public class RosettaParsingTest {
 			val boolean (0..1)
 		
 		func Foo:
+			[suppressWarnings unused]
 			inputs: a A (1..1)
 			output: result boolean (1..1)
 			set result:
@@ -231,6 +236,7 @@ public class RosettaParsingTest {
 	void testMaxCanBeChainedWithThen() {
 		assertNoIssues("""		
 		func Foo:
+			[suppressWarnings unused]
 			output: result int (0..*)
 			add result:
 				[1, 2, 3]
@@ -325,6 +331,7 @@ public class RosettaParsingTest {
 				a int (1..1)
 			
 			func F:
+				[suppressWarnings unused]
 				inputs:
 					foo Foo (1..1)
 					a int (1..1)
@@ -351,11 +358,12 @@ public class RosettaParsingTest {
 	void scientificNotationIsNotTooLoose() {
 		assertIssues("""
            func Foo:
+             [suppressWarnings unused]
              output: result number (0..*)
-             
+
              add result: .4a3
 		""",
-		"ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Syntax) 'Character a is neither a decimal digit number, decimal point, nor \"e\" notation exponential mark.' at 7:24, length 4, on RosettaNumberLiteral"
+		"ERROR (org.eclipse.xtext.diagnostics.Diagnostic.Syntax) 'Character a is neither a decimal digit number, decimal point, nor \"e\" notation exponential mark.' at 8:24, length 4, on RosettaNumberLiteral"
 	    );
 	}
 
@@ -363,6 +371,7 @@ public class RosettaParsingTest {
 	void canParseScientificNotation() {
 		assertNoIssues("""
            func Foo:
+             [suppressWarnings unused]
              output: result number (0..*)
              
              add result: .4e3
@@ -452,6 +461,7 @@ public class RosettaParsingTest {
 	           type C:
 	           
 	           func Test:
+	               [suppressWarnings unused]
 	               inputs:
 	                   a A (1..1)
 	               output:

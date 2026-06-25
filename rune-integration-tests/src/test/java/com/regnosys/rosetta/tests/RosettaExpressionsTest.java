@@ -87,6 +87,7 @@ public class RosettaExpressionsTest {
                     two date (1..1)
 
                 func TestQualifier:
+                    [suppressWarnings unused]
                     inputs: test Test (1..1)
                     output: result boolean (1..1)
                     set result:

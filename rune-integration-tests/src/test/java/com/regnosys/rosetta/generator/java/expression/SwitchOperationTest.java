@@ -40,6 +40,7 @@ public class SwitchOperationTest {
                 import other.* as other
         
                 func MyFunc:
+                    [suppressWarnings unused]
                     inputs:
                         baz other.Baz (1..1)
                     output:
