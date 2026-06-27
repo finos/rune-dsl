@@ -25,10 +25,6 @@ public class DeepPathTest {
 
     @Test
     void deepFeatureCallOnAliasOfChoiceShouldResolve() {
-        // The scope provider's createDeepFeatureScope only handles RChoiceType and RDataType, not
-        // RAliasType. When the receiver of a ->> call is typed as a typeAlias wrapping a choice
-        // (e.g. ChoiceAlias: SomeChoice), the deep feature fails to link at all — the attribute
-        // cannot be resolved through the alias.
         JavaTestModel model = modelService.toJavaTestModel("""
                 namespace test
 

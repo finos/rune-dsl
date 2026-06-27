@@ -324,8 +324,6 @@ public class AsOperationTest {
 
     @Test
     void asChoiceTwoAliasOptionsWithSameBaseTypeShouldNavigateToCorrectField() {
-        // Both Bar and Qux alias `string`. The bug strips the alias before matching, so both
-        // options collapse to `string` and `as Qux` resolves to the first option (Bar) instead.
         JavaTestModel model = modelService.toJavaTestModel("""
                 namespace test
 
@@ -352,8 +350,6 @@ public class AsOperationTest {
 
     @Test
     void asChoiceTwoEnumAliasOptionsWithSameBaseEnumShouldNavigateToCorrectField() {
-        // Both Bar and Qux alias enum `Base`. Without alias identity preservation the two options
-        // collapse to the same underlying type and `as Qux` resolves to the first option (Bar).
         JavaTestModel model = modelService.toJavaTestModel("""
                 namespace test
 
@@ -388,8 +384,6 @@ public class AsOperationTest {
 
     @Test
     void asChoiceTwoDataTypeAliasOptionsWithSameBaseTypeShouldNavigateToCorrectField() {
-        // Both Bar and Qux alias `Base`. Without alias identity preservation the two options
-        // collapse to the same underlying type and `as Qux` resolves to the first option (Bar).
         JavaTestModel model = modelService.toJavaTestModel("""
                 namespace test
 
