@@ -24,6 +24,38 @@ public class DeepPathTest {
     private RosettaTestModelService modelService;
 
     @Test
+    void deepFeatureCallOnAliasOfChoiceShouldResolve() {
+        // The scope provider's createDeepFeatureScope only handles RChoiceType and RDataType, not
+        // RAliasType. When the receiver of a ->> call is typed as a typeAlias wrapping a choice
+        // (e.g. ChoiceAlias: SomeChoice), the deep feature fails to link at all — the attribute
+        // cannot be resolved through the alias.
+        JavaTestModel model = modelService.toJavaTestModel("""
+                namespace test
+
+                type OptionA:
+                    sharedAttr string (0..1)
+
+                type OptionB:
+                    sharedAttr string (0..1)
+
+                choice SomeChoice:
+                    OptionA
+                    OptionB
+
+                typeAlias ChoiceAlias: SomeChoice
+
+                type Container:
+                    field ChoiceAlias (0..1)
+                """).compile();
+
+        String result = model.evaluateExpression(String.class, """
+                Container { field: SomeChoice { OptionA: OptionA { sharedAttr: "hello" }, ... } }
+                    -> field ->> sharedAttr
+                """);
+        assertEquals("hello", result);
+    }
+
+    @Test
     void deepPathToKeyOnOptionWithMeta() {
         JavaTestModel model = modelService.toJavaTestModel("""
                 namespace test

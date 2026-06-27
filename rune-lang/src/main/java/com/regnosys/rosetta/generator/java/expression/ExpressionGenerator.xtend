@@ -397,7 +397,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val t = if (receiverRType instanceof RChoiceType) {
 			receiverRType.asRDataType
 		} else if (receiverRType instanceof RAliasType) {
-			stripFromTypeAliases(receiverRType) as RDataType
+			val stripped = stripFromTypeAliases(receiverRType)
+			if (stripped instanceof RChoiceType) stripped.asRDataType else stripped as RDataType
 		} else {
 			receiverRType as RDataType
 		}

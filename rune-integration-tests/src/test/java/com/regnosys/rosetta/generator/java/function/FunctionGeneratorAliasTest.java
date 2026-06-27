@@ -47,6 +47,38 @@ public class FunctionGeneratorAliasTest {
     }
 
 	@Test
+	void featureCallOnAliasOfChoiceShouldNotThrow() {
+		// Regression test for ExpressionGenerator.choiceFeatureCall: when the receiver is typed as a
+		// typeAlias wrapping a choice type, stripFromTypeAliases returns an RChoiceType, which was
+		// then cast to RDataType, causing a ClassCastException at code-generation time.
+		//
+		// The scope provider resolves choice-option attributes through aliases via
+		// allFeaturesExcludingEnumValues, so `x -> OptionA` links when x is typed as ChoiceAlias.
+		// The generator then enters the RAliasType branch in choiceFeatureCall and fails the cast.
+		modelService.toJavaTestModel("""
+				namespace test
+
+				type OptionA:
+				    attr string (0..1)
+
+				type OptionB:
+				    attr string (0..1)
+
+				choice SomeChoice:
+				    OptionA
+				    OptionB
+
+				typeAlias ChoiceAlias: SomeChoice
+
+				func GetOptionA:
+				    inputs: x ChoiceAlias (0..1)
+				    output: result OptionA (0..1)
+				    set result:
+				        x -> OptionA
+				""").compile();
+	}
+
+	@Test
 	void shouldAddComplexTypeListWithIfStatement() {
 		var model = modelService.toJavaTestModel("""
 				type Bar:
