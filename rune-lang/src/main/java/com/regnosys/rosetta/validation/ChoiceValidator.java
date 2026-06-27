@@ -11,9 +11,11 @@ import org.eclipse.xtext.validation.Check;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Choice;
+import com.regnosys.rosetta.types.RAliasType;
 import com.regnosys.rosetta.types.RChoiceOption;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
+import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RObjectFactory;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 
@@ -55,8 +57,12 @@ public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
 		RChoiceType t = rObjectFactory.buildRChoiceType(choice);
 		Map<RMetaAnnotatedType, RChoiceOption> includedOptions = new HashMap<>();
 		for (RChoiceOption opt: t.getOwnOptions()) {
-			if (opt.getType().getRType() instanceof RChoiceType) {
-				((RChoiceType) opt.getType().getRType()).getAllOptions().forEach(o -> includedOptions.put(o.getType(), opt));
+			RType optType = opt.getType().getRType();
+			while (optType instanceof RAliasType) {
+				optType = ((RAliasType) optType).getRefersTo();
+			}
+			if (optType instanceof RChoiceType) {
+				((RChoiceType) optType).getAllOptions().forEach(o -> includedOptions.put(o.getType(), opt));
 			}
 		}
 		for (RChoiceOption opt: t.getOwnOptions()) {
