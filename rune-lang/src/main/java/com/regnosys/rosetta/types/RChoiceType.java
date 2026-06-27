@@ -114,9 +114,12 @@ public class RChoiceType extends RType implements RObject {
 	private Stream<RChoiceOption> doGetAllOptions(Set<RChoiceType> visited) {
 		if (visited.add(this)) {
 			return getOwnOptions().stream().flatMap(o -> {
-				if (o.getType().getRType() instanceof RChoiceType) {
-					RChoiceType nested = (RChoiceType) o.getType().getRType();
-					return Streams.concat(Stream.of(o), nested.doGetAllOptions(visited));
+				RType stripped = o.getType().getRType();
+				while (stripped instanceof RAliasType) {
+					stripped = ((RAliasType) stripped).getRefersTo();
+				}
+				if (stripped instanceof RChoiceType) {
+					return Streams.concat(Stream.of(o), ((RChoiceType) stripped).doGetAllOptions(visited));
 				}
 				return Stream.of(o);
 			});

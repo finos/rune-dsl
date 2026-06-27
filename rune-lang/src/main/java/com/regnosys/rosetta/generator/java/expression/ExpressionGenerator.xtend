@@ -99,6 +99,7 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.CardinalityProvider
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RAliasType
 import com.regnosys.rosetta.types.RChoiceOption
 import com.regnosys.rosetta.types.RChoiceType
 import com.regnosys.rosetta.types.RDataType
@@ -395,6 +396,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val receiverRType = receiverType.RType
 		val t = if (receiverRType instanceof RChoiceType) {
 			receiverRType.asRDataType
+		} else if (receiverRType instanceof RAliasType) {
+			val stripped = stripFromTypeAliases(receiverRType)
+			if (stripped instanceof RChoiceType) stripped.asRDataType else stripped as RDataType
 		} else {
 			receiverRType as RDataType
 		}
@@ -1208,7 +1212,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	 * path of option attributes. Shared by the `as` and `switch` operators.
 	 */
 	private def JavaStatementBuilder navigateToChoiceOption(JavaStatementBuilder choiceArg, RChoiceType choiceType, RChoiceOption goal, Context context) {
-		val goalRType = goal.type.RType.stripFromTypeAliases
+		// Do NOT strip the alias: findChoiceOptionPath uses alias identity for the leaf match so
+		// that two aliases of the same base type are not confused.
+		val goalRType = goal.type.RType
 		// The path ends on the option whose type is exactly `goalRType`, so the navigated value is already of
 		// the requested type - no downcast is needed.
 		val optionPath = findChoiceOptionPath(choiceType, goalRType)
