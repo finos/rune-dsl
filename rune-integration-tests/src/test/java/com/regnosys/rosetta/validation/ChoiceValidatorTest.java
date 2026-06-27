@@ -63,6 +63,28 @@ public class ChoiceValidatorTest implements RosettaIssueCodes {
     }
 
     @Test
+    public void testChoiceAliasOfNestedChoiceOptionsDoNotOverlap() {
+        RosettaModel model = modelHelper.parseRosetta("""
+            choice Outer:
+                InnerAlias
+                TargetOpt
+
+            typeAlias InnerAlias: Inner
+
+            choice Inner:
+                TargetOpt
+                Sibling
+
+            type TargetOpt:
+
+            type Sibling:
+            """);
+
+        validationTestHelper.assertError(model, SimplePackage.Literals.CHOICE_OPTION, null,
+            "Option 'TargetOpt' is already included by option 'InnerAlias'");
+    }
+
+    @Test
     public void supportDeprecatedAnnotationOnChoice() {
         RosettaModel model = modelHelper.parseRosetta("""
             choice FooDeprecated:
