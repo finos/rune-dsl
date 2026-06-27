@@ -324,28 +324,28 @@ public class AsOperationTest {
 
     @Test
     void asChoiceTwoAliasOptionsWithSameBaseTypeShouldNavigateToCorrectField() {
-        // Both ISIN and CUSIP alias `string`. The bug strips the alias before matching, so both
-        // options collapse to `string` and `as CUSIP` resolves to the first option (ISIN) instead.
+        // Both Bar and Qux alias `string`. The bug strips the alias before matching, so both
+        // options collapse to `string` and `as Qux` resolves to the first option (Bar) instead.
         JavaTestModel model = modelService.toJavaTestModel("""
                 namespace test
 
-                typeAlias ISIN:  string
-                typeAlias CUSIP: string
+                typeAlias Bar: string
+                typeAlias Qux: string
 
-                choice Identifier:
-                    ISIN
-                    CUSIP
+                choice Foo:
+                    Bar
+                    Qux
                 """).compile();
 
-        // Holds CUSIP → `as CUSIP` must return the CUSIP value.
-        String cusip = model.evaluateExpression(String.class, """
-                Identifier { CUSIP: "US0231351067", ... } as CUSIP
+        // Holds Qux → `as Qux` must return the Qux value.
+        String qux = model.evaluateExpression(String.class, """
+                Foo { Qux: "quxValue", ... } as Qux
                 """);
-        assertEquals("US0231351067", cusip);
+        assertEquals("quxValue", qux);
 
-        // Holds ISIN → `as CUSIP` must yield empty, not the ISIN value.
+        // Holds Bar → `as Qux` must yield empty, not the Bar value.
         String absent = model.evaluateExpression(String.class, """
-                Identifier { ISIN: "US38259P5089", ... } as CUSIP
+                Foo { Bar: "barValue", ... } as Qux
                 """);
         assertNull(absent);
     }
