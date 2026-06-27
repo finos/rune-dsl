@@ -99,6 +99,7 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.CardinalityProvider
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RAliasType
 import com.regnosys.rosetta.types.RChoiceOption
 import com.regnosys.rosetta.types.RChoiceType
 import com.regnosys.rosetta.types.RDataType
@@ -395,6 +396,8 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		val receiverRType = receiverType.RType
 		val t = if (receiverRType instanceof RChoiceType) {
 			receiverRType.asRDataType
+		} else if (receiverRType instanceof RAliasType) {
+			stripFromTypeAliases(receiverRType) as RDataType
 		} else {
 			receiverRType as RDataType
 		}
