@@ -12,6 +12,7 @@ Thumbs.db
 plugin.xml_gen
 **/*.iml
 .classpath
+.project
 rune-profiling/dependency-reduced-pom.xml
 rune-profiling/reports/
 
