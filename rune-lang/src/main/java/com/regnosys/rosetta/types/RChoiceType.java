@@ -19,18 +19,20 @@ public class RChoiceType extends RType implements RObject {
 	private List<RChoiceOption> ownOptions = null;
 	private RDataType dataTypeView = null;
 	private Boolean hasImpliedKey = null;
-	
+
 	private final ModelIdProvider modelIdProvider;
 	private final RosettaTypeProvider typeProvider;
 	private final RObjectFactory rObjectFactory;
+	private final TypeSystem typeSystem;
 
-	public RChoiceType(final Choice choice, final ModelIdProvider modelIdProvider, final RosettaTypeProvider typeProvider, final RObjectFactory rObjectFactory) {
+	public RChoiceType(final Choice choice, final ModelIdProvider modelIdProvider, final RosettaTypeProvider typeProvider, final RObjectFactory rObjectFactory, final TypeSystem typeSystem) {
 		super();
 		this.choice = choice;
-		
+
 		this.modelIdProvider = modelIdProvider;
 		this.typeProvider = typeProvider;
 		this.rObjectFactory = rObjectFactory;
+		this.typeSystem = typeSystem;
 	}
 	
 	@Deprecated // TODO: remove this and fully support choice types. See https://github.com/finos/rune-dsl/issues/797.
@@ -114,10 +116,7 @@ public class RChoiceType extends RType implements RObject {
 	private Stream<RChoiceOption> doGetAllOptions(Set<RChoiceType> visited) {
 		if (visited.add(this)) {
 			return getOwnOptions().stream().flatMap(o -> {
-				RType stripped = o.getType().getRType();
-				while (stripped instanceof RAliasType) {
-					stripped = ((RAliasType) stripped).getRefersTo();
-				}
+				RType stripped = typeSystem.stripFromTypeAliases(o.getType().getRType());
 				if (stripped instanceof RChoiceType) {
 					return Streams.concat(Stream.of(o), ((RChoiceType) stripped).doGetAllOptions(visited));
 				}

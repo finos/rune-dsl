@@ -11,12 +11,12 @@ import org.eclipse.xtext.validation.Check;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Choice;
-import com.regnosys.rosetta.types.RAliasType;
 import com.regnosys.rosetta.types.RChoiceOption;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RObjectFactory;
+import com.regnosys.rosetta.types.TypeSystem;
 import com.regnosys.rosetta.types.builtin.RBuiltinTypeService;
 
 import static com.regnosys.rosetta.rosetta.RosettaPackage.Literals.*;
@@ -26,6 +26,8 @@ public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
 	private RObjectFactory rObjectFactory;
 	@Inject
 	private RBuiltinTypeService builtins;
+	@Inject
+	private TypeSystem typeSystem;
     @Inject
     private CycleValidationHelper cycleValidationHelper;
 	
@@ -57,10 +59,7 @@ public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
 		RChoiceType t = rObjectFactory.buildRChoiceType(choice);
 		Map<RMetaAnnotatedType, RChoiceOption> includedOptions = new HashMap<>();
 		for (RChoiceOption opt: t.getOwnOptions()) {
-			RType optType = opt.getType().getRType();
-			while (optType instanceof RAliasType) {
-				optType = ((RAliasType) optType).getRefersTo();
-			}
+			RType optType = typeSystem.stripFromTypeAliases(opt.getType().getRType());
 			if (optType instanceof RChoiceType) {
 				((RChoiceType) optType).getAllOptions().forEach(o -> includedOptions.put(o.getType(), opt));
 			}

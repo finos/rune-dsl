@@ -393,12 +393,9 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	private def JavaStatementBuilder choiceFeatureCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, boolean isMulti, (RDataType) => JavaType getResultItemType, (RDataType, JavaVariable) => StringConcatenationClient getMappingCode, JavaStatementScope scope) {
-		val receiverRType = receiverType.RType
+		val receiverRType = stripFromTypeAliases(receiverType.RType)
 		val t = if (receiverRType instanceof RChoiceType) {
 			receiverRType.asRDataType
-		} else if (receiverRType instanceof RAliasType) {
-			val stripped = stripFromTypeAliases(receiverRType)
-			if (stripped instanceof RChoiceType) stripped.asRDataType else stripped as RDataType
 		} else {
 			receiverRType as RDataType
 		}
