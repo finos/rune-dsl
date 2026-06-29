@@ -353,23 +353,32 @@ public class TypeSystem {
 	 * {@code target} must be a subtype of {@code from}.
 	 */
 	public List<RChoiceOption> findChoiceOptionPath(RChoiceType from, RType target) {
-		List<RChoiceOption> result = new ArrayList<>();
-		RChoiceType currentChoice = from;
-		while (true) {
-			RChoiceType choiceToSearch = currentChoice;
-			RChoiceOption option = choiceToSearch.getOwnOptions().stream()
-					.filter(o -> isSubtypeOf(target, o.getType().getRType(), false))
-					.findFirst()
-					.orElseThrow(() -> new IllegalStateException(
-							"Did not find an option of " + choiceToSearch + " that is a supertype of " + target));
-			result.add(option);
-			RType optionType = stripFromTypeAliases(option.getType().getRType());
-			if (optionType instanceof RChoiceType && !target.equals(optionType)) {
-				currentChoice = (RChoiceType) optionType;
-			} else {
+		return findChoiceOptionPath(from, target, new ArrayList<>());
+	}
+	private List<RChoiceOption> findChoiceOptionPath(RChoiceType from, RType target, List<RChoiceOption> prefix) {
+		for (RChoiceOption option : from.getOwnOptions()) {
+			RType optionType = option.getType().getRType();
+			// Leaf match: alias-sensitive so that two aliases of the same base type (e.g. ISIN and
+			// CUSIP both aliasing string) are distinguished by their alias identity, not their
+			// underlying type.
+			if (target.equals(optionType)) {
+				List<RChoiceOption> result = new ArrayList<>(prefix);
+				result.add(option);
 				return result;
 			}
+			// Descend check: strip to resolve alias-of-choice options, then test subtypehood so we
+			// only recurse into a nested choice that could actually contain the target.
+			RType strippedOptionType = stripFromTypeAliases(optionType);
+			if (strippedOptionType instanceof RChoiceType && isSubtypeOf(target, strippedOptionType, false)) {
+				List<RChoiceOption> extendedPrefix = new ArrayList<>(prefix);
+				extendedPrefix.add(option);
+				List<RChoiceOption> result = findChoiceOptionPath((RChoiceType) strippedOptionType, target, extendedPrefix);
+				if (result != null) {
+					return result;
+				}
+			}
 		}
+		return null;
 	}
 
 	public AliasHierarchy computeAliasHierarchy(RType t) {

@@ -17,6 +17,7 @@ import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RObjectFactory;
 import com.regnosys.rosetta.types.RosettaTypeProvider;
+import com.regnosys.rosetta.types.TypeSystem;
 import com.rosetta.util.types.JavaClass;
 
 import jakarta.inject.Inject;
@@ -31,6 +32,8 @@ public class JavaDependencyProvider {
 	private RosettaTypeProvider typeProvider;
 	@Inject
 	private JavaTypeTranslator typeTranslator;
+	@Inject
+	private TypeSystem typeSystem;
 
 	private void javaDependencies(RosettaExpression expression, Set<JavaClass<?>> result, Set<RosettaExpression> visited) {
 		if (visited.add(expression)) {
@@ -52,7 +55,7 @@ public class JavaDependencyProvider {
 				.map(typeTranslator::toFunctionJavaClass)
 				.forEach(result::add);
 			deepFeatureCalls.stream()
-				.map(dfc -> typeProvider.getRMetaAnnotatedType(dfc.getReceiver()).getRType())
+				.map(dfc -> typeSystem.stripFromTypeAliases(typeProvider.getRMetaAnnotatedType(dfc.getReceiver()).getRType()))
 				.map(t -> t instanceof RChoiceType ? ((RChoiceType)t).asRDataType() : t)
 				.filter(t -> t instanceof RDataType)
 				.map(t -> typeTranslator.toDeepPathUtilJavaClass((RDataType)t))

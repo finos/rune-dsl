@@ -15,22 +15,24 @@ import com.rosetta.model.lib.ModelSymbolId;
 
 public class RChoiceType extends RType implements RObject {
 	private final Choice choice;
-	
+
 	private ModelSymbolId symbolId = null;
 	private List<RChoiceOption> ownOptions = null;
 	private RDataType dataTypeView = null;
-	
+
 	private final ModelIdProvider modelIdProvider;
 	private final RosettaTypeProvider typeProvider;
 	private final RObjectFactory rObjectFactory;
+	private final TypeSystem typeSystem;
 
-	public RChoiceType(final Choice choice, final ModelIdProvider modelIdProvider, final RosettaTypeProvider typeProvider, final RObjectFactory rObjectFactory) {
+	public RChoiceType(final Choice choice, final ModelIdProvider modelIdProvider, final RosettaTypeProvider typeProvider, final RObjectFactory rObjectFactory, final TypeSystem typeSystem) {
 		super();
 		this.choice = choice;
-		
+
 		this.modelIdProvider = modelIdProvider;
 		this.typeProvider = typeProvider;
 		this.rObjectFactory = rObjectFactory;
+		this.typeSystem = typeSystem;
 	}
 	
 	@Deprecated // TODO: remove this and fully support choice types. See https://github.com/finos/rune-dsl/issues/797.
@@ -63,7 +65,7 @@ public class RChoiceType extends RType implements RObject {
 		}
 		return ownOptions;
 	}
-	
+
 	/**
 	 * Get a list of all options of this choice type, including all options of its nested choice types.
 	 * 
@@ -75,9 +77,9 @@ public class RChoiceType extends RType implements RObject {
 	private Stream<RChoiceOption> doGetAllOptions(Set<RChoiceType> visited) {
 		if (visited.add(this)) {
 			return getOwnOptions().stream().flatMap(o -> {
-				if (o.getType().getRType() instanceof RChoiceType) {
-					RChoiceType nested = (RChoiceType) o.getType().getRType();
-					return Streams.concat(Stream.of(o), nested.doGetAllOptions(visited));
+				RType stripped = typeSystem.stripFromTypeAliases(o.getType().getRType());
+				if (stripped instanceof RChoiceType) {
+					return Streams.concat(Stream.of(o), ((RChoiceType) stripped).doGetAllOptions(visited));
 				}
 				return Stream.of(o);
 			});

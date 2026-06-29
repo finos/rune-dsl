@@ -441,6 +441,7 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 
 
 	private IScope createDeepFeatureScope(RType receiverType) {
+		receiverType = typeSystem.stripFromTypeAliases(receiverType);
 		RType t = receiverType;
 		if (receiverType instanceof RChoiceType choice) {
 			t = choice.asRDataType();
