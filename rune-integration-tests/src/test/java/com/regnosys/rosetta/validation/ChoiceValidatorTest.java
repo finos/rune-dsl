@@ -224,6 +224,29 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 	}
 
 	@Test
+	public void testChoiceAliasOfNestedChoiceOptionsDoNotOverlap() {
+		assertIssues("""
+				choice Outer:
+					InnerAlias
+					TargetOpt
+
+				typeAlias InnerAlias: Inner
+
+				choice Inner:
+					TargetOpt
+					Sibling
+
+				type TargetOpt:
+
+				type Sibling:
+				""",
+				"""
+				ERROR (null) 'Option 'TargetOpt' is already included by option 'InnerAlias'' at 6:2, length 9, on ChoiceOption
+				"""
+		);
+	}
+
+	@Test
 	public void supportDeprecatedAnnotationOnChoice() {
 		assertIssues("""
 			choice FooDeprecated:
