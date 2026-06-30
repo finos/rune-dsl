@@ -26,6 +26,8 @@ public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
     private RObjectFactory rObjectFactory;
     @Inject
     private WarningSuppressionHelper warningSuppressionHelper;
+    @Inject
+    private TransformAnnotationHelper transformAnnotationHelper;
 
     @Check
     public void checkFunctionNameStartsWithCapital(Function func) {
