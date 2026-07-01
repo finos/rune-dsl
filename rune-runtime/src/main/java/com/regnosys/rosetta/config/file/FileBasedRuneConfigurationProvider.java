@@ -22,7 +22,8 @@ import com.regnosys.rosetta.config.DefaultRuneConfigurationProvider;
 import com.regnosys.rosetta.config.RuneConfiguration;
 import com.regnosys.rosetta.config.RuneGeneratorsConfiguration;
 import com.regnosys.rosetta.config.RuneModelConfiguration;
-import com.regnosys.rosetta.config.RuneSerializationConfiguration;
+import com.regnosys.rosetta.config.RuneNamespaceConfiguration;
+import com.regnosys.rosetta.config.RuneSchemaConfiguration;
 
 public class FileBasedRuneConfigurationProvider implements Provider<RuneConfiguration> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FileBasedRuneConfigurationProvider.class);
@@ -39,7 +40,8 @@ public class FileBasedRuneConfigurationProvider implements Provider<RuneConfigur
 				.addMixIn(RuneConfiguration.class, RuneConfigurationMixin.class)
 				.addMixIn(RuneModelConfiguration.class, RuneModelConfigurationMixin.class)
 				.addMixIn(RuneGeneratorsConfiguration.class, RuneGeneratorsConfigurationMixin.class)
-				.addMixIn(RuneSerializationConfiguration.class, RuneSerializationConfigurationMixin.class);
+				.addMixIn(RuneNamespaceConfiguration.class, RuneNamespaceConfigurationMixin.class)
+				.addMixIn(RuneSchemaConfiguration.class, RuneSchemaConfigurationMixin.class);
 		mapper.configOverride(RuneGeneratorsConfiguration.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
         mapper.configOverride(NamespaceFilter.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
 		mapper.configOverride(List.class).setSetterInfo(JsonSetter.Value.forValueNulls(Nulls.AS_EMPTY));
@@ -64,32 +66,31 @@ public class FileBasedRuneConfigurationProvider implements Provider<RuneConfigur
 			}
 			RuneConfiguration primary = mapper.readValue(primaryFile, RuneConfiguration.class);
 
-			// The model, generators and read-only namespaces come from the current project's config only.
-			// The serialization config is the union of all configs on the classpath (the current
+			// The model and generators come from the current project's config only.
+			// The namespace config is the union of all configs on the classpath (the current
 			// project and its dependencies), with the current project shadowing on id collisions.
-			Map<String, RuneSerializationConfiguration> serializationConfigById = new LinkedHashMap<>();
-			collectSerializationConfig(primary, serializationConfigById);
+			Map<String, RuneNamespaceConfiguration> namespaceConfigById = new LinkedHashMap<>();
+			collectNamespaceConfig(primary, namespaceConfigById);
 			for (URL file : fileProvider.getResources()) {
 				if (file.equals(primaryFile)) {
 					continue;
 				}
-				collectSerializationConfig(mapper.readValue(file, RuneConfiguration.class), serializationConfigById);
+				collectNamespaceConfig(mapper.readValue(file, RuneConfiguration.class), namespaceConfigById);
 			}
 
 			return new RuneConfiguration(
 					primary.getModel(),
 					primary.getDependencies(),
 					primary.getGenerators(),
-					primary.getReadOnlyNamespaces(),
-					new ArrayList<>(serializationConfigById.values()));
+					new ArrayList<>(namespaceConfigById.values()));
 		} catch (IOException e) {
       throw new FileBasedRuneConfigurationRuntimeException("Unable to parse the Rosetta configuration.", e);
 		}
 	}
 
-	private void collectSerializationConfig(RuneConfiguration config, Map<String, RuneSerializationConfiguration> byId) {
-		for (RuneSerializationConfiguration serializationConfig : config.getSerializationConfig()) {
-			byId.putIfAbsent(serializationConfig.getId(), serializationConfig);
+	private void collectNamespaceConfig(RuneConfiguration config, Map<String, RuneNamespaceConfiguration> byId) {
+		for (RuneNamespaceConfiguration namespaceConfig : config.getNamespaceConfig()) {
+			byId.putIfAbsent(namespaceConfig.getId(), namespaceConfig);
 		}
 	}
 }

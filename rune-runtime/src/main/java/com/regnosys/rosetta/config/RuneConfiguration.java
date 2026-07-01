@@ -4,36 +4,33 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class RuneConfiguration {
 	private final RuneModelConfiguration model;
 	private final List<RuneDependencyConfiguration> dependencies;
 	private final RuneGeneratorsConfiguration generators;
-	private final List<String> readOnlyNamespaces;
-	private final List<RuneSerializationConfiguration> serializationConfig;
+	private final List<RuneNamespaceConfiguration> namespaceConfig;
 
 	public RuneConfiguration(RuneModelConfiguration model,
 			List<RuneDependencyConfiguration> dependencies,
 			RuneGeneratorsConfiguration generators) {
-		this(model, dependencies, generators, Collections.emptyList(), Collections.emptyList());
+		this(model, dependencies, generators, Collections.emptyList());
 	}
 
 	public RuneConfiguration(RuneModelConfiguration model,
 			List<RuneDependencyConfiguration> dependencies,
 			RuneGeneratorsConfiguration generators,
-			List<String> readOnlyNamespaces,
-			List<RuneSerializationConfiguration> serializationConfig) {
+			List<RuneNamespaceConfiguration> namespaceConfig) {
 		Objects.requireNonNull(model);
 		Objects.requireNonNull(dependencies);
 		Objects.requireNonNull(generators);
-		Objects.requireNonNull(readOnlyNamespaces);
-		Objects.requireNonNull(serializationConfig);
+		Objects.requireNonNull(namespaceConfig);
 
 		this.model = model;
 		this.dependencies = dependencies;
 		this.generators = generators;
-		this.readOnlyNamespaces = readOnlyNamespaces;
-		this.serializationConfig = serializationConfig;
+		this.namespaceConfig = namespaceConfig;
 	}
 
 	public RuneModelConfiguration getModel() {
@@ -48,20 +45,28 @@ public class RuneConfiguration {
 		return generators;
 	}
 
-	public List<String> getReadOnlyNamespaces() {
-		return readOnlyNamespaces;
-	}
-
-	public List<RuneSerializationConfiguration> getSerializationConfig() {
-		return serializationConfig;
+	public List<RuneNamespaceConfiguration> getNamespaceConfig() {
+		return namespaceConfig;
 	}
 
 	/**
-	 * Finds the serialization configuration with the given schema id, if any.
+	 * The namespaces (or namespace patterns) configured as read-only.
 	 */
-	public Optional<RuneSerializationConfiguration> findSerializationConfigById(String id) {
-		return serializationConfig.stream()
-				.filter(c -> c.getId().equals(id))
+	public List<String> getReadOnlyNamespaces() {
+		return namespaceConfig.stream()
+				.filter(RuneNamespaceConfiguration::isReadOnly)
+				.map(RuneNamespaceConfiguration::getNamespace)
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Finds the external schema configuration for the given schema name, if any.
+	 */
+	public Optional<RuneSchemaConfiguration> findSchemaConfig(String schema) {
+		return namespaceConfig.stream()
+				.map(RuneNamespaceConfiguration::getSchemaConfig)
+				.filter(Objects::nonNull)
+				.filter(c -> c.getSchema().equals(schema))
 				.findFirst();
 	}
 }

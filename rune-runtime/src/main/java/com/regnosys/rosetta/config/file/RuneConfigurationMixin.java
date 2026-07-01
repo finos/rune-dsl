@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.regnosys.rosetta.config.RuneDependencyConfiguration;
 import com.regnosys.rosetta.config.RuneGeneratorsConfiguration;
 import com.regnosys.rosetta.config.RuneModelConfiguration;
-import com.regnosys.rosetta.config.RuneSerializationConfiguration;
+import com.regnosys.rosetta.config.RuneNamespaceConfiguration;
 
 public abstract class RuneConfigurationMixin {
 	@JsonCreator
@@ -15,6 +15,5 @@ public abstract class RuneConfigurationMixin {
 			@JsonProperty("model") RuneModelConfiguration model,
 			@JsonProperty("dependencies") List<RuneDependencyConfiguration> dependencies,
 			@JsonProperty("generators") RuneGeneratorsConfiguration generators,
-			@JsonProperty("readOnlyNamespaces") List<String> readOnlyNamespaces,
-			@JsonProperty("serializationConfig") List<RuneSerializationConfiguration> serializationConfig) {}
+			@JsonProperty("namespaceConfig") List<RuneNamespaceConfiguration> namespaceConfig) {}
 }
