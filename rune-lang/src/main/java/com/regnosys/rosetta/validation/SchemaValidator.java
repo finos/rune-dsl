@@ -6,7 +6,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.validation.Check;
 
 import com.regnosys.rosetta.config.RuneConfiguration;
-import com.regnosys.rosetta.config.RuneSerializationConfiguration;
+import com.regnosys.rosetta.config.RuneSchemaConfiguration;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
 import com.regnosys.rosetta.rosetta.Schema;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
@@ -44,8 +44,8 @@ public class SchemaValidator extends AbstractDeclarativeRosettaValidator {
     @Check
     public void checkExternalConfigMatchesConfiguration(Schema schema) {
         boolean external = transformAnnotationHelper.isExternalConfig(schema);
-        Optional<RuneSerializationConfiguration> configEntry = Optional.ofNullable(schema.getName())
-                .flatMap(config::findSerializationConfigById)
+        Optional<RuneSchemaConfiguration> configEntry = Optional.ofNullable(schema.getName())
+                .flatMap(config::findSchemaConfig)
                 .filter(c -> c.getConfigPath() != null);
         if (external && configEntry.isEmpty()) {
             error("Schema '" + schema.getName() + "' is marked [externalConfig] but no external serialization configuration is configured for it",

@@ -43,12 +43,19 @@ public class RuneConfigurationTest {
 
 		assertEquals(java.util.List.of("com.rosetta.model.*", "abc.def"), config.getReadOnlyNamespaces());
 
-		assertEquals(2, config.getSerializationConfig().size());
+		assertEquals(3, config.getNamespaceConfig().size());
 		assertEquals("xml-config/my-xml-schema-config.json",
-				config.findSerializationConfigById("myXmlSchema").orElseThrow().getConfigPath());
+				config.findSchemaConfig("myXmlSchema").orElseThrow().getConfigPath());
 		assertEquals("json-config/my-json-config.json",
-				config.findSerializationConfigById("myJson").orElseThrow().getConfigPath());
-		assertFalse(config.findSerializationConfigById("doesNotExist").isPresent());
+				config.findSchemaConfig("myJson").orElseThrow().getConfigPath());
+		assertFalse(config.findSchemaConfig("doesNotExist").isPresent());
+
+		// A single unit can carry both aspects: read-only and an external schema configuration.
+		RuneNamespaceConfiguration confirmation = config.getNamespaceConfig().stream()
+				.filter(c -> c.getId().equals("my-confirmation")).findFirst().orElseThrow();
+		assertEquals("abc.def", confirmation.getNamespace());
+		assertTrue(confirmation.isReadOnly());
+		assertEquals("myXmlSchema", confirmation.getSchemaConfig().getSchema());
 	}
 	
 
