@@ -1,4 +1,5 @@
-bin/
+# Eclipse's default per-module compiled-output folder (distinct from Maven's target/)
+/*/bin/
 target/
 test-data/
 build.acceleo

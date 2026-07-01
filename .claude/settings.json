@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "rune-dsl": {
+      "source": {
+        "source": "directory",
+        "path": "./rune-ide/claude-plugin"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "rune-lsp@rune-dsl": true
+  }
+}

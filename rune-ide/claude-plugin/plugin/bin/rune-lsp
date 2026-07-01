@@ -1,0 +1,64 @@
+#!/usr/bin/env sh
+# Portable launcher for the Rune DSL language server.
+#
+# org.finos.rune:rune-ide is published to Maven Central on every rune-dsl
+# release (see .github/workflows/release.yml), and contains the LSP entry
+# point (com.regnosys.rosetta.ide.server.RosettaServerLauncher) used by
+# rune-ide/vscode. This script resolves that artifact + its dependencies via
+# Maven and runs it directly, so this plugin works from any project
+# directory, not just a rune-dsl checkout.
+#
+# Set RUNE_DSL_LS_VERSION to pin a specific rune-ide version; otherwise the
+# latest release version is read from Maven Central's metadata.
+#
+# This is a stopgap: a future version of this script will download a
+# prebuilt rune-dsl-ls jar from a GitHub release instead of resolving a full
+# Maven classpath, avoiding the Maven/network dependency below.
+
+set -e
+
+GROUP_PATH="org/finos/rune"
+ARTIFACT="rune-ide"
+MAIN_CLASS="com.regnosys.rosetta.ide.server.RosettaServerLauncher"
+CACHE_DIR="${CLAUDE_PLUGIN_DATA:-$HOME/.cache/rune-dsl-ls}"
+
+if ! command -v mvn >/dev/null 2>&1; then
+  echo "rune-lsp: 'mvn' not found on PATH. Install Maven (https://maven.apache.org/install.html) to run the Rune DSL language server." >&2
+  exit 1
+fi
+
+VERSION="$RUNE_DSL_LS_VERSION"
+if [ -z "$VERSION" ]; then
+  VERSION=$(curl -fsSL "https://repo1.maven.org/maven2/$GROUP_PATH/$ARTIFACT/maven-metadata.xml" | sed -n 's/.*<release>\(.*\)<\/release>.*/\1/p')
+  if [ -z "$VERSION" ]; then
+    echo "rune-lsp: could not resolve the latest org.finos.rune:rune-ide version from Maven Central. Set RUNE_DSL_LS_VERSION to pin one explicitly." >&2
+    exit 1
+  fi
+fi
+
+VERSION_DIR="$CACHE_DIR/$VERSION"
+CLASSPATH_FILE="$VERSION_DIR/classpath.txt"
+
+if [ ! -f "$CLASSPATH_FILE" ]; then
+  mkdir -p "$VERSION_DIR"
+  POM="$VERSION_DIR/pom.xml"
+  cat > "$POM" <<EOF
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>rune-dsl-ls</groupId>
+  <artifactId>rune-dsl-ls-launcher</artifactId>
+  <version>1</version>
+  <dependencies>
+    <dependency>
+      <groupId>org.finos.rune</groupId>
+      <artifactId>$ARTIFACT</artifactId>
+      <version>$VERSION</version>
+    </dependency>
+  </dependencies>
+</project>
+EOF
+  echo "rune-lsp: resolving org.finos.rune:rune-ide:$VERSION from Maven Central (first run only, cached under $CACHE_DIR)..." >&2
+  mvn -q -f "$POM" dependency:build-classpath -Dmdep.outputFile="$CLASSPATH_FILE"
+fi
+
+exec java -cp "$(cat "$CLASSPATH_FILE")" "$MAIN_CLASS" "$@"
