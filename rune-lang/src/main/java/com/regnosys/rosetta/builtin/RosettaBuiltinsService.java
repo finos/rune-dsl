@@ -35,7 +35,7 @@ public class RosettaBuiltinsService {
 	public final URL annotationsURL = Objects.requireNonNull(this.getClass().getResource(annotationsURI.path()));
 	
 	// TODO: cache?
-	private RosettaModel getModel(ResourceSet resourceSet, URI uri) {
+	private RosettaModel getModel(ResourceSet resourceSet, URI uri, URL url) {
 		Resource resource = resourceSet.getResource(uri, false);
 		if (resource == null) { // TODO: this is a workaround for not having proper support for classpath uris in the Xtext language server
 			String[] pathParts = uri.path().split("/");
@@ -43,14 +43,21 @@ public class RosettaBuiltinsService {
 			resource = resourceSet.getResources().stream()
 				.filter(r -> r.getURI().path().endsWith(uriFile))
 				.findAny()
-				.orElseThrow();
+				.orElse(null);
+		}
+		if (resource == null) {
+			// Nothing has loaded this resource into the resource set yet (e.g. this is the very
+			// first build of a workspace, before any file has triggered a lazy cross-reference
+			// into it). Load it directly from the URL resolved via the classloader, which works
+			// regardless of whether "classpath:" URIs are resolvable in this environment.
+			resource = resourceSet.getResource(URI.createURI(url.toString()), true);
 		}
 		return (RosettaModel)resource.getContents().get(0);
 	}
 	public RosettaModel getBasicTypesModel(ResourceSet resourceSet) {
-		return getModel(resourceSet, basicTypesURI);
+		return getModel(resourceSet, basicTypesURI, basicTypesURL);
 	}
 	public RosettaModel getAnnotationsResource(ResourceSet resourceSet) {
-		return getModel(resourceSet, annotationsURI);
+		return getModel(resourceSet, annotationsURI, annotationsURL);
 	}
 }
