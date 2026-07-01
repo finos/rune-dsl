@@ -72,7 +72,7 @@ public class TransformAnnotationHelper {
 			return Optional.empty();
 		}
 		return Optional.ofNullable(schema.getName())
-				.flatMap(id -> configuration.get().findSerializationConfigById(id))
+				.flatMap(name -> configuration.get().findSchemaConfig(name))
 				.map(c -> c.getConfigPath());
 	}
 
