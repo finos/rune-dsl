@@ -39,9 +39,9 @@ class RosettaFileSystemScannerTest {
 
 		List<URI> found = scan(root);
 
-		Assertions.assertTrue(found.stream().anyMatch(u -> u.toFileString().endsWith("src/main/rosetta/Foo.rosetta")),
+		Assertions.assertTrue(found.stream().anyMatch(u -> normalize(u).endsWith("src/main/rosetta/Foo.rosetta")),
 				"Expected to find the source file: " + found);
-		Assertions.assertTrue(found.stream().noneMatch(u -> u.toFileString().contains("/target/")),
+		Assertions.assertTrue(found.stream().noneMatch(u -> normalize(u).contains("/target/")),
 				"Expected no URIs under target/: " + found);
 	}
 
@@ -53,8 +53,12 @@ class RosettaFileSystemScannerTest {
 		List<URI> found = scan(root);
 
 		Assertions.assertTrue(
-				found.stream().anyMatch(u -> u.toFileString().endsWith("src/main/rosetta/targetting/Foo.rosetta")),
+				found.stream().anyMatch(u -> normalize(u).endsWith("src/main/rosetta/targetting/Foo.rosetta")),
 				"Expected to find the source file: " + found);
+	}
+
+	private static String normalize(URI uri) {
+		return uri.toFileString().replace('\\', '/');
 	}
 
 	private List<URI> scan(Path root) {
