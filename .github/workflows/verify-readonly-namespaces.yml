@@ -2,7 +2,7 @@ name: Verify read-only namespaces
 
 # Reusable workflow that fails when a read-only Rune namespace is
 # changed in a pull request. The read-only namespaces are read from the
-# `readOnlyNamespaces` list of the project's rune-config.yml. Call it with:
+# `namespaceConfig` entries marked `readOnly: true` of the project's rune-config.yml. Call it with:
 #
 #   jobs:
 #     readonly-namespaces:
@@ -14,7 +14,7 @@ on:
   workflow_call:
     inputs:
       config-path:
-        description: "Path to the rune-config.yml whose readOnlyNamespaces lists the read-only namespaces."
+        description: "Path to the rune-config.yml whose namespaceConfig lists the read-only namespaces."
         required: true
         type: string
       base-ref:

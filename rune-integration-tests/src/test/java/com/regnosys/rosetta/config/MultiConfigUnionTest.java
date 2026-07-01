@@ -20,14 +20,14 @@ import com.regnosys.rosetta.RosettaRuntimeModule;
 import com.regnosys.rosetta.config.file.RuneConfigurationFileProvider;
 
 /**
- * Verifies that serializationConfig is the union of all configs on the classpath, with the current
+ * Verifies that namespaceConfig is the union of all configs on the classpath, with the current
  * project (the primary config returned by {@link RuneConfigurationFileProvider#get()}) shadowing
  * dependency configs on id collisions, while the model still comes from the current project only.
  */
 public class MultiConfigUnionTest {
 
 	@Test
-	public void serializationConfigIsUnionedWithCurrentProjectFirst() {
+	public void namespaceConfigIsUnionedWithCurrentProjectFirst() {
 		Injector injector = Guice.createInjector(new RosettaRuntimeModule() {
 			@SuppressWarnings("unused")
 			public Class<? extends RuneConfigurationFileProvider> bindRuneConfigurationFileProvider() {
@@ -39,17 +39,18 @@ public class MultiConfigUnionTest {
 		// Model comes from the current project (primary) config only.
 		assertEquals("XYZ Model", config.getModel().getName());
 
-		// myXmlSchema is defined in both; the current project's config path wins.
+		// myXmlSchema is defined in both (under the shared id my-confirmation); the current project's config path wins.
 		assertEquals("xml-config/my-xml-schema-config.json",
-				config.findSerializationConfigById("myXmlSchema").orElseThrow().getConfigPath());
+				config.findSchemaConfig("myXmlSchema").orElseThrow().getConfigPath());
 		// myJson is defined only in the current project.
 		assertEquals("json-config/my-json-config.json",
-				config.findSerializationConfigById("myJson").orElseThrow().getConfigPath());
+				config.findSchemaConfig("myJson").orElseThrow().getConfigPath());
 		// myOtherSchema is defined only in the dependency config and is included in the union.
 		assertEquals("xml-config/my-other-schema-config.json",
-				config.findSerializationConfigById("myOtherSchema").orElseThrow().getConfigPath());
+				config.findSchemaConfig("myOtherSchema").orElseThrow().getConfigPath());
 
-		assertEquals(3, config.getSerializationConfig().size());
+		// rosetta-model, my-confirmation, my-json (current project) + my-other (dependency); my-confirmation shadowed by id.
+		assertEquals(4, config.getNamespaceConfig().size());
 	}
 
 	/**
@@ -85,7 +86,7 @@ public class MultiConfigUnionTest {
 	public void getResourcesUsesTheInjectedClassLoader(@TempDir Path depClasspathRoot) throws Exception {
 		// A dependency-style config that is only reachable through a dedicated classloader, not the TCCL.
 		Files.writeString(depClasspathRoot.resolve(RuneConfigurationFileProvider.FILE_NAME),
-				"model:\n  name: Dep\nserializationConfig:\n- id: depOnly\n  configPath: dep.json\n");
+				"model:\n  name: Dep\nnamespaceConfig:\n- id: depOnly\n  namespace: dep.only\n  schemaConfig:\n    schema: depOnly\n    configPath: dep.json\n");
 		URLClassLoader depClassLoader = new URLClassLoader(new URL[] { depClasspathRoot.toUri().toURL() }, null);
 
 		String primaryPath = Paths.get(getClass().getResource("/rune-config-test.yml").toURI()).toString();

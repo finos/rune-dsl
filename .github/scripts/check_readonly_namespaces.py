@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Fail the build when a read-only Rune namespace is changed.
 
-The read-only namespaces are read from the ``readOnlyNamespaces`` list of a
-``rune-config.yml`` file, so they are configured in a single place. A change to a
-``.rosetta`` file is a violation when the file's namespace is read-only either:
+The read-only namespaces are read from the ``namespaceConfig`` entries marked
+``readOnly: true`` of a ``rune-config.yml`` file, so they are configured in a single
+place. A change to a ``.rosetta`` file is a violation when the file's namespace is
+read-only either:
 
 * **before** the change -- you may not modify, delete or move a file *out of* a
   read-only namespace; or
@@ -44,34 +45,70 @@ def namespace_of(text):
 
 
 def read_readonly_namespaces(config_path):
-    """Read the `readOnlyNamespaces` list from a rune-config.yml file."""
+    """Read the read-only namespaces from the ``namespaceConfig`` list of a rune-config.yml file.
+
+    A namespace is read-only when its ``namespaceConfig`` entry declares ``readOnly: true``.
+    Only the standard library is used, so this walks the block-style YAML directly rather than
+    parsing it fully: it collects the ``namespace`` of each list item that also sets
+    ``readOnly: true``, ignoring any nested keys (e.g. those under ``schemaConfig``).
+    """
     config = Path(config_path)
     if not config.is_file():
         return []
+
     patterns = []
-    in_block = False
+    in_section = False
+    section_indent = 0
+    item_indent = None
+    current = None  # {"namespace": str|None, "read_only": bool} for the entry being parsed
+
+    def flush():
+        if current and current["read_only"] and current["namespace"]:
+            patterns.append(current["namespace"])
+
     for raw in config.read_text(encoding="utf-8").splitlines():
         line = re.sub(r'\s+#.*$', '', raw).rstrip()  # strip trailing comments
         if not line.strip():
             continue
-        key = re.match(r'^readOnlyNamespaces\s*:\s*(.*)$', line)
-        if key:
-            inline = key.group(1).strip()
-            if inline.startswith("["):
-                patterns.extend(_clean(v) for v in inline.strip("[]").split(",") if _clean(v))
-                in_block = False
-            else:
-                in_block = True
+        indent = len(line) - len(line.lstrip())
+
+        if not in_section:
+            if re.match(r'^(\s*)namespaceConfig\s*:\s*$', line):
+                in_section = True
+                section_indent = indent
+                item_indent = None
+                current = None
             continue
-        if in_block:
-            item = re.match(r'^\s*-\s*(.+?)\s*$', line)
-            if item:
-                value = _clean(item.group(1))
-                if value:
-                    patterns.append(value)
-            elif not line[:1].isspace():
-                in_block = False  # reached the next top-level key
+
+        # A key at or below the section indent that is not a list item ends the section.
+        if indent <= section_indent and not line.lstrip().startswith("-"):
+            flush()
+            current = None
+            in_section = False
+            continue
+
+        item = re.match(r'^(\s*)-\s*(.*)$', line)
+        if item and (item_indent is None or len(item.group(1)) == item_indent):
+            item_indent = len(item.group(1))
+            flush()
+            current = {"namespace": None, "read_only": False}
+            _apply(current, item.group(2))
+        elif current is not None:
+            _apply(current, line.lstrip())
+    flush()
     return patterns
+
+
+def _apply(current, text):
+    """Track the ``namespace`` and ``readOnly`` keys of the current ``namespaceConfig`` entry."""
+    kv = re.match(r'^(\w+)\s*:\s*(.*)$', text)
+    if not kv:
+        return
+    key, value = kv.group(1), _clean(kv.group(2))
+    if key == "namespace":
+        current["namespace"] = value
+    elif key == "readOnly":
+        current["read_only"] = value.lower() == "true"
 
 
 def _clean(value):
@@ -122,7 +159,7 @@ def main():
     parser = argparse.ArgumentParser(description="Verify that read-only Rune namespaces are not changed.")
     parser.add_argument("--base", required=True, help="Git ref to diff HEAD against.")
     parser.add_argument("--config", required=True,
-                        help="Path to the rune-config.yml whose readOnlyNamespaces lists the read-only patterns.")
+                        help="Path to the rune-config.yml whose namespaceConfig lists the read-only namespaces.")
     parser.add_argument("--root", default=".", help="Directory to scan for .rosetta files.")
     args = parser.parse_args()
 
