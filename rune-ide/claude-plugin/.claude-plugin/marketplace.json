@@ -1,0 +1,31 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "rune-dsl",
+  "description": "Claude Code plugins for developing with the Rune DSL (finos/rune-dsl)",
+  "owner": {
+    "name": "REGnosys"
+  },
+  "plugins": [
+    {
+      "name": "rune-lsp",
+      "description": "Rune DSL (.rosetta) language server for code intelligence: diagnostics, go to definition, hover and find references",
+      "version": "1.1.0",
+      "author": {
+        "name": "REGnosys"
+      },
+      "homepage": "https://github.com/finos/rune-dsl",
+      "source": "./plugin",
+      "category": "development",
+      "strict": false,
+      "lspServers": {
+        "rune-dsl-ls": {
+          "command": "${CLAUDE_PLUGIN_ROOT}/bin/rune-lsp",
+          "extensionToLanguage": {
+            ".rosetta": "rosetta"
+          },
+          "startupTimeout": 120000
+        }
+      }
+    }
+  ]
+}

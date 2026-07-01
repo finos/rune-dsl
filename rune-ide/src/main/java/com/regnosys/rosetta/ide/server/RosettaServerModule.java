@@ -27,6 +27,7 @@ import org.eclipse.xtext.ide.server.ServerModule;
 import org.eclipse.xtext.ide.server.WorkspaceManager;
 import org.eclipse.xtext.ide.server.concurrent.RequestManager;
 import org.eclipse.xtext.service.AbstractGenericModule;
+import org.eclipse.xtext.util.IFileSystemScanner;
 
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
@@ -87,5 +88,8 @@ public class RosettaServerModule extends AbstractGenericModule {
 	}
 	public Class<? extends WorkspaceManager> bindWorkspaceManager() {
 		return RosettaWorkspaceManager.class;
+	}
+	public Class<? extends IFileSystemScanner> bindIFileSystemScanner() {
+		return RosettaFileSystemScanner.class;
 	}
 }
