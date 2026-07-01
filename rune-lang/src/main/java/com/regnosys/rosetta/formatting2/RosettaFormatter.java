@@ -36,6 +36,7 @@ import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.RosettaScope;
 import com.regnosys.rosetta.rosetta.RosettaSegment;
+import com.regnosys.rosetta.rosetta.Schema;
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
 import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.TypeCallArgument;
@@ -211,6 +212,20 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 	private void format(TypeParameter ele, IFormattableDocument document) {
 		document.format(document.prepend(ele.getTypeCall(), IHiddenRegionFormatter::oneSpace));
 		formatDefinition(ele, document);
+	}
+
+	private void format(Schema ele, IFormattableDocument document) {
+		document.append(regionFor(ele).keyword(grammarAccess.getSchemaAccess().getSchemaKeyword_0()),
+				IHiddenRegionFormatter::oneSpace);
+		document.prepend(regionFor(ele).feature(RosettaPackage.Literals.ROSETTA_NAMED__NAME),
+				IHiddenRegionFormatter::oneSpace);
+		document.prepend(regionFor(ele).assignment(grammarAccess.getSchemaAccess().getFormatAssignment_2()),
+				IHiddenRegionFormatter::oneSpace);
+		formattingUtil.indentInner(ele, document);
+		ele.getAnnotations().forEach(ann -> {
+			document.prepend(ann, IHiddenRegionFormatter::newLine);
+			document.format(ann);
+		});
 	}
 
 	private void format(RosettaExternalFunction ele, IFormattableDocument document) {

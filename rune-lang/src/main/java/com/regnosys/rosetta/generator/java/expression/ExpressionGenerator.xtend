@@ -99,6 +99,7 @@ import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
 import com.regnosys.rosetta.types.CardinalityProvider
 import com.regnosys.rosetta.types.RAttribute
+import com.regnosys.rosetta.types.RAliasType
 import com.regnosys.rosetta.types.RChoiceOption
 import com.regnosys.rosetta.types.RChoiceType
 import com.regnosys.rosetta.types.RDataType
@@ -392,7 +393,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	private def JavaStatementBuilder choiceFeatureCall(JavaStatementBuilder receiverCode, RMetaAnnotatedType receiverType, boolean isMulti, (RDataType) => JavaType getResultItemType, (RDataType, JavaVariable) => StringConcatenationClient getMappingCode, JavaStatementScope scope) {
-		val receiverRType = receiverType.RType
+		val receiverRType = stripFromTypeAliases(receiverType.RType)
 		val t = if (receiverRType instanceof RChoiceType) {
 			receiverRType.asRDataType
 		} else {
@@ -1208,21 +1209,15 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	 * path of option attributes. Shared by the `as` and `switch` operators.
 	 */
 	private def JavaStatementBuilder navigateToChoiceOption(JavaStatementBuilder choiceArg, RChoiceType choiceType, RChoiceOption goal, Context context) {
-		val goalRType = goal.type.RType.stripFromTypeAliases
+		// Do NOT strip the alias: findChoiceOptionPath uses alias identity for the leaf match so
+		// that two aliases of the same base type are not confused.
+		val goalRType = goal.type.RType
+		// The path ends on the option whose type is exactly `goalRType`, so the navigated value is already of
+		// the requested type - no downcast is needed.
 		val optionPath = findChoiceOptionPath(choiceType, goalRType)
-		val navigated = optionPath.fold(choiceArg, [acc, opt|
+		optionPath.fold(choiceArg, [acc, opt|
 			acc.attributeCall(opt.choiceType.withNoMeta, (opt.EObject as ChoiceOption).buildRAttribute, false, context.expectedType, context.scope)
 		])
-		// The option we navigated to may be a strict supertype of the requested option - e.g. when the
-		// requested option extends a sibling option, or is reachable only via such a sibling. In that case the
-		// runtime value is not guaranteed to be an instance of the requested option, so narrow safely with an
-		// `instanceof` guard rather than letting an external coercion emit a hard cast that throws at runtime.
-		val navigatedRType = optionPath.get(optionPath.size - 1).type.RType.stripFromTypeAliases
-		if (goalRType.equals(navigatedRType)) {
-			navigated
-		} else {
-			narrowToSubtype(navigated, goalRType.toJavaReferenceType, !navigated.expressionType.isMapperS, context)
-		}
 	}
 	private def JavaStatementBuilder narrowToSubtype(JavaStatementBuilder mapperCode, JavaType targetType, boolean isMulti, Context context) {
 		val filterScope = context.scope.lambdaScope

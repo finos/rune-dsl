@@ -259,7 +259,7 @@ public class RObjectFactory {
 		return typeCache.get(data, () -> new RDataType(data, modelIdProvider, this, typeProvider));
 	}
 	public RChoiceType buildRChoiceType(Choice choice) {
-		return new RChoiceType(choice, modelIdProvider, typeProvider, this);
+		return new RChoiceType(choice, modelIdProvider, typeProvider, this, typeSystem);
 	}
 	public REnumType buildREnumType(RosettaEnumeration enumeration) {
 		return new REnumType(enumeration, modelIdProvider, this);
