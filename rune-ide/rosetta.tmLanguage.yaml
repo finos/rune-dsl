@@ -616,7 +616,7 @@ repository:
         name: meta.annotated.transform.rosetta
         begin: '{{wordStart}}(ingest|enrich|projection){{wordEnd}}'
         beginCaptures:
-          1: { name: keyword.other.transform.rosetta }
+          1: { name: variable.annotation.transform.rosetta }
         end: (?=\])|{{sectionEnd}}
         patterns:
         - include: '#comment'
