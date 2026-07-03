@@ -1,17 +1,21 @@
 #!/usr/bin/env python3
-"""Fail the build when a read-only Rune namespace is changed.
+"""Fail the build when a read-only Rune namespace is changed by hand.
 
 The read-only namespaces are read from the ``namespaceConfig`` entries marked
 ``readOnly: true`` of a ``rune-config.yml`` file, so they are configured in a single
-place. A change to a ``.rosetta`` file is a violation when the file's namespace is
-read-only either:
+place. Both the **base** and the **head** version of that config are consulted, so a
+change that comes together with the matching config change -- e.g. a schema import that
+adds a read-only namespace and its generated files in one pull request -- is allowed:
 
-* **before** the change -- you may not modify, delete or move a file *out of* a
-  read-only namespace; or
-* **after** the change -- you may not add a file to, or move a file *into*, a
-  read-only namespace.
+* an **added** file is a violation only if its namespace is already read-only in the
+  *base* config (adding the files that first make a namespace read-only is allowed);
+* a **deleted** file is a violation only if its namespace is still read-only in the
+  *head* config (deleting a read-only namespace together with its config entry is allowed);
+* a **modified** file is a violation only if its namespace is read-only in *both* the
+  base and head config (a hand-edit of content that stays read-only). A modification that
+  flips the read-only flag either way is treated as a deliberate lock/unlock and allowed.
 
-The build also fails if a configured pattern matches no namespace in the
+The build also fails if a configured (head) pattern matches no namespace in the
 repository, which catches stale or mistyped patterns.
 
 The checker is self-contained: it only uses the Python standard library and git.
@@ -45,15 +49,22 @@ def namespace_of(text):
 
 
 def read_readonly_namespaces(config_path):
-    """Read the read-only namespaces from the ``namespaceConfig`` list of a rune-config.yml file.
+    """Read-only namespaces from a rune-config.yml file on disk (empty list if it is absent)."""
+    config = Path(config_path)
+    if not config.is_file():
+        return []
+    return parse_readonly_namespaces(config.read_text(encoding="utf-8"))
+
+
+def parse_readonly_namespaces(text):
+    """Read the read-only namespaces from the ``namespaceConfig`` list of rune-config.yml content.
 
     A namespace is read-only when its ``namespaceConfig`` entry declares ``readOnly: true``.
     Only the standard library is used, so this walks the block-style YAML directly rather than
     parsing it fully: it collects the ``namespace`` of each list item that also sets
     ``readOnly: true``, ignoring any nested keys (e.g. those under ``schemaConfig``).
     """
-    config = Path(config_path)
-    if not config.is_file():
+    if not text:
         return []
 
     patterns = []
@@ -66,7 +77,7 @@ def read_readonly_namespaces(config_path):
         if current and current["read_only"] and current["namespace"]:
             patterns.append(current["namespace"])
 
-    for raw in config.read_text(encoding="utf-8").splitlines():
+    for raw in text.splitlines():
         line = re.sub(r'\s+#.*$', '', raw).rstrip()  # strip trailing comments
         if not line.strip():
             continue
@@ -155,6 +166,33 @@ def describe(code, old, new):
     return f"{new} ({verb})" if old == new else f"{old} -> {new} ({verb})"
 
 
+def classify(code, old, new, ns_before, ns_after, base_patterns, head_patterns):
+    """Return a violation message for a changed file, or None when the change is allowed.
+
+    The file's namespace before (``ns_before``) and after (``ns_after``) the change is compared
+    against the read-only patterns of the base and head config:
+
+    * a file entering a namespace (an add, or a move into a different namespace) is blocked when that
+      namespace is already read-only in the *base* config;
+    * a file leaving a namespace (a delete, or a move out of a different namespace) is blocked when
+      that namespace is still read-only in the *head* config;
+    * a file that stays in its namespace but is modified is blocked when that namespace is read-only in
+      *both* configs.
+
+    A rename between two namespaces is both an entry and a leave, so it reuses the first two checks.
+    """
+    entered = ns_after is not None and ns_after != ns_before
+    left = ns_before is not None and ns_before != ns_after
+    stayed = ns_before is not None and ns_before == ns_after
+    if entered and matches_any(ns_after, base_patterns):
+        return f"{describe(code, old, new)} adds a file to read-only namespace '{ns_after}'."
+    if left and matches_any(ns_before, head_patterns):
+        return f"{describe(code, old, new)} removes a file from read-only namespace '{ns_before}'."
+    if stayed and matches_any(ns_before, base_patterns) and matches_any(ns_before, head_patterns):
+        return f"{describe(code, old, new)} modifies a file in read-only namespace '{ns_before}'."
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(description="Verify that read-only Rune namespaces are not changed.")
     parser.add_argument("--base", required=True, help="Git ref to diff HEAD against.")
@@ -163,32 +201,34 @@ def main():
     parser.add_argument("--root", default=".", help="Directory to scan for .rosetta files.")
     args = parser.parse_args()
 
-    patterns = read_readonly_namespaces(args.config)
-    if not patterns:
-        print(f"No readOnlyNamespaces configured in '{args.config}'; nothing to check.")
+    # Read the read-only namespaces from both the head config (the checked-out worktree) and the base
+    # config (read from the base ref), so added/deleted/modified files can be judged against the right one.
+    head_patterns = read_readonly_namespaces(args.config)
+    base_patterns = parse_readonly_namespaces(git_show(args.base, args.config))
+    if not head_patterns and not base_patterns:
+        print(f"No read-only namespaces configured in '{args.config}' (base or head); nothing to check.")
         return 0
 
     failures = []
 
-    # 1. Stale-pattern check: every configured pattern must match at least one namespace.
+    # 1. Stale-pattern check: every configured head pattern must match at least one namespace.
     all_namespaces = repository_namespaces(args.root)
-    for pattern in patterns:
+    for pattern in head_patterns:
         if not any(fnmatch.fnmatchcase(ns, pattern) for ns in all_namespaces):
             failures.append(
                 f"Read-only namespace pattern '{pattern}' does not match any .rosetta namespace "
                 f"under '{args.root}' (stale or mistyped pattern?)."
             )
 
-    # 2. Changed-file check: a file may not be read-only before OR after the change.
+    # 2. Changed-file check.
     for code, old, new in changed_rosetta_files(args.base):
         if not (old.endswith(".rosetta") or new.endswith(".rosetta")):
             continue
-        before = None if code in ("A", "C") else namespace_of(git_show(args.base, old))
-        after = None if code == "D" else namespace_of(read_worktree(new))
-        if matches_any(before, patterns):
-            failures.append(f"{describe(code, old, new)} changes a file in read-only namespace '{before}'.")
-        elif matches_any(after, patterns):
-            failures.append(f"{describe(code, old, new)} moves a file into read-only namespace '{after}'.")
+        ns_before = None if code in ("A", "C") else namespace_of(git_show(args.base, old))
+        ns_after = None if code == "D" else namespace_of(read_worktree(new))
+        violation = classify(code, old, new, ns_before, ns_after, base_patterns, head_patterns)
+        if violation:
+            failures.append(violation)
 
     if failures:
         print("Read-only namespace check FAILED:")
@@ -196,7 +236,8 @@ def main():
             print(f"  - {failure}")
         return 1
 
-    print(f"Read-only namespace check passed ({len(patterns)} pattern(s) checked).")
+    checked = sorted(set(base_patterns) | set(head_patterns))
+    print(f"Read-only namespace check passed ({len(checked)} pattern(s) checked).")
     return 0
 
 
