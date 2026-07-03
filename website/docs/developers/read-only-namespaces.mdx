@@ -60,12 +60,10 @@ jobs:
       config-path: rune-config.yml
 ```
 
-On each pull request the workflow maps every changed `.rosetta` file to its namespace and fails if
-a change affects a read-only namespace. Concretely, a change is rejected when a file's namespace is
-read-only **before** the change (a file may not be modified, deleted, or moved *out of* a read-only
-namespace) or **after** the change (a file may not be added to, or moved *into*, a read-only
-namespace). It also fails if a configured pattern matches no namespace at all, which catches stale
-or mistyped entries.
+On each pull request the workflow maps every changed `.rosetta` file to its namespace and fails if a
+change hand-edits a read-only namespace. The changes a schema import makes when it adds or removes a
+read-only namespace together with its configuration are still allowed. It also fails if a configured
+pattern matches no namespace at all, which catches stale or mistyped entries.
 
 ## Making an intentional change
 
