@@ -10,6 +10,8 @@ name: Verify read-only namespaces
 #       with:
 #         config-path: rune-config.yml
 #
+# For more info, see https://rune-docs.netlify.app/developers/read-only-namespaces
+#
 on:
   workflow_call:
     inputs:
