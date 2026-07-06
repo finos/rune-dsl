@@ -8,7 +8,8 @@ name: Verify read-only namespaces
 #     readonly-namespaces:
 #       uses: finos/rune-dsl/.github/workflows/verify-readonly-namespaces.yml@main
 #       with:
-#         config-path: rune-config.yml
+#         config-path: rosetta-source/src/main/resources/rune-config.yml
+#         root: rosetta-source/src/main/rosetta
 #
 # For more info, see https://rune-docs.netlify.app/developers/read-only-namespaces
 #
