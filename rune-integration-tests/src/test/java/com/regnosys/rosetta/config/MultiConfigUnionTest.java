@@ -18,6 +18,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.regnosys.rosetta.RosettaRuntimeModule;
 import com.regnosys.rosetta.config.file.RuneConfigurationFileProvider;
+import com.regnosys.rosetta.utils.RuneConfigurationHolder;
 
 /**
  * Verifies that namespaceConfig is the union of all configs on the classpath, with the current
@@ -34,7 +35,7 @@ public class MultiConfigUnionTest {
 				return UnionConfigFileProvider.class;
 			}
 		});
-		RuneConfiguration config = injector.getInstance(RuneConfiguration.class);
+		RuneConfiguration config = injector.getInstance(RuneConfigurationHolder.class).get();
 
 		// Model comes from the current project (primary) config only.
 		assertEquals("XYZ Model", config.getModel().getName());
