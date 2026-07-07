@@ -78,8 +78,13 @@ public class TransformAnnotationHelper {
 
 	/** Whether the schema declares the {@code [externalConfig]} annotation. */
 	public boolean isExternalConfig(Schema schema) {
+		return findExternalConfigAnnotation(schema).isPresent();
+	}
+
+	/** The schema's {@code [externalConfig]} annotation, if it declares one. */
+	public Optional<AnnotationRef> findExternalConfigAnnotation(Schema schema) {
 		return schema.getAnnotations().stream()
-				.map(AnnotationRef::getAnnotation)
-				.anyMatch(a -> a != null && "externalConfig".equals(a.getName()));
+				.filter(a -> a.getAnnotation() != null && "externalConfig".equals(a.getAnnotation().getName()))
+				.findFirst();
 	}
 }

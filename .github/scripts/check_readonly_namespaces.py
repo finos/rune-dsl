@@ -16,7 +16,8 @@ adds a read-only namespace and its generated files in one pull request -- is all
   flips the read-only flag either way is treated as a deliberate lock/unlock and allowed.
 
 The build also fails if a configured (head) pattern matches no namespace in the
-repository, which catches stale or mistyped patterns.
+repository, which catches stale or mistyped patterns, and if the config file does not
+exist in the working tree, which catches a mistyped config path.
 
 The checker is self-contained: it only uses the Python standard library and git.
 """
@@ -46,14 +47,6 @@ def namespace_of(text):
         return None
     match = NAMESPACE_RE.search(text)
     return match.group(1) if match else None
-
-
-def read_readonly_namespaces(config_path):
-    """Read-only namespaces from a rune-config.yml file on disk (empty list if it is absent)."""
-    config = Path(config_path)
-    if not config.is_file():
-        return []
-    return parse_readonly_namespaces(config.read_text(encoding="utf-8"))
 
 
 def parse_readonly_namespaces(text):
@@ -203,7 +196,14 @@ def main():
 
     # Read the read-only namespaces from both the head config (the checked-out worktree) and the base
     # config (read from the base ref), so added/deleted/modified files can be judged against the right one.
-    head_patterns = read_readonly_namespaces(args.config)
+    head_config = read_worktree(args.config)
+    if head_config is None:
+        # A missing config would otherwise silently disable the check, hiding a mistyped config-path
+        # (or a config that was deleted or renamed without updating the workflow).
+        print("Read-only namespace check FAILED:")
+        print(f"  - Config file '{args.config}' does not exist in the working tree. Is the config-path correct?")
+        return 1
+    head_patterns = parse_readonly_namespaces(head_config)
     base_patterns = parse_readonly_namespaces(git_show(args.base, args.config))
     if not head_patterns and not base_patterns:
         print(f"No read-only namespaces configured in '{args.config}' (base or head); nothing to check.")
