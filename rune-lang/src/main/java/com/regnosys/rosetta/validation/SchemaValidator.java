@@ -43,14 +43,14 @@ public class SchemaValidator extends AbstractDeclarativeRosettaValidator {
      */
     @Check
     public void checkExternalConfigMatchesConfiguration(Schema schema) {
-        boolean external = transformAnnotationHelper.isExternalConfig(schema);
+        Optional<AnnotationRef> externalAnnotation = transformAnnotationHelper.findExternalConfigAnnotation(schema);
         Optional<RuneSchemaConfiguration> configEntry = Optional.ofNullable(schema.getName())
                 .flatMap(name -> config.get().findSchemaConfig(name))
                 .filter(c -> c.getConfigPath() != null);
-        if (external && configEntry.isEmpty()) {
+        if (externalAnnotation.isPresent() && configEntry.isEmpty()) {
             error("Schema '" + schema.getName() + "' is marked [externalConfig] but no external serialization configuration is configured for it",
-                    schema, RosettaPackage.Literals.ROSETTA_NAMED__NAME);
-        } else if (!external && configEntry.isPresent()) {
+                    externalAnnotation.get(), SimplePackage.Literals.ANNOTATION_REF__ANNOTATION);
+        } else if (externalAnnotation.isEmpty() && configEntry.isPresent()) {
             warning("An external serialization configuration is configured for schema '" + schema.getName()
                             + "', but the schema is not marked [externalConfig], so it will be ignored",
                     schema, RosettaPackage.Literals.ROSETTA_NAMED__NAME);
