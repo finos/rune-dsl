@@ -3,11 +3,13 @@ package com.regnosys.rosetta.validation;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.inject.Inject;
 
+import com.regnosys.rosetta.tests.util.ReloadableConfigInjectorProvider;
 import com.regnosys.rosetta.utils.RuneConfigurationHolder;
 
 /**
@@ -32,9 +34,15 @@ public class SchemaValidatorConfigReloadTest extends AbstractValidatorTest {
 	@Inject
 	private RuneConfigurationHolder configHolder;
 
+	@BeforeEach
+	void initialConfig() {
+		ReloadableConfigInjectorProvider.useConfig("schema-reload/rune-config-without-schema.yml");
+		configHolder.reload();
+	}
+
 	@AfterEach
 	void resetConfig() {
-		ReloadableConfigInjectorProvider.CONFIG_RESOURCE.set(ReloadableConfigInjectorProvider.INITIAL_CONFIG);
+		ReloadableConfigInjectorProvider.resetConfig();
 		configHolder.reload();
 	}
 
@@ -48,7 +56,7 @@ public class SchemaValidatorConfigReloadTest extends AbstractValidatorTest {
 
 		// Simulate a live config update (e.g. a schema import writing rune-config.yml followed by
 		// rosetta/updateConfig): the config now has an entry for the schema and the holder reloads.
-		ReloadableConfigInjectorProvider.CONFIG_RESOURCE.set("schema-reload/rune-config-with-schema.yml");
+		ReloadableConfigInjectorProvider.useConfig("schema-reload/rune-config-with-schema.yml");
 		configHolder.reload();
 
 		assertNoIssues(MODEL);
