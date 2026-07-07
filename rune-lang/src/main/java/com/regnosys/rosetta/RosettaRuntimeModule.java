@@ -125,10 +125,11 @@ public class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 		return CachingResourceValidator.class;
 	}
 	
-	// RuneConfiguration is served by the RuneConfigurationHolder (a jakarta.inject.Provider) so it
-	// can be reloaded when rune-config.yml changes.
+	// RuneConfiguration must be read through the RuneConfigurationHolder at use time so that a
+	// reload of rune-config.yml is visible to every consumer. A direct injection would capture the
+	// value once and silently go stale, so it fails fast with a pointer to the holder instead.
 	public Class<? extends Provider<? extends RuneConfiguration>> provideRuneConfiguration() {
-		return RuneConfigurationHolder.class;
+		return RuneConfigurationHolder.DirectInjectionGuard.class;
 	}
 	
 	public Class<? extends ResourceFormatterService> bindResourceFormatterService() {
