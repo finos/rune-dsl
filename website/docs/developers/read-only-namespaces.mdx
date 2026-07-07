@@ -57,8 +57,14 @@ jobs:
   readonly-namespaces:
     uses: finos/rune-dsl/.github/workflows/verify-readonly-namespaces.yml@main
     with:
-      config-path: rune-config.yml
+      config-path: rosetta-source/src/main/resources/rune-config.yml
+      root: rosetta-source/src/main/rosetta
 ```
+
+`config-path` is the repository path of the `rune-config.yml`; the check fails if no file exists
+there, so a mistyped path cannot silently disable the protection. `root` is optional and defaults to
+the whole repository — pointing it at the folder holding the model's `.rosetta` sources keeps
+samples, test fixtures and build output from being mistaken for model namespaces.
 
 On each pull request the workflow maps every changed `.rosetta` file to its namespace and fails if a
 change hand-edits a read-only namespace. The changes a schema import makes when it adds or removes a
@@ -83,8 +89,8 @@ The reusable workflow accepts the following inputs under `with:`.
 
 | Input | Required | Default | Description |
 |-------|----------|---------|-------------|
-| `config-path` | Yes | — | Path to the `rune-config.yml` whose `namespaceConfig` entries marked `readOnly: true` define the read-only namespaces. |
+| `config-path` | Yes | — | Path to the `rune-config.yml` whose `namespaceConfig` entries marked `readOnly: true` define the read-only namespaces. The check fails if no file exists at this path. |
 | `base-ref` | No | The pull request base branch, otherwise the repository's default branch | The git ref that `HEAD` is compared against to determine which files changed. |
-| `root` | No | `.` | Directory under which to scan for `.rosetta` files (both when matching read-only patterns and when reporting changes). |
+| `root` | No | `.` | Directory scanned for the model's `.rosetta` files when verifying that every read-only pattern still matches a namespace. Changed files are checked repository-wide regardless. |
 | `checker-ref` | No | `main` | The ref of `finos/rune-dsl` from which the checker script is fetched. Pin this to a tag or commit to fix the version of the check. |
 | `bypass-label` | No | `override-readonly-namespaces` | The pull request label that, when present, skips the check to allow an intentional one-off change to a read-only namespace. |
