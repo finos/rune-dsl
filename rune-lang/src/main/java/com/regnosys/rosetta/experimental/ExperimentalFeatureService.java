@@ -1,13 +1,13 @@
 package com.regnosys.rosetta.experimental;
 
-import com.regnosys.rosetta.config.RosettaModelConfiguration;
+import com.regnosys.rosetta.utils.RuneConfigurationHolder;
 import jakarta.inject.Inject;
 
 public class ExperimentalFeatureService {
     @Inject
-    private RosettaModelConfiguration modelConfiguration;
-    
+    private RuneConfigurationHolder configuration;
+
     public boolean isEnabled(ExperimentalFeature feature) {
-        return modelConfiguration.getEnableExperimentalFeatures().contains(feature);
+        return configuration.get().getModel().getEnableExperimentalFeatures().contains(feature);
     }
 }

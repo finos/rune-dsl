@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import com.regnosys.rosetta.config.file.RosettaConfigurationFileProvider;
+import com.regnosys.rosetta.config.file.RuneConfigurationFileProvider;
 import com.regnosys.rosetta.tests.util.CustomConfigTestHelper;
 
 class ModelMetaGeneratorFilteredNamespaceTest {
@@ -38,17 +38,17 @@ class ModelMetaGeneratorFilteredNamespaceTest {
 		CustomConfigTestHelper.compileToClassesForModel(List.of(model1Code, model2Code), Model2FileConfigProvider.class);
 	}
 
-	private static class Model1FileConfigProvider extends RosettaConfigurationFileProvider {
+	private static class Model1FileConfigProvider extends RuneConfigurationFileProvider {
 		@Override
 		public URL get() {
-			return Thread.currentThread().getContextClassLoader().getResource("rosetta-filtered-config-model1.yml");
+			return Thread.currentThread().getContextClassLoader().getResource("rune-filtered-config-model1.yml");
 		}
 	}
 
-	private static class Model2FileConfigProvider extends RosettaConfigurationFileProvider {
+	private static class Model2FileConfigProvider extends RuneConfigurationFileProvider {
 		@Override
 		public URL get() {
-			return Thread.currentThread().getContextClassLoader().getResource("rosetta-filtered-config-model2.yml");
+			return Thread.currentThread().getContextClassLoader().getResource("rune-filtered-config-model2.yml");
 		}
 	}
 }

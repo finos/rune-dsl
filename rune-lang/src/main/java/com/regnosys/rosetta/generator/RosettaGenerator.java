@@ -3,7 +3,7 @@
  */
 package com.regnosys.rosetta.generator;
 
-import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration;
+import com.regnosys.rosetta.utils.RuneConfigurationHolder;
 import com.regnosys.rosetta.generator.external.ExternalGenerators;
 import com.regnosys.rosetta.generator.java.JavaClassGenerator;
 import com.regnosys.rosetta.generator.java.condition.ConditionGenerator;
@@ -83,7 +83,7 @@ public class RosettaGenerator implements IGenerator2 {
 	private ResourceAwareFSAFactory fsaFactory;
 
 	@Inject
-	private RosettaGeneratorsConfiguration config;
+	private RuneConfigurationHolder configuration;
 
 	// For files that are ignored during code generation
 	private final Set<String> ignoredFiles = Set.of(
@@ -278,7 +278,7 @@ public class RosettaGenerator implements IGenerator2 {
 	}
 
 	private boolean shouldGenerate(RosettaModel model) {
-		return config.getNamespaceFilter().test(model.getName()) || model.isOverridden();
+		return configuration.get().getGenerators().getNamespaceFilter().test(model.getName()) || model.isOverridden();
 	}
 
 	private boolean isIgnoredFile(Resource resource) {

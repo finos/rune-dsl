@@ -1,10 +1,10 @@
 package com.regnosys.rosetta.generator.java.object;
 
 import com.google.inject.ImplementedBy;
-import com.regnosys.rosetta.config.RosettaGeneratorsConfiguration;
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface;
 import com.regnosys.rosetta.generator.java.types.JavaPojoProperty;
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
+import com.regnosys.rosetta.utils.RuneConfigurationHolder;
 
 import jakarta.inject.Inject;
 
@@ -21,7 +21,7 @@ public interface IShouldPrune {
 		@Inject
 		private JavaTypeTranslator translator;
 		@Inject
-		private RosettaGeneratorsConfiguration config;
+		private RuneConfigurationHolder configuration;
 		
 		@Override
 		public boolean shouldBePruned(JavaPojoInterface pojo, JavaPojoProperty prop) {
@@ -34,7 +34,7 @@ public interface IShouldPrune {
 		}
 		
 		private boolean isPruningDisabledInConfig(JavaPojoInterface pojo, JavaPojoProperty prop) {
-			return config.doNotPrune().stream()
+			return configuration.get().getGenerators().doNotPrune().stream()
 					.filter(ref -> ref.getType().equals(pojo.getCanonicalName().withDots()))
 					.filter(ref -> ref.getAttribute().equals(prop.getRuneName()))
 					.findAny()

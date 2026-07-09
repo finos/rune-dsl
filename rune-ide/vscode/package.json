@@ -82,6 +82,10 @@
       {
         "id": "implicitVariable",
         "description": "The implicit variable (`item`)."
+      },
+      {
+        "id": "schema",
+        "description": "A reference to a schema."
       }
     ],
     "semanticTokenModifiers": [
@@ -116,7 +120,8 @@
           "function": ["entity.name.function.rosetta"],
           "function.defaultLibrary": ["entity.name.function.builtin.rosetta"],
           "rule": ["entity.name.rule.rosetta"],
-          "implicitVariable": ["constant.language.rosetta"]
+          "implicitVariable": ["constant.language.rosetta"],
+          "schema": ["entity.name.schema.rosetta"]
         }
       }
     ]

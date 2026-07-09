@@ -34,6 +34,9 @@ import com.regnosys.rosetta.rosetta.simple.Condition
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration
+import com.regnosys.rosetta.rosetta.simple.TransformAnnotation
+import com.regnosys.rosetta.utils.TransformAnnotationHelper
+import com.rosetta.model.lib.transform.SerializationFormat
 import com.regnosys.rosetta.types.CardinalityProvider
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.types.RFeature
@@ -100,6 +103,7 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 	@Inject extension ModelIdProvider
 	@Inject LabelProviderGeneratorUtil labelProviderUtil
 	@Inject AliasUtil aliasUtil
+	@Inject TransformAnnotationHelper transformAnnotationHelper
 	
 	override protected streamObjects(RosettaModel model) {
 		model.elements.stream.filter[it instanceof Function && !(it instanceof FunctionDispatch)].map[it as Function].map[rTypeBuilderFactory.buildRFunction(it)]
@@ -123,6 +127,9 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 				val labelProviderClass = rFunction.toLabelProviderJavaClass
 				annotations.put(RuneLabelProvider, '''labelProvider=«labelProviderClass».class''' )
 			}
+			if (origin instanceof Function && !(origin as Function).transform.empty) {
+				addTransformAnnotation((origin as Function).transform.head, annotations)
+			}
 			rBuildClass(rFunction, javaFunctionClass, false, functionInterfaces, annotations, overridesEvaluate, scope)
 		}
 	}
@@ -132,6 +139,15 @@ class FunctionGenerator extends RObjectJavaClassGenerator<RFunction, RGeneratedJ
 		rFunction.classBody(javaFunctionClass, isStatic, overridesEvaluate, dependencies, functionInterfaces, annotations, classScope)
 	}
 	
+	private def void addTransformAnnotation(TransformAnnotation transform, Map<Class<?>, StringConcatenationClient> annotations) {
+		val annotationClass = transform.kind.toTransformAnnotationClass
+		val id = transformAnnotationHelper.getSchemaId(transform).orElse(null)
+		val format = transformAnnotationHelper.getFormat(transform).orElse(null)
+		val configPath = transformAnnotationHelper.getConfigPath(transform).orElse(null)
+		val StringConcatenationClient attributes = '''«IF id !== null»id = "«id»", «ENDIF»«IF format !== null»format = «SerializationFormat».«format.name»«ENDIF»«IF configPath !== null», configPath = "«configPath»"«ENDIF»'''
+		annotations.put(annotationClass, attributes)
+	}
+
 	private def getQualifyingFunctionInterface(List<RAttribute> inputs) {
 		val parameterVariable = inputs.head.RMetaAnnotatedType.toListOrSingleJavaType(inputs.head.multi)
 		JavaParameterizedType.from(new TypeReference<IQualifyFunctionExtension<?>>() {}, parameterVariable)

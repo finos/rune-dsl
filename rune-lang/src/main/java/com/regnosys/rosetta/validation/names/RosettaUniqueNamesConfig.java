@@ -57,6 +57,10 @@ public class RosettaUniqueNamesConfig {
         
         // Check scopes have a unique name
         addGlobalCheck(RosettaPackage.eINSTANCE.getRosettaScope(), false);
+
+        // Check serialisation schemas have a unique name. A schema does not generate a file,
+        // so case-sensitive uniqueness is sufficient.
+        addGlobalCheck(RosettaPackage.eINSTANCE.getSchema(), true);
         
         // Check attributes in data have a unique name
         addLocalCheck(SimplePackage.eINSTANCE.getAttribute(), Attribute.class, this::getDirectDataContainer, Data::getAttributes, true);

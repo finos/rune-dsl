@@ -1,0 +1,10 @@
+model:
+  name: Custom config test model
+dependencies:
+generators:
+namespaceConfig:
+- id: external-xml
+  namespace: com.custom.ns
+  schemaConfig:
+    schema: externalXmlSchema
+    configPath: xml-config/external-xml-schema-config.json

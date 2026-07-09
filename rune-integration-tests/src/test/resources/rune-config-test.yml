@@ -1,0 +1,22 @@
+model:
+  name: XYZ Model
+dependencies:
+generators:
+  namespaces:
+  - xyz.*   # project namespace
+  - abc.def # forked namespace
+namespaceConfig:
+- id: rosetta-model
+  namespace: com.rosetta.model.*
+  readOnly: true
+- id: my-confirmation           # read-only AND schema-configured on a single unit
+  namespace: abc.def
+  readOnly: true
+  schemaConfig:
+    schema: myXmlSchema
+    configPath: xml-config/my-xml-schema-config.json
+- id: my-json                   # schema-configured only
+  namespace: xyz.json
+  schemaConfig:
+    schema: myJson
+    configPath: json-config/my-json-config.json

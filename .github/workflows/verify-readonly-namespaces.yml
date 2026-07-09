@@ -1,0 +1,95 @@
+name: Verify read-only namespaces
+
+# Reusable workflow that fails when a read-only Rune namespace is
+# changed in a pull request. The read-only namespaces are read from the
+# `namespaceConfig` entries marked `readOnly: true` of the project's rune-config.yml. Call it with:
+#
+#   jobs:
+#     readonly-namespaces:
+#       uses: finos/rune-dsl/.github/workflows/verify-readonly-namespaces.yml@main
+#       with:
+#         config-path: rosetta-source/src/main/resources/rune-config.yml
+#         root: rosetta-source/src/main/rosetta
+#
+# For more info, see https://rune-docs.netlify.app/developers/read-only-namespaces
+#
+on:
+  workflow_call:
+    inputs:
+      config-path:
+        description: "Path to the rune-config.yml whose namespaceConfig lists the read-only namespaces."
+        required: true
+        type: string
+      base-ref:
+        description: "Git ref to diff HEAD against. Defaults to the pull request base branch, or the repository default branch."
+        required: false
+        default: ""
+        type: string
+      root:
+        description: "Directory under which to scan for .rosetta files."
+        required: false
+        default: "."
+        type: string
+      checker-ref:
+        description: "Ref of finos/rune-dsl from which to fetch the checker script."
+        required: false
+        default: "main"
+        type: string
+      bypass-label:
+        description: "Pull request label that skips the check, to allow an intentional one-off change to a read-only namespace."
+        required: false
+        default: "override-readonly-namespaces"
+        type: string
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository under test
+        uses: actions/checkout@v6
+        with:
+          # Full history so HEAD can be diffed against the base ref.
+          fetch-depth: 0
+
+      - name: Check out the read-only-namespace checker
+        uses: actions/checkout@v6
+        with:
+          repository: finos/rune-dsl
+          ref: ${{ inputs.checker-ref }}
+          path: .rune-dsl-checker
+          sparse-checkout: .github/scripts
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Resolve base ref
+        id: base
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.base-ref }}" ]; then
+            base="${{ inputs.base-ref }}"
+          elif [ -n "${{ github.base_ref }}" ]; then
+            git fetch --no-tags origin "${{ github.base_ref }}"
+            base="origin/${{ github.base_ref }}"
+          else
+            git fetch --no-tags origin "${{ github.event.repository.default_branch }}"
+            base="origin/${{ github.event.repository.default_branch }}"
+          fi
+          echo "ref=$base" >> "$GITHUB_OUTPUT"
+          echo "Diffing against base ref: $base"
+
+      - name: Check read-only namespaces
+        if: ${{ !contains(github.event.pull_request.labels.*.name, inputs.bypass-label) }}
+        shell: bash
+        run: |
+          python .rune-dsl-checker/.github/scripts/check_readonly_namespaces.py \
+            --base "${{ steps.base.outputs.ref }}" \
+            --config "${{ inputs.config-path }}" \
+            --root "${{ inputs.root }}"
+
+      - name: Read-only namespace check bypassed
+        if: ${{ contains(github.event.pull_request.labels.*.name, inputs.bypass-label) }}
+        run: |
+          echo "::notice::Read-only namespace check skipped because the '${{ inputs.bypass-label }}' label is present on this pull request."

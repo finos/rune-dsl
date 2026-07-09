@@ -70,6 +70,7 @@ const sidebars: SidebarsConfig = {
         'modelling-components/data-validation',
         'modelling-components/function',
         'modelling-components/mapping',
+        'modelling-components/schema',
         'modelling-components/namespace',
         'modelling-components/reporting',
       ],
@@ -99,6 +100,10 @@ const sidebars: SidebarsConfig = {
         {
           type: 'doc',
           id: 'developers/contribute-to-rune',
+        },
+        {
+          type: 'doc',
+          id: 'developers/read-only-namespaces',
         },
       ],
     },

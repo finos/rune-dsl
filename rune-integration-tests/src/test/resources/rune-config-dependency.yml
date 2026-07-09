@@ -1,0 +1,14 @@
+model:
+  name: Dependency Model
+namespaceConfig:
+- id: my-confirmation           # same id as the current project -> shadowed by it
+  namespace: abc.def
+  readOnly: true
+  schemaConfig:
+    schema: myXmlSchema
+    configPath: dependency/should-be-shadowed-by-current-project.json
+- id: my-other
+  namespace: dep.ns
+  schemaConfig:
+    schema: myOtherSchema
+    configPath: xml-config/my-other-schema-config.json

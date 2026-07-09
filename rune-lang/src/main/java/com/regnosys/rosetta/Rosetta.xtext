@@ -110,7 +110,7 @@ Function:
 	)
 	('extends' superFunction=[Function|QualifiedName])?
 	':' RosettaDefinable?
-	(References|Annotations)*
+	(transform+=TransformAnnotation|References|Annotations)*
 	('inputs' ':' inputs += Attribute+)?
 	('output' ':' output = Attribute)?
 	
@@ -177,6 +177,22 @@ RosettaRootElement:
 	| Data
 	| Choice
 	| Function
+	| Schema
+;
+
+Schema:
+	'schema' RosettaNamed format=[RosettaEnumValue|ValidID]
+	Annotations*
+;
+
+enum TransformKind:
+	  INGEST = 'ingest'
+	| ENRICH = 'enrich'
+	| PROJECTION = 'projection'
+;
+
+TransformAnnotation:
+	'[' kind=TransformKind (ref=[SchemaOrFormat|ValidID])? ']'
 ;
 
 
@@ -219,7 +235,7 @@ TypeParameterValidID:
 
 ValidID:
 	ID | 'condition' | 'source' | 'value' | 'version'
-	| 'pattern' | 'scope'
+	| 'pattern' | 'scope' | 'ingest' | 'enrich' | 'projection'
 ;
 
 

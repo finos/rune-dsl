@@ -18,16 +18,27 @@ package com.regnosys.rosetta.ide.server;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import jakarta.inject.Inject;
 
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionParams;
+import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
+import org.eclipse.lsp4j.DidChangeWatchedFilesRegistrationOptions;
+import org.eclipse.lsp4j.FileSystemWatcher;
 import org.eclipse.lsp4j.FormattingOptions;
+import org.eclipse.lsp4j.InitializeParams;
+import org.eclipse.lsp4j.InitializeResult;
+import org.eclipse.lsp4j.InitializedParams;
 import org.eclipse.lsp4j.InlayHint;
 import org.eclipse.lsp4j.InlayHintParams;
+import org.eclipse.lsp4j.Registration;
+import org.eclipse.lsp4j.RegistrationParams;
 import org.eclipse.lsp4j.SemanticTokens;
 import org.eclipse.lsp4j.SemanticTokensDelta;
 import org.eclipse.lsp4j.SemanticTokensDeltaParams;
@@ -53,6 +64,8 @@ import com.regnosys.rosetta.ide.serializer.SerializerWarmUpService;
 import com.regnosys.rosetta.ide.semantictokens.ISemanticTokensService;
 import com.regnosys.rosetta.ide.semantictokens.SemanticToken;
 import com.regnosys.rosetta.ide.util.CodeActionUtils;
+import com.regnosys.rosetta.config.file.RuneConfigurationFileProvider;
+import com.regnosys.rosetta.utils.RuneConfigurationHolder;
 
 /**
  * TODO: contribute to Xtext.
@@ -61,10 +74,73 @@ import com.regnosys.rosetta.ide.util.CodeActionUtils;
 public class RosettaLanguageServerImpl extends LanguageServerImpl implements RosettaLanguageServer, RosettaTextDocumentService {
 	@Inject FormattingOptionsService formattingOptionsService;
 	@Inject CodeActionUtils codeActionUtils;
-	
+	@Inject RuneConfigurationHolder runeConfigurationHolder;
+
+	// The canonical config file names are owned by RuneConfigurationFileProvider; reuse them here
+	// rather than duplicating the literals.
+	private static final List<String> CONFIG_FILE_NAMES =
+			List.of(RuneConfigurationFileProvider.FILE_NAME, RuneConfigurationFileProvider.LEGACY_FILE_NAME);
+
+	private ClientCapabilities clientCapabilities;
+
 	@Inject
 	void warmupSerializer(SerializerWarmUpService warmUpService) {
 		warmUpService.warmUp();
+	}
+
+	@Override
+	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
+		this.clientCapabilities = params.getCapabilities();
+		return super.initialize(params);
+	}
+
+	@Override
+	public void initialized(InitializedParams params) {
+		super.initialized(params);
+		registerConfigurationFileWatcher();
+	}
+
+	/**
+	 * Asks the client to notify us (via {@code workspace/didChangeWatchedFiles}) when a Rune
+	 * configuration file changes, so we can hot-reload it. No-op when the client cannot dynamically
+	 * register capabilities (e.g. a minimal LSP/BSP host client), in which case hot-reload is simply
+	 * unavailable.
+	 */
+	protected void registerConfigurationFileWatcher() {
+		if (!supportsWatchedFilesDynamicRegistration()) {
+			return;
+		}
+		List<FileSystemWatcher> watchers = CONFIG_FILE_NAMES.stream()
+				.map(name -> new FileSystemWatcher(Either.forLeft("**/" + name)))
+				.collect(Collectors.toList());
+		Registration registration = new Registration(UUID.randomUUID().toString(),
+				"workspace/didChangeWatchedFiles",
+				new DidChangeWatchedFilesRegistrationOptions(watchers));
+		getLanguageClient().registerCapability(new RegistrationParams(List.of(registration)));
+	}
+
+	private boolean supportsWatchedFilesDynamicRegistration() {
+		return clientCapabilities != null
+				&& clientCapabilities.getWorkspace() != null
+				&& clientCapabilities.getWorkspace().getDidChangeWatchedFiles() != null
+				&& Boolean.TRUE.equals(clientCapabilities.getWorkspace().getDidChangeWatchedFiles().getDynamicRegistration());
+	}
+
+	@Override
+	public void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
+		boolean configChanged = params.getChanges().stream().anyMatch(change -> isConfigFile(change.getUri()));
+		if (configChanged) {
+			// Reload the configuration and rebuild everything so generation and validation re-run with it.
+			runeConfigurationHolder.reload();
+			if (getWorkspaceManager() instanceof RosettaWorkspaceManager workspaceManager) {
+				workspaceManager.rebuildAll(CancelIndicator.NullImpl);
+			}
+		}
+		super.didChangeWatchedFiles(params);
+	}
+
+	private boolean isConfigFile(String uri) {
+		return uri != null && CONFIG_FILE_NAMES.stream().anyMatch(uri::endsWith);
 	}
 	
 	@Override

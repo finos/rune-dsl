@@ -26,8 +26,8 @@ import org.eclipse.xtext.validation.IResourceValidator;
 
 import com.google.inject.Binder;
 import com.regnosys.rosetta.cache.RequestScopedCacheModule;
-import com.regnosys.rosetta.config.RosettaConfiguration;
-import com.regnosys.rosetta.config.file.FileBasedRosettaConfigurationProvider;
+import com.regnosys.rosetta.config.RuneConfiguration;
+import com.regnosys.rosetta.utils.RuneConfigurationHolder;
 import com.regnosys.rosetta.derivedstate.RosettaDerivedStateComputer;
 import com.regnosys.rosetta.formatting2.FormatterRequestWithDefaultPreferencesProvider;
 import com.regnosys.rosetta.formatting2.ResourceFormatterService;
@@ -125,8 +125,11 @@ public class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 		return CachingResourceValidator.class;
 	}
 	
-	public Class<? extends Provider<? extends RosettaConfiguration>> provideRosettaConfiguration() {
-		return FileBasedRosettaConfigurationProvider.class;
+	// RuneConfiguration must be read through the RuneConfigurationHolder at use time so that a
+	// reload of rune-config.yml is visible to every consumer. A direct injection would capture the
+	// value once and silently go stale, so it fails fast with a pointer to the holder instead.
+	public Class<? extends Provider<? extends RuneConfiguration>> provideRuneConfiguration() {
+		return RuneConfigurationHolder.DirectInjectionGuard.class;
 	}
 	
 	public Class<? extends ResourceFormatterService> bindResourceFormatterService() {
