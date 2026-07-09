@@ -353,7 +353,7 @@ Computed 5-color scale:
   background-image: url('/img/rune/icon/Rune-icon-components-pink.png');
 }
 .theme-doc-sidebar-menu .menu__link[href="/docs/serialization"]::before {
-  background-image: url('/img/rune/icon/Rune-serialisation-icon-pink.svg');
+  background-image: url('/img/rune/icon/Rune-serialisation-pink.svg');
 }
 .theme-doc-sidebar-menu .menu__link[href="/docs/developers"]::before {
   background-image: url('/img/rune/icon/Rune-icon-developers-pink.png');
@@ -406,7 +406,7 @@ Computed 5-color scale:
   background-image: url('/img/rune/icon/Rune-icon-components-pink.png');
 }
 .page-docs-serialization h1::before {
-  background-image: url('/img/rune/icon/Rune-serialisation-icon-pink.svg');
+  background-image: url('/img/rune/icon/Rune-serialisation-pink.svg');
 }
 .page-docs-developers h1::before {
   background-image: url('/img/rune/icon/Rune-icon-developers-pink.png');
