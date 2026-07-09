@@ -113,7 +113,6 @@ public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
                     required -> required [[15, 12] .. [15, 12]]
                     reverse -> reverse [[15, 12] .. [15, 12]]
                     rule -> rule [[15, 12] .. [15, 12]]
-                    schema -> schema [[15, 12] .. [15, 12]]
                     segment -> segment [[15, 12] .. [15, 12]]
                     set -> set [[15, 12] .. [15, 12]]
                     single -> single [[15, 12] .. [15, 12]]
