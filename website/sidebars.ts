@@ -80,7 +80,7 @@ const sidebars: SidebarsConfig = {
       id: 'serialization/serialization',
       label: 'Serialization',
       customProps: {
-        icon: '/img/rune/icon/Rune-serialisation-icon-pink.svg',
+        icon: '/img/rune/icon/Rune-serialisation-pink.svg',
       },
     },
     {
