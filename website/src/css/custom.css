@@ -352,6 +352,9 @@ Computed 5-color scale:
 .theme-doc-sidebar-menu .menu__link[href="/docs/modelling-components"]::before {
   background-image: url('/img/rune/icon/Rune-icon-components-pink.png');
 }
+.theme-doc-sidebar-menu .menu__link[href="/docs/serialization"]::before {
+  background-image: url('/img/rune/icon/Rune-serialisation-icon-pink.svg');
+}
 .theme-doc-sidebar-menu .menu__link[href="/docs/developers"]::before {
   background-image: url('/img/rune/icon/Rune-icon-developers-pink.png');
 }
@@ -365,6 +368,9 @@ Computed 5-color scale:
 [data-theme='dark'] .theme-doc-sidebar-menu .menu__link[href="/docs/modelling-components"]::before {
   background-image: url('/img/rune/icon/Rune-icon-components-green.png');
 }
+[data-theme='dark'] .theme-doc-sidebar-menu .menu__link[href="/docs/serialization"]::before {
+  background-image: url('/img/rune/icon/Rune-serialisation-green.svg');
+}
 [data-theme='dark'] .theme-doc-sidebar-menu .menu__link[href="/docs/developers"]::before {
   background-image: url('/img/rune/icon/Rune-icon-developers-green.png');
 }
@@ -377,6 +383,7 @@ Computed 5-color scale:
  * ------------------- */
 .page-docs-get-started h1::before,
 .page-docs-modelling-components h1::before,
+.page-docs-serialization h1::before,
 .page-docs-developers h1::before,
 .page-docs-resources h1::before,
 .page-docs-get-started-introducing-rune h1::before {
@@ -398,6 +405,9 @@ Computed 5-color scale:
 .page-docs-modelling-components h1::before {
   background-image: url('/img/rune/icon/Rune-icon-components-pink.png');
 }
+.page-docs-serialization h1::before {
+  background-image: url('/img/rune/icon/Rune-serialisation-icon-pink.svg');
+}
 .page-docs-developers h1::before {
   background-image: url('/img/rune/icon/Rune-icon-developers-pink.png');
 }
@@ -414,6 +424,9 @@ Computed 5-color scale:
 }
 [data-theme='dark'] .page-docs-modelling-components h1::before {
   background-image: url('/img/rune/icon/Rune-icon-components-green.png');
+}
+[data-theme='dark'] .page-docs-serialization h1::before {
+  background-image: url('/img/rune/icon/Rune-serialisation-green.svg');
 }
 [data-theme='dark'] .page-docs-developers h1::before {
   background-image: url('/img/rune/icon/Rune-icon-developers-green.png');
