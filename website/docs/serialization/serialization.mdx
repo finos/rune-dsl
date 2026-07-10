@@ -9,7 +9,7 @@ description: "The standard for JSON serialization of Rune model objects."
 
 This document describes the standard for JSON serialization of Rune defined model objects. This format includes all relevant object information and improves efficiency, readability, maintainability, and interoperability.
 
-The Rune serialization format is the default for models written in the Rune DSL. For example, the [FINOS Common Domain Model (CDM)](https://www.finos.org/common-domain-model) adopts it as its default serialization format from CDM version 7 onwards.
+The Rune serialization format is the default for models written in the Rune DSL.
 
 Throughout this document, examples are drawn from the [Rune demo model](https://github.com/rosetta-models/demo), and comparisons are made between the **legacy format** (the serialization format used by Rune models before this standard) and the **Rune serialization format**.
 
@@ -127,25 +127,29 @@ type DrivingLicence:
 **Legacy format**
 
 ``` json
-   "drivingLicence": {
-     "dateOfIssuance": {
-        "value": "2017-12-18",
-        "meta": {
-          "globalKey": "3f0b12"
-        }
-      }
-    }
+   "drivingLicence": [
+     {
+       "dateOfIssuance": {
+         "value": "2017-12-18",
+         "meta": {
+           "globalKey": "3f0b12"
+         }
+       }
+     }
+   ]
 ```
 
 **Rune serialization format**
 
 ``` json
-   "drivingLicence": {
-     "dateOfIssuance": {
-        "@key": "3f0b12",
-        "@data": "2017-12-18"
-      }
-    }
+   "drivingLicence": [
+     {
+       "dateOfIssuance": {
+         "@key": "3f0b12",
+         "@data": "2017-12-18"
+       }
+     }
+   ]
 ```
 
 ### 4.4 Referencing Model
@@ -295,7 +299,7 @@ type Customer:
      "meta": {
         "location": [ {
            "scope": "DOCUMENT",
-           "value": "address-1"
+           "value": "delivery-1"
          } ]
       }
    }
@@ -305,7 +309,7 @@ type Customer:
 
 ``` json
    "address": {
-     "@key:scoped": "address-1",
+     "@key:scoped": "delivery-1",
      "@data": "1 Long Lane, London"
    }
 ```
@@ -331,7 +335,7 @@ type Order:
    "toAddress": {
      "address": {
        "scope": "DOCUMENT",
-       "value": "address-1"
+       "value": "delivery-1"
      }
    }
 ```
@@ -340,7 +344,7 @@ type Order:
 
 ``` json
    "toAddress": {
-     "@ref:scoped": "address-1"
+     "@ref:scoped": "delivery-1"
    }
 ```
 
@@ -609,12 +613,12 @@ enum Currency:
     },
     "fullName": "Jane Doe",
     "address": {
-      "@key:scoped": "address-1",
+      "@key:scoped": "delivery-1",
       "@data": "1 Long Lane, London"
     }
   },
   "toAddress": {
-    "@ref:scoped": "address-1"
+    "@ref:scoped": "delivery-1"
   }
 }
 ```
@@ -638,7 +642,3 @@ As a reference, we are using the terminology defined here: [Extending and Versio
 Key points from that document that relate to our context are:
 - A language change is **_backwards compatible_** if consumers of the revised language can correctly process all instances of the unrevised language. A software example is a word processor at version 5 being able to read and process version 4 documents. A schema example is a schema at version 5 being able to validate version 4 documents.
 - A language change is **_forwards compatible_** if consumers of the unrevised language can correctly process all instances of the revised language. An example is a word processing software at version 4 being able to read and process version 5 documents.  A schema example is a schema at version 4 being able to validate version 5 documents.
-
-## 8. Acknowledgements
-
-ISLA would like to thank the following individuals and firms for drawing up this document: Minesh Patel and Hugo Hills, REGnosys; Daniel Schwartz, FTAdvisory; Plamen Neykov, CLOUDRISK; and Jason Polis, ISDA
