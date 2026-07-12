@@ -67,14 +67,14 @@ The serialized form contains the model, version and fully qualified type name. T
 | New | Example | Desc |
 | --- | --- | --- |
 | `@model` | `"@model": "DEMO"` | This is the short name for the model, as defined in a config file (see the demo model's [rune-config.yml](https://github.com/rosetta-models/demo/blob/master/rosetta-source/src/main/resources/rune-config.yml)). |
-| `@version` | `"@version": "0.0.1"` | This is the release of the model, as defined by the model's published release (e.g. a [GitHub Release](https://github.com/rosetta-models/demo/releases)) |
 | `@type` | `"@type": "demo.emissions.model.VehicleOwnership"` | This is formatted as the namespace followed by the type name in the model with the case matching the model (AKA "Fully Qualified Type Name") |
+| `@version` | `"@version": "0.0.1"` | This is the release of the model, as defined by the model's published release (e.g. a [GitHub Release](https://github.com/rosetta-models/demo/releases)) |
 
 ``` json
 {
-  "@model": "DEMO",
-  "@version": "0.0.1",
-  "@type": "demo.emissions.model.VehicleOwnership"
+  "@model" : "demo",
+  "@type" : "demo.emissions.model.VehicleOwnership",
+  "@version" : "0.0.1"
 }
 ```
 
@@ -86,15 +86,15 @@ For example, the demo model defines `Vehicle` as a choice between `ElectricCar`,
 
 ``` json
 {
-  "vehicle": {
-    "@type": "demo.emissions.model.ElectricCar",
-    "colour": "Blue",
-    "doorNumber": 5,
-    "specification": {...},
-    "registrationID": "AB12CDE",
-    "vehicleTaxBand": "ABand",
-    "vehicleClassification": "M1_Passengers",
-    "batteryCapacity": 62
+  "vehicle" : {
+    "@type" : "demo.emissions.model.Car",
+    "specification" : {...},
+    "registrationID" : "X2",
+    "vehicleTaxBand" : "BBand",
+    "vehicleClassification" : "M1_Passengers",
+    "fuelCapacity" : 200,
+    "engine" : {...},
+    "carType" : "Hatchback"
   }
 }
 ```
@@ -178,55 +178,55 @@ Serialization is just taking the data in these _special_ attributes, not definin
 
 ##### 4.4.1.1 Global key
 
-The demo model's `OrderItem` type is annotated with `[metadata key]`, so it can be the target of a reference:
+The demo model's `VehicleOrderItem` type is annotated with `[metadata key]`, so it can be the target of a reference:
 
 **Rune Definition**
 
 ``` haskell
-type OrderItem:
+type VehicleOrderItem:
     [metadata key]
     name string (1..1)
     quantity number (1..1)
     price number (1..1)
-    currency Currency (1..1)
+    currency CurrencyEnum (1..1)
 ```
 
 **Legacy format**
 
 ``` json
-    "orderItem": {
-      "meta": {
-        "globalKey": "b6bdbfc2",
-        "externalKey": "item-1"
-      },
-      "name": "Cargo bicycle",
-      "quantity": 2,
-      "price": 1250.00,
-      "currency": "GBP"
-    }
+  "orderItem": {
+    "meta": {
+      "globalKey": "b6bdbfc2",
+      "externalKey": "item-1"
+    },
+    "name" : "OrderItemName001",
+    "quantity" : 10,
+    "price" : 115.65,
+    "currency" : "EUR"
+  }
 ```
 
 **Rune serialization format**
 
 ``` json
-    "orderItem": {
-      "@key": "b6bdbfc2",
-      "@key:external": "item-1",
-      "name": "Cargo bicycle",
-      "quantity": 2,
-      "price": 1250.00,
-      "currency": "GBP"
-    }
+  "orderItem" : {
+    "@key" : "b6bdbfc2",
+    "@key:external" : "item-1",
+    "name" : "OrderItemName001",
+    "quantity" : 10,
+    "price" : 115.65,
+    "currency" : "EUR"
+  }
 ```
 
 ##### 4.4.1.2 Global reference
 
-The `Order` type's `itemRef` attribute is annotated with `[metadata reference]` and points at an `OrderItem` by its key:
+The `OrderConfirmation` type's `orderItemReference` attribute is annotated with `[metadata reference]` and points at an `VehicleOrderItem` by its key:
 
 **Legacy format**
 
 ``` json
-    "itemRef": {
+    "orderItemReference": {
       "globalReference": "b6bdbfc2",
       "externalReference": "item-1"
     }
@@ -235,9 +235,9 @@ The `Order` type's `itemRef` attribute is annotated with `[metadata reference]` 
 **Rune serialization format**
 
 ``` json
-    "itemRef": {
-      "@ref": "b6bdbfc2",
-      "@ref:external": "item-1"
+    "orderItemReference" : {
+      "@ref" : "b6bdbfc2",
+      "@ref:external" : "item-1"
     }
 ```
 
@@ -280,26 +280,28 @@ More information on scoped references can be found in the [Metadata documentatio
 
 ##### 4.4.2.1 Location (key)
 
-The demo model's `Customer` type marks its `address` attribute as a `location`, so that other parts of the document can point at it:
+The demo model's `VehicleOrder` type marks its `customer` attribute as a `location`, so that other parts of the document can point at it:
 
 **Rune Definition**
 
 ``` haskell
-type Customer:
+type VehicleOrder:
     ...
-    address string (1..1)
+    customer Customer (1..1)
         [metadata location]
 ```
 
 **Legacy format**
 
 ``` json
-   "address": {
-     "value": "1 Long Lane, London",
+   "customer": {
+     "value": {
+        "fullName" : "John Doe"
+     },
      "meta": {
         "location": [ {
            "scope": "DOCUMENT",
-           "value": "delivery-1"
+           "value": "customer-1"
          } ]
       }
    }
@@ -308,34 +310,34 @@ type Customer:
 **Rune serialization format**
 
 ``` json
-   "address": {
-     "@key:scoped": "delivery-1",
-     "@data": "1 Long Lane, London"
-   }
+  "customer" : {
+      "@key:scoped" : "customer-1",
+      "fullName" : "John Doe"
+  }
 ```
 
 Where the annotated attribute is a complex type rather than a basic type, `@key:scoped` is merged into the serialized object alongside its other attributes and no `@data` wrapper is used — just as `@key` is in [4.4.1.1](#4411-global-key).
 
 ##### 4.4.2.2 Address (reference)
 
-The `Order` type's `toAddress` attribute is an `address` that points at the customer's `address` location:
+The `OrderConfirmation` type's `customerReference` attribute is an `address` (i.e. reference) that points at the customer's `customer` location (i.e. key):
 
 **Rune Definition**
 
 ``` haskell
-type Order:
+type OrderConfirmation:
     ...
-    toAddress string (1..1)
-        [metadata address "pointsTo"=Customer->address]
+    customerReference Customer (1..1) 
+        [metadata address "pointsTo"=VehicleOrder->customer] 
 ```
 
 **Legacy format**
 
 ``` json
-   "toAddress": {
+   "customerReference": {
      "address": {
        "scope": "DOCUMENT",
-       "value": "delivery-1"
+       "value": "customer-1"
      }
    }
 ```
@@ -343,8 +345,8 @@ type Order:
 **Rune serialization format**
 
 ``` json
-   "toAddress": {
-     "@ref:scoped": "delivery-1"
+   "customerReference": {
+     "@ref:scoped": "customer-1"
    }
 ```
 
@@ -547,81 +549,80 @@ Errors and warnings from serialization/deserialization will be logged.
 
 ## 6. Examples
 
-The demo model's `demo.rune.json.ingestion` namespace defines a set of types that, together, exercise all of the meta and referencing features described in the previous sections.
+The demo model's `demo.emissions.ingestion.json` namespace defines a set of types that, together, exercise all of the meta and referencing features described in the previous sections.
 
 An example of the JSON that corresponds to these types is then expressed to help illustrate how the serialized version would look.
 
 **Rune Definition**
 
 ``` haskell
-type Order:
-    identifier string (1..1)
+type VehicleOrder:
+    orderId string (1..1)
         [metadata id]
-    orderItem OrderItem (1..1)
-    itemRef OrderItem (1..1)
-        [metadata reference]
+    orderItem VehicleOrderItem (1..1)
     customer Customer (1..1)
-    toAddress string (1..1)
-        [metadata address "pointsTo"=Customer->address]
+        [metadata location]
+    orderConfirmation OrderConfirmation (1..1)
 
-type OrderItem:
+type VehicleOrderItem:
     [metadata key]
     name string (1..1)
     quantity number (1..1)
     price number (1..1)
-    currency Currency (1..1)
+    currency CurrencyEnum (1..1)
 
 type Customer:
     userId string (1..1)
         [metadata scheme]
     fullName string (1..1)
-    address string (1..1)
-        [metadata location]
 
-enum Currency:
-    GBP
-    USD
-    EUR
+type OrderConfirmation:
+    orderIdReference string (1..1)
+        [metadata reference]
+    orderItemReference VehicleOrderItem (1..1)
+        [metadata reference]
+    customerReference Customer (1..1)
+        [metadata address "pointsTo"=VehicleOrder->customer]
 ```
 
 **Rune Serialized JSON format**
 
 ``` json
 {
-  "@model": "DEMO",
-  "@version": "0.0.1",
-  "@type": "demo.rune.json.ingestion.Order",
-  "identifier": {
-    "@data": "ORD-0001"
+  "@model" : "demo",
+  "@type" : "demo.emissions.ingestion.json.VehicleOrder",
+  "@version" : "1.2.3",
+  "orderId" : {
+    "@key" : "order-id-key",
+    "@data" : "order_id_3"
   },
-  "orderItem": {
-    "@key": "b6bdbfc2",
-    "@key:external": "item-1",
-    "name": "Cargo bicycle",
-    "quantity": 2,
-    "price": 1250.00,
-    "currency": "GBP"
+  "orderItem" : {
+    "@key" : "order-item-key",
+    "name" : "OQOWUEROQIWU001",
+    "quantity" : 10,
+    "price" : 115.65,
+    "currency" : "EUR"
   },
-  "itemRef": {
-    "@ref": "b6bdbfc2",
-    "@ref:external": "item-1"
-  },
-  "customer": {
-    "userId": {
-      "@scheme": "http://www.example.com/coding-scheme/customer-id",
-      "@data": "C-4711"
+  "customer" : {
+    "@key:scoped" : "customer-key",
+    "userId" : {
+      "@scheme": "https://www.example.com/scheme1",
+      "@data": "user_id_3"
     },
-    "fullName": "Jane Doe",
-    "address": {
-      "@key:scoped": "delivery-1",
-      "@data": "1 Long Lane, London"
-    }
+    "fullName" : "Laura Gray"
   },
-  "toAddress": {
-    "@ref:scoped": "delivery-1"
+  "orderConfirmation" : {
+    "orderIdReference" : {
+      "@ref" : "order-id-key"
+    },
+    "orderItemReference" : {
+      "@ref" : "order-item-key"
+    },
+    "customerReference" : {
+      "@ref:scoped" : "customer-key"
+    }
   }
-}
-```
+}```
 
 > NOTE: `identifier` is annotated with `[metadata id]`, but because no `@ref` points at it in this document its `@key` is not written out (see [5.1.1](#511-key-and-ref)). The value is still wrapped in an object with `@data`, as described in [4.3](#43-types-with-meta). By contrast, `orderItem`'s `@key` IS included because `itemRef` references it.
 
