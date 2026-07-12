@@ -1092,42 +1092,40 @@ public class FunctionGeneratorTest {
         var funcCode = code.get("com.rosetta.test.model.functions.Foo");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
 
 
-				@ImplementedBy(Foo.FooDefault.class)
-				public abstract class Foo implements RosettaFunction {
+                @ImplementedBy(Foo.FooDefault.class)
+                public abstract class Foo implements RosettaFunction {
 
-					/**
-					* @param func\s
-					* @return result\s
-					*/
-					public Integer evaluate(Integer func) {
-						Integer result = doEvaluate(func);
-				\t\t
-						return result;
-					}
+                    /**
+                     * @param func
+                     * @return result
+                     */
+                    public Integer evaluate(Integer func) {
+                        Integer result = doEvaluate(func);
+                        return result;
+                    }
 
-					protected abstract Integer doEvaluate(Integer func);
+                    protected abstract Integer doEvaluate(Integer func);
 
-					public static class FooDefault extends Foo {
-						@Override
-						protected Integer doEvaluate(Integer func) {
-							Integer result = null;
-							return assignOutput(result, func);
-						}
-				\t\t
-						protected Integer assignOutput(Integer result, Integer func) {
-							result = func;
-				\t\t\t
-							return result;
-						}
-					}
-				}
-				""",
+                    public static class FooDefault extends Foo {
+                        @Override
+                        protected Integer doEvaluate(Integer func) {
+                            Integer result = null;
+                            return assignOutput(result, func);
+                        }
+
+                        protected Integer assignOutput(Integer result, Integer func) {
+                            result = func;
+                            return result;
+                        }
+                    }
+                }
+                """,
                 funcCode
         );
 
@@ -2186,41 +2184,40 @@ public class FunctionGeneratorTest {
         var generatedCode = generatorTestHelper.generateCode(code);
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
 
 
-				@ImplementedBy(FuncFoo.FuncFooDefault.class)
-				public abstract class FuncFoo implements RosettaFunction {
+                @ImplementedBy(FuncFoo.FuncFooDefault.class)
+                public abstract class FuncFoo implements RosettaFunction {
 
-					/**
-					* @param name\s
-					* @param name2\s
-					* @return result\s
-					*/
-					public String evaluate(String name, String name2) {
-						String result = doEvaluate(name, name2);
-				\t\t
-						return result;
-					}
+                    /**
+                     * @param name
+                     * @param name2
+                     * @return result
+                     */
+                    public String evaluate(String name, String name2) {
+                        String result = doEvaluate(name, name2);
+                        return result;
+                    }
 
-					protected abstract String doEvaluate(String name, String name2);
+                    protected abstract String doEvaluate(String name, String name2);
 
-					public static class FuncFooDefault extends FuncFoo {
-						@Override
-						protected String doEvaluate(String name, String name2) {
-							String result = null;
-							return assignOutput(result, name, name2);
-						}
-				\t\t
-						protected String assignOutput(String result, String name, String name2) {
-							return result;
-						}
-					}
-				}
-				""",
+                    public static class FuncFooDefault extends FuncFoo {
+                        @Override
+                        protected String doEvaluate(String name, String name2) {
+                            String result = null;
+                            return assignOutput(result, name, name2);
+                        }
+
+                        protected String assignOutput(String result, String name, String name2) {
+                            return result;
+                        }
+                    }
+                }
+                """,
                 generatedCode.get("com.rosetta.test.model.functions.FuncFoo"));
         generatorTestHelper.compileToClasses(generatorTestHelper.generateCode(code));
     }
@@ -2238,43 +2235,42 @@ public class FunctionGeneratorTest {
         var generatedCode = generatorTestHelper.generateCode(code);
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import java.util.ArrayList;
-				import java.util.List;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import java.util.ArrayList;
+                import java.util.List;
 
 
-				@ImplementedBy(FuncFoo.FuncFooDefault.class)
-				public abstract class FuncFoo implements RosettaFunction {
+                @ImplementedBy(FuncFoo.FuncFooDefault.class)
+                public abstract class FuncFoo implements RosettaFunction {
 
-					/**
-					* @param name\s
-					* @param name2\s
-					* @return result\s
-					*/
-					public List<String> evaluate(String name, String name2) {
-						List<String> result = doEvaluate(name, name2);
-				\t\t
-						return result;
-					}
+                    /**
+                     * @param name
+                     * @param name2
+                     * @return result
+                     */
+                    public List<String> evaluate(String name, String name2) {
+                        List<String> result = doEvaluate(name, name2);
+                        return result;
+                    }
 
-					protected abstract List<String> doEvaluate(String name, String name2);
+                    protected abstract List<String> doEvaluate(String name, String name2);
 
-					public static class FuncFooDefault extends FuncFoo {
-						@Override
-						protected List<String> doEvaluate(String name, String name2) {
-							List<String> result = new ArrayList<>();
-							return assignOutput(result, name, name2);
-						}
-				\t\t
-						protected List<String> assignOutput(List<String> result, String name, String name2) {
-							return result;
-						}
-					}
-				}
-				""",
+                    public static class FuncFooDefault extends FuncFoo {
+                        @Override
+                        protected List<String> doEvaluate(String name, String name2) {
+                            List<String> result = new ArrayList<>();
+                            return assignOutput(result, name, name2);
+                        }
+
+                        protected List<String> assignOutput(List<String> result, String name, String name2) {
+                            return result;
+                        }
+                    }
+                }
+                """,
                 generatedCode.get("com.rosetta.test.model.functions.FuncFoo"));
         generatorTestHelper.compileToClasses(generatorTestHelper.generateCode(code));
     }
@@ -2292,44 +2288,43 @@ public class FunctionGeneratorTest {
         var generatedCode = generatorTestHelper.generateCode(code);
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import java.math.BigDecimal;
-				import java.util.ArrayList;
-				import java.util.List;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import java.math.BigDecimal;
+                import java.util.ArrayList;
+                import java.util.List;
 
 
-				@ImplementedBy(FuncFoo.FuncFooDefault.class)
-				public abstract class FuncFoo implements RosettaFunction {
+                @ImplementedBy(FuncFoo.FuncFooDefault.class)
+                public abstract class FuncFoo implements RosettaFunction {
 
-					/**
-					* @param name\s
-					* @param name2\s
-					* @return result\s
-					*/
-					public List<BigDecimal> evaluate(String name, String name2) {
-						List<BigDecimal> result = doEvaluate(name, name2);
-				\t\t
-						return result;
-					}
+                    /**
+                     * @param name
+                     * @param name2
+                     * @return result
+                     */
+                    public List<BigDecimal> evaluate(String name, String name2) {
+                        List<BigDecimal> result = doEvaluate(name, name2);
+                        return result;
+                    }
 
-					protected abstract List<BigDecimal> doEvaluate(String name, String name2);
+                    protected abstract List<BigDecimal> doEvaluate(String name, String name2);
 
-					public static class FuncFooDefault extends FuncFoo {
-						@Override
-						protected List<BigDecimal> doEvaluate(String name, String name2) {
-							List<BigDecimal> result = new ArrayList<>();
-							return assignOutput(result, name, name2);
-						}
-				\t\t
-						protected List<BigDecimal> assignOutput(List<BigDecimal> result, String name, String name2) {
-							return result;
-						}
-					}
-				}
-				""",
+                    public static class FuncFooDefault extends FuncFoo {
+                        @Override
+                        protected List<BigDecimal> doEvaluate(String name, String name2) {
+                            List<BigDecimal> result = new ArrayList<>();
+                            return assignOutput(result, name, name2);
+                        }
+
+                        protected List<BigDecimal> assignOutput(List<BigDecimal> result, String name, String name2) {
+                            return result;
+                        }
+                    }
+                }
+                """,
                 generatedCode.get("com.rosetta.test.model.functions.FuncFoo"));
         generatorTestHelper.compileToClasses(generatorTestHelper.generateCode(code));
     }
@@ -2347,43 +2342,42 @@ public class FunctionGeneratorTest {
         var generatedCode = generatorTestHelper.generateCode(code);
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import java.util.ArrayList;
-				import java.util.List;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import java.util.ArrayList;
+                import java.util.List;
 
 
-				@ImplementedBy(FuncFoo.FuncFooDefault.class)
-				public abstract class FuncFoo implements RosettaFunction {
+                @ImplementedBy(FuncFoo.FuncFooDefault.class)
+                public abstract class FuncFoo implements RosettaFunction {
 
-					/**
-					* @param name\s
-					* @param name2\s
-					* @return result\s
-					*/
-					public List<Integer> evaluate(String name, String name2) {
-						List<Integer> result = doEvaluate(name, name2);
-				\t\t
-						return result;
-					}
+                    /**
+                     * @param name
+                     * @param name2
+                     * @return result
+                     */
+                    public List<Integer> evaluate(String name, String name2) {
+                        List<Integer> result = doEvaluate(name, name2);
+                        return result;
+                    }
 
-					protected abstract List<Integer> doEvaluate(String name, String name2);
+                    protected abstract List<Integer> doEvaluate(String name, String name2);
 
-					public static class FuncFooDefault extends FuncFoo {
-						@Override
-						protected List<Integer> doEvaluate(String name, String name2) {
-							List<Integer> result = new ArrayList<>();
-							return assignOutput(result, name, name2);
-						}
-				\t\t
-						protected List<Integer> assignOutput(List<Integer> result, String name, String name2) {
-							return result;
-						}
-					}
-				}
-				""",
+                    public static class FuncFooDefault extends FuncFoo {
+                        @Override
+                        protected List<Integer> doEvaluate(String name, String name2) {
+                            List<Integer> result = new ArrayList<>();
+                            return assignOutput(result, name, name2);
+                        }
+
+                        protected List<Integer> assignOutput(List<Integer> result, String name, String name2) {
+                            return result;
+                        }
+                    }
+                }
+                """,
                 generatedCode.get("com.rosetta.test.model.functions.FuncFoo"));
         generatorTestHelper.compileToClasses(generatorTestHelper.generateCode(code));
     }
@@ -2401,44 +2395,43 @@ public class FunctionGeneratorTest {
         var generatedCode = generatorTestHelper.generateCode(code);
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.records.Date;
-				import java.util.ArrayList;
-				import java.util.List;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.records.Date;
+                import java.util.ArrayList;
+                import java.util.List;
 
 
-				@ImplementedBy(FuncFoo.FuncFooDefault.class)
-				public abstract class FuncFoo implements RosettaFunction {
+                @ImplementedBy(FuncFoo.FuncFooDefault.class)
+                public abstract class FuncFoo implements RosettaFunction {
 
-					/**
-					* @param name\s
-					* @param name2\s
-					* @return result\s
-					*/
-					public List<Date> evaluate(String name, String name2) {
-						List<Date> result = doEvaluate(name, name2);
-				\t\t
-						return result;
-					}
+                    /**
+                     * @param name
+                     * @param name2
+                     * @return result
+                     */
+                    public List<Date> evaluate(String name, String name2) {
+                        List<Date> result = doEvaluate(name, name2);
+                        return result;
+                    }
 
-					protected abstract List<Date> doEvaluate(String name, String name2);
+                    protected abstract List<Date> doEvaluate(String name, String name2);
 
-					public static class FuncFooDefault extends FuncFoo {
-						@Override
-						protected List<Date> doEvaluate(String name, String name2) {
-							List<Date> result = new ArrayList<>();
-							return assignOutput(result, name, name2);
-						}
-				\t\t
-						protected List<Date> assignOutput(List<Date> result, String name, String name2) {
-							return result;
-						}
-					}
-				}
-				""",
+                    public static class FuncFooDefault extends FuncFoo {
+                        @Override
+                        protected List<Date> doEvaluate(String name, String name2) {
+                            List<Date> result = new ArrayList<>();
+                            return assignOutput(result, name, name2);
+                        }
+
+                        protected List<Date> assignOutput(List<Date> result, String name, String name2) {
+                            return result;
+                        }
+                    }
+                }
+                """,
                 generatedCode.get("com.rosetta.test.model.functions.FuncFoo"));
         generatorTestHelper.compileToClasses(generatorTestHelper.generateCode(code));
     }
@@ -2811,73 +2804,70 @@ public class FunctionGeneratorTest {
         var extractBar = code.get("com.rosetta.test.model.agreement.functions.ExtractBar");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.agreement.functions;
+                package com.rosetta.test.model.agreement.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.ModelObjectValidator;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.test.model.agreement.Bar;
-				import com.rosetta.test.model.agreement.Foo;
-				import com.rosetta.test.model.agreement.Top;
-				import java.util.Optional;
-				import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.ModelObjectValidator;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import com.rosetta.test.model.agreement.Bar;
+                import com.rosetta.test.model.agreement.Foo;
+                import com.rosetta.test.model.agreement.Top;
+                import java.util.Optional;
+                import javax.inject.Inject;
 
 
-				@ImplementedBy(ExtractBar.ExtractBarDefault.class)
-				public abstract class ExtractBar implements RosettaFunction {
-				\t
-					@Inject protected ModelObjectValidator objectValidator;
+                @ImplementedBy(ExtractBar.ExtractBarDefault.class)
+                public abstract class ExtractBar implements RosettaFunction {
 
-					/**
-					* @param top\s
-					* @return topOut\s
-					*/
-					public Top evaluate(Top top) {
-						Top.TopBuilder topOutBuilder = doEvaluate(top);
-				\t\t
-						final Top topOut;
-						if (topOutBuilder == null) {
-							topOut = null;
-						} else {
-							topOut = topOutBuilder.build();
-							objectValidator.validate(Top.class, topOut);
-						}
-				\t\t
-						return topOut;
-					}
+                    @Inject protected ModelObjectValidator objectValidator;
 
-					protected abstract Top.TopBuilder doEvaluate(Top top);
+                    /**
+                     * @param top
+                     * @return topOut
+                     */
+                    public Top evaluate(Top top) {
+                        Top.TopBuilder topOutBuilder = doEvaluate(top);
 
-					protected abstract Foo.FooBuilder fooAlias(Top.TopBuilder topOut, Top top);
+                        final Top topOut;
+                        if (topOutBuilder == null) {
+                            topOut = null;
+                        } else {
+                            topOut = topOutBuilder.build();
+                            objectValidator.validate(Top.class, topOut);
+                        }
+                        return topOut;
+                    }
 
-					public static class ExtractBarDefault extends ExtractBar {
-						@Override
-						protected Top.TopBuilder doEvaluate(Top top) {
-							Top.TopBuilder topOut = Top.builder();
-							return assignOutput(topOut, top);
-						}
-				\t\t
-						protected Top.TopBuilder assignOutput(Top.TopBuilder topOut, Top top) {
-							topOut.getOrCreateFoo()
-								.setBar1(MapperS.of(top).<Foo>map("getFoo", _top -> _top.getFoo()).<Bar>map("getBar1", foo -> foo.getBar1()).get());
-				\t\t\t
-							topOut
-								.getOrCreateFoo()
-								.setBar2(MapperS.of(top).<Foo>map("getFoo", _top -> _top.getFoo()).<Bar>map("getBar2", foo -> foo.getBar2()).get());
-				\t\t\t
-							return Optional.ofNullable(topOut)
-								.map(o -> o.prune())
-								.orElse(null);
-						}
-				\t\t
-						@Override
-						protected Foo.FooBuilder fooAlias(Top.TopBuilder topOut, Top top) {
-							return toBuilder(MapperS.of(topOut).<Foo>map("getFoo", _top -> _top.getFoo()).get());
-						}
-					}
-				}
-				""",
+                    protected abstract Top.TopBuilder doEvaluate(Top top);
+
+                    protected abstract Foo.FooBuilder fooAlias(Top.TopBuilder topOut, Top top);
+
+                    public static class ExtractBarDefault extends ExtractBar {
+                        @Override
+                        protected Top.TopBuilder doEvaluate(Top top) {
+                            Top.TopBuilder topOut = Top.builder();
+                            return assignOutput(topOut, top);
+                        }
+
+                        protected Top.TopBuilder assignOutput(Top.TopBuilder topOut, Top top) {
+                            topOut.getOrCreateFoo()
+                                .setBar1(MapperS.of(top).<Foo>map("getFoo", _top -> _top.getFoo()).<Bar>map("getBar1", foo -> foo.getBar1()).get());
+                            topOut
+                                .getOrCreateFoo()
+                                .setBar2(MapperS.of(top).<Foo>map("getFoo", _top -> _top.getFoo()).<Bar>map("getBar2", foo -> foo.getBar2()).get());
+                            return Optional.ofNullable(topOut)
+                                .map(o -> o.prune())
+                                .orElse(null);
+                        }
+
+                        @Override
+                        protected Foo.FooBuilder fooAlias(Top.TopBuilder topOut, Top top) {
+                            return toBuilder(MapperS.of(topOut).<Foo>map("getFoo", _top -> _top.getFoo()).get());
+                        }
+                    }
+                }
+                """,
                 extractBar);
         generatorTestHelper.compileToClasses(code);
     }
@@ -3056,49 +3046,47 @@ public class FunctionGeneratorTest {
         var f3 = code.get("com.rosetta.test.model.functions.F3");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.records.Date;
-				import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.records.Date;
+                import javax.inject.Inject;
 
 
-				@ImplementedBy(F3.F3Default.class)
-				public abstract class F3 implements RosettaFunction {
-				\t
-					// RosettaFunction dependencies
-					//
-					@Inject protected F1 f1;
-					@Inject protected F2 f2;
+                @ImplementedBy(F3.F3Default.class)
+                public abstract class F3 implements RosettaFunction {
 
-					/**
-					* @param f3Input\s
-					* @return f3Output\s
-					*/
-					public Date evaluate(Date f3Input) {
-						Date f3Output = doEvaluate(f3Input);
-				\t\t
-						return f3Output;
-					}
+                    // RosettaFunction dependencies
+                    //
+                    @Inject protected F1 f1;
+                    @Inject protected F2 f2;
 
-					protected abstract Date doEvaluate(Date f3Input);
+                    /**
+                     * @param f3Input
+                     * @return f3Output
+                     */
+                    public Date evaluate(Date f3Input) {
+                        Date f3Output = doEvaluate(f3Input);
+                        return f3Output;
+                    }
 
-					public static class F3Default extends F3 {
-						@Override
-						protected Date doEvaluate(Date f3Input) {
-							Date f3Output = null;
-							return assignOutput(f3Output, f3Input);
-						}
-				\t\t
-						protected Date assignOutput(Date f3Output, Date f3Input) {
-							f3Output = f2.evaluate(f1.evaluate(f3Input));
-				\t\t\t
-							return f3Output;
-						}
-					}
-				}
-				""",
+                    protected abstract Date doEvaluate(Date f3Input);
+
+                    public static class F3Default extends F3 {
+                        @Override
+                        protected Date doEvaluate(Date f3Input) {
+                            Date f3Output = null;
+                            return assignOutput(f3Output, f3Input);
+                        }
+
+                        protected Date assignOutput(Date f3Output, Date f3Input) {
+                            f3Output = f2.evaluate(f1.evaluate(f3Input));
+                            return f3Output;
+                        }
+                    }
+                }
+                """,
                 f3
         );
         generatorTestHelper.compileToClasses(code);
@@ -3121,94 +3109,91 @@ public class FunctionGeneratorTest {
         var f1 = code.get("com.rosetta.test.model.functions.F1");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
 
 
-				@ImplementedBy(F1.F1Default.class)
-				public abstract class F1 implements RosettaFunction {
+                @ImplementedBy(F1.F1Default.class)
+                public abstract class F1 implements RosettaFunction {
 
-					/**
-					* @param f1Input\s
-					* @return f1Output\s
-					*/
-					public String evaluate(String f1Input) {
-						String f1Output = doEvaluate(f1Input);
-				\t\t
-						return f1Output;
-					}
+                    /**
+                     * @param f1Input
+                     * @return f1Output
+                     */
+                    public String evaluate(String f1Input) {
+                        String f1Output = doEvaluate(f1Input);
+                        return f1Output;
+                    }
 
-					protected abstract String doEvaluate(String f1Input);
+                    protected abstract String doEvaluate(String f1Input);
 
-					public static class F1Default extends F1 {
-						@Override
-						protected String doEvaluate(String f1Input) {
-							String f1Output = null;
-							return assignOutput(f1Output, f1Input);
-						}
-				\t\t
-						protected String assignOutput(String f1Output, String f1Input) {
-							return f1Output;
-						}
-					}
-				}
-				""",
+                    public static class F1Default extends F1 {
+                        @Override
+                        protected String doEvaluate(String f1Input) {
+                            String f1Output = null;
+                            return assignOutput(f1Output, f1Input);
+                        }
+
+                        protected String assignOutput(String f1Output, String f1Input) {
+                            return f1Output;
+                        }
+                    }
+                }
+                """,
                 f1
         );
         var f2 = code.get("com.rosetta.test.model.functions.F2");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import javax.inject.Inject;
 
 
-				@ImplementedBy(F2.F2Default.class)
-				public abstract class F2 implements RosettaFunction {
-				\t
-					// RosettaFunction dependencies
-					//
-					@Inject protected F1 f1;
+                @ImplementedBy(F2.F2Default.class)
+                public abstract class F2 implements RosettaFunction {
 
-					/**
-					* @param f2Input\s
-					* @return f2Output\s
-					*/
-					public String evaluate(String f2Input) {
-						String f2Output = doEvaluate(f2Input);
-				\t\t
-						return f2Output;
-					}
+                    // RosettaFunction dependencies
+                    //
+                    @Inject protected F1 f1;
 
-					protected abstract String doEvaluate(String f2Input);
+                    /**
+                     * @param f2Input
+                     * @return f2Output
+                     */
+                    public String evaluate(String f2Input) {
+                        String f2Output = doEvaluate(f2Input);
+                        return f2Output;
+                    }
 
-					protected abstract MapperS<String> foo(String f2Input);
+                    protected abstract String doEvaluate(String f2Input);
 
-					public static class F2Default extends F2 {
-						@Override
-						protected String doEvaluate(String f2Input) {
-							String f2Output = null;
-							return assignOutput(f2Output, f2Input);
-						}
-				\t\t
-						protected String assignOutput(String f2Output, String f2Input) {
-							f2Output = foo(f2Input).get();
-				\t\t\t
-							return f2Output;
-						}
-				\t\t
-						@Override
-						protected MapperS<String> foo(String f2Input) {
-							return MapperS.of(f1.evaluate(f2Input));
-						}
-					}
-				}
-				""",
+                    protected abstract MapperS<String> foo(String f2Input);
+
+                    public static class F2Default extends F2 {
+                        @Override
+                        protected String doEvaluate(String f2Input) {
+                            String f2Output = null;
+                            return assignOutput(f2Output, f2Input);
+                        }
+
+                        protected String assignOutput(String f2Output, String f2Input) {
+                            f2Output = foo(f2Input).get();
+                            return f2Output;
+                        }
+
+                        @Override
+                        protected MapperS<String> foo(String f2Input) {
+                            return MapperS.of(f1.evaluate(f2Input));
+                        }
+                    }
+                }
+                """,
                 f2
         );
         generatorTestHelper.compileToClasses(code);
@@ -3235,144 +3220,140 @@ public class FunctionGeneratorTest {
         var f1 = code.get("com.rosetta.test.model.functions.F1");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.records.Date;
-				import java.util.ArrayList;
-				import java.util.List;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.records.Date;
+                import java.util.ArrayList;
+                import java.util.List;
 
 
-				@ImplementedBy(F1.F1Default.class)
-				public abstract class F1 implements RosettaFunction {
+                @ImplementedBy(F1.F1Default.class)
+                public abstract class F1 implements RosettaFunction {
 
-					/**
-					* @param f1Input\s
-					* @return f1OutputList\s
-					*/
-					public List<Date> evaluate(Date f1Input) {
-						List<Date> f1OutputList = doEvaluate(f1Input);
-				\t\t
-						return f1OutputList;
-					}
+                    /**
+                     * @param f1Input
+                     * @return f1OutputList
+                     */
+                    public List<Date> evaluate(Date f1Input) {
+                        List<Date> f1OutputList = doEvaluate(f1Input);
+                        return f1OutputList;
+                    }
 
-					protected abstract List<Date> doEvaluate(Date f1Input);
+                    protected abstract List<Date> doEvaluate(Date f1Input);
 
-					public static class F1Default extends F1 {
-						@Override
-						protected List<Date> doEvaluate(Date f1Input) {
-							List<Date> f1OutputList = new ArrayList<>();
-							return assignOutput(f1OutputList, f1Input);
-						}
-				\t\t
-						protected List<Date> assignOutput(List<Date> f1OutputList, Date f1Input) {
-							return f1OutputList;
-						}
-					}
-				}
-				""",
+                    public static class F1Default extends F1 {
+                        @Override
+                        protected List<Date> doEvaluate(Date f1Input) {
+                            List<Date> f1OutputList = new ArrayList<>();
+                            return assignOutput(f1OutputList, f1Input);
+                        }
+
+                        protected List<Date> assignOutput(List<Date> f1OutputList, Date f1Input) {
+                            return f1OutputList;
+                        }
+                    }
+                }
+                """,
                 f1
         );
         var f2 = code.get("com.rosetta.test.model.functions.F2");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.records.Date;
-				import java.util.Collections;
-				import java.util.List;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.records.Date;
+                import java.util.Collections;
+                import java.util.List;
 
 
-				@ImplementedBy(F2.F2Default.class)
-				public abstract class F2 implements RosettaFunction {
+                @ImplementedBy(F2.F2Default.class)
+                public abstract class F2 implements RosettaFunction {
 
-					/**
-					* @param f2InputList\s
-					* @return f2Output\s
-					*/
-					public Date evaluate(List<Date> f2InputList) {
-						Date f2Output = doEvaluate(f2InputList);
-				\t\t
-						return f2Output;
-					}
+                    /**
+                     * @param f2InputList
+                     * @return f2Output
+                     */
+                    public Date evaluate(List<Date> f2InputList) {
+                        Date f2Output = doEvaluate(f2InputList);
+                        return f2Output;
+                    }
 
-					protected abstract Date doEvaluate(List<Date> f2InputList);
+                    protected abstract Date doEvaluate(List<Date> f2InputList);
 
-					public static class F2Default extends F2 {
-						@Override
-						protected Date doEvaluate(List<Date> f2InputList) {
-							if (f2InputList == null) {
-								f2InputList = Collections.emptyList();
-							}
-							Date f2Output = null;
-							return assignOutput(f2Output, f2InputList);
-						}
-				\t\t
-						protected Date assignOutput(Date f2Output, List<Date> f2InputList) {
-							return f2Output;
-						}
-					}
-				}
-				""",
+                    public static class F2Default extends F2 {
+                        @Override
+                        protected Date doEvaluate(List<Date> f2InputList) {
+                            if (f2InputList == null) {
+                                f2InputList = Collections.emptyList();
+                            }
+                            Date f2Output = null;
+                            return assignOutput(f2Output, f2InputList);
+                        }
+
+                        protected Date assignOutput(Date f2Output, List<Date> f2InputList) {
+                            return f2Output;
+                        }
+                    }
+                }
+                """,
                 f2
         );
         var f3 = code.get("com.rosetta.test.model.functions.F3");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.model.lib.records.Date;
-				import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperC;
+                import com.rosetta.model.lib.records.Date;
+                import javax.inject.Inject;
 
 
-				@ImplementedBy(F3.F3Default.class)
-				public abstract class F3 implements RosettaFunction {
-				\t
-					// RosettaFunction dependencies
-					//
-					@Inject protected F1 f1;
-					@Inject protected F2 f2;
+                @ImplementedBy(F3.F3Default.class)
+                public abstract class F3 implements RosettaFunction {
 
-					/**
-					* @param f3Input\s
-					* @return f3Output\s
-					*/
-					public Date evaluate(Date f3Input) {
-						Date f3Output = doEvaluate(f3Input);
-				\t\t
-						return f3Output;
-					}
+                    // RosettaFunction dependencies
+                    //
+                    @Inject protected F1 f1;
+                    @Inject protected F2 f2;
 
-					protected abstract Date doEvaluate(Date f3Input);
+                    /**
+                     * @param f3Input
+                     * @return f3Output
+                     */
+                    public Date evaluate(Date f3Input) {
+                        Date f3Output = doEvaluate(f3Input);
+                        return f3Output;
+                    }
 
-					protected abstract MapperC<Date> f1OutList(Date f3Input);
+                    protected abstract Date doEvaluate(Date f3Input);
 
-					public static class F3Default extends F3 {
-						@Override
-						protected Date doEvaluate(Date f3Input) {
-							Date f3Output = null;
-							return assignOutput(f3Output, f3Input);
-						}
-				\t\t
-						protected Date assignOutput(Date f3Output, Date f3Input) {
-							f3Output = f2.evaluate(f1OutList(f3Input).getMulti());
-				\t\t\t
-							return f3Output;
-						}
-				\t\t
-						@Override
-						protected MapperC<Date> f1OutList(Date f3Input) {
-							return MapperC.<Date>of(f1.evaluate(f3Input));
-						}
-					}
-				}
-				""",
+                    protected abstract MapperC<Date> f1OutList(Date f3Input);
+
+                    public static class F3Default extends F3 {
+                        @Override
+                        protected Date doEvaluate(Date f3Input) {
+                            Date f3Output = null;
+                            return assignOutput(f3Output, f3Input);
+                        }
+
+                        protected Date assignOutput(Date f3Output, Date f3Input) {
+                            f3Output = f2.evaluate(f1OutList(f3Input).getMulti());
+                            return f3Output;
+                        }
+
+                        @Override
+                        protected MapperC<Date> f1OutList(Date f3Input) {
+                            return MapperC.<Date>of(f1.evaluate(f3Input));
+                        }
+                    }
+                }
+                """,
                 f3
         );
         generatorTestHelper.compileToClasses(code);
@@ -3799,47 +3780,45 @@ public class FunctionGeneratorTest {
         var f = code.get("com.rosetta.test.model.functions.DistinctFunc");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.test.model.Foo;
-				import java.util.ArrayList;
-				import java.util.List;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import com.rosetta.test.model.Foo;
+                import java.util.ArrayList;
+                import java.util.List;
 
-				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+                import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 
-				@ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
-				public abstract class DistinctFunc implements RosettaFunction {
+                @ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
+                public abstract class DistinctFunc implements RosettaFunction {
 
-					/**
-					* @param foo\s
-					* @return res\s
-					*/
-					public List<Integer> evaluate(Foo foo) {
-						List<Integer> res = doEvaluate(foo);
-				\t\t
-						return res;
-					}
+                    /**
+                     * @param foo
+                     * @return res
+                     */
+                    public List<Integer> evaluate(Foo foo) {
+                        List<Integer> res = doEvaluate(foo);
+                        return res;
+                    }
 
-					protected abstract List<Integer> doEvaluate(Foo foo);
+                    protected abstract List<Integer> doEvaluate(Foo foo);
 
-					public static class DistinctFuncDefault extends DistinctFunc {
-						@Override
-						protected List<Integer> doEvaluate(Foo foo) {
-							List<Integer> res = new ArrayList<>();
-							return assignOutput(res, foo);
-						}
-				\t\t
-						protected List<Integer> assignOutput(List<Integer> res, Foo foo) {
-							res = distinctIgnoringPrecision(MapperS.of(foo).<Integer>mapC("getN", _foo -> _foo.getN())).getMulti();
-				\t\t\t
-							return res;
-						}
-					}
-				}
-				""",
+                    public static class DistinctFuncDefault extends DistinctFunc {
+                        @Override
+                        protected List<Integer> doEvaluate(Foo foo) {
+                            List<Integer> res = new ArrayList<>();
+                            return assignOutput(res, foo);
+                        }
+
+                        protected List<Integer> assignOutput(List<Integer> res, Foo foo) {
+                            res = distinctIgnoringPrecision(MapperS.of(foo).<Integer>mapC("getN", _foo -> _foo.getN())).getMulti();
+                            return res;
+                        }
+                    }
+                }
+                """,
                 f
         );
         var classes = generatorTestHelper.compileToClasses(code);
@@ -3867,50 +3846,48 @@ public class FunctionGeneratorTest {
         var f = code.get("com.rosetta.test.model.functions.DistinctFunc");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.MapperC;
-				import java.util.ArrayList;
-				import java.util.Collections;
-				import java.util.List;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperC;
+                import java.util.ArrayList;
+                import java.util.Collections;
+                import java.util.List;
 
-				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+                import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 
-				@ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
-				public abstract class DistinctFunc implements RosettaFunction {
+                @ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
+                public abstract class DistinctFunc implements RosettaFunction {
 
-					/**
-					* @param n\s
-					* @return res\s
-					*/
-					public List<Integer> evaluate(List<Integer> n) {
-						List<Integer> res = doEvaluate(n);
-				\t\t
-						return res;
-					}
+                    /**
+                     * @param n
+                     * @return res
+                     */
+                    public List<Integer> evaluate(List<Integer> n) {
+                        List<Integer> res = doEvaluate(n);
+                        return res;
+                    }
 
-					protected abstract List<Integer> doEvaluate(List<Integer> n);
+                    protected abstract List<Integer> doEvaluate(List<Integer> n);
 
-					public static class DistinctFuncDefault extends DistinctFunc {
-						@Override
-						protected List<Integer> doEvaluate(List<Integer> n) {
-							if (n == null) {
-								n = Collections.emptyList();
-							}
-							List<Integer> res = new ArrayList<>();
-							return assignOutput(res, n);
-						}
-				\t\t
-						protected List<Integer> assignOutput(List<Integer> res, List<Integer> n) {
-							res = distinctIgnoringPrecision(MapperC.<Integer>of(n)).getMulti();
-				\t\t\t
-							return res;
-						}
-					}
-				}
-				""",
+                    public static class DistinctFuncDefault extends DistinctFunc {
+                        @Override
+                        protected List<Integer> doEvaluate(List<Integer> n) {
+                            if (n == null) {
+                                n = Collections.emptyList();
+                            }
+                            List<Integer> res = new ArrayList<>();
+                            return assignOutput(res, n);
+                        }
+
+                        protected List<Integer> assignOutput(List<Integer> res, List<Integer> n) {
+                            res = distinctIgnoringPrecision(MapperC.<Integer>of(n)).getMulti();
+                            return res;
+                        }
+                    }
+                }
+                """,
                 f
         );
         var classes = generatorTestHelper.compileToClasses(code);
@@ -3987,64 +3964,62 @@ public class FunctionGeneratorTest {
         var f = code.get("com.rosetta.test.model.functions.DistinctFunc");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.ModelObjectValidator;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.test.model.Bar;
-				import com.rosetta.test.model.Foo;
-				import java.util.ArrayList;
-				import java.util.List;
-				import java.util.Optional;
-				import java.util.stream.Collectors;
-				import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.ModelObjectValidator;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import com.rosetta.test.model.Bar;
+                import com.rosetta.test.model.Foo;
+                import java.util.ArrayList;
+                import java.util.List;
+                import java.util.Optional;
+                import java.util.stream.Collectors;
+                import javax.inject.Inject;
 
-				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+                import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 
-				@ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
-				public abstract class DistinctFunc implements RosettaFunction {
-				\t
-					@Inject protected ModelObjectValidator objectValidator;
+                @ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
+                public abstract class DistinctFunc implements RosettaFunction {
 
-					/**
-					* @param foo\s
-					* @return res\s
-					*/
-					public List<? extends Bar> evaluate(Foo foo) {
-						List<Bar.BarBuilder> resBuilder = doEvaluate(foo);
-				\t\t
-						final List<? extends Bar> res;
-						if (resBuilder == null) {
-							res = null;
-						} else {
-							res = resBuilder.stream().map(Bar::build).collect(Collectors.toList());
-							objectValidator.validate(Bar.class, res);
-						}
-				\t\t
-						return res;
-					}
+                    @Inject protected ModelObjectValidator objectValidator;
 
-					protected abstract List<Bar.BarBuilder> doEvaluate(Foo foo);
+                    /**
+                     * @param foo
+                     * @return res
+                     */
+                    public List<? extends Bar> evaluate(Foo foo) {
+                        List<Bar.BarBuilder> resBuilder = doEvaluate(foo);
 
-					public static class DistinctFuncDefault extends DistinctFunc {
-						@Override
-						protected List<Bar.BarBuilder> doEvaluate(Foo foo) {
-							List<Bar.BarBuilder> res = new ArrayList<>();
-							return assignOutput(res, foo);
-						}
-				\t\t
-						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, Foo foo) {
-							res.addAll(toBuilder(distinctIgnoringPrecision(MapperS.of(foo).<Bar>mapC("getBarList", _foo -> _foo.getBarList())).getMulti()));
-				\t\t\t
-							return Optional.ofNullable(res)
-								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
-								.orElse(null);
-						}
-					}
-				}
-				""",
+                        final List<? extends Bar> res;
+                        if (resBuilder == null) {
+                            res = null;
+                        } else {
+                            res = resBuilder.stream().map(Bar::build).collect(Collectors.toList());
+                            objectValidator.validate(Bar.class, res);
+                        }
+                        return res;
+                    }
+
+                    protected abstract List<Bar.BarBuilder> doEvaluate(Foo foo);
+
+                    public static class DistinctFuncDefault extends DistinctFunc {
+                        @Override
+                        protected List<Bar.BarBuilder> doEvaluate(Foo foo) {
+                            List<Bar.BarBuilder> res = new ArrayList<>();
+                            return assignOutput(res, foo);
+                        }
+
+                        protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, Foo foo) {
+                            res.addAll(toBuilder(distinctIgnoringPrecision(MapperS.of(foo).<Bar>mapC("getBarList", _foo -> _foo.getBarList())).getMulti()));
+                            return Optional.ofNullable(res)
+                                .map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
+                                .orElse(null);
+                        }
+                    }
+                }
+                """,
                 f
         );
         var classes = generatorTestHelper.compileToClasses(code);
@@ -4089,67 +4064,65 @@ public class FunctionGeneratorTest {
         var f = code.get("com.rosetta.test.model.functions.DistinctFunc");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.ModelObjectValidator;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.MapperC;
-				import com.rosetta.test.model.Bar;
-				import java.util.ArrayList;
-				import java.util.Collections;
-				import java.util.List;
-				import java.util.Optional;
-				import java.util.stream.Collectors;
-				import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.ModelObjectValidator;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperC;
+                import com.rosetta.test.model.Bar;
+                import java.util.ArrayList;
+                import java.util.Collections;
+                import java.util.List;
+                import java.util.Optional;
+                import java.util.stream.Collectors;
+                import javax.inject.Inject;
 
-				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+                import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 
-				@ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
-				public abstract class DistinctFunc implements RosettaFunction {
-				\t
-					@Inject protected ModelObjectValidator objectValidator;
+                @ImplementedBy(DistinctFunc.DistinctFuncDefault.class)
+                public abstract class DistinctFunc implements RosettaFunction {
 
-					/**
-					* @param barList\s
-					* @return res\s
-					*/
-					public List<? extends Bar> evaluate(List<? extends Bar> barList) {
-						List<Bar.BarBuilder> resBuilder = doEvaluate(barList);
-				\t\t
-						final List<? extends Bar> res;
-						if (resBuilder == null) {
-							res = null;
-						} else {
-							res = resBuilder.stream().map(Bar::build).collect(Collectors.toList());
-							objectValidator.validate(Bar.class, res);
-						}
-				\t\t
-						return res;
-					}
+                    @Inject protected ModelObjectValidator objectValidator;
 
-					protected abstract List<Bar.BarBuilder> doEvaluate(List<? extends Bar> barList);
+                    /**
+                     * @param barList
+                     * @return res
+                     */
+                    public List<? extends Bar> evaluate(List<? extends Bar> barList) {
+                        List<Bar.BarBuilder> resBuilder = doEvaluate(barList);
 
-					public static class DistinctFuncDefault extends DistinctFunc {
-						@Override
-						protected List<Bar.BarBuilder> doEvaluate(List<? extends Bar> barList) {
-							if (barList == null) {
-								barList = Collections.emptyList();
-							}
-							List<Bar.BarBuilder> res = new ArrayList<>();
-							return assignOutput(res, barList);
-						}
-				\t\t
-						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, List<? extends Bar> barList) {
-							res.addAll(toBuilder(distinctIgnoringPrecision(MapperC.<Bar>of(barList)).getMulti()));
-				\t\t\t
-							return Optional.ofNullable(res)
-								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
-								.orElse(null);
-						}
-					}
-				}
-				""",
+                        final List<? extends Bar> res;
+                        if (resBuilder == null) {
+                            res = null;
+                        } else {
+                            res = resBuilder.stream().map(Bar::build).collect(Collectors.toList());
+                            objectValidator.validate(Bar.class, res);
+                        }
+                        return res;
+                    }
+
+                    protected abstract List<Bar.BarBuilder> doEvaluate(List<? extends Bar> barList);
+
+                    public static class DistinctFuncDefault extends DistinctFunc {
+                        @Override
+                        protected List<Bar.BarBuilder> doEvaluate(List<? extends Bar> barList) {
+                            if (barList == null) {
+                                barList = Collections.emptyList();
+                            }
+                            List<Bar.BarBuilder> res = new ArrayList<>();
+                            return assignOutput(res, barList);
+                        }
+
+                        protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> res, List<? extends Bar> barList) {
+                            res.addAll(toBuilder(distinctIgnoringPrecision(MapperC.<Bar>of(barList)).getMulti()));
+                            return Optional.ofNullable(res)
+                                .map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
+                                .orElse(null);
+                        }
+                    }
+                }
+                """,
                 f
         );
         var classes = generatorTestHelper.compileToClasses(code);
@@ -4407,51 +4380,49 @@ public class FunctionGeneratorTest {
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.expression.CardinalityOperator;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.MapperS;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.expression.CardinalityOperator;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
 
-				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+                import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 
-				@ImplementedBy(FuncFoo.FuncFooDefault.class)
-				public abstract class FuncFoo implements RosettaFunction {
+                @ImplementedBy(FuncFoo.FuncFooDefault.class)
+                public abstract class FuncFoo implements RosettaFunction {
 
-					/**
-					* @param test\s
-					* @param t1\s
-					* @param t2\s
-					* @return result\s
-					*/
-					public String evaluate(Boolean test, String t1, String t2) {
-						String result = doEvaluate(test, t1, t2);
-				\t\t
-						return result;
-					}
+                    /**
+                     * @param test
+                     * @param t1
+                     * @param t2
+                     * @return result
+                     */
+                    public String evaluate(Boolean test, String t1, String t2) {
+                        String result = doEvaluate(test, t1, t2);
+                        return result;
+                    }
 
-					protected abstract String doEvaluate(Boolean test, String t1, String t2);
+                    protected abstract String doEvaluate(Boolean test, String t1, String t2);
 
-					public static class FuncFooDefault extends FuncFoo {
-						@Override
-						protected String doEvaluate(Boolean test, String t1, String t2) {
-							String result = null;
-							return assignOutput(result, test, t1, t2);
-						}
-				\t\t
-						protected String assignOutput(String result, Boolean test, String t1, String t2) {
-							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
-								result = t1;
-							} else {
-								result = t2;
-							}
-				\t\t\t
-							return result;
-						}
-					}
-				}
-				""",
+                    public static class FuncFooDefault extends FuncFoo {
+                        @Override
+                        protected String doEvaluate(Boolean test, String t1, String t2) {
+                            String result = null;
+                            return assignOutput(result, test, t1, t2);
+                        }
+
+                        protected String assignOutput(String result, Boolean test, String t1, String t2) {
+                            if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+                                result = t1;
+                            } else {
+                                result = t2;
+                            }
+                            return result;
+                        }
+                    }
+                }
+                """,
                 f
         );
         generatorTestHelper.compileToClasses(code);
@@ -4477,60 +4448,58 @@ public class FunctionGeneratorTest {
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.expression.CardinalityOperator;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import java.util.ArrayList;
-				import java.util.Collections;
-				import java.util.List;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.expression.CardinalityOperator;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import java.util.ArrayList;
+                import java.util.Collections;
+                import java.util.List;
 
-				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+                import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 
-				@ImplementedBy(FuncFoo.FuncFooDefault.class)
-				public abstract class FuncFoo implements RosettaFunction {
+                @ImplementedBy(FuncFoo.FuncFooDefault.class)
+                public abstract class FuncFoo implements RosettaFunction {
 
-					/**
-					* @param test\s
-					* @param t1\s
-					* @param t2\s
-					* @return result\s
-					*/
-					public List<String> evaluate(Boolean test, List<String> t1, List<String> t2) {
-						List<String> result = doEvaluate(test, t1, t2);
-				\t\t
-						return result;
-					}
+                    /**
+                     * @param test
+                     * @param t1
+                     * @param t2
+                     * @return result
+                     */
+                    public List<String> evaluate(Boolean test, List<String> t1, List<String> t2) {
+                        List<String> result = doEvaluate(test, t1, t2);
+                        return result;
+                    }
 
-					protected abstract List<String> doEvaluate(Boolean test, List<String> t1, List<String> t2);
+                    protected abstract List<String> doEvaluate(Boolean test, List<String> t1, List<String> t2);
 
-					public static class FuncFooDefault extends FuncFoo {
-						@Override
-						protected List<String> doEvaluate(Boolean test, List<String> t1, List<String> t2) {
-							if (t1 == null) {
-								t1 = Collections.emptyList();
-							}
-							if (t2 == null) {
-								t2 = Collections.emptyList();
-							}
-							List<String> result = new ArrayList<>();
-							return assignOutput(result, test, t1, t2);
-						}
-				\t\t
-						protected List<String> assignOutput(List<String> result, Boolean test, List<String> t1, List<String> t2) {
-							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
-								result.addAll(t1);
-							} else {
-								result.addAll(t2);
-							}
-				\t\t\t
-							return result;
-						}
-					}
-				}
-				""",
+                    public static class FuncFooDefault extends FuncFoo {
+                        @Override
+                        protected List<String> doEvaluate(Boolean test, List<String> t1, List<String> t2) {
+                            if (t1 == null) {
+                                t1 = Collections.emptyList();
+                            }
+                            if (t2 == null) {
+                                t2 = Collections.emptyList();
+                            }
+                            List<String> result = new ArrayList<>();
+                            return assignOutput(result, test, t1, t2);
+                        }
+
+                        protected List<String> assignOutput(List<String> result, Boolean test, List<String> t1, List<String> t2) {
+                            if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+                                result.addAll(t1);
+                            } else {
+                                result.addAll(t2);
+                            }
+                            return result;
+                        }
+                    }
+                }
+                """,
                 f
         );
         generatorTestHelper.compileToClasses(code);
@@ -4556,52 +4525,50 @@ public class FunctionGeneratorTest {
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.expression.CardinalityOperator;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import java.math.BigDecimal;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.expression.CardinalityOperator;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import java.math.BigDecimal;
 
-				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+                import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 
-				@ImplementedBy(FuncFoo.FuncFooDefault.class)
-				public abstract class FuncFoo implements RosettaFunction {
+                @ImplementedBy(FuncFoo.FuncFooDefault.class)
+                public abstract class FuncFoo implements RosettaFunction {
 
-					/**
-					* @param test\s
-					* @param t1\s
-					* @param t2\s
-					* @return result\s
-					*/
-					public BigDecimal evaluate(Boolean test, BigDecimal t1, BigDecimal t2) {
-						BigDecimal result = doEvaluate(test, t1, t2);
-				\t\t
-						return result;
-					}
+                    /**
+                     * @param test
+                     * @param t1
+                     * @param t2
+                     * @return result
+                     */
+                    public BigDecimal evaluate(Boolean test, BigDecimal t1, BigDecimal t2) {
+                        BigDecimal result = doEvaluate(test, t1, t2);
+                        return result;
+                    }
 
-					protected abstract BigDecimal doEvaluate(Boolean test, BigDecimal t1, BigDecimal t2);
+                    protected abstract BigDecimal doEvaluate(Boolean test, BigDecimal t1, BigDecimal t2);
 
-					public static class FuncFooDefault extends FuncFoo {
-						@Override
-						protected BigDecimal doEvaluate(Boolean test, BigDecimal t1, BigDecimal t2) {
-							BigDecimal result = null;
-							return assignOutput(result, test, t1, t2);
-						}
-				\t\t
-						protected BigDecimal assignOutput(BigDecimal result, Boolean test, BigDecimal t1, BigDecimal t2) {
-							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
-								result = t1;
-							} else {
-								result = t2;
-							}
-				\t\t\t
-							return result;
-						}
-					}
-				}
-				""",
+                    public static class FuncFooDefault extends FuncFoo {
+                        @Override
+                        protected BigDecimal doEvaluate(Boolean test, BigDecimal t1, BigDecimal t2) {
+                            BigDecimal result = null;
+                            return assignOutput(result, test, t1, t2);
+                        }
+
+                        protected BigDecimal assignOutput(BigDecimal result, Boolean test, BigDecimal t1, BigDecimal t2) {
+                            if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+                                result = t1;
+                            } else {
+                                result = t2;
+                            }
+                            return result;
+                        }
+                    }
+                }
+                """,
                 f
         );
         generatorTestHelper.compileToClasses(code);
@@ -4627,61 +4594,59 @@ public class FunctionGeneratorTest {
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.expression.CardinalityOperator;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import java.math.BigDecimal;
-				import java.util.ArrayList;
-				import java.util.Collections;
-				import java.util.List;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.expression.CardinalityOperator;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import java.math.BigDecimal;
+                import java.util.ArrayList;
+                import java.util.Collections;
+                import java.util.List;
 
-				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+                import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 
-				@ImplementedBy(FuncFoo.FuncFooDefault.class)
-				public abstract class FuncFoo implements RosettaFunction {
+                @ImplementedBy(FuncFoo.FuncFooDefault.class)
+                public abstract class FuncFoo implements RosettaFunction {
 
-					/**
-					* @param test\s
-					* @param t1\s
-					* @param t2\s
-					* @return result\s
-					*/
-					public List<BigDecimal> evaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
-						List<BigDecimal> result = doEvaluate(test, t1, t2);
-				\t\t
-						return result;
-					}
+                    /**
+                     * @param test
+                     * @param t1
+                     * @param t2
+                     * @return result
+                     */
+                    public List<BigDecimal> evaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
+                        List<BigDecimal> result = doEvaluate(test, t1, t2);
+                        return result;
+                    }
 
-					protected abstract List<BigDecimal> doEvaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2);
+                    protected abstract List<BigDecimal> doEvaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2);
 
-					public static class FuncFooDefault extends FuncFoo {
-						@Override
-						protected List<BigDecimal> doEvaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
-							if (t1 == null) {
-								t1 = Collections.emptyList();
-							}
-							if (t2 == null) {
-								t2 = Collections.emptyList();
-							}
-							List<BigDecimal> result = new ArrayList<>();
-							return assignOutput(result, test, t1, t2);
-						}
-				\t\t
-						protected List<BigDecimal> assignOutput(List<BigDecimal> result, Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
-							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
-								result.addAll(t1);
-							} else {
-								result.addAll(t2);
-							}
-				\t\t\t
-							return result;
-						}
-					}
-				}
-				""",
+                    public static class FuncFooDefault extends FuncFoo {
+                        @Override
+                        protected List<BigDecimal> doEvaluate(Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
+                            if (t1 == null) {
+                                t1 = Collections.emptyList();
+                            }
+                            if (t2 == null) {
+                                t2 = Collections.emptyList();
+                            }
+                            List<BigDecimal> result = new ArrayList<>();
+                            return assignOutput(result, test, t1, t2);
+                        }
+
+                        protected List<BigDecimal> assignOutput(List<BigDecimal> result, Boolean test, List<BigDecimal> t1, List<BigDecimal> t2) {
+                            if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+                                result.addAll(t1);
+                            } else {
+                                result.addAll(t2);
+                            }
+                            return result;
+                        }
+                    }
+                }
+                """,
                 f
         );
         generatorTestHelper.compileToClasses(code);
@@ -4710,67 +4675,65 @@ public class FunctionGeneratorTest {
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.expression.CardinalityOperator;
-				import com.rosetta.model.lib.functions.ModelObjectValidator;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.test.model.Bar;
-				import java.util.Optional;
-				import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.expression.CardinalityOperator;
+                import com.rosetta.model.lib.functions.ModelObjectValidator;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import com.rosetta.test.model.Bar;
+                import java.util.Optional;
+                import javax.inject.Inject;
 
-				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+                import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 
-				@ImplementedBy(FuncFoo.FuncFooDefault.class)
-				public abstract class FuncFoo implements RosettaFunction {
-				\t
-					@Inject protected ModelObjectValidator objectValidator;
+                @ImplementedBy(FuncFoo.FuncFooDefault.class)
+                public abstract class FuncFoo implements RosettaFunction {
 
-					/**
-					* @param test\s
-					* @param b1\s
-					* @param b2\s
-					* @return result\s
-					*/
-					public Bar evaluate(Boolean test, Bar b1, Bar b2) {
-						Bar.BarBuilder resultBuilder = doEvaluate(test, b1, b2);
-				\t\t
-						final Bar result;
-						if (resultBuilder == null) {
-							result = null;
-						} else {
-							result = resultBuilder.build();
-							objectValidator.validate(Bar.class, result);
-						}
-				\t\t
-						return result;
-					}
+                    @Inject protected ModelObjectValidator objectValidator;
 
-					protected abstract Bar.BarBuilder doEvaluate(Boolean test, Bar b1, Bar b2);
+                    /**
+                     * @param test
+                     * @param b1
+                     * @param b2
+                     * @return result
+                     */
+                    public Bar evaluate(Boolean test, Bar b1, Bar b2) {
+                        Bar.BarBuilder resultBuilder = doEvaluate(test, b1, b2);
 
-					public static class FuncFooDefault extends FuncFoo {
-						@Override
-						protected Bar.BarBuilder doEvaluate(Boolean test, Bar b1, Bar b2) {
-							Bar.BarBuilder result = Bar.builder();
-							return assignOutput(result, test, b1, b2);
-						}
-				\t\t
-						protected Bar.BarBuilder assignOutput(Bar.BarBuilder result, Boolean test, Bar b1, Bar b2) {
-							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
-								result = toBuilder(b1);
-							} else {
-								result = toBuilder(b2);
-							}
-				\t\t\t
-							return Optional.ofNullable(result)
-								.map(o -> o.prune())
-								.orElse(null);
-						}
-					}
-				}
-				""",
+                        final Bar result;
+                        if (resultBuilder == null) {
+                            result = null;
+                        } else {
+                            result = resultBuilder.build();
+                            objectValidator.validate(Bar.class, result);
+                        }
+                        return result;
+                    }
+
+                    protected abstract Bar.BarBuilder doEvaluate(Boolean test, Bar b1, Bar b2);
+
+                    public static class FuncFooDefault extends FuncFoo {
+                        @Override
+                        protected Bar.BarBuilder doEvaluate(Boolean test, Bar b1, Bar b2) {
+                            Bar.BarBuilder result = Bar.builder();
+                            return assignOutput(result, test, b1, b2);
+                        }
+
+                        protected Bar.BarBuilder assignOutput(Bar.BarBuilder result, Boolean test, Bar b1, Bar b2) {
+                            if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+                                result = toBuilder(b1);
+                            } else {
+                                result = toBuilder(b2);
+                            }
+                            return Optional.ofNullable(result)
+                                .map(o -> o.prune())
+                                .orElse(null);
+                        }
+                    }
+                }
+                """,
                 f
         );
         generatorTestHelper.compileToClasses(code);
@@ -4799,77 +4762,75 @@ public class FunctionGeneratorTest {
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.expression.CardinalityOperator;
-				import com.rosetta.model.lib.functions.ModelObjectValidator;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.test.model.Bar;
-				import java.util.ArrayList;
-				import java.util.Collections;
-				import java.util.List;
-				import java.util.Optional;
-				import java.util.stream.Collectors;
-				import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.expression.CardinalityOperator;
+                import com.rosetta.model.lib.functions.ModelObjectValidator;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import com.rosetta.test.model.Bar;
+                import java.util.ArrayList;
+                import java.util.Collections;
+                import java.util.List;
+                import java.util.Optional;
+                import java.util.stream.Collectors;
+                import javax.inject.Inject;
 
-				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+                import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 
-				@ImplementedBy(FuncFoo.FuncFooDefault.class)
-				public abstract class FuncFoo implements RosettaFunction {
-				\t
-					@Inject protected ModelObjectValidator objectValidator;
+                @ImplementedBy(FuncFoo.FuncFooDefault.class)
+                public abstract class FuncFoo implements RosettaFunction {
 
-					/**
-					* @param test\s
-					* @param b1\s
-					* @param b2\s
-					* @return result\s
-					*/
-					public List<? extends Bar> evaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
-						List<Bar.BarBuilder> resultBuilder = doEvaluate(test, b1, b2);
-				\t\t
-						final List<? extends Bar> result;
-						if (resultBuilder == null) {
-							result = null;
-						} else {
-							result = resultBuilder.stream().map(Bar::build).collect(Collectors.toList());
-							objectValidator.validate(Bar.class, result);
-						}
-				\t\t
-						return result;
-					}
+                    @Inject protected ModelObjectValidator objectValidator;
 
-					protected abstract List<Bar.BarBuilder> doEvaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2);
+                    /**
+                     * @param test
+                     * @param b1
+                     * @param b2
+                     * @return result
+                     */
+                    public List<? extends Bar> evaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
+                        List<Bar.BarBuilder> resultBuilder = doEvaluate(test, b1, b2);
 
-					public static class FuncFooDefault extends FuncFoo {
-						@Override
-						protected List<Bar.BarBuilder> doEvaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
-							if (b1 == null) {
-								b1 = Collections.emptyList();
-							}
-							if (b2 == null) {
-								b2 = Collections.emptyList();
-							}
-							List<Bar.BarBuilder> result = new ArrayList<>();
-							return assignOutput(result, test, b1, b2);
-						}
-				\t\t
-						protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> result, Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
-							if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
-								result.addAll(toBuilder(b1));
-							} else {
-								result.addAll(toBuilder(b2));
-							}
-				\t\t\t
-							return Optional.ofNullable(result)
-								.map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
-								.orElse(null);
-						}
-					}
-				}
-				""",
+                        final List<? extends Bar> result;
+                        if (resultBuilder == null) {
+                            result = null;
+                        } else {
+                            result = resultBuilder.stream().map(Bar::build).collect(Collectors.toList());
+                            objectValidator.validate(Bar.class, result);
+                        }
+                        return result;
+                    }
+
+                    protected abstract List<Bar.BarBuilder> doEvaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2);
+
+                    public static class FuncFooDefault extends FuncFoo {
+                        @Override
+                        protected List<Bar.BarBuilder> doEvaluate(Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
+                            if (b1 == null) {
+                                b1 = Collections.emptyList();
+                            }
+                            if (b2 == null) {
+                                b2 = Collections.emptyList();
+                            }
+                            List<Bar.BarBuilder> result = new ArrayList<>();
+                            return assignOutput(result, test, b1, b2);
+                        }
+
+                        protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> result, Boolean test, List<? extends Bar> b1, List<? extends Bar> b2) {
+                            if (areEqual(MapperS.of(test), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+                                result.addAll(toBuilder(b1));
+                            } else {
+                                result.addAll(toBuilder(b2));
+                            }
+                            return Optional.ofNullable(result)
+                                .map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
+                                .orElse(null);
+                        }
+                    }
+                }
+                """,
                 f
         );
         generatorTestHelper.compileToClasses(code);
@@ -4892,46 +4853,44 @@ public class FunctionGeneratorTest {
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.expression.MapperMaths;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import java.math.BigDecimal;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.expression.MapperMaths;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import java.math.BigDecimal;
 
 
-				@ImplementedBy(FuncFoo.FuncFooDefault.class)
-				public abstract class FuncFoo implements RosettaFunction {
+                @ImplementedBy(FuncFoo.FuncFooDefault.class)
+                public abstract class FuncFoo implements RosettaFunction {
 
-					/**
-					* @param n1\s
-					* @param n2\s
-					* @return res\s
-					*/
-					public BigDecimal evaluate(BigDecimal n1, BigDecimal n2) {
-						BigDecimal res = doEvaluate(n1, n2);
-				\t\t
-						return res;
-					}
+                    /**
+                     * @param n1
+                     * @param n2
+                     * @return res
+                     */
+                    public BigDecimal evaluate(BigDecimal n1, BigDecimal n2) {
+                        BigDecimal res = doEvaluate(n1, n2);
+                        return res;
+                    }
 
-					protected abstract BigDecimal doEvaluate(BigDecimal n1, BigDecimal n2);
+                    protected abstract BigDecimal doEvaluate(BigDecimal n1, BigDecimal n2);
 
-					public static class FuncFooDefault extends FuncFoo {
-						@Override
-						protected BigDecimal doEvaluate(BigDecimal n1, BigDecimal n2) {
-							BigDecimal res = null;
-							return assignOutput(res, n1, n2);
-						}
-				\t\t
-						protected BigDecimal assignOutput(BigDecimal res, BigDecimal n1, BigDecimal n2) {
-							res = MapperMaths.<BigDecimal, BigDecimal, BigDecimal>multiply(MapperS.of(n1), MapperS.of(n2)).get();
-				\t\t\t
-							return res;
-						}
-					}
-				}
-				""",
+                    public static class FuncFooDefault extends FuncFoo {
+                        @Override
+                        protected BigDecimal doEvaluate(BigDecimal n1, BigDecimal n2) {
+                            BigDecimal res = null;
+                            return assignOutput(res, n1, n2);
+                        }
+
+                        protected BigDecimal assignOutput(BigDecimal res, BigDecimal n1, BigDecimal n2) {
+                            res = MapperMaths.<BigDecimal, BigDecimal, BigDecimal>multiply(MapperS.of(n1), MapperS.of(n2)).get();
+                            return res;
+                        }
+                    }
+                }
+                """,
                 f
         );
         generatorTestHelper.compileToClasses(code);
@@ -4956,64 +4915,62 @@ public class FunctionGeneratorTest {
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.ModelObjectValidator;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.test.model.Foo;
-				import java.util.Collections;
-				import java.util.List;
-				import java.util.Optional;
-				import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.ModelObjectValidator;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.test.model.Foo;
+                import java.util.Collections;
+                import java.util.List;
+                import java.util.Optional;
+                import javax.inject.Inject;
 
 
-				@ImplementedBy(FuncFoo.FuncFooDefault.class)
-				public abstract class FuncFoo implements RosettaFunction {
-				\t
-					@Inject protected ModelObjectValidator objectValidator;
+                @ImplementedBy(FuncFoo.FuncFooDefault.class)
+                public abstract class FuncFoo implements RosettaFunction {
 
-					/**
-					* @param inList\s
-					* @return foo\s
-					*/
-					public Foo evaluate(List<String> inList) {
-						Foo.FooBuilder fooBuilder = doEvaluate(inList);
-				\t\t
-						final Foo foo;
-						if (fooBuilder == null) {
-							foo = null;
-						} else {
-							foo = fooBuilder.build();
-							objectValidator.validate(Foo.class, foo);
-						}
-				\t\t
-						return foo;
-					}
+                    @Inject protected ModelObjectValidator objectValidator;
 
-					protected abstract Foo.FooBuilder doEvaluate(List<String> inList);
+                    /**
+                     * @param inList
+                     * @return foo
+                     */
+                    public Foo evaluate(List<String> inList) {
+                        Foo.FooBuilder fooBuilder = doEvaluate(inList);
 
-					public static class FuncFooDefault extends FuncFoo {
-						@Override
-						protected Foo.FooBuilder doEvaluate(List<String> inList) {
-							if (inList == null) {
-								inList = Collections.emptyList();
-							}
-							Foo.FooBuilder foo = Foo.builder();
-							return assignOutput(foo, inList);
-						}
-				\t\t
-						protected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
-							foo
-								.setOutList(inList);
-				\t\t\t
-							return Optional.ofNullable(foo)
-								.map(o -> o.prune())
-								.orElse(null);
-						}
-					}
-				}
-				""",
+                        final Foo foo;
+                        if (fooBuilder == null) {
+                            foo = null;
+                        } else {
+                            foo = fooBuilder.build();
+                            objectValidator.validate(Foo.class, foo);
+                        }
+                        return foo;
+                    }
+
+                    protected abstract Foo.FooBuilder doEvaluate(List<String> inList);
+
+                    public static class FuncFooDefault extends FuncFoo {
+                        @Override
+                        protected Foo.FooBuilder doEvaluate(List<String> inList) {
+                            if (inList == null) {
+                                inList = Collections.emptyList();
+                            }
+                            Foo.FooBuilder foo = Foo.builder();
+                            return assignOutput(foo, inList);
+                        }
+
+                        protected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
+                            foo
+                                .setOutList(inList);
+                            return Optional.ofNullable(foo)
+                                .map(o -> o.prune())
+                                .orElse(null);
+                        }
+                    }
+                }
+                """,
                 f
         );
         generatorTestHelper.compileToClasses(code);
@@ -5038,64 +4995,62 @@ public class FunctionGeneratorTest {
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.ModelObjectValidator;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.test.model.Foo;
-				import java.util.Collections;
-				import java.util.List;
-				import java.util.Optional;
-				import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.ModelObjectValidator;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.test.model.Foo;
+                import java.util.Collections;
+                import java.util.List;
+                import java.util.Optional;
+                import javax.inject.Inject;
 
 
-				@ImplementedBy(FuncFoo.FuncFooDefault.class)
-				public abstract class FuncFoo implements RosettaFunction {
-				\t
-					@Inject protected ModelObjectValidator objectValidator;
+                @ImplementedBy(FuncFoo.FuncFooDefault.class)
+                public abstract class FuncFoo implements RosettaFunction {
 
-					/**
-					* @param inList\s
-					* @return foo\s
-					*/
-					public Foo evaluate(List<String> inList) {
-						Foo.FooBuilder fooBuilder = doEvaluate(inList);
-				\t\t
-						final Foo foo;
-						if (fooBuilder == null) {
-							foo = null;
-						} else {
-							foo = fooBuilder.build();
-							objectValidator.validate(Foo.class, foo);
-						}
-				\t\t
-						return foo;
-					}
+                    @Inject protected ModelObjectValidator objectValidator;
 
-					protected abstract Foo.FooBuilder doEvaluate(List<String> inList);
+                    /**
+                     * @param inList
+                     * @return foo
+                     */
+                    public Foo evaluate(List<String> inList) {
+                        Foo.FooBuilder fooBuilder = doEvaluate(inList);
 
-					public static class FuncFooDefault extends FuncFoo {
-						@Override
-						protected Foo.FooBuilder doEvaluate(List<String> inList) {
-							if (inList == null) {
-								inList = Collections.emptyList();
-							}
-							Foo.FooBuilder foo = Foo.builder();
-							return assignOutput(foo, inList);
-						}
-				\t\t
-						protected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
-							foo
-								.addOutList(inList);
-				\t\t\t
-							return Optional.ofNullable(foo)
-								.map(o -> o.prune())
-								.orElse(null);
-						}
-					}
-				}
-				""",
+                        final Foo foo;
+                        if (fooBuilder == null) {
+                            foo = null;
+                        } else {
+                            foo = fooBuilder.build();
+                            objectValidator.validate(Foo.class, foo);
+                        }
+                        return foo;
+                    }
+
+                    protected abstract Foo.FooBuilder doEvaluate(List<String> inList);
+
+                    public static class FuncFooDefault extends FuncFoo {
+                        @Override
+                        protected Foo.FooBuilder doEvaluate(List<String> inList) {
+                            if (inList == null) {
+                                inList = Collections.emptyList();
+                            }
+                            Foo.FooBuilder foo = Foo.builder();
+                            return assignOutput(foo, inList);
+                        }
+
+                        protected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<String> inList) {
+                            foo
+                                .addOutList(inList);
+                            return Optional.ofNullable(foo)
+                                .map(o -> o.prune())
+                                .orElse(null);
+                        }
+                    }
+                }
+                """,
                 f
         );
         generatorTestHelper.compileToClasses(code);
@@ -5681,54 +5636,52 @@ public class FunctionGeneratorTest {
         var f = code.get("com.rosetta.test.model.functions.B");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import javax.inject.Inject;
 
 
-				@ImplementedBy(B.BDefault.class)
-				public abstract class B implements RosettaFunction {
-				\t
-					// RosettaFunction dependencies
-					//
-					@Inject protected A a;
+                @ImplementedBy(B.BDefault.class)
+                public abstract class B implements RosettaFunction {
 
-					/**
-					* @return result\s
-					*/
-					public Boolean evaluate() {
-						Boolean result = doEvaluate();
-				\t\t
-						return result;
-					}
+                    // RosettaFunction dependencies
+                    //
+                    @Inject protected A a;
 
-					protected abstract Boolean doEvaluate();
+                    /**
+                     * @return result
+                     */
+                    public Boolean evaluate() {
+                        Boolean result = doEvaluate();
+                        return result;
+                    }
 
-					public static class BDefault extends B {
-						@Override
-						protected Boolean doEvaluate() {
-							Boolean result = null;
-							return assignOutput(result);
-						}
-				\t\t
-						protected Boolean assignOutput(Boolean result) {
-							final Boolean ifThenElseResult;
-							if (true) {
-								ifThenElseResult = true;
-							} else if (false) {
-								ifThenElseResult = true;
-							} else {
-								ifThenElseResult = null;
-							}
-							result = a.evaluate(ifThenElseResult);
-				\t\t\t
-							return result;
-						}
-					}
-				}
-				""",
+                    protected abstract Boolean doEvaluate();
+
+                    public static class BDefault extends B {
+                        @Override
+                        protected Boolean doEvaluate() {
+                            Boolean result = null;
+                            return assignOutput(result);
+                        }
+
+                        protected Boolean assignOutput(Boolean result) {
+                            final Boolean ifThenElseResult;
+                            if (true) {
+                                ifThenElseResult = true;
+                            } else if (false) {
+                                ifThenElseResult = true;
+                            } else {
+                                ifThenElseResult = null;
+                            }
+                            result = a.evaluate(ifThenElseResult);
+                            return result;
+                        }
+                    }
+                }
+                """,
                 f
         );
         generatorTestHelper.compileToClasses(code);
@@ -5751,48 +5704,46 @@ public class FunctionGeneratorTest {
         var f = code.get("com.rosetta.test.model.functions.IsDateGreaterThan");
         assertJavaEquals(
                 """
-				package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-				import com.google.inject.ImplementedBy;
-				import com.rosetta.model.lib.expression.CardinalityOperator;
-				import com.rosetta.model.lib.functions.RosettaFunction;
-				import com.rosetta.model.lib.mapper.MapperS;
-				import com.rosetta.model.lib.records.Date;
-				import java.time.ZonedDateTime;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.expression.CardinalityOperator;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import com.rosetta.model.lib.records.Date;
+                import java.time.ZonedDateTime;
 
-				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
+                import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 
-				@ImplementedBy(IsDateGreaterThan.IsDateGreaterThanDefault.class)
-				public abstract class IsDateGreaterThan implements RosettaFunction {
+                @ImplementedBy(IsDateGreaterThan.IsDateGreaterThanDefault.class)
+                public abstract class IsDateGreaterThan implements RosettaFunction {
 
-					/**
-					* @param date\s
-					* @param zonedDateTime\s
-					* @return result\s
-					*/
-					public Boolean evaluate(Date date, ZonedDateTime zonedDateTime) {
-						Boolean result = doEvaluate(date, zonedDateTime);
-				\t\t
-						return result;
-					}
+                    /**
+                     * @param date
+                     * @param zonedDateTime
+                     * @return result
+                     */
+                    public Boolean evaluate(Date date, ZonedDateTime zonedDateTime) {
+                        Boolean result = doEvaluate(date, zonedDateTime);
+                        return result;
+                    }
 
-					protected abstract Boolean doEvaluate(Date date, ZonedDateTime zonedDateTime);
+                    protected abstract Boolean doEvaluate(Date date, ZonedDateTime zonedDateTime);
 
-					public static class IsDateGreaterThanDefault extends IsDateGreaterThan {
-						@Override
-						protected Boolean doEvaluate(Date date, ZonedDateTime zonedDateTime) {
-							Boolean result = null;
-							return assignOutput(result, date, zonedDateTime);
-						}
-				\t\t
-						protected Boolean assignOutput(Boolean result, Date date, ZonedDateTime zonedDateTime) {
-							result = lessThanEquals(MapperS.of(date), MapperS.of(zonedDateTime).<Date>map("Date", zdt -> Date.of(zdt.toLocalDate())), CardinalityOperator.All).get();
-				\t\t\t
-							return result;
-						}
-					}
-				}
-				""",
+                    public static class IsDateGreaterThanDefault extends IsDateGreaterThan {
+                        @Override
+                        protected Boolean doEvaluate(Date date, ZonedDateTime zonedDateTime) {
+                            Boolean result = null;
+                            return assignOutput(result, date, zonedDateTime);
+                        }
+
+                        protected Boolean assignOutput(Boolean result, Date date, ZonedDateTime zonedDateTime) {
+                            result = lessThanEquals(MapperS.of(date), MapperS.of(zonedDateTime).<Date>map("Date", zdt -> Date.of(zdt.toLocalDate())), CardinalityOperator.All).get();
+                            return result;
+                        }
+                    }
+                }
+                """,
                 f
         );
         generatorTestHelper.compileToClasses(code);

@@ -50,73 +50,70 @@ public class FunctionOperationGeneratorTest {
 
         assertEquals(
             """
-            package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-            import com.google.inject.ImplementedBy;
-            import com.rosetta.model.lib.expression.MapperMaths;
-            import com.rosetta.model.lib.functions.RosettaFunction;
-            import com.rosetta.model.lib.mapper.MapperS;
-            import com.rosetta.test.model.Period;
-            import com.rosetta.test.model.PeriodEnum;
-            import java.math.BigDecimal;
-            import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.expression.MapperMaths;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import com.rosetta.test.model.Period;
+                import com.rosetta.test.model.PeriodEnum;
+                import java.math.BigDecimal;
+                import javax.inject.Inject;
 
 
-            /**
-             * @version test
-             */
-            public class PeriodEnumFunc implements RosettaFunction {
-            \t
-            	@Inject protected PeriodEnumFunc.PeriodEnumFuncMONTH periodEnumFuncMONTH;
-            \t
-            	public BigDecimal evaluate(PeriodEnum in1, Period in2) {
-            		switch (in1) {
-            			case MONTH:
-            				return periodEnumFuncMONTH.evaluate(in1, in2);
-            			default:
-            				throw new IllegalArgumentException(\"Enum value not implemented: \" + in1);
-            		}
-            	}
-            \t
-            	@ImplementedBy(PeriodEnumFunc.PeriodEnumFuncMONTH.PeriodEnumFuncMONTHDefault.class)
-            	public static abstract class PeriodEnumFuncMONTH implements RosettaFunction {
-            \t
-            		/**
-            		* @param in1\s
-            		* @param in2\s
-            		* @return out\s
-            		*/
-            		public BigDecimal evaluate(PeriodEnum in1, Period in2) {
-            			BigDecimal out = doEvaluate(in1, in2);
-            \t\t\t
-            			return out;
-            		}
-            \t
-            		protected abstract BigDecimal doEvaluate(PeriodEnum in1, Period in2);
-            \t
-            		protected abstract MapperS<Integer> i(PeriodEnum in1, Period in2);
-            \t
-            		public static class PeriodEnumFuncMONTHDefault extends PeriodEnumFunc.PeriodEnumFuncMONTH {
-            			@Override
-            			protected BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
-            				BigDecimal out = null;
-            				return assignOutput(out, in1, in2);
-            			}
-            \t\t\t
-            			protected BigDecimal assignOutput(BigDecimal out, PeriodEnum in1, Period in2) {
-            				out = MapperMaths.<BigDecimal, BigDecimal, BigDecimal>multiply(i(in1, in2).<BigDecimal>map(\"Type coercion\", integer -> integer == null ? null : BigDecimal.valueOf(integer)), MapperS.of(new BigDecimal(\"30.0\"))).get();
-            \t\t\t\t
-            				return out;
-            			}
-            \t\t\t
-            			@Override
-            			protected MapperS<Integer> i(PeriodEnum in1, Period in2) {
-            				return MapperS.of(in2).<Integer>map(\"getFrequency\", period -> period.getFrequency());
-            			}
-            		}
-            	}
-            }
-            """,
+                /**
+                 * @version test
+                 */
+                public class PeriodEnumFunc implements RosettaFunction {
+
+                    @Inject protected PeriodEnumFunc.PeriodEnumFuncMONTH periodEnumFuncMONTH;
+
+                    public BigDecimal evaluate(PeriodEnum in1, Period in2) {
+                        switch (in1) {
+                            case MONTH:
+                                return periodEnumFuncMONTH.evaluate(in1, in2);
+                            default:
+                                throw new IllegalArgumentException("Enum value not implemented: " + in1);
+                        }
+                    }
+
+                    @ImplementedBy(PeriodEnumFunc.PeriodEnumFuncMONTH.PeriodEnumFuncMONTHDefault.class)
+                    public static abstract class PeriodEnumFuncMONTH implements RosettaFunction {
+
+                        /**
+                         * @param in1
+                         * @param in2
+                         * @return out
+                         */
+                        public BigDecimal evaluate(PeriodEnum in1, Period in2) {
+                            BigDecimal out = doEvaluate(in1, in2);
+                            return out;
+                        }
+
+                        protected abstract BigDecimal doEvaluate(PeriodEnum in1, Period in2);
+
+                        protected abstract MapperS<Integer> i(PeriodEnum in1, Period in2);
+
+                        public static class PeriodEnumFuncMONTHDefault extends PeriodEnumFunc.PeriodEnumFuncMONTH {
+                            @Override
+                            protected BigDecimal doEvaluate(PeriodEnum in1, Period in2) {
+                                BigDecimal out = null;
+                                return assignOutput(out, in1, in2);
+                            }
+
+                            protected BigDecimal assignOutput(BigDecimal out, PeriodEnum in1, Period in2) {
+                                out = MapperMaths.<BigDecimal, BigDecimal, BigDecimal>multiply(i(in1, in2).<BigDecimal>map("Type coercion", integer -> integer == null ? null : BigDecimal.valueOf(integer)), MapperS.of(new BigDecimal("30.0"))).get();
+                                return out;
+                            }
+
+                            @Override
+                            protected MapperS<Integer> i(PeriodEnum in1, Period in2) {
+                                return MapperS.of(in2).<Integer>map("getFrequency", period -> period.getFrequency());
+                            }
+                        }
+                    }}
+                """,
             generated
         );
 
@@ -135,51 +132,49 @@ public class FunctionOperationGeneratorTest {
             	set out: oneA + oneA
             """,
             """
-            package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-            import com.google.inject.ImplementedBy;
-            import com.rosetta.model.lib.expression.MapperMaths;
-            import com.rosetta.model.lib.functions.RosettaFunction;
-            import com.rosetta.model.lib.mapper.MapperS;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.expression.MapperMaths;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
 
 
-            @ImplementedBy(Calc.CalcDefault.class)
-            public abstract class Calc implements RosettaFunction {
+                @ImplementedBy(Calc.CalcDefault.class)
+                public abstract class Calc implements RosettaFunction {
 
-            	/**
-            	* @param one\s
-            	* @return out\s
-            	*/
-            	public Integer evaluate(Integer one) {
-            		Integer out = doEvaluate(one);
-            \t\t
-            		return out;
-            	}
+                    /**
+                     * @param one
+                     * @return out
+                     */
+                    public Integer evaluate(Integer one) {
+                        Integer out = doEvaluate(one);
+                        return out;
+                    }
 
-            	protected abstract Integer doEvaluate(Integer one);
+                    protected abstract Integer doEvaluate(Integer one);
 
-            	protected abstract MapperS<Integer> oneA(Integer one);
+                    protected abstract MapperS<Integer> oneA(Integer one);
 
-            	public static class CalcDefault extends Calc {
-            		@Override
-            		protected Integer doEvaluate(Integer one) {
-            			Integer out = null;
-            			return assignOutput(out, one);
-            		}
-            \t\t
-            		protected Integer assignOutput(Integer out, Integer one) {
-            			out = MapperMaths.<Integer, Integer, Integer>add(oneA(one), oneA(one)).get();
-            \t\t\t
-            			return out;
-            		}
-            \t\t
-            		@Override
-            		protected MapperS<Integer> oneA(Integer one) {
-            			return MapperS.of(1);
-            		}
-            	}
-            }
-            """
+                    public static class CalcDefault extends Calc {
+                        @Override
+                        protected Integer doEvaluate(Integer one) {
+                            Integer out = null;
+                            return assignOutput(out, one);
+                        }
+
+                        protected Integer assignOutput(Integer out, Integer one) {
+                            out = MapperMaths.<Integer, Integer, Integer>add(oneA(one), oneA(one)).get();
+                            return out;
+                        }
+
+                        @Override
+                        protected MapperS<Integer> oneA(Integer one) {
+                            return MapperS.of(1);
+                        }
+                    }
+                }
+                """
         );
     }
 
@@ -199,61 +194,59 @@ public class FunctionOperationGeneratorTest {
             	set res: a1 + a2 * 215
             """,
             """
-            package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-            import com.google.inject.ImplementedBy;
-            import com.rosetta.model.lib.expression.MapperMaths;
-            import com.rosetta.model.lib.functions.Max;
-            import com.rosetta.model.lib.functions.Min;
-            import com.rosetta.model.lib.functions.RosettaFunction;
-            import com.rosetta.model.lib.mapper.MapperS;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.expression.MapperMaths;
+                import com.rosetta.model.lib.functions.Max;
+                import com.rosetta.model.lib.functions.Min;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
 
 
-            @ImplementedBy(Calc.CalcDefault.class)
-            public abstract class Calc implements RosettaFunction {
+                @ImplementedBy(Calc.CalcDefault.class)
+                public abstract class Calc implements RosettaFunction {
 
-            	/**
-            	* @param arg1\s
-            	* @param arg2\s
-            	* @return res\s
-            	*/
-            	public Integer evaluate(Integer arg1, Integer arg2) {
-            		Integer res = doEvaluate(arg1, arg2);
-            \t\t
-            		return res;
-            	}
+                    /**
+                     * @param arg1
+                     * @param arg2
+                     * @return res
+                     */
+                    public Integer evaluate(Integer arg1, Integer arg2) {
+                        Integer res = doEvaluate(arg1, arg2);
+                        return res;
+                    }
 
-            	protected abstract Integer doEvaluate(Integer arg1, Integer arg2);
+                    protected abstract Integer doEvaluate(Integer arg1, Integer arg2);
 
-            	protected abstract MapperS<Integer> a1(Integer arg1, Integer arg2);
+                    protected abstract MapperS<Integer> a1(Integer arg1, Integer arg2);
 
-            	protected abstract MapperS<Integer> a2(Integer arg1, Integer arg2);
+                    protected abstract MapperS<Integer> a2(Integer arg1, Integer arg2);
 
-            	public static class CalcDefault extends Calc {
-            		@Override
-            		protected Integer doEvaluate(Integer arg1, Integer arg2) {
-            			Integer res = null;
-            			return assignOutput(res, arg1, arg2);
-            		}
-            \t\t
-            		protected Integer assignOutput(Integer res, Integer arg1, Integer arg2) {
-            			res = MapperMaths.<Integer, Integer, Integer>add(a1(arg1, arg2), MapperMaths.<Integer, Integer, Integer>multiply(a2(arg1, arg2), MapperS.of(215))).get();
-            \t\t\t
-            			return res;
-            		}
-            \t\t
-            		@Override
-            		protected MapperS<Integer> a1(Integer arg1, Integer arg2) {
-            			return MapperS.of(new Min().execute(1, 2));
-            		}
-            \t\t
-            		@Override
-            		protected MapperS<Integer> a2(Integer arg1, Integer arg2) {
-            			return MapperS.of(new Max().execute(1, 2));
-            		}
-            	}
-            }
-            """
+                    public static class CalcDefault extends Calc {
+                        @Override
+                        protected Integer doEvaluate(Integer arg1, Integer arg2) {
+                            Integer res = null;
+                            return assignOutput(res, arg1, arg2);
+                        }
+
+                        protected Integer assignOutput(Integer res, Integer arg1, Integer arg2) {
+                            res = MapperMaths.<Integer, Integer, Integer>add(a1(arg1, arg2), MapperMaths.<Integer, Integer, Integer>multiply(a2(arg1, arg2), MapperS.of(215))).get();
+                            return res;
+                        }
+
+                        @Override
+                        protected MapperS<Integer> a1(Integer arg1, Integer arg2) {
+                            return MapperS.of(new Min().execute(1, 2));
+                        }
+
+                        @Override
+                        protected MapperS<Integer> a2(Integer arg1, Integer arg2) {
+                            return MapperS.of(new Max().execute(1, 2));
+                        }
+                    }
+                }
+                """
         );
     }
 
@@ -281,82 +274,79 @@ public class FunctionOperationGeneratorTest {
         """);
         var generated = generatedCode.get("com.rosetta.test.model.functions.Calc").replace("\r\n", "\n");
         var expected = """
-        package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-        import com.google.inject.ImplementedBy;
-        import com.rosetta.model.lib.expression.MapperMaths;
-        import com.rosetta.model.lib.functions.ModelObjectValidator;
-        import com.rosetta.model.lib.functions.RosettaFunction;
-        import com.rosetta.model.lib.mapper.MapperS;
-        import com.rosetta.model.lib.records.Date;
-        import com.rosetta.test.model.FoncOut;
-        import com.rosetta.test.model.FuncIn;
-        import java.time.LocalDateTime;
-        import java.time.LocalTime;
-        import java.util.Optional;
-        import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.expression.MapperMaths;
+                import com.rosetta.model.lib.functions.ModelObjectValidator;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import com.rosetta.model.lib.records.Date;
+                import com.rosetta.test.model.FoncOut;
+                import com.rosetta.test.model.FuncIn;
+                import java.time.LocalDateTime;
+                import java.time.LocalTime;
+                import java.util.Optional;
+                import javax.inject.Inject;
 
 
-        @ImplementedBy(Calc.CalcDefault.class)
-        public abstract class Calc implements RosettaFunction {
-        \t
-        	@Inject protected ModelObjectValidator objectValidator;
+                @ImplementedBy(Calc.CalcDefault.class)
+                public abstract class Calc implements RosettaFunction {
 
-        	/**
-        	* @param funIn\s
-        	* @return res\s
-        	*/
-        	public FoncOut evaluate(FuncIn funIn) {
-        		FoncOut.FoncOutBuilder resBuilder = doEvaluate(funIn);
-        \t\t
-        		final FoncOut res;
-        		if (resBuilder == null) {
-        			res = null;
-        		} else {
-        			res = resBuilder.build();
-        			objectValidator.validate(FoncOut.class, res);
-        		}
-        \t\t
-        		return res;
-        	}
+                    @Inject protected ModelObjectValidator objectValidator;
 
-        	protected abstract FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn);
+                    /**
+                     * @param funIn
+                     * @return res
+                     */
+                    public FoncOut evaluate(FuncIn funIn) {
+                        FoncOut.FoncOutBuilder resBuilder = doEvaluate(funIn);
 
-        	protected abstract MapperS<Date> arg1(FuncIn funIn);
+                        final FoncOut res;
+                        if (resBuilder == null) {
+                            res = null;
+                        } else {
+                            res = resBuilder.build();
+                            objectValidator.validate(FoncOut.class, res);
+                        }
+                        return res;
+                    }
 
-        	protected abstract MapperS<LocalTime> arg2(FuncIn funIn);
+                    protected abstract FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn);
 
-        	public static class CalcDefault extends Calc {
-        		@Override
-        		protected FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn) {
-        			FoncOut.FoncOutBuilder res = FoncOut.builder();
-        			return assignOutput(res, funIn);
-        		}
-        \t\t
-        		protected FoncOut.FoncOutBuilder assignOutput(FoncOut.FoncOutBuilder res, FuncIn funIn) {
-        			res
-        				.setRes1(MapperMaths.<LocalDateTime, Date, LocalTime>add(arg1(funIn), arg2(funIn)).get());
-        \t\t\t
-        			res
-        				.setRes2(MapperMaths.<LocalDateTime, Date, LocalTime>add(arg1(funIn), arg2(funIn)).get());
-        \t\t\t
-        			return Optional.ofNullable(res)
-        				.map(o -> o.prune())
-        				.orElse(null);
-        		}
-        \t\t
-        		@Override
-        		protected MapperS<Date> arg1(FuncIn funIn) {
-        			return MapperS.of(funIn).<Date>map(\"getVal1\", funcIn -> funcIn.getVal1());
-        		}
-        \t\t
-        		@Override
-        		protected MapperS<LocalTime> arg2(FuncIn funIn) {
-        			return MapperS.of(funIn).<LocalTime>map(\"getVal2\", funcIn -> funcIn.getVal2());
-        		}
-        	}
-        }
-        """;
+                    protected abstract MapperS<Date> arg1(FuncIn funIn);
+
+                    protected abstract MapperS<LocalTime> arg2(FuncIn funIn);
+
+                    public static class CalcDefault extends Calc {
+                        @Override
+                        protected FoncOut.FoncOutBuilder doEvaluate(FuncIn funIn) {
+                            FoncOut.FoncOutBuilder res = FoncOut.builder();
+                            return assignOutput(res, funIn);
+                        }
+
+                        protected FoncOut.FoncOutBuilder assignOutput(FoncOut.FoncOutBuilder res, FuncIn funIn) {
+                            res
+                                .setRes1(MapperMaths.<LocalDateTime, Date, LocalTime>add(arg1(funIn), arg2(funIn)).get());
+                            res
+                                .setRes2(MapperMaths.<LocalDateTime, Date, LocalTime>add(arg1(funIn), arg2(funIn)).get());
+                            return Optional.ofNullable(res)
+                                .map(o -> o.prune())
+                                .orElse(null);
+                        }
+
+                        @Override
+                        protected MapperS<Date> arg1(FuncIn funIn) {
+                            return MapperS.of(funIn).<Date>map("getVal1", funcIn -> funcIn.getVal1());
+                        }
+
+                        @Override
+                        protected MapperS<LocalTime> arg2(FuncIn funIn) {
+                            return MapperS.of(funIn).<LocalTime>map("getVal2", funcIn -> funcIn.getVal2());
+                        }
+                    }
+                }
+                """;
         assertEquals(expected, generated);
         generatorTestHelper.compileToClasses(generatedCode);
     }
@@ -387,89 +377,86 @@ public class FunctionOperationGeneratorTest {
         var generated = generatedCode.get("com.rosetta.test.model.functions.RTS_22_Fields").replace("\r\n", "\n");
         generatorTestHelper.compileToClasses(generatedCode);
         var expected = """
-        package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-        import com.google.inject.ImplementedBy;
-        import com.rosetta.model.lib.expression.MapperMaths;
-        import com.rosetta.model.lib.functions.ModelObjectValidator;
-        import com.rosetta.model.lib.functions.RosettaFunction;
-        import com.rosetta.model.lib.mapper.MapperS;
-        import com.rosetta.model.lib.records.Date;
-        import com.rosetta.test.model.FuncIn;
-        import com.rosetta.test.model.FuncOut;
-        import java.time.LocalDateTime;
-        import java.time.LocalTime;
-        import java.util.Optional;
-        import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.expression.MapperMaths;
+                import com.rosetta.model.lib.functions.ModelObjectValidator;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import com.rosetta.model.lib.records.Date;
+                import com.rosetta.test.model.FuncIn;
+                import com.rosetta.test.model.FuncOut;
+                import java.time.LocalDateTime;
+                import java.time.LocalTime;
+                import java.util.Optional;
+                import javax.inject.Inject;
 
 
-        @ImplementedBy(RTS_22_Fields.RTS_22_FieldsDefault.class)
-        public abstract class RTS_22_Fields implements RosettaFunction {
-        \t
-        	@Inject protected ModelObjectValidator objectValidator;
+                @ImplementedBy(RTS_22_Fields.RTS_22_FieldsDefault.class)
+                public abstract class RTS_22_Fields implements RosettaFunction {
 
-        	/**
-        	* @param funcIn\s
-        	* @return out\s
-        	*/
-        	public FuncOut evaluate(FuncIn funcIn) {
-        		FuncOut.FuncOutBuilder outBuilder = doEvaluate(funcIn);
-        \t\t
-        		final FuncOut out;
-        		if (outBuilder == null) {
-        			out = null;
-        		} else {
-        			out = outBuilder.build();
-        			objectValidator.validate(FuncOut.class, out);
-        		}
-        \t\t
-        		return out;
-        	}
+                    @Inject protected ModelObjectValidator objectValidator;
 
-        	protected abstract FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn);
+                    /**
+                     * @param funcIn
+                     * @return out
+                     */
+                    public FuncOut evaluate(FuncIn funcIn) {
+                        FuncOut.FuncOutBuilder outBuilder = doEvaluate(funcIn);
 
-        	protected abstract MapperS<String> linkId(FuncIn funcIn);
+                        final FuncOut out;
+                        if (outBuilder == null) {
+                            out = null;
+                        } else {
+                            out = outBuilder.build();
+                            objectValidator.validate(FuncOut.class, out);
+                        }
+                        return out;
+                    }
 
-        	protected abstract MapperS<Date> tradeDate(FuncIn funcIn);
+                    protected abstract FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn);
 
-        	protected abstract MapperS<LocalTime> tradeTime(FuncIn funcIn);
+                    protected abstract MapperS<String> linkId(FuncIn funcIn);
 
-        	public static class RTS_22_FieldsDefault extends RTS_22_Fields {
-        		@Override
-        		protected FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn) {
-        			FuncOut.FuncOutBuilder out = FuncOut.builder();
-        			return assignOutput(out, funcIn);
-        		}
-        \t\t
-        		protected FuncOut.FuncOutBuilder assignOutput(FuncOut.FuncOutBuilder out, FuncIn funcIn) {
-        			out
-        				.setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of(\"SPH\"), linkId(funcIn)).get());
-        \t\t\t
-        			out
-        				.setTradingDateTime(MapperMaths.<LocalDateTime, Date, LocalTime>add(tradeDate(funcIn), tradeTime(funcIn)).get());
-        \t\t\t
-        			return Optional.ofNullable(out)
-        				.map(o -> o.prune())
-        				.orElse(null);
-        		}
-        \t\t
-        		@Override
-        		protected MapperS<String> linkId(FuncIn funcIn) {
-        			return MapperS.of(funcIn).<String>map(\"getValS\", _funcIn -> _funcIn.getValS());
-        		}
-        \t\t
-        		@Override
-        		protected MapperS<Date> tradeDate(FuncIn funcIn) {
-        			return MapperS.of(funcIn).<Date>map(\"getVal1\", _funcIn -> _funcIn.getVal1());
-        		}
-        \t\t
-        		@Override
-        		protected MapperS<LocalTime> tradeTime(FuncIn funcIn) {
-        			return MapperS.of(funcIn).<LocalTime>map(\"getVal2\", _funcIn -> _funcIn.getVal2());
-        		}
-        	}
-        }
-        """;
+                    protected abstract MapperS<Date> tradeDate(FuncIn funcIn);
+
+                    protected abstract MapperS<LocalTime> tradeTime(FuncIn funcIn);
+
+                    public static class RTS_22_FieldsDefault extends RTS_22_Fields {
+                        @Override
+                        protected FuncOut.FuncOutBuilder doEvaluate(FuncIn funcIn) {
+                            FuncOut.FuncOutBuilder out = FuncOut.builder();
+                            return assignOutput(out, funcIn);
+                        }
+
+                        protected FuncOut.FuncOutBuilder assignOutput(FuncOut.FuncOutBuilder out, FuncIn funcIn) {
+                            out
+                                .setTransactionReferenceNumber(MapperMaths.<String, String, String>add(MapperS.of("SPH"), linkId(funcIn)).get());
+                            out
+                                .setTradingDateTime(MapperMaths.<LocalDateTime, Date, LocalTime>add(tradeDate(funcIn), tradeTime(funcIn)).get());
+                            return Optional.ofNullable(out)
+                                .map(o -> o.prune())
+                                .orElse(null);
+                        }
+
+                        @Override
+                        protected MapperS<String> linkId(FuncIn funcIn) {
+                            return MapperS.of(funcIn).<String>map("getValS", _funcIn -> _funcIn.getValS());
+                        }
+
+                        @Override
+                        protected MapperS<Date> tradeDate(FuncIn funcIn) {
+                            return MapperS.of(funcIn).<Date>map("getVal1", _funcIn -> _funcIn.getVal1());
+                        }
+
+                        @Override
+                        protected MapperS<LocalTime> tradeTime(FuncIn funcIn) {
+                            return MapperS.of(funcIn).<LocalTime>map("getVal2", _funcIn -> _funcIn.getVal2());
+                        }
+                    }
+                }
+                """;
         assertEquals(expected, generated);
     }
 
@@ -495,89 +482,84 @@ public class FunctionOperationGeneratorTest {
             		withMeta only-element as-key
             """,
             """
-            package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-            import com.google.inject.ImplementedBy;
-            import com.rosetta.model.lib.functions.ModelObjectValidator;
-            import com.rosetta.model.lib.functions.RosettaFunction;
-            import com.rosetta.model.lib.mapper.MapperC;
-            import com.rosetta.test.model.OtherType;
-            import com.rosetta.test.model.WithMeta;
-            import com.rosetta.test.model.metafields.ReferenceWithMetaWithMeta;
-            import java.util.Collections;
-            import java.util.List;
-            import java.util.Optional;
-            import java.util.stream.Collectors;
-            import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.ModelObjectValidator;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperC;
+                import com.rosetta.test.model.OtherType;
+                import com.rosetta.test.model.WithMeta;
+                import com.rosetta.test.model.metafields.ReferenceWithMetaWithMeta;
+                import java.util.Collections;
+                import java.util.List;
+                import java.util.Optional;
+                import java.util.stream.Collectors;
+                import javax.inject.Inject;
 
 
-            @ImplementedBy(asKeyUsage.asKeyUsageDefault.class)
-            public abstract class asKeyUsage implements RosettaFunction {
-            \t
-            	@Inject protected ModelObjectValidator objectValidator;
+                @ImplementedBy(asKeyUsage.asKeyUsageDefault.class)
+                public abstract class asKeyUsage implements RosettaFunction {
 
-            	/**
-            	* @param withMeta\s
-            	* @return out\s
-            	*/
-            	public OtherType evaluate(List<? extends WithMeta> withMeta) {
-            		OtherType.OtherTypeBuilder outBuilder = doEvaluate(withMeta);
-            \t\t
-            		final OtherType out;
-            		if (outBuilder == null) {
-            			out = null;
-            		} else {
-            			out = outBuilder.build();
-            			objectValidator.validate(OtherType.class, out);
-            		}
-            \t\t
-            		return out;
-            	}
+                    @Inject protected ModelObjectValidator objectValidator;
 
-            	protected abstract OtherType.OtherTypeBuilder doEvaluate(List<? extends WithMeta> withMeta);
+                    /**
+                     * @param withMeta
+                     * @return out
+                     */
+                    public OtherType evaluate(List<? extends WithMeta> withMeta) {
+                        OtherType.OtherTypeBuilder outBuilder = doEvaluate(withMeta);
 
-            	public static class asKeyUsageDefault extends asKeyUsage {
-            		@Override
-            		protected OtherType.OtherTypeBuilder doEvaluate(List<? extends WithMeta> withMeta) {
-            			if (withMeta == null) {
-            				withMeta = Collections.emptyList();
-            			}
-            			OtherType.OtherTypeBuilder out = OtherType.builder();
-            			return assignOutput(out, withMeta);
-            		}
-            \t\t
-            		protected OtherType.OtherTypeBuilder assignOutput(OtherType.OtherTypeBuilder out, List<? extends WithMeta> withMeta) {
-            			out
-            				.addAttrMulti(MapperC.<WithMeta>of(withMeta)
-            					.getItems()
-            					.map(item -> ReferenceWithMetaWithMeta.builder()
-            						.setExternalReference(item.getMappedObject().getMeta().getExternalKey())
-            						.setGlobalReference(item.getMappedObject().getMeta().getGlobalKey())
-            						.build())
-            					.collect(Collectors.toList())
-            				);
-            \t\t\t
-            			final WithMeta outAttrSingle = MapperC.of(withMeta).get();
-            			out
-            				.setAttrSingle(ReferenceWithMetaWithMeta.builder()
-            					.setGlobalReference(Optional.ofNullable(outAttrSingle)
-            						.map(r -> r.getMeta())
-            						.map(m -> m.getGlobalKey())
-            						.orElse(null))
-            					.setExternalReference(Optional.ofNullable(outAttrSingle)
-            						.map(r -> r.getMeta())
-            						.map(m -> m.getExternalKey())
-            						.orElse(null))
-            					.build()
-            				);
-            \t\t\t
-            			return Optional.ofNullable(out)
-            				.map(o -> o.prune())
-            				.orElse(null);
-            		}
-            	}
-            }
-            """
+                        final OtherType out;
+                        if (outBuilder == null) {
+                            out = null;
+                        } else {
+                            out = outBuilder.build();
+                            objectValidator.validate(OtherType.class, out);
+                        }
+                        return out;
+                    }
+
+                    protected abstract OtherType.OtherTypeBuilder doEvaluate(List<? extends WithMeta> withMeta);
+
+                    public static class asKeyUsageDefault extends asKeyUsage {
+                        @Override
+                        protected OtherType.OtherTypeBuilder doEvaluate(List<? extends WithMeta> withMeta) {
+                            if (withMeta == null) {
+                                withMeta = Collections.emptyList();
+                            }
+                            OtherType.OtherTypeBuilder out = OtherType.builder();
+                            return assignOutput(out, withMeta);
+                        }
+
+                        protected OtherType.OtherTypeBuilder assignOutput(OtherType.OtherTypeBuilder out, List<? extends WithMeta> withMeta) {
+                            out
+                                .addAttrMulti(MapperC.<WithMeta>of(withMeta)
+                                .getItems()
+                                .map(item -> ReferenceWithMetaWithMeta.builder()
+                                    .setExternalReference(item.getMappedObject().getMeta().getExternalKey())
+                                    .setGlobalReference(item.getMappedObject().getMeta().getGlobalKey())
+                                    .build())
+                                .collect(Collectors.toList()));
+                            final WithMeta outAttrSingle = MapperC.of(withMeta).get();
+                            out
+                                .setAttrSingle(ReferenceWithMetaWithMeta.builder()
+                                .setGlobalReference(Optional.ofNullable(outAttrSingle)
+                                    .map(r -> r.getMeta())
+                                    .map(m -> m.getGlobalKey())
+                                    .orElse(null))
+                                .setExternalReference(Optional.ofNullable(outAttrSingle)
+                                    .map(r -> r.getMeta())
+                                    .map(m -> m.getExternalKey())
+                                    .orElse(null))
+                                .build());
+                            return Optional.ofNullable(out)
+                                .map(o -> o.prune())
+                                .orElse(null);
+                        }
+                    }
+                }
+                """
         );
     }
 
@@ -595,54 +577,52 @@ public class FunctionOperationGeneratorTest {
             	output: out int(1..1)
             """,
             """
-            package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-            import com.google.inject.ImplementedBy;
-            import com.rosetta.model.lib.functions.RosettaFunction;
-            import com.rosetta.model.lib.mapper.MapperS;
-            import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import javax.inject.Inject;
 
 
-            @ImplementedBy(Adder.AdderDefault.class)
-            public abstract class Adder implements RosettaFunction {
-            \t
-            	// RosettaFunction dependencies
-            	//
-            	@Inject protected AddOne addOne;
+                @ImplementedBy(Adder.AdderDefault.class)
+                public abstract class Adder implements RosettaFunction {
 
-            	/**
-            	* @return res\s
-            	*/
-            	public Integer evaluate() {
-            		Integer res = doEvaluate();
-            \t\t
-            		return res;
-            	}
+                    // RosettaFunction dependencies
+                    //
+                    @Inject protected AddOne addOne;
 
-            	protected abstract Integer doEvaluate();
+                    /**
+                     * @return res
+                     */
+                    public Integer evaluate() {
+                        Integer res = doEvaluate();
+                        return res;
+                    }
 
-            	protected abstract MapperS<Integer> arg1();
+                    protected abstract Integer doEvaluate();
 
-            	public static class AdderDefault extends Adder {
-            		@Override
-            		protected Integer doEvaluate() {
-            			Integer res = null;
-            			return assignOutput(res);
-            		}
-            \t\t
-            		protected Integer assignOutput(Integer res) {
-            			res = arg1().get();
-            \t\t\t
-            			return res;
-            		}
-            \t\t
-            		@Override
-            		protected MapperS<Integer> arg1() {
-            			return MapperS.of(addOne.evaluate(1));
-            		}
-            	}
-            }
-            """
+                    protected abstract MapperS<Integer> arg1();
+
+                    public static class AdderDefault extends Adder {
+                        @Override
+                        protected Integer doEvaluate() {
+                            Integer res = null;
+                            return assignOutput(res);
+                        }
+
+                        protected Integer assignOutput(Integer res) {
+                            res = arg1().get();
+                            return res;
+                        }
+
+                        @Override
+                        protected MapperS<Integer> arg1() {
+                            return MapperS.of(addOne.evaluate(1));
+                        }
+                    }
+                }
+                """
         );
     }
 
@@ -682,104 +662,99 @@ public class FunctionOperationGeneratorTest {
         var generated = generatedCode.get("com.rosetta.test.model.functions.MathFunc").replace("\r\n", "\n");
         assertEquals(
             """
-            package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-            import com.google.inject.ImplementedBy;
-            import com.rosetta.model.lib.functions.RosettaFunction;
-            import com.rosetta.model.lib.mapper.MapperS;
-            import com.rosetta.test.model.MathInput;
-            import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import com.rosetta.test.model.MathInput;
+                import javax.inject.Inject;
 
 
-            /**
-             * @version test
-             */
-            public class MathFunc implements RosettaFunction {
-            \t
-            	@Inject protected MathFunc.MathFuncINCR mathFuncINCR;
-            	@Inject protected MathFunc.MathFuncDECR mathFuncDECR;
-            \t
-            	public String evaluate(com.rosetta.test.model.Math in1, MathInput in2) {
-            		switch (in1) {
-            			case INCR:
-            				return mathFuncINCR.evaluate(in1, in2);
-            			case DECR:
-            				return mathFuncDECR.evaluate(in1, in2);
-            			default:
-            				throw new IllegalArgumentException(\"Enum value not implemented: \" + in1);
-            		}
-            	}
-            \t
-            	@ImplementedBy(MathFunc.MathFuncINCR.MathFuncINCRDefault.class)
-            	public static abstract class MathFuncINCR implements RosettaFunction {
-            \t\t
-            		// RosettaFunction dependencies
-            		//
-            		@Inject protected AddOne addOne;
-            \t
-            		/**
-            		* @param in1\s
-            		* @param in2\s
-            		* @return arg1\s
-            		*/
-            		public String evaluate(com.rosetta.test.model.Math in1, MathInput in2) {
-            			String arg1 = doEvaluate(in1, in2);
-            \t\t\t
-            			return arg1;
-            		}
-            \t
-            		protected abstract String doEvaluate(com.rosetta.test.model.Math in1, MathInput in2);
-            \t
-            		public static class MathFuncINCRDefault extends MathFunc.MathFuncINCR {
-            			@Override
-            			protected String doEvaluate(com.rosetta.test.model.Math in1, MathInput in2) {
-            				String arg1 = null;
-            				return assignOutput(arg1, in1, in2);
-            			}
-            \t\t\t
-            			protected String assignOutput(String arg1, com.rosetta.test.model.Math in1, MathInput in2) {
-            				arg1 = addOne.evaluate(MapperS.of(in2).<String>map(\"getMathInput\", mathInput -> mathInput.getMathInput()).get());
-            \t\t\t\t
-            				return arg1;
-            			}
-            		}
-            	}
-            	@ImplementedBy(MathFunc.MathFuncDECR.MathFuncDECRDefault.class)
-            	public static abstract class MathFuncDECR implements RosettaFunction {
-            \t\t
-            		// RosettaFunction dependencies
-            		//
-            		@Inject protected SubOne subOne;
-            \t
-            		/**
-            		* @param in1\s
-            		* @param in2\s
-            		* @return arg1\s
-            		*/
-            		public String evaluate(com.rosetta.test.model.Math in1, MathInput in2) {
-            			String arg1 = doEvaluate(in1, in2);
-            \t\t\t
-            			return arg1;
-            		}
-            \t
-            		protected abstract String doEvaluate(com.rosetta.test.model.Math in1, MathInput in2);
-            \t
-            		public static class MathFuncDECRDefault extends MathFunc.MathFuncDECR {
-            			@Override
-            			protected String doEvaluate(com.rosetta.test.model.Math in1, MathInput in2) {
-            				String arg1 = null;
-            				return assignOutput(arg1, in1, in2);
-            			}
-            \t\t\t
-            			protected String assignOutput(String arg1, com.rosetta.test.model.Math in1, MathInput in2) {
-            				arg1 = subOne.evaluate(MapperS.of(in2).<String>map(\"getMathInput\", mathInput -> mathInput.getMathInput()).get());
-            \t\t\t\t
-            				return arg1;
-            			}
-            		}
-            	}
-            }
-            """,
+                /**
+                 * @version test
+                 */
+                public class MathFunc implements RosettaFunction {
+
+                    @Inject protected MathFunc.MathFuncINCR mathFuncINCR;
+                    @Inject protected MathFunc.MathFuncDECR mathFuncDECR;
+
+                    public String evaluate(com.rosetta.test.model.Math in1, MathInput in2) {
+                        switch (in1) {
+                            case INCR:
+                                return mathFuncINCR.evaluate(in1, in2);
+                            case DECR:
+                                return mathFuncDECR.evaluate(in1, in2);
+                            default:
+                                throw new IllegalArgumentException("Enum value not implemented: " + in1);
+                        }
+                    }
+
+                    @ImplementedBy(MathFunc.MathFuncINCR.MathFuncINCRDefault.class)
+                    public static abstract class MathFuncINCR implements RosettaFunction {
+
+                        // RosettaFunction dependencies
+                        //
+                        @Inject protected AddOne addOne;
+
+                        /**
+                         * @param in1
+                         * @param in2
+                         * @return arg1
+                         */
+                        public String evaluate(com.rosetta.test.model.Math in1, MathInput in2) {
+                            String arg1 = doEvaluate(in1, in2);
+                            return arg1;
+                        }
+
+                        protected abstract String doEvaluate(com.rosetta.test.model.Math in1, MathInput in2);
+
+                        public static class MathFuncINCRDefault extends MathFunc.MathFuncINCR {
+                            @Override
+                            protected String doEvaluate(com.rosetta.test.model.Math in1, MathInput in2) {
+                                String arg1 = null;
+                                return assignOutput(arg1, in1, in2);
+                            }
+
+                            protected String assignOutput(String arg1, com.rosetta.test.model.Math in1, MathInput in2) {
+                                arg1 = addOne.evaluate(MapperS.of(in2).<String>map("getMathInput", mathInput -> mathInput.getMathInput()).get());
+                                return arg1;
+                            }
+                        }
+                    }
+                    @ImplementedBy(MathFunc.MathFuncDECR.MathFuncDECRDefault.class)
+                    public static abstract class MathFuncDECR implements RosettaFunction {
+
+                        // RosettaFunction dependencies
+                        //
+                        @Inject protected SubOne subOne;
+
+                        /**
+                         * @param in1
+                         * @param in2
+                         * @return arg1
+                         */
+                        public String evaluate(com.rosetta.test.model.Math in1, MathInput in2) {
+                            String arg1 = doEvaluate(in1, in2);
+                            return arg1;
+                        }
+
+                        protected abstract String doEvaluate(com.rosetta.test.model.Math in1, MathInput in2);
+
+                        public static class MathFuncDECRDefault extends MathFunc.MathFuncDECR {
+                            @Override
+                            protected String doEvaluate(com.rosetta.test.model.Math in1, MathInput in2) {
+                                String arg1 = null;
+                                return assignOutput(arg1, in1, in2);
+                            }
+
+                            protected String assignOutput(String arg1, com.rosetta.test.model.Math in1, MathInput in2) {
+                                arg1 = subOne.evaluate(MapperS.of(in2).<String>map("getMathInput", mathInput -> mathInput.getMathInput()).get());
+                                return arg1;
+                            }
+                        }
+                    }}
+                """,
             generated);
 
         generatorTestHelper.compileToClasses(generatedCode);
@@ -801,55 +776,53 @@ public class FunctionOperationGeneratorTest {
             	output: out int (1..1)
             """,
             """
-            package com.rosetta.test.model.functions;
+                package com.rosetta.test.model.functions;
 
-            import com.google.inject.ImplementedBy;
-            import com.rosetta.model.lib.functions.RosettaFunction;
-            import com.rosetta.model.lib.mapper.MapperS;
-            import javax.inject.Inject;
+                import com.google.inject.ImplementedBy;
+                import com.rosetta.model.lib.functions.RosettaFunction;
+                import com.rosetta.model.lib.mapper.MapperS;
+                import javax.inject.Inject;
 
 
-            @ImplementedBy(Adder.AdderDefault.class)
-            public abstract class Adder implements RosettaFunction {
-            \t
-            	// RosettaFunction dependencies
-            	//
-            	@Inject protected AddOne addOne;
+                @ImplementedBy(Adder.AdderDefault.class)
+                public abstract class Adder implements RosettaFunction {
 
-            	/**
-            	* @param arg1\s
-            	* @return res\s
-            	*/
-            	public Integer evaluate(Integer arg1) {
-            		Integer res = doEvaluate(arg1);
-            \t\t
-            		return res;
-            	}
+                    // RosettaFunction dependencies
+                    //
+                    @Inject protected AddOne addOne;
 
-            	protected abstract Integer doEvaluate(Integer arg1);
+                    /**
+                     * @param arg1
+                     * @return res
+                     */
+                    public Integer evaluate(Integer arg1) {
+                        Integer res = doEvaluate(arg1);
+                        return res;
+                    }
 
-            	protected abstract MapperS<Integer> addedOne(Integer arg1);
+                    protected abstract Integer doEvaluate(Integer arg1);
 
-            	public static class AdderDefault extends Adder {
-            		@Override
-            		protected Integer doEvaluate(Integer arg1) {
-            			Integer res = null;
-            			return assignOutput(res, arg1);
-            		}
-            \t\t
-            		protected Integer assignOutput(Integer res, Integer arg1) {
-            			res = addedOne(arg1).get();
-            \t\t\t
-            			return res;
-            		}
-            \t\t
-            		@Override
-            		protected MapperS<Integer> addedOne(Integer arg1) {
-            			return MapperS.of(addOne.evaluate(1));
-            		}
-            	}
-            }
-            """
+                    protected abstract MapperS<Integer> addedOne(Integer arg1);
+
+                    public static class AdderDefault extends Adder {
+                        @Override
+                        protected Integer doEvaluate(Integer arg1) {
+                            Integer res = null;
+                            return assignOutput(res, arg1);
+                        }
+
+                        protected Integer assignOutput(Integer res, Integer arg1) {
+                            res = addedOne(arg1).get();
+                            return res;
+                        }
+
+                        @Override
+                        protected MapperS<Integer> addedOne(Integer arg1) {
+                            return MapperS.of(addOne.evaluate(1));
+                        }
+                    }
+                }
+                """
         );
     }
 }
