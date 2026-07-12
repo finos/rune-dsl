@@ -31,7 +31,7 @@ An ordered list of principles to serve as reference when reviewing the serializa
 - **object generation**: serialized data should facilitate creation of Rune defined objects including enabling the "language's" polymorphic inheritance
 - **model conformity**: to the fullest extent possible, the serialized data should directly conform to the model.  The reader has no obligation to keep fields that it does not recognise
 - **error reporting**: report all failures
-- **atomic types serialisation**: to the extent possible, basic data types such as dates, times and others should be serialised according to well established standards/formats as for example ISO.
+- **atomic types serialization**: to the extent possible, basic data types such as dates, times and others should be serialised according to well established standards/formats as for example ISO.
 
 Out of scope
 - **cross major version support**: the current design does not address enabling serialization to support transformation across breaking changes
@@ -622,7 +622,8 @@ type OrderConfirmation:
       "@ref:scoped" : "customer-key"
     }
   }
-}```
+}
+```
 
 ## 7. Appendix
 
