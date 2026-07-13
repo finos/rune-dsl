@@ -1,8 +1,10 @@
 package com.regnosys.rosetta.generator.java.object;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -16,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.regnosys.rosetta.tests.util.ModelHelper;
+import com.rosetta.model.lib.RosettaModelObjectBuilder;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
@@ -149,5 +152,35 @@ class RosettaObjectInheritanceGeneratorTest {
 				""");
 
 		generatorTestHelper.compileToClasses(generated);
+	}
+
+	@Test
+	void shouldNotThrowWhenReadingAnAttributeOverriddenToZeroCardinality() throws Exception {
+		// See https://github.com/finos/rune-dsl/issues/1321
+		// When a child type overrides a multi-cardinality parent attribute with a zero (single)
+		// cardinality, the attribute is stored as a single, always-null field. The builder getter
+		// that adapts this single field back to the parent's list type used to wrap the field
+		// unconditionally (`Collections.singletonList(datedValue.toBuilder())`), throwing an NPE
+		// whenever an inherited condition read the attribute. The getter must instead be null-safe
+		// and return an empty list for the absent attribute.
+		Map<String, String> generated = generatorTestHelper.generateCode("""
+				type DatedValue:
+					x int (0..1)
+
+				type Schedule:
+					datedValue DatedValue (0..*)
+
+					condition DatedValueExists:
+						datedValue exists
+
+				type Quantity extends Schedule:
+					override datedValue DatedValue (0..0)
+				""");
+
+		Map<String, Class<?>> classes = generatorTestHelper.compileToClasses(generated);
+
+		RosettaModelObjectBuilder builder = generatorTestHelper.createBuilderInstance(classes, "Quantity");
+		List<?> datedValue = (List<?>) builder.getClass().getMethod("getDatedValue").invoke(builder);
+		assertEquals(List.of(), datedValue);
 	}
 }
