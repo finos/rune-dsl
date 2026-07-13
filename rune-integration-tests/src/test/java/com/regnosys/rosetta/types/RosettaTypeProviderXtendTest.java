@@ -120,12 +120,14 @@ public class RosettaTypeProviderXtendTest {
 	void testVariableTypeInference() {
 		RosettaModel context = modelHelper.parseRosettaWithNoIssues("""
 				func TestVar:
+					[suppressWarnings unused]
 					output: result number (1..4)
 					alias c: if True then 42 else -1/12
 					add result:
 						c
 
 				func TestImplicitVar:
+					[suppressWarnings unused]
 					output: result int (3..3)
 					add result:
 						[1, 2, 3] extract item + 1
@@ -310,6 +312,7 @@ public class RosettaTypeProviderXtendTest {
 	void testFunctionCallTypeInference() {
 		RosettaModel context = modelHelper.parseRosettaWithNoIssues("""
 				func SomeFunc:
+					[suppressWarnings unused]
 					inputs:
 						a int (1..1)
 						b boolean (2..4)
@@ -327,6 +330,7 @@ public class RosettaTypeProviderXtendTest {
 				namespace test
 
 				func SomeFunc:
+					[suppressWarnings unused]
 					inputs:
 					    a int (1..1)
 					    b boolean (2..4)
@@ -374,6 +378,7 @@ public class RosettaTypeProviderXtendTest {
 					V2
 
 				func Test:
+					[suppressWarnings unused]
 					output: result A (1..1)
 					set result:
 						A -> V1
@@ -533,6 +538,7 @@ public class RosettaTypeProviderXtendTest {
 				typeAlias max4String: maxNString(n: 4)
 
 				func Test:
+					[suppressWarnings unused]
 					inputs:
 						s1 max3String (1..1)
 						s2 max4String (1..1)
@@ -557,6 +563,7 @@ public class RosettaTypeProviderXtendTest {
 				namespace test
 
 				func Test:
+					[suppressWarnings unused]
 					inputs: str string (1..1)
 					output: max3String string(minLength: 1, maxLength: 3) (1..1)
 					set max3String: str
@@ -569,6 +576,7 @@ public class RosettaTypeProviderXtendTest {
 				namespace test
 
 				func Test:
+					[suppressWarnings unused]
 					inputs: max3String string(minLength: 1, maxLength: 3) (1..1)
 					output: str string (1..1)
 					set str: max3String
@@ -583,6 +591,7 @@ public class RosettaTypeProviderXtendTest {
 				typeAlias Max3String: string(minLength: 1, maxLength: 3)
 
 				func Test:
+					[suppressWarnings unused]
 					inputs: str string (1..1)
 					output: max3String Max3String (1..1)
 					set max3String: str
@@ -597,6 +606,7 @@ public class RosettaTypeProviderXtendTest {
 				typeAlias Max3String: string(minLength: 1, maxLength: 3)
 
 				func Test:
+					[suppressWarnings unused]
 					inputs: max3String Max3String (1..1)
 					output: str string (1..1)
 					set str: max3String
@@ -609,6 +619,7 @@ public class RosettaTypeProviderXtendTest {
 				namespace test
 
 				func Test:
+					[suppressWarnings unused]
 					inputs: max10String string(minLength: 1, maxLength: 10) (1..1)
 					output: max3String string(minLength: 1, maxLength: 3) (1..1)
 					set max3String: max10String
@@ -624,6 +635,7 @@ public class RosettaTypeProviderXtendTest {
 				typeAlias Max3String: string(minLength: 1, maxLength: 3)
 
 				func Test:
+					[suppressWarnings unused]
 					inputs: max10String Max10String (1..1)
 					output: max3String Max3String (1..1)
 					set max3String: max10String

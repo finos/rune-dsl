@@ -151,6 +151,7 @@ class TypeValidatorTest extends AbstractValidatorTest {
                     attr int (1..1)
                 
                 func Foo:
+                    [suppressWarnings unused]
                     output:
                         result TestTypeDeprecated (1..1)
                 
@@ -158,8 +159,8 @@ class TypeValidatorTest extends AbstractValidatorTest {
                         TestTypeDeprecated { attr: 42 }
                 """;
         assertIssues(model, """
-                INFO (null) 'TestTypeDeprecated is deprecated' at 10:16, length 18, on TypeCall
-                INFO (null) 'TestTypeDeprecated is deprecated' at 13:9, length 18, on TypeCall
+                INFO (null) 'TestTypeDeprecated is deprecated' at 11:16, length 18, on TypeCall
+                INFO (null) 'TestTypeDeprecated is deprecated' at 14:9, length 18, on TypeCall
                 """);
     }
 }

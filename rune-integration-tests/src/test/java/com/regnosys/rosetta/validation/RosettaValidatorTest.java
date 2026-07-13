@@ -401,6 +401,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 					c A (0..1)
 
 				func CreateA:
+					[suppressWarnings unused]
 					output: result A (1..1)
 					set result:
 						A {
@@ -503,6 +504,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     void validRecordConstructor() {
         modelHelper.parseRosettaWithNoIssues("""
 				func CreateDate:
+					[suppressWarnings unused]
 					output: result date (1..1)
 					set result:
 						date {
@@ -987,6 +989,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     void testMandatoryThenSucceeds1() {
         modelHelper.parseRosettaWithNoIssues("""
 				func Foo:
+					[suppressWarnings unused]
 					inputs:
 						input int (0..*)
 					output:
@@ -1020,6 +1023,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     void testMandatoryThenSucceeds3() {
         modelHelper.parseRosettaWithNoIssues("""
 				func Foo:
+					[suppressWarnings unused]
 					inputs:
 						input int (0..*)
 					output:
@@ -1107,6 +1111,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     void dateMemberHasRightTypeTest() {
         modelHelper.parseRosettaWithNoIssues("""
 				func F:
+					[suppressWarnings unused]
 					inputs:
 						d date (1..1)
 					output: result boolean (1..1)
@@ -1812,6 +1817,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 					attr string (1..1)
 
 				func FuncFoo:
+					[suppressWarnings unused]
 					inputs:
 						bars Bar (0..*)
 					output:
@@ -1836,6 +1842,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 					attr string (1..1)
 
 				func FuncFoo:
+					[suppressWarnings unused]
 					inputs:
 						bars Bar (0..*)
 					output:
@@ -1860,6 +1867,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 					amount number (1..1)
 
 				func FuncFoo:
+					[suppressWarnings unused]
 					inputs:
 						bars Bar (0..*)
 					output:
@@ -1886,6 +1894,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 					amount number (1..1)
 
 				func FuncFoo:
+					[suppressWarnings unused]
 					inputs:
 						bars Bar (0..*)
 					output:
@@ -1912,6 +1921,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 					amount number (1..1)
 
 				func FuncFoo:
+					[suppressWarnings unused]
 					inputs:
 						bars Bar (0..*)
 					output:
@@ -1938,6 +1948,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 					amount number (1..1)
 
 				func FuncFoo:
+					[suppressWarnings unused]
 					inputs:
 						bars Bar (0..*)
 					output:
@@ -1980,6 +1991,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     void shouldNotGenerateCardinalityWarning() {
         var model = modelHelper.parseRosetta("""
 				func FuncFoo:
+					[suppressWarnings unused]
 					inputs:
 						n1 number (0..1)
 						n2 number (0..1)
@@ -1999,6 +2011,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     void shouldNotGenerateCardinalityWarning2() {
         var model = modelHelper.parseRosetta("""
 				func FuncFoo:
+					[suppressWarnings unused]
 					inputs:
 						n1 number (0..1)
 						n2 number (0..1)
@@ -2131,6 +2144,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
 						a -> x
 
 				func FuncFoo:
+					[suppressWarnings unused]
 					inputs:
 						foos Foo (0..*)
 					output:
@@ -2179,6 +2193,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     void shouldNotGenerateListExtractExpressionCardinalityError() {
         var model = modelHelper.parseRosetta("""
 				func FuncFoo:
+					[suppressWarnings unused]
 					inputs:
 						foos Foo (0..*)
 					output:
@@ -2200,6 +2215,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     void shouldNotGenerateListExtractExpressionCardinalityError2() {
         var model = modelHelper.parseRosetta("""
 				func FuncFoo:
+					[suppressWarnings unused]
 					inputs:
 						foos Foo (0..*)
 					output:
@@ -2224,6 +2240,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     void shouldNotGenerateListExtractExpressionCardinalityError3() {
         var model = modelHelper.parseRosetta("""
 				func FuncFoo:
+					[suppressWarnings unused]
 					inputs:
 						foos Foo (0..*)
 					output:
@@ -2291,6 +2308,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     void shouldNotGenerateListSingleCardinalityError() {
         modelHelper.parseRosettaWithNoIssues("""
                 func FuncFoo:
+                [suppressWarnings unused]
                 inputs:
                 foo Foo (1..1)
                 output:
@@ -2347,6 +2365,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     void shouldNotGenerateListSingleCardinalityError4() {
         var model = modelHelper.parseRosetta("""
                 func FuncFoo:
+                [suppressWarnings unused]
                 inputs:
                 foos Foo (0..*)
                 output:
@@ -2468,6 +2487,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     void shouldNotGenerateTypeErrorForExpressionInBrackets() {
         var model = modelHelper.parseRosetta("""
                 func FuncFoo:
+                [suppressWarnings unused]
                 inputs:
                 foo Foo (1..1)
                 output:
@@ -2742,6 +2762,7 @@ public class RosettaValidatorTest extends AbstractValidatorTest {
     void joinShouldAllowExpressions() {
         modelHelper.parseRosettaWithNoIssues("""
                 func FuncFoo:
+                [suppressWarnings unused]
                 inputs:
                 stringList string (0..*)
                 output:

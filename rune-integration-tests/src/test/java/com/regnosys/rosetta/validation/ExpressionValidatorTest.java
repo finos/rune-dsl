@@ -114,6 +114,7 @@ public class ExpressionValidatorTest {
     void thenExpressionThatCallsFunctionShouldHaveNoIssues() {
     	RosettaExpression expr = modelService.toTestModel("""
             func SomeFunc:
+                [suppressWarnings unused]
                 inputs:
                 	isAllowable boolean (1..1)
                 output:

@@ -69,6 +69,7 @@ public class RosettaCrossReferencingTest {
 			namespace test.foo
 			
 			func Test:
+			    [suppressWarnings unused]
 			    output:
 			        partyIdType test.bar.SomeEnum (1..1)
 			    set partyIdType: test.bar.SomeEnum -> A
