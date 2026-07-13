@@ -373,7 +373,7 @@ public interface Foo2 extends Foo1 {
 		@RosettaIgnore
 		@RuneIgnore
 		public List<? extends Parent.ParentBuilder> getParentList() {
-			return parentList == null ? Collections.<Parent.ParentBuilder>emptyList() : Collections.singletonList(parentList.getValue().toBuilder());
+			return (parentList == null || parentList.getValue() == null ? Collections.<Parent>emptyList() : Collections.singletonList(parentList.getValue())).stream().map(_parent -> _parent.toBuilder()).collect(Collectors.toList());
 		}
 		
 		@Override
