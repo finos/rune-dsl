@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -16,8 +15,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
-import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
-import com.regnosys.rosetta.tests.util.ModelHelper;
+import com.regnosys.rosetta.tests.testmodel.JavaTestModel;
+import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
 import com.rosetta.model.lib.RosettaModelObjectBuilder;
 
 @ExtendWith(InjectionExtension.class)
@@ -25,13 +24,11 @@ import com.rosetta.model.lib.RosettaModelObjectBuilder;
 class RosettaObjectInheritanceGeneratorTest {
 
 	@Inject
-	private CodeGeneratorTestHelper generatorTestHelper;
-	@Inject
-	private ModelHelper modelHelper;
+	private RosettaTestModelService testModelService;
 
 	@Test
 	void shouldGenerateJavaClassWithMultipleParents() {
-		Map<String, String> generated = generatorTestHelper.generateCode("""
+		JavaTestModel model = testModelService.toJavaTestModel("""
 				type A:
 					aa string (0..1)
 
@@ -43,15 +40,12 @@ class RosettaObjectInheritanceGeneratorTest {
 
 				type D extends C:
 					dd string (0..1)
+				""").compile();
 
-				""");
-
-		Map<String, Class<?>> classes = generatorTestHelper.compileToClasses(generated);
-
-		Class<?> classA = classes.get(modelHelper.rootPackage() + ".A");
-		Class<?> classB = classes.get(modelHelper.rootPackage() + ".B");
-		Class<?> classC = classes.get(modelHelper.rootPackage() + ".C");
-		Class<?> classD = classes.get(modelHelper.rootPackage() + ".D");
+		Class<?> classA = model.getTypeJavaClass("A");
+		Class<?> classB = model.getTypeJavaClass("B");
+		Class<?> classC = model.getTypeJavaClass("C");
+		Class<?> classD = model.getTypeJavaClass("D");
 
 		assertTrue(classC.isAssignableFrom(classD));
 		assertTrue(classB.isAssignableFrom(classC));
@@ -61,17 +55,9 @@ class RosettaObjectInheritanceGeneratorTest {
 	@Disabled // override is deprecated
 	@Test
 	void shouldGenerateJavaClassWithOverridenAttributesAcrossNamespaces() {
-		// The two model files are passed in reverse order: this test only works if
-		// the order of the "files" is the opposite from that provided.
-		Map<String, String> generated = generatorTestHelper.generateCode("""
-				namespace "original"
-
-				type A:
-					aa string (0..1)
-
-				type Top:
-					aField A (0..1)
-				""", """
+		// The extending model is passed as the primary source, so that `getTypeJavaClass`
+		// resolves `Top` to `extending.Top`.
+		JavaTestModel model = testModelService.toJavaTestModel("""
 				namespace "extending"
 
 				import original.*
@@ -81,26 +67,26 @@ class RosettaObjectInheritanceGeneratorTest {
 
 				type Top extends original.Top:
 					override aField A (0..1)
-				""");
+				""", """
+				namespace "original"
 
-		Map<String, Class<?>> classes = generatorTestHelper.compileToClasses(generated);
-		Class<?> extendingTop = classes.get("extending.Top");
+				type A:
+					aa string (0..1)
+
+				type Top:
+					aField A (0..1)
+				""").compile();
+
+		Class<?> extendingTop = model.getTypeJavaClass("Top");
 		assertThrows(NoSuchFieldException.class, () -> extendingTop.getDeclaredField("aField"));
 	}
 
 	@Disabled // override is deprecated
 	@Test
 	void shouldGenerateJavaClassWithOverridenListAttributesAcrossNamespaces() {
-		// The two model files are passed in reverse order: this test only works if
-		// the order of the "files" is the opposite from that provided.
-		Map<String, String> generated = generatorTestHelper.generateCode("""
-				namespace "original"
-				type A:
-					aa string (0..1)
-
-				type Top:
-					aField A (0..*)
-				""", """
+		// The extending model is passed as the primary source, so that `getTypeJavaClass`
+		// resolves `Top` to `extending.Top`.
+		JavaTestModel model = testModelService.toJavaTestModel("""
 				namespace "extending"
 
 				import original.*
@@ -110,29 +96,24 @@ class RosettaObjectInheritanceGeneratorTest {
 
 				type Top extends original.Top:
 					override aField A (0..*)
-				""");
+				""", """
+				namespace "original"
 
-		Map<String, Class<?>> classes = generatorTestHelper.compileToClasses(generated);
-		Class<?> extendingTop = classes.get("extending.Top");
+				type A:
+					aa string (0..1)
+
+				type Top:
+					aField A (0..*)
+				""").compile();
+
+		Class<?> extendingTop = model.getTypeJavaClass("Top");
 		assertThrows(NoSuchFieldException.class, () -> extendingTop.getDeclaredField("aField"));
 	}
 
 	@Disabled
 	@Test
 	void shouldGenerateJavaClassWithConditionsListAttributesAcrossNamespaces() {
-		// The two model files are passed in reverse order: this test only works if
-		// the order of the "files" is the opposite from that provided.
-		Map<String, String> generated = generatorTestHelper.generateCode("""
-				namespace "original"
-				type A:
-					b B (0..1)
-
-				type B:
-					c C (0..1)
-
-				type C:
-					cField1 string (0..*)
-				""", """
+		testModelService.toJavaTestModel("""
 				namespace "extending"
 
 				import original.*
@@ -148,10 +129,18 @@ class RosettaObjectInheritanceGeneratorTest {
 					cField3 B (0..1)
 
 					 condition cField3Exists: cField3 -> c exists
+				""", """
+				namespace "original"
 
-				""");
+				type A:
+					b B (0..1)
 
-		generatorTestHelper.compileToClasses(generated);
+				type B:
+					c C (0..1)
+
+				type C:
+					cField1 string (0..*)
+				""").compile();
 	}
 
 	@Test
@@ -163,7 +152,7 @@ class RosettaObjectInheritanceGeneratorTest {
 		// unconditionally (`Collections.singletonList(datedValue.toBuilder())`), throwing an NPE
 		// whenever an inherited condition read the attribute. The getter must instead be null-safe
 		// and return an empty list for the absent attribute.
-		Map<String, String> generated = generatorTestHelper.generateCode("""
+		JavaTestModel model = testModelService.toJavaTestModel("""
 				type DatedValue:
 					x int (0..1)
 
@@ -175,11 +164,10 @@ class RosettaObjectInheritanceGeneratorTest {
 
 				type Quantity extends Schedule:
 					override datedValue DatedValue (0..0)
-				""");
+				""").compile();
 
-		Map<String, Class<?>> classes = generatorTestHelper.compileToClasses(generated);
-
-		RosettaModelObjectBuilder builder = generatorTestHelper.createBuilderInstance(classes, "Quantity");
+		Class<?> quantityClass = model.getTypeJavaClass("Quantity");
+		RosettaModelObjectBuilder builder = (RosettaModelObjectBuilder) quantityClass.getMethod("builder").invoke(null);
 		List<?> datedValue = (List<?>) builder.getClass().getMethod("getDatedValue").invoke(builder);
 		assertEquals(List.of(), datedValue);
 	}
