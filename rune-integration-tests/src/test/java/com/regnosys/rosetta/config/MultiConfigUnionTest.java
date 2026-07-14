@@ -88,15 +88,16 @@ public class MultiConfigUnionTest {
 		// A dependency-style config that is only reachable through a dedicated classloader, not the TCCL.
 		Files.writeString(depClasspathRoot.resolve(RuneConfigurationFileProvider.FILE_NAME),
 				"model:\n  name: Dep\nnamespaceConfig:\n- id: depOnly\n  namespace: dep.only\n  schemaConfig:\n    schema: depOnly\n    configPath: dep.json\n");
-		URLClassLoader depClassLoader = new URLClassLoader(new URL[] { depClasspathRoot.toUri().toURL() }, null);
+		// Closed before the test ends so the @TempDir can be deleted on Windows
+		try (URLClassLoader depClassLoader = new URLClassLoader(new URL[] { depClasspathRoot.toUri().toURL() }, null)) {
+			String primaryPath = Paths.get(getClass().getResource("/rune-config-test.yml").toURI()).toString();
+			RuneConfigurationFileProvider provider = RuneConfigurationFileProvider.createFromFile(primaryPath);
+			provider.setClassLoader(depClassLoader);
 
-		String primaryPath = Paths.get(getClass().getResource("/rune-config-test.yml").toURI()).toString();
-		RuneConfigurationFileProvider provider = RuneConfigurationFileProvider.createFromFile(primaryPath);
-		provider.setClassLoader(depClassLoader);
-
-		Collection<URL> resources = provider.getResources();
-		assertTrue(resources.contains(depClasspathRoot.resolve(RuneConfigurationFileProvider.FILE_NAME).toUri().toURL()),
-				"getResources() should discover dependency configs via the injected classloader");
+			Collection<URL> resources = provider.getResources();
+			assertTrue(resources.contains(depClasspathRoot.resolve(RuneConfigurationFileProvider.FILE_NAME).toUri().toURL()),
+					"getResources() should discover dependency configs via the injected classloader");
+		}
 	}
 
 	private static class UnionConfigFileProvider extends RuneConfigurationFileProvider {

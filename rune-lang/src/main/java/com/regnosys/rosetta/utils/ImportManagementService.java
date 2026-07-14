@@ -115,14 +115,14 @@ public class ImportManagementService {
 				String previousFirstSegment = previousImport.getImportedNamespace().split("\\.")[0];
 				String currentFirstSegment = imp.getImportedNamespace().split("\\.")[0];
 				if (!previousFirstSegment.equals(currentFirstSegment)) {
-					sortedImportsText.append(System.lineSeparator());
+					sortedImportsText.append("\n");
 				}
 			}
 			sortedImportsText.append("import ").append(imp.getImportedNamespace());
 			if (imp.getNamespaceAlias() != null) {
 				sortedImportsText.append(" as ").append(imp.getNamespaceAlias());
 			}
-			sortedImportsText.append(System.lineSeparator());
+			sortedImportsText.append("\n");
 			
 			previousImport = imp;
 		}

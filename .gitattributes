@@ -1,0 +1,5 @@
+# Sources and expectation files are stored with LF; generator tests compare
+# generated code against fixtures, so check everything out with LF on every
+# platform (overrides core.autocrlf on Windows). This also keeps Xtend
+# template sources LF so locally built generators behave like CI builds.
+* text=auto eol=lf
