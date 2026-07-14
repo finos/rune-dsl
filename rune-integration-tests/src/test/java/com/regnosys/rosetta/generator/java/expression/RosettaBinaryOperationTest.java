@@ -403,9 +403,7 @@ public class RosettaBinaryOperationTest {
         	}
         }
         """;
-        // Normalize line endings so the comparison holds on Windows, where the generator
-        // emits '\r\n' but the expected value is built with '\n'.
-        assertEquals(expected, funcFoo.replace("\r\n", "\n"));
+        assertEquals(expected, funcFoo);
         generatorTestHelper.compileToClasses(code);
     }
 

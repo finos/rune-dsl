@@ -17,6 +17,8 @@ import jakarta.inject.Inject;
 import org.eclipse.emf.common.util.ECollections;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
+import org.eclipse.xtext.nodemodel.INode;
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.naming.QualifiedName;
 
 public class ImportManagementService {
@@ -107,6 +109,7 @@ public class ImportManagementService {
 	//TODO: adding a new line between package blocks is a whitespace operation move this to XtextResourceFormatter
 	public String toString(List<Import> imports) {
 		StringBuilder sortedImportsText = new StringBuilder();
+		String lineSeparator = detectLineSeparator(imports);
 		
 		Import previousImport = null;
 		for (Import imp : imports) {
@@ -115,19 +118,35 @@ public class ImportManagementService {
 				String previousFirstSegment = previousImport.getImportedNamespace().split("\\.")[0];
 				String currentFirstSegment = imp.getImportedNamespace().split("\\.")[0];
 				if (!previousFirstSegment.equals(currentFirstSegment)) {
-					sortedImportsText.append("\n");
+					sortedImportsText.append(lineSeparator);
 				}
 			}
 			sortedImportsText.append("import ").append(imp.getImportedNamespace());
 			if (imp.getNamespaceAlias() != null) {
 				sortedImportsText.append(" as ").append(imp.getNamespaceAlias());
 			}
-			sortedImportsText.append("\n");
+			sortedImportsText.append(lineSeparator);
 			
 			previousImport = imp;
 		}
 
 		return sortedImportsText.toString().strip();
+	}
+
+	/**
+	 * The import block is inserted into an existing document, so it uses the line
+	 * separator that document already uses (rather than the platform separator,
+	 * which would mix line endings when the document was written on another OS).
+	 * Defaults to "\n" when the document is empty or has no line breaks yet.
+	 */
+	private String detectLineSeparator(List<Import> imports) {
+		if (!imports.isEmpty()) {
+			INode node = NodeModelUtils.getNode(imports.get(0));
+			if (node != null && node.getRootNode().getText().contains("\r\n")) {
+				return "\r\n";
+			}
+		}
+		return "\n";
 	}
 
 	public boolean isSorted(List<Import> imports) {
