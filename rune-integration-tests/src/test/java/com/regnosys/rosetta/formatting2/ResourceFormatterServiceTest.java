@@ -13,7 +13,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -80,6 +82,25 @@ public class ResourceFormatterServiceTest {
 	void formatNestedConstructor() throws IOException, URISyntaxException {
 		testFormatting(List.of("formatting-test/input/nestedConstructor.rosetta"),
 				List.of("formatting-test/expected/nestedConstructor.rosetta"));
+	}
+
+	@Test
+	void formatDocumentKeepsItsOwnLineSeparator() throws IOException {
+		// A document written with CRLF line endings (e.g. by an editor on Windows)
+		// must be formatted with CRLF throughout, independent of the platform.
+		String content = "namespace test\r\nversion \"1.2.3\"\r\n\r\ntype Foo:\r\n  attr int (1..1)\r\n";
+		ResourceSet resourceSet = resourceSetProvider.get();
+		Resource resource = resourceSet.createResource(URI.createURI("dummy:/crlf.rosetta"));
+		resource.load(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)), null);
+
+		List<String> formattedText = new ArrayList<>();
+		formatterService.formatCollection(List.of(resource), (r, formattedContent) -> formattedText.add(formattedContent));
+
+		Assertions.assertEquals(1, formattedText.size());
+		String formatted = formattedText.get(0);
+		Assertions.assertTrue(formatted.contains("\r\n"), "formatted document should keep CRLF line endings");
+		Assertions.assertFalse(formatted.replace("\r\n", "").contains("\n"),
+				"formatted document should not mix bare LF into a CRLF document");
 	}
 
 }
