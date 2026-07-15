@@ -10,9 +10,9 @@ package com.rosetta.model.lib.transform;
  * generated annotations and the runtime.
  */
 public enum SerializationFormat {
-    /** JSON, following a standard JSON representation of the model. */
+    /** JSON, following a legacy JSON representation of the model. */
     JSON,
-    /** JSON, following the Rune-specific JSON standard. */
+    /** JSON, following the updated flattened JSON representation of the model. */
     RUNE_JSON,
     /** XML, typically configured by an associated XML configuration file that maps the schema onto the Rune type. */
     XML,

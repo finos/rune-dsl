@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.Arrays;
 
+import com.rosetta.model.lib.transform.SerializationFormat;
+
 import org.junit.jupiter.api.Test;
 
 class RuneConfigurationServiceTest {
@@ -126,5 +128,37 @@ class RuneConfigurationServiceTest {
 				.addNamespaceConfig(new RuneNamespaceConfiguration(null, "cdm.base.datetime", true, null))
 				.build();
 		assertEquals(2, updated.getNamespaceConfig().size());
+	}
+
+	@Test
+	void defaultSerialisationFormatIsReadWhenPresent() throws IOException {
+		String yaml = "model:\n  name: DEMO\n  defaultSerialisationFormat: RUNE_JSON\n";
+		RuneConfiguration config = service.readString(yaml);
+		assertEquals(SerializationFormat.RUNE_JSON, config.getModel().getDefaultSerialisationFormat());
+	}
+
+	@Test
+	void defaultSerialisationFormatIsNullWhenAbsent() throws IOException {
+		RuneConfiguration config = service.readString(CONFIG);
+		assertNull(config.getModel().getDefaultSerialisationFormat());
+	}
+
+	@Test
+	void defaultSerialisationFormatRoundtrips() throws IOException {
+		String yaml = "model:\n  name: DEMO\n  defaultSerialisationFormat: RUNE_JSON\n";
+		RuneConfiguration config = service.readString(yaml);
+
+		String out = service.writeString(config);
+		assertTrue(out.contains("defaultSerialisationFormat: RUNE_JSON"), out);
+
+		RuneConfiguration reread = service.readString(out);
+		assertEquals(SerializationFormat.RUNE_JSON, reread.getModel().getDefaultSerialisationFormat());
+	}
+
+	@Test
+	void absentDefaultSerialisationFormatIsNotWritten() throws IOException {
+		RuneConfiguration config = service.readString(CONFIG);
+		String out = service.writeString(config);
+		assertFalse(out.contains("defaultSerialisationFormat"), out);
 	}
 }
