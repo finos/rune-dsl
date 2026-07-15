@@ -27,6 +27,7 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.net.JarURLConnection;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
@@ -271,12 +272,28 @@ public class InMemoryJavacCompiler {
 		}
 
 		private Collection<JavaFileObject> listUnder(String packageName, URL packageFolderURL) {
-			File directory = new File(packageFolderURL.getFile());
+			File directory = toFile(packageFolderURL);
 			if (directory.isDirectory()) { // browse local .class files - useful for local execution
 				return processDir(packageName, directory);
 			} else { // browse a jar file
 				return processJar(packageFolderURL);
 			} // maybe there can be something else for more involved class loaders
+		}
+
+		/**
+		 * URL.getFile() keeps URL escaping (a space becomes %20), which produces a
+		 * File that does not exist on disk. Convert via the URI instead; non-file
+		 * URLs (e.g. jar:) yield a non-directory placeholder, as before.
+		 */
+		private File toFile(URL url) {
+			if (!"file".equals(url.getProtocol())) {
+				return new File(url.getFile());
+			}
+			try {
+				return new File(url.toURI());
+			} catch (URISyntaxException e) {
+				return new File(url.getFile());
+			}
 		}
 
 		private List<JavaFileObject> processJar(URL packageFolderURL) {
