@@ -55,6 +55,7 @@ public class AttributeValidator extends AbstractDeclarativeRosettaValidator {
 		if (!capitalisationSuppressed
 				&& !(attribute instanceof ChoiceOption)
 				&& !(attribute.eContainer() instanceof Annotation)
+				&& attribute.getName() != null
 				&& Character.isUpperCase(attribute.getName().charAt(0))) {
 			warning("Attribute name should start with a lower case", attribute, ROSETTA_NAMED__NAME, INVALID_CASE);
 		}
