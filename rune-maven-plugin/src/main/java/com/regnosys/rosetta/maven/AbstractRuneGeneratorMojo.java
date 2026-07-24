@@ -155,6 +155,11 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
             + "'src/main/resources/rune-config.yml' (or the legacy 'rosetta-config.yml'); remove this "
             + "parameter and let the plugin locate it automatically.";
 
+    static final String LEGACY_CONFIG_FILE_NAME_WARNING =
+            "Found a legacy '" + RuneConfigurationFileProvider.LEGACY_FILE_NAME + "' configuration file. Please "
+            + "rename it to '" + RuneConfigurationFileProvider.FILE_NAME + "'; support for the legacy name is "
+            + "deprecated and will be removed in a future release.";
+
     /**
      * Probes the conventional location for a model's Rune configuration file, on disk, relative
      * to the model's own {@code basedir}. Returns the config {@link File}, or {@code null} if
@@ -203,10 +208,24 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
         return resolveConfig(runeConfig, rosettaConfig, getProject().getBasedir(), getLog()::warn);
     }
 
+    /**
+     * Warns when the conventional configuration file found for the marker is the legacy
+     * {@code rosetta-config.yml} rather than {@code rune-config.yml}, so a model owner is nudged to
+     * rename it. Extracted as a pure function (no Mojo state) so it is directly unit-testable,
+     * matching {@link #resolveConfig(String, String, File, Consumer)}.
+     */
+    static void warnIfLegacyConfigFileName(File conventionalConfigFile, Consumer<String> warningSink) {
+        if (conventionalConfigFile != null
+                && RuneConfigurationFileProvider.LEGACY_FILE_NAME.equals(conventionalConfigFile.getName())) {
+            warningSink.accept(LEGACY_CONFIG_FILE_NAME_WARNING);
+        }
+    }
+
     private void writeModelProperties() throws MojoExecutionException {
-        boolean configPresent = findConventionalConfigFile(getProject().getBasedir()) != null;
+        File conventionalConfigFile = findConventionalConfigFile(getProject().getBasedir());
+        warnIfLegacyConfigFileName(conventionalConfigFile, getLog()::warn);
         try {
-            new ModelPropertiesWriter().write(new File(modelPropertiesOutputDirectory), configPresent,
+            new ModelPropertiesWriter().write(new File(modelPropertiesOutputDirectory), conventionalConfigFile != null,
                     mojoExecution.getVersion());
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to write model properties.", e);

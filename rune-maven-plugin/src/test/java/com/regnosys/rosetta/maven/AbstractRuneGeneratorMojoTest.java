@@ -136,6 +136,39 @@ class AbstractRuneGeneratorMojoTest {
         assertEquals(1, warnings.size());
     }
 
+    @Test
+    void warnIfLegacyConfigFileName_warnsForLegacyName(@TempDir File basedir) throws IOException {
+        File resources = createResourcesDir(basedir);
+        File legacyConfig = new File(resources, "rosetta-config.yml");
+        Files.createFile(legacyConfig.toPath());
+        List<String> warnings = new ArrayList<>();
+
+        AbstractRuneGeneratorMojo.warnIfLegacyConfigFileName(legacyConfig, warnings::add);
+
+        assertEquals(1, warnings.size());
+    }
+
+    @Test
+    void warnIfLegacyConfigFileName_doesNotWarnForCurrentName(@TempDir File basedir) throws IOException {
+        File resources = createResourcesDir(basedir);
+        File runeConfig = new File(resources, "rune-config.yml");
+        Files.createFile(runeConfig.toPath());
+        List<String> warnings = new ArrayList<>();
+
+        AbstractRuneGeneratorMojo.warnIfLegacyConfigFileName(runeConfig, warnings::add);
+
+        assertTrue(warnings.isEmpty());
+    }
+
+    @Test
+    void warnIfLegacyConfigFileName_doesNotWarnWhenAbsent() {
+        List<String> warnings = new ArrayList<>();
+
+        AbstractRuneGeneratorMojo.warnIfLegacyConfigFileName(null, warnings::add);
+
+        assertTrue(warnings.isEmpty());
+    }
+
     private static File createResourcesDir(File basedir) throws IOException {
         File resources = new File(basedir, "src/main/resources");
         Files.createDirectories(resources.toPath());
