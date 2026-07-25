@@ -22,12 +22,10 @@ import org.apache.maven.project.MavenProject;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Deque;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -35,24 +33,31 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
  * Computes the model-ancestry facts recorded in the {@code META-INF/rune/model.properties} marker:
- * the model's repo identity ({@code modelId}) and the recursive closure of its ancestor model repo
- * identities ({@code ancestorModels}), derived from the {@code rosetta.parent.*} properties that
- * model repos declare in their top-level pom. {@code rune-testing} elects the leaf model (the one
- * no other marker claims as an ancestor) from these facts, independent of classpath order.
+ * the model's repo identity ({@code modelId}) and its <em>direct</em> model parents
+ * ({@code parentModels}), read off the {@code rosetta.parent.*} properties that model repos declare
+ * in their top-level pom. {@code rune-testing} elects the leaf model (the one no other marker
+ * claims as a parent) from these facts, independent of classpath order.
+ * <p>
+ * Direct parents suffice — no transitive closure is crawled — because every non-root model jar on a
+ * test classpath carries a marker contributing its own parent edges: a model that declares a parent
+ * must be built with a DSL/plugin version in step with its consumers (generated code must stay
+ * compatible with the runtime), so intermediates cannot lag behind on pre-marker plugin versions.
+ * Only <em>root</em> models may drift, and a markerless root is invisible to election in a way that
+ * never produces a wrong or ambiguous winner.
  * <p>
  * All identities are {@code groupId:artifactId} pairs (no version): a model repo is identified by
  * its root/parent pom GA (e.g. {@code org.finos.cdm:cdm-parent}), which is both what a child
  * declares in {@code rosetta.parent.*} and what the generation module's own Maven {@code <parent>}
- * points at. Versions from the properties are used only to resolve parent poms during the crawl.
+ * points at.
  * <p>
- * Everything here is a pure function over {@link Properties}/files plus the {@link ParentPomLoader}
- * seam, so the logic is unit-testable without a Maven runtime; the Mojo supplies a
- * {@code ProjectBuilder}-backed loader.
+ * Everything here is a pure function over {@link Properties}/files, so the logic is unit-testable
+ * without a Maven runtime.
  */
 public final class ModelAncestry {
 
@@ -81,26 +86,10 @@ public final class ModelAncestry {
         public String gav() {
             return groupId + ":" + artifactId + ":" + version;
         }
-
-        public String ga() {
-            return groupId + ":" + artifactId;
-        }
     }
 
-    /** What the crawl needs from an effective pom: its properties and its Maven parent's GA. */
-    public record EffectivePom(Properties properties, String parentGa) {
-    }
-
-    /**
-     * Builds the <em>effective</em> pom of the given (parent-pom) GAV. Effective-model building is
-     * required because declared {@code rosetta.parent.*} versions may themselves be property
-     * references (e.g. {@code ${rune-fpml.version}}) that only interpolate in the built model.
-     * Implementations may throw on an unresolvable pom; the crawl warns and skips rather than
-     * failing the build.
-     */
-    @FunctionalInterface
-    public interface ParentPomLoader {
-        EffectivePom load(String groupId, String artifactId, String version) throws Exception;
+    /** The ancestry facts of a model jar's marker: its identity and its direct model parents. */
+    public record JarMarker(String modelId, Set<String> parentModels) {
     }
 
     /**
@@ -162,36 +151,6 @@ public final class ModelAncestry {
     }
 
     /**
-     * The full recursive closure of ancestor model repo identities (GA only), crawled from the
-     * module's effective properties via {@code loader}: each direct parent's effective pom is built
-     * and its own {@code rosetta.parent.*} declarations followed. A visited set on GA guards
-     * against cycles; an unresolvable parent pom is warned about and skipped, degrading the closure
-     * rather than failing the build.
-     */
-    public static List<String> computeAncestorClosure(Properties properties, ParentPomLoader loader,
-            Consumer<String> warningSink) {
-        LinkedHashSet<String> closure = new LinkedHashSet<>();
-        Deque<ParentGav> queue = new ArrayDeque<>(parseDirectParents(properties, warningSink));
-        while (!queue.isEmpty()) {
-            ParentGav parent = queue.removeFirst();
-            if (!closure.add(parent.ga())) {
-                continue;
-            }
-            EffectivePom parentPom;
-            try {
-                parentPom = loader.load(parent.groupId(), parent.artifactId(), parent.version());
-            } catch (Exception e) {
-                warningSink.accept("Could not build the effective pom of ancestor model " + parent.gav() + " ("
-                        + e.getMessage() + "); the ancestorModels closure written to the model marker may be "
-                        + "incomplete.");
-                continue;
-            }
-            queue.addAll(parseDirectParents(parentPom.properties(), warningSink));
-        }
-        return new ArrayList<>(closure);
-    }
-
-    /**
      * Whether the file looks like a Rune model jar: it carries a model marker or any
      * {@code *.rosetta} source entry. Unreadable or missing files are simply not model jars.
      */
@@ -209,8 +168,11 @@ public final class ModelAncestry {
         }
     }
 
-    /** The {@code modelId} recorded in the jar's model marker, if the jar has one that declares it. */
-    public static Optional<String> readMarkerModelId(File jarFile) {
+    /**
+     * The ancestry facts recorded in the jar's model marker, if the jar has one that declares an
+     * identity. A marker without {@code modelId} (pre-ancestry) reads as absent, like no marker.
+     */
+    public static Optional<JarMarker> readJarMarker(File jarFile) {
         try (ZipFile zip = new ZipFile(jarFile)) {
             ZipEntry entry = zip.getEntry(ModelPropertiesWriter.RELATIVE_PATH);
             if (entry == null) {
@@ -220,48 +182,51 @@ public final class ModelAncestry {
             try (InputStream in = zip.getInputStream(entry)) {
                 marker.load(in);
             }
-            return Optional.ofNullable(marker.getProperty(ModelPropertiesWriter.MODEL_ID_KEY)).filter(id -> !id.isBlank());
+            String modelId = marker.getProperty(ModelPropertiesWriter.MODEL_ID_KEY);
+            if (modelId == null || modelId.isBlank()) {
+                return Optional.empty();
+            }
+            String parentModels = marker.getProperty(ModelPropertiesWriter.PARENT_MODELS_KEY, "");
+            Set<String> parents = Arrays.stream(parentModels.split(","))
+                    .map(String::trim)
+                    .filter(parent -> !parent.isEmpty())
+                    .collect(Collectors.toSet());
+            return Optional.of(new JarMarker(modelId.trim(), parents));
         } catch (IOException e) {
             return Optional.empty();
         }
     }
 
     /**
-     * Cross-checks the declared ancestor closure against the classpath, which is ground truth: for
-     * every model jar among {@code classpathJars}, resolves its repo identity (its marker's
-     * {@code modelId} when present, otherwise its pom's Maven parent GA via {@code loader}, falling
-     * back to its own GA) and warns when that identity is missing from {@code declaredAncestors} —
-     * a sign the {@code rosetta.parent.*} declarations have rotted. Presence-driven only: a
-     * parentless model with no model jars on its classpath stays silent. Never fails the build.
+     * Cross-checks the declared parents against the classpath, which is ground truth: every model
+     * jar among {@code classpathJars} whose marker declares an identity must be accounted for —
+     * either declared as one of this model's {@code declaredParents}, or claimed as a parent by
+     * some other model jar's marker (a transitive ancestor, e.g. fpml under DRR, is accounted for
+     * by CDM's marker rather than DRR's declarations). Warns otherwise: a sign the
+     * {@code rosetta.parent.*} declarations have rotted.
+     * <p>
+     * Markerless model jars are skipped silently: their repo identity is not knowable from the jar,
+     * and by the version-sync invariant only root models legitimately lack markers.
+     * Presence-driven only: a parentless model with no model jars on its classpath stays silent —
+     * there is no "you declared no parents" warning. Never fails the build.
      */
     public static void crossCheckClasspathModels(Collection<ClasspathJar> classpathJars,
-            Collection<String> declaredAncestors, ParentPomLoader loader, Consumer<String> warningSink) {
-        Set<String> declared = new HashSet<>(declaredAncestors);
-        for (ClasspathJar jar : classpathJars) {
-            if (!isModelJar(jar.file())) {
-                continue;
+            Collection<String> declaredParents, Consumer<String> warningSink) {
+        Map<ClasspathJar, JarMarker> markers = classpathJars.stream()
+                .filter(jar -> isModelJar(jar.file()))
+                .flatMap(jar -> readJarMarker(jar.file()).map(marker -> Map.entry(jar, marker)).stream())
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Set<String> accountedFor = new HashSet<>(declaredParents);
+        markers.values().forEach(marker -> accountedFor.addAll(marker.parentModels()));
+        markers.forEach((jar, marker) -> {
+            if (!accountedFor.contains(marker.modelId())) {
+                warningSink.accept("Model jar " + jar.gav() + " (model repo " + marker.modelId() + ") is on the "
+                        + "compile classpath but is not declared as a model parent via " + PARENT_PROPERTY_PREFIX
+                        + "* properties in the top-level pom, nor claimed as a parent by any other model jar's "
+                        + "marker. The parentModels written to the model marker will not account for it, which "
+                        + "can make rune-testing's model election ambiguous. Please declare it.");
             }
-            String identity = readMarkerModelId(jar.file()).orElseGet(() -> {
-                try {
-                    EffectivePom pom = loader.load(jar.groupId(), jar.artifactId(), jar.version());
-                    return pom.parentGa() != null ? pom.parentGa() : jar.ga();
-                } catch (Exception e) {
-                    return null;
-                }
-            });
-            if (identity == null) {
-                warningSink.accept("Could not determine the model repo identity of model jar " + jar.gav()
-                        + "; skipping the ancestor cross-check for it.");
-                continue;
-            }
-            if (!declared.contains(identity)) {
-                warningSink.accept("Model jar " + jar.gav() + " (model repo " + identity + ") is on the compile "
-                        + "classpath but is not declared as a model parent via " + PARENT_PROPERTY_PREFIX + "* "
-                        + "properties in the top-level pom. The ancestorModels closure written to the model marker "
-                        + "will not include it, which can make rune-testing's model election ambiguous. Please "
-                        + "declare it.");
-            }
-        }
+        });
     }
 
     private static boolean isBlank(String value) {

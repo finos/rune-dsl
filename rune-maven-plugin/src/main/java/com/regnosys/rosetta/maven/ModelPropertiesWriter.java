@@ -28,11 +28,14 @@ import java.util.Properties;
  * model ships its own Rune configuration, instead of inferring it from classpath lookup order
  * (which can silently pick up an ancestor's configuration).
  * <p>
- * Besides the config-presence flag, the marker records the model's identity and ancestry
- * ({@link #MODEL_ID_KEY}, {@link #ANCESTOR_MODELS_KEY}), from which {@code rune-testing} elects
- * the leaf model — the one no other marker on the test classpath claims as an ancestor —
- * independent of classpath order. {@link #MODEL_SOURCE_GAV_KEY} is diagnostics only, so log and
- * error messages can name a real artifact instead of a URL.
+ * Besides the config-presence flag, the marker records the model's identity and its <em>direct</em>
+ * model parents ({@link #MODEL_ID_KEY}, {@link #PARENT_MODELS_KEY}), from which {@code rune-testing}
+ * elects the leaf model — the one no other marker on the test classpath claims as a parent —
+ * independent of classpath order. Direct parents suffice because every non-root model jar carries a
+ * marker contributing its own edges (children must track the chain's DSL version; only root models
+ * may drift behind on pre-marker plugin versions, and a markerless root cannot win an election).
+ * {@link #MODEL_SOURCE_GAV_KEY} is diagnostics only, so log and error messages can name a real
+ * artifact instead of a URL.
  */
 public class ModelPropertiesWriter {
 
@@ -42,15 +45,15 @@ public class ModelPropertiesWriter {
     public static final String RUNE_MAVEN_PLUGIN_VERSION_KEY = "runeMavenPluginVersion";
     public static final String MODEL_SOURCE_GAV_KEY = "modelSourceGav";
     public static final String MODEL_ID_KEY = "modelId";
-    public static final String ANCESTOR_MODELS_KEY = "ancestorModels";
+    public static final String PARENT_MODELS_KEY = "parentModels";
 
     /**
      * Writes the marker. {@code modelSourceGav}/{@code modelId} may be {@code null} (their keys are
      * then omitted, producing a pre-ancestry marker that consumers handle via their compatibility
-     * fallback), as may {@code ancestorModels}; a root model passes an empty list.
+     * fallback), as may {@code parentModels}; a root model passes an empty list.
      */
     public void write(File outputDirectory, boolean runeConfigPresentInModel, String runeMavenPluginVersion,
-            String modelSourceGav, String modelId, List<String> ancestorModels) throws IOException {
+            String modelSourceGav, String modelId, List<String> parentModels) throws IOException {
         File file = new File(outputDirectory, RELATIVE_PATH);
         File parent = file.getParentFile();
         if (!parent.isDirectory() && !parent.mkdirs()) {
@@ -65,8 +68,8 @@ public class ModelPropertiesWriter {
         if (modelId != null) {
             properties.setProperty(MODEL_ID_KEY, modelId);
         }
-        if (ancestorModels != null) {
-            properties.setProperty(ANCESTOR_MODELS_KEY, String.join(",", ancestorModels));
+        if (parentModels != null) {
+            properties.setProperty(PARENT_MODELS_KEY, String.join(",", parentModels));
         }
         try (OutputStream out = new FileOutputStream(file)) {
             properties.store(out, null);
