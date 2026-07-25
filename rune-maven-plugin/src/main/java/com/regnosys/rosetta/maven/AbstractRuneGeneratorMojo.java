@@ -21,9 +21,16 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.regnosys.rosetta.config.file.RuneConfigurationFileProvider;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Parent;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.project.DefaultProjectBuildingRequest;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.eclipse.xtext.builder.standalone.LanguageAccess;
 import org.eclipse.xtext.builder.standalone.compiler.CompilerConfiguration;
@@ -134,6 +141,12 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
     @Parameter(defaultValue = "${project.build.outputDirectory}")
     private String modelPropertiesOutputDirectory;
 
+    @Parameter(defaultValue = "${session}", readonly = true, required = true)
+    private MavenSession mavenSession;
+
+    @Component
+    private ProjectBuilder projectBuilder;
+
     // TODO: add this method to Xtext so I don't have to overwrite `internalExecute`
     // and duplicate all of the above parameters.
     protected Module createModule() {
@@ -224,12 +237,60 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
     private void writeModelProperties() throws MojoExecutionException {
         File conventionalConfigFile = findConventionalConfigFile(getProject().getBasedir());
         warnIfLegacyConfigFileName(conventionalConfigFile, getLog()::warn);
+        MavenProject project = getProject();
+        String modelSourceGav = project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion();
+        String modelId;
+        List<String> ancestorModels;
+        try {
+            modelId = ModelAncestry.computeModelId(project);
+            ModelAncestry.ParentPomLoader parentPomLoader = createParentPomLoader();
+            ancestorModels = ModelAncestry.computeAncestorClosure(project.getProperties(), parentPomLoader,
+                    getLog()::warn);
+            ModelAncestry.crossCheckClasspathModels(classpathJars(), ancestorModels, parentPomLoader, getLog()::warn);
+        } catch (RuntimeException e) {
+            // A broken ancestry crawl must degrade the marker (consumers fall back to classpath
+            // order when modelId is absent), never fail the build.
+            getLog().warn("Failed to compute the model's ancestry for the model marker; writing it without "
+                    + "identity/ancestry information.", e);
+            modelId = null;
+            ancestorModels = null;
+        }
         try {
             new ModelPropertiesWriter().write(new File(modelPropertiesOutputDirectory), conventionalConfigFile != null,
-                    mojoExecution.getVersion());
+                    mojoExecution.getVersion(), modelSourceGav, modelId, ancestorModels);
         } catch (IOException e) {
             throw new MojoExecutionException("Failed to write model properties.", e);
         }
+    }
+
+    /**
+     * A {@link ModelAncestry.ParentPomLoader} backed by Maven's {@link ProjectBuilder}, building
+     * the <em>effective</em> pom of an ancestor's root pom without resolving its dependencies or
+     * plugins. No new remote fetches occur: each requested pom is the Maven parent of a model jar
+     * Maven has already resolved, so it is present in the local repository.
+     */
+    private ModelAncestry.ParentPomLoader createParentPomLoader() {
+        return (groupId, artifactId, version) -> {
+            DefaultProjectBuildingRequest request = new DefaultProjectBuildingRequest(
+                    mavenSession.getProjectBuildingRequest());
+            request.setResolveDependencies(false);
+            request.setProcessPlugins(false);
+            Artifact pomArtifact = new DefaultArtifact(groupId, artifactId, version, null, "pom", null,
+                    new DefaultArtifactHandler("pom"));
+            MavenProject built = projectBuilder.build(pomArtifact, request).getProject();
+            Parent builtParent = built.getModel().getParent();
+            String parentGa = builtParent == null ? null
+                    : builtParent.getGroupId() + ":" + builtParent.getArtifactId();
+            return new ModelAncestry.EffectivePom(built.getProperties(), parentGa);
+        };
+    }
+
+    private List<ModelAncestry.ClasspathJar> classpathJars() {
+        return getProject().getArtifacts().stream()
+                .filter(artifact -> artifact.getFile() != null)
+                .map(artifact -> new ModelAncestry.ClasspathJar(artifact.getGroupId(), artifact.getArtifactId(),
+                        artifact.getVersion(), artifact.getFile()))
+                .collect(Collectors.toList());
     }
 
     @Override
