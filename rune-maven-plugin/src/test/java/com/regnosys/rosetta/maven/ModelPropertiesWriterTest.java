@@ -23,17 +23,23 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ModelPropertiesWriterTest {
 
+    private static final String SOURCE_GAV = "org.finos.cdm:cdm-java:6.23.0";
+    private static final String MODEL_ID = "org.finos.cdm:cdm-parent";
+    private static final List<String> ANCESTORS = List.of("com.regnosys.rune-fpml:parent");
+
     @Test
     void writesConfigPresentTrue(@TempDir File outputDirectory) throws IOException {
-        new ModelPropertiesWriter().write(outputDirectory, true, "10.4.0");
+        new ModelPropertiesWriter().write(outputDirectory, true, "10.4.0", SOURCE_GAV, MODEL_ID, ANCESTORS);
 
         Properties properties = readMarker(outputDirectory);
         assertEquals("true", properties.getProperty(ModelPropertiesWriter.RUNE_CONFIG_PRESENT_IN_MODEL_KEY));
@@ -42,15 +48,57 @@ class ModelPropertiesWriterTest {
 
     @Test
     void writesConfigPresentFalse(@TempDir File outputDirectory) throws IOException {
-        new ModelPropertiesWriter().write(outputDirectory, false, "10.4.0");
+        new ModelPropertiesWriter().write(outputDirectory, false, "10.4.0", SOURCE_GAV, MODEL_ID, ANCESTORS);
 
         Properties properties = readMarker(outputDirectory);
         assertEquals("false", properties.getProperty(ModelPropertiesWriter.RUNE_CONFIG_PRESENT_IN_MODEL_KEY));
     }
 
     @Test
+    void writesIdentityAndAncestryKeysAlongsideV1Keys(@TempDir File outputDirectory) throws IOException {
+        new ModelPropertiesWriter().write(outputDirectory, true, "10.4.0", SOURCE_GAV, MODEL_ID, ANCESTORS);
+
+        Properties properties = readMarker(outputDirectory);
+        assertEquals("true", properties.getProperty(ModelPropertiesWriter.RUNE_CONFIG_PRESENT_IN_MODEL_KEY));
+        assertEquals("10.4.0", properties.getProperty(ModelPropertiesWriter.RUNE_MAVEN_PLUGIN_VERSION_KEY));
+        assertEquals(SOURCE_GAV, properties.getProperty(ModelPropertiesWriter.MODEL_SOURCE_GAV_KEY));
+        assertEquals(MODEL_ID, properties.getProperty(ModelPropertiesWriter.MODEL_ID_KEY));
+        assertEquals("com.regnosys.rune-fpml:parent", properties.getProperty(ModelPropertiesWriter.ANCESTOR_MODELS_KEY));
+    }
+
+    @Test
+    void rootModelWritesEmptyAncestorModels(@TempDir File outputDirectory) throws IOException {
+        new ModelPropertiesWriter().write(outputDirectory, true, "10.4.0",
+                "com.regnosys.rune-fpml:rosetta-source:1.2.3", "com.regnosys.rune-fpml:parent", List.of());
+
+        Properties properties = readMarker(outputDirectory);
+        assertEquals("", properties.getProperty(ModelPropertiesWriter.ANCESTOR_MODELS_KEY));
+    }
+
+    @Test
+    void multipleAncestorsAreCommaSeparated(@TempDir File outputDirectory) throws IOException {
+        new ModelPropertiesWriter().write(outputDirectory, true, "10.4.0", SOURCE_GAV, MODEL_ID,
+                List.of("org.finos.cdm:cdm-parent", "org.iso20022:parent", "com.regnosys.rune-fpml:parent"));
+
+        Properties properties = readMarker(outputDirectory);
+        assertEquals("org.finos.cdm:cdm-parent,org.iso20022:parent,com.regnosys.rune-fpml:parent",
+                properties.getProperty(ModelPropertiesWriter.ANCESTOR_MODELS_KEY));
+    }
+
+    @Test
+    void nullIdentityAndAncestryOmitTheirKeys(@TempDir File outputDirectory) throws IOException {
+        new ModelPropertiesWriter().write(outputDirectory, true, "10.4.0", null, null, null);
+
+        Properties properties = readMarker(outputDirectory);
+        assertEquals("true", properties.getProperty(ModelPropertiesWriter.RUNE_CONFIG_PRESENT_IN_MODEL_KEY));
+        assertNull(properties.getProperty(ModelPropertiesWriter.MODEL_SOURCE_GAV_KEY));
+        assertNull(properties.getProperty(ModelPropertiesWriter.MODEL_ID_KEY));
+        assertNull(properties.getProperty(ModelPropertiesWriter.ANCESTOR_MODELS_KEY));
+    }
+
+    @Test
     void landsUnderMetaInfRuneWithinTheGivenOutputDirectory(@TempDir File outputDirectory) throws IOException {
-        new ModelPropertiesWriter().write(outputDirectory, true, "10.4.0");
+        new ModelPropertiesWriter().write(outputDirectory, true, "10.4.0", SOURCE_GAV, MODEL_ID, ANCESTORS);
 
         File marker = new File(outputDirectory, ModelPropertiesWriter.RELATIVE_PATH);
         assertTrue(marker.isFile());
@@ -59,12 +107,13 @@ class ModelPropertiesWriterTest {
 
     @Test
     void repeatedWritesAreIdempotent(@TempDir File outputDirectory) throws IOException {
-        new ModelPropertiesWriter().write(outputDirectory, false, "10.4.0");
-        new ModelPropertiesWriter().write(outputDirectory, true, "10.5.0");
+        new ModelPropertiesWriter().write(outputDirectory, false, "10.4.0", SOURCE_GAV, MODEL_ID, ANCESTORS);
+        new ModelPropertiesWriter().write(outputDirectory, true, "10.5.0", SOURCE_GAV, MODEL_ID, ANCESTORS);
 
         Properties properties = readMarker(outputDirectory);
         assertEquals("true", properties.getProperty(ModelPropertiesWriter.RUNE_CONFIG_PRESENT_IN_MODEL_KEY));
         assertEquals("10.5.0", properties.getProperty(ModelPropertiesWriter.RUNE_MAVEN_PLUGIN_VERSION_KEY));
+        assertEquals(MODEL_ID, properties.getProperty(ModelPropertiesWriter.MODEL_ID_KEY));
 
         File runeDir = new File(outputDirectory, "META-INF/rune");
         assertEquals(1, runeDir.listFiles().length);
@@ -75,7 +124,7 @@ class ModelPropertiesWriterTest {
         File testClasses = new File(outputDirectory.getParentFile(), "test-classes");
         testClasses.mkdirs();
 
-        new ModelPropertiesWriter().write(outputDirectory, true, "10.4.0");
+        new ModelPropertiesWriter().write(outputDirectory, true, "10.4.0", SOURCE_GAV, MODEL_ID, ANCESTORS);
 
         assertFalse(new File(testClasses, ModelPropertiesWriter.RELATIVE_PATH).exists());
     }
