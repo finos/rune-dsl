@@ -6,43 +6,41 @@ marker to classpath order: a consumer pom that lists an ancestor model jar befor
 alphabetical dependency sorting, where `cdm-java` sorts before `rosetta-source`) silently resurrects
 the inherited-config bug when plugin versions are equal. This plan closes that gap by making the
 winner computable from the model graph itself: each marker records **who it is** and **who its
-ancestors are**, and `rune-testing` elects the **leaf** — the marker no other marker claims as an
-ancestor — independent of classpath order and with zero consumer configuration.
+direct parents are**, and `rune-testing` elects the **leaf** — the marker no other marker claims as
+a parent — independent of classpath order and with zero consumer configuration.
 
-## Execution as one session
+> **Revision note (v2).** An earlier revision of this plan wrote the *full recursive closure* of
+> ancestors into each marker (`ancestorModels`), crawled at build time via Maven's
+> `ProjectBuilder`. That was simplified to **direct parents only** (`parentModels`) once the
+> version-sync invariant (below) was made explicit: the closure's only functional payoff was
+> bridging a *markerless intermediate* — a state the ecosystem prohibits. The simplification
+> deletes the `ProjectBuilder` effective-pom machinery (the most fragile, Maven-version-sensitive
+> code), removes staleness (a closure bakes *other repos'* ancestry into your marker at your build
+> time; direct parents come from the actual jars on the classpath at election time), and stops
+> propagating an ancestor's rotted `rosetta.parent.*` declarations into every descendant's marker.
+> Both halves shipped together; the key was renamed before anything was released.
 
-Unlike the v1 plan, both halves land in **one fresh session**. What made the v1 two-session split
-necessary is gone here: the consumer's tests run against hand-built marker fixtures (no dependency
-on real plugin output), and the compatibility gate (Design §2 step 2) means neither half breaks
-without the other — a session that finishes one side and stalls on the other leaves nothing broken.
-The plan is self-contained: a fresh session needs this document, not the conversation that produced
-it.
+## The version-sync invariant (load-bearing)
 
-Rules for the session:
+A model that declares a parent must be built with a Rune DSL/plugin version **in step with its
+consumers** — its generated Java has to stay compatible with the runtime the chain runs on — so
+intermediate models cannot lag behind on pre-marker plugin versions. Only **root** models
+(rune-fpml, iso20022) may drift behind.
 
-- **Two repos, both checked out, separate git projects.** Work on the **currently checked-out
-  `config-model-marker` branch in each repo** — do **not** create new branches; this ancestry work
-  stacks on top of the v1 marker work already on those branches. Commits are still per-repo (one
-  branch name, two independent git projects):
-  - **rune-dsl** (`/Users/davidal-kanani/Developer/rune-dsl`) — Design §1 in `rune-maven-plugin`.
-    Extends `ModelPropertiesWriter` and adds the ancestry crawl. Build:
-    `mvn -pl rune-maven-plugin -am install` (Java 21).
-  - **rune-testing** (`/Users/davidal-kanani/Developer/rune-testing`) — Design §2. Replaces the
-    classpath-order winner with leaf election.
-- **Strict ordering, never interleaved**: Design §1 to green **and locally installed** first, then
-  Design §2. Only one repo is "hot" at a time — this also avoids the overlapping-class-name
-  confusion between the repos (both have `serialisation`/`maven` packages and similarly named
-  tests). Do not start §2 while §1 has failing tests.
-- The marker format (key names `modelSourceGav`/`modelId`/`ancestorModels`, GA-only matching,
-  comma-separated closure) is fixed by this document; both halves must use it byte-for-byte —
-  do not "improve" a key name on one side only.
-- **Sequencing steps 3–5 are out of scope**: downstream rebuilds (fpml, CDM, DRR), the DRR
-  order-flip validation, and the iso20022 pom check are hand-off items for a human/CI after the
-  pair is published — those repos are not part of the coding task.
+This is what makes direct parents sufficient for election: every non-root model jar on a test
+classpath carries a marker contributing its own parent edges, so the "not a leaf" edge that rules
+each model out is supplied by the model *directly above* it (fpml is ruled out by CDM's marker, CDM
+by DRR's). A markerless jar can only be a root, and a markerless root is invisible to election in a
+way that never produces a wrong or ambiguous winner — it contributes no candidate identity, and the
+only models it could have ruled out are *below* it, of which a root has none. Dangling
+`parentModels` entries pointing at markerless roots simply never match anything.
 
-Fallback: if the combined run gets heavy (context or build-time), split at the natural seam — ship
-§1 complete and committed, and start a second session for §2 with this document; the halves are
-independent at the code level, so the split costs nothing but the shared warm context.
+The invariant is enforced by code compatibility, not by any explicit check (the marker
+version-convention check can only see markers that exist) — which is why it is written down here.
+If it is ever violated (an intermediate model jar without a marker: a fork built outside the
+plugin, a shaded jar with `META-INF/rune` stripped), election degrades **loudly**: two apparent
+leaves and an `IllegalStateException` whose message names the markerless-intermediate cause — never
+a silently wrong winner.
 
 ## Context
 
@@ -78,8 +76,8 @@ parent (verified in DRR and CDM checkouts):
 <!-- ... -->
 ```
 
-rune-fpml declares none — a parentless (root) model is legitimate and terminates the crawl
-naturally.
+rune-fpml declares none — a parentless (root) model is legitimate and writes an empty
+`parentModels`.
 
 ### The identity alignment that makes matching work
 
@@ -95,7 +93,7 @@ and other non-model REGnosys artifacts.
 
 ## Design
 
-### 1. `rune-maven-plugin` — write identity + ancestry into the marker
+### 1. `rune-maven-plugin` — write identity + direct parents into the marker
 
 `ModelPropertiesWriter` gains three keys (all additive; v1 keys unchanged):
 
@@ -104,7 +102,7 @@ runeConfigPresentInModel=true
 runeMavenPluginVersion=10.4.0
 modelSourceGav=org.finos.cdm:cdm-java:6.23.0
 modelId=org.finos.cdm:cdm-parent
-ancestorModels=com.regnosys.rune-fpml:parent
+parentModels=com.regnosys.rune-fpml:parent
 ```
 
 - **`modelSourceGav`** — the generation (source) module's own `groupId:artifactId:version`, from
@@ -116,54 +114,36 @@ ancestorModels=com.regnosys.rune-fpml:parent
   release number, so including version would break exactly the local-development builds used for
   validation. If the module has no parent pom, fall back to the module's own GA (children of such a
   model would declare that same GA, keeping the scheme consistent).
-- **`ancestorModels`** — comma-separated GAs (no versions): the **full recursive closure** of
-  ancestor model repo identities. Empty (or omitted) for a root model like rune-fpml.
+- **`parentModels`** — comma-separated GAs (no versions): the model's **direct** model parents.
+  Empty (or omitted) for a root model like rune-fpml. *Not* a transitive closure — see the revision
+  note; transitive edges come from the intermediate models' own markers at election time.
 
 **Direct parents cost nothing.** The `rosetta.parent.*` properties live in the top-level pom, but
 pom inheritance flattens them into the effective model: `getProject().getProperties()` in the
 `rosetta-source` execution already contains them, interpolated (`${finos.cdm.version}` → `6.23.0`).
-Collecting direct parents is: filter keys by prefix `rosetta.parent.`, group by the middle segment
-(`common-domain-model`, `iso-20022`), assemble `{groupId, artifactId, version}` triples. Keep this
-as a pure static function over a `Properties` object so it is unit-testable without a Mojo harness
-(same pattern as `findConventionalConfigFile`).
-
-**Recursion via `ProjectBuilder`.** For each direct-parent GAV, build the *effective* pom of that
-parent artifact (`org.apache.maven.project.ProjectBuilder`, injected `@Component`;
-`session.getProjectBuildingRequest()` with `setResolveDependencies(false)` and
-`setProcessPlugins(false)`), read *its* `rosetta.parent.*` properties, recurse. Effective-model
-building is required — CDM's declared value is `${rune-fpml.version}`, which only interpolates in
-the built model, not a raw XML parse. Guards: a visited set on GA (cycle guard); warn-and-skip on
-an unresolvable pom (a broken crawl must degrade the marker, never fail the build). **No new remote
-fetches**: each parent pom is guaranteed present in the local repo already, because it is the Maven
-`<parent>` of a model jar Maven has just resolved (it downloaded `cdm-parent`'s pom to build
-`cdm-java`'s effective pom). The crawl is offline-safe. Versions from the properties are used only
-to *resolve* parent poms during the crawl; `ancestorModels` entries are written GA-only.
-
-Keep the recursion behind a small seam (e.g. a `ParentPomLoader` functional interface the
-`ProjectBuilder`-backed implementation satisfies) so closure/cycle/skip logic is unit-testable with
-fixture loaders, without a Maven runtime.
-
-**Why full closure rather than direct parents only.** Direct parents would suffice if every
-intermediate ancestor on the classpath carried a marker (the resolver could chain them). The closure
-buys robustness against a **markerless intermediate**: if `cdm-java` predates markers but the fpml
-jar does not, direct-parents-only leaves both DRR and rune-fpml looking like leaves (ambiguous),
-while DRR's closed list (`cdm-parent, parent(iso), rune-fpml:parent`) still elects DRR uniquely. The
-crawl is cheap and offline, so write the closure.
+Collecting them is: filter keys by prefix `rosetta.parent.`, group by the middle segment
+(`common-domain-model`, `iso-20022`), assemble `{groupId, artifactId, version}` triples, keep the
+GA. This is a pure static function over a `Properties` object (`ModelAncestry.parseDirectParents`),
+unit-testable without a Mojo harness — no `ProjectBuilder`, no effective-pom building of other
+artifacts, no recursion, no cycle guard, no offline-safety argument to maintain.
 
 **Cross-check warning — declared vs. found.** `rosetta.parent.*` is hand-maintained and can rot.
 The classpath is ground truth: `RuneGenerateMojo` runs with `requiresDependencyResolution = COMPILE`
 and has the classpath elements injected. At marker-writing time, scan the classpath jars for *model
-jars* (a jar containing `META-INF/rune/model.properties` or `*.rosetta` entries); for each one
-found, resolve its repo identity (its marker's `modelId` when present; otherwise
-`ProjectBuilder`-build the dependency's pom and take its Maven parent GA — same loader as the
-crawl) and **warn if that GA is not in the declared ancestor closure**. The check is
-**presence-driven, never absence-driven**: a legitimately parentless model (rune-fpml) declares
-nothing, finds no model jars, and stays silent — there is no "you declared no parents" warning.
-Warn only; never fail the build on it.
+jars* (a jar containing `META-INF/rune/model.properties` or `*.rosetta` entries). Every model jar
+whose marker declares a `modelId` must be **accounted for**: either declared as one of this model's
+direct parents, or claimed as a parent by *some other classpath model jar's marker* (a transitive
+ancestor — fpml on DRR's classpath — is accounted for by CDM's marker, not by DRR's declarations).
+Warn otherwise. Markerless model jars are skipped silently: their repo identity is not knowable
+from the jar (that would need the pom crawl this revision deleted), and by the invariant only roots
+legitimately lack markers. The check stays **presence-driven, never absence-driven**: a
+legitimately parentless model (rune-fpml) declares nothing, finds no marked model jars, and stays
+silent — there is no "you declared no parents" warning. Warn only; never fail the build on it.
 
 Unchanged from v1: written by `RuneGenerateMojo` only (`writesModelProperties()`), after the
 `errorDetected` check, into the build output directory; idempotent across CDM's four profile
-executions (all write identical values).
+executions (all write identical values). Broken ancestry computation degrades the marker (no
+`modelId`/`parentModels`, consumers fall back to classpath order), never fails the build.
 
 ### 2. `rune-testing` — leaf election
 
@@ -178,12 +158,16 @@ is chosen — container-anchored config resolution, format mapping, lenient malf
    skipped because a pre-ancestry marker is present. This keeps the new consumer working against
    models built with the v1 plugin, unlike the v1 hard-fail pairing.
 3. Otherwise elect the **leaf**: the marker whose `modelId` appears in **no other** marker's
-   `ancestorModels`. Compare GAs exactly (case-sensitive string equality on
-   `groupId:artifactId`).
-   - **Exactly one leaf** → winner, regardless of classpath order.
-   - **Multiple leaves** → throw `IllegalStateException` naming the leaves by `modelSourceGav`:
-     two independent model graphs on one test classpath is genuinely ambiguous, and today's
-     classpath-order answer for that case is silent luck, not semantics.
+   `parentModels`. Compare GAs exactly (case-sensitive string equality on `groupId:artifactId`).
+   The election algorithm is identical to what a closure would need — with direct parents, each
+   intermediate marker simply supplies its own edge.
+   - **Exactly one leaf** → winner, regardless of classpath order. (Several markers agreeing on one
+     `modelId` — the same model twice on the classpath — are one leaf, tie-broken by classpath
+     order.)
+   - **Multiple leaves** → throw `IllegalStateException` naming the leaves by `modelSourceGav` and
+     both possible causes: two independent model graphs on one test classpath (genuinely
+     ambiguous), or an intermediate model jar without a marker (an invariant violation — the fix is
+     rebuilding that intermediate with a marker-writing plugin).
    - **Zero leaves** (an ancestry cycle — only possible via corrupted markers) → fall back to
      classpath order with a warning, mirroring the "malformed marker cannot block a build" stance
      of the version check.
@@ -191,8 +175,8 @@ is chosen — container-anchored config resolution, format mapping, lenient malf
    `<modelSourceGav>` (modelId `<modelId>`)"* — this is what turns a mis-ordered pom from invisible
    into spottable even in fallback mode.
 5. The plugin-version convention check is kept as-is (orthogonal: it detects version skew, leaf
-   election detects order skew). Its error message should now name markers by `modelSourceGav`
-   when available instead of URLs.
+   election detects order skew). Its error message names markers by `modelSourceGav` when available
+   instead of URLs.
 
 **No new consumer API.** `resolve(ClassLoader)` keeps its signature; the expectation is computed
 from the markers, not supplied. This is the property that kept the v1 design zero-configuration and
@@ -204,21 +188,23 @@ it is preserved here.
 # rune-fpml (root model)
 modelSourceGav=com.regnosys.rune-fpml:rosetta-source:1.2.3
 modelId=com.regnosys.rune-fpml:parent
-ancestorModels=
+parentModels=
 
 # CDM
 modelSourceGav=org.finos.cdm:cdm-java:6.23.0
 modelId=org.finos.cdm:cdm-parent
-ancestorModels=com.regnosys.rune-fpml:parent
+parentModels=com.regnosys.rune-fpml:parent
 
-# DRR (closure, not just direct parents)
+# DRR (direct parents only - fpml's edge comes from CDM's marker)
 modelSourceGav=com.regnosys.drr:rosetta-source:7.0.0
 modelId=com.regnosys:drr
-ancestorModels=org.finos.cdm:cdm-parent,org.iso20022:parent,com.regnosys.rune-fpml:parent
+parentModels=org.finos.cdm:cdm-parent,org.iso20022:parent
 ```
 
-Election over {CDM, DRR}: `cdm-parent` ∈ DRR's list → not a leaf; `com.regnosys:drr` ∈ nobody's →
-DRR wins, wherever `cdm-java` sits on the classpath.
+Election over {fpml, CDM, DRR}: `rune-fpml:parent` ∈ CDM's list → not a leaf; `cdm-parent` ∈ DRR's
+list → not a leaf; `com.regnosys:drr` ∈ nobody's → DRR wins, wherever `cdm-java` sits on the
+classpath. If the fpml jar predates markers entirely (a drifted root), it is invisible and the
+election result is unchanged.
 
 ## Tests
 
@@ -226,24 +212,29 @@ Plugin-side (rune-maven-plugin, extending the existing plain-JUnit infra):
 
 - direct-parent parsing: `rosetta.parent.*` triples grouped correctly; interpolated values; no
   properties → empty list; malformed group (missing artifactId) → warn + skip.
-- closure via a fixture `ParentPomLoader`: DRR→CDM→fpml chain; markerless-intermediate scenario
-  still yields full closure; cycle → terminates with visited-set; unresolvable parent → warn +
-  partial closure, build succeeds.
 - `modelId`: from module's Maven parent GA; no-parent module falls back to own GA; `modelSourceGav`
   is the module GAV.
-- cross-check: undeclared model jar on classpath → warns; declared → silent; **parentless model
-  with no model jars → silent** (the legitimate-root case); check never fails the build.
-- marker output: new keys present alongside v1 keys; root model writes empty `ancestorModels`;
+- `readJarMarker`: reads identity + parents from a jar's marker; a pre-ancestry marker or a
+  markerless jar reads as absent.
+- cross-check: undeclared marked model jar → warns; declared → silent; transitive ancestor
+  accounted for by its child's marker → silent (the DRR/fpml case); markerless model jar → silent
+  (the drifted-root case); **parentless model with no model jars → silent** (the legitimate-root
+  case); check never fails the build.
+- marker output: new keys present alongside v1 keys; root model writes empty `parentModels`;
   idempotent on repeated executions.
 
 Consumer-side (rune-testing, `DefaultModelSerialisationTest` synthetic-classloader pattern):
 
 - **order-independence regression**: ancestor's marker *first* on the classpath, child's second →
   child still wins (the sortpom scenario — the test v1 could not have).
+- **three-model chain**: root → middle → leaf, root's marker first; the leaf's `parentModels` name
+  only the middle model, the root is ruled out by the middle's marker — the property direct-parents
+  election relies on.
 - two independent leaves → throws, names both `modelSourceGav`s.
 - any v1 marker present (missing `modelId`) → classpath-order fallback, no throw.
 - zero leaves (synthetic cycle) → classpath-order fallback with warning.
-- single marker, root model (empty `ancestorModels`) → wins trivially.
+- single marker, root model (empty `parentModels`) → wins trivially.
+- duplicate markers of the same model → one leaf, not an ambiguity.
 - version-convention check still fires under leaf election (orthogonality).
 - existing fixtures gain the new keys; the shared
   `src/test/resources/META-INF/rune/model.properties` fixture stays valid either way (single
@@ -251,10 +242,10 @@ Consumer-side (rune-testing, `DefaultModelSerialisationTest` synthetic-classload
 
 ## Sequencing
 
-1. `rune-maven-plugin` (Session 1). `mvn -pl rune-maven-plugin -am install`.
-2. `rune-testing` (Session 2), against the locally installed plugin.
+1. `rune-maven-plugin`. `mvn -pl rune-maven-plugin -am install`.
+2. `rune-testing`, against the locally installed plugin.
 3. **Downstream (hand-off, not for a coding session):** rebuild the chain bottom-up — fpml, CDM,
-   DRR — with the new plugin; confirm each marker's `modelId`/`ancestorModels` match this doc's
+   DRR — with the new plugin; confirm each marker's `modelId`/`parentModels` match this doc's
    examples, and that the cross-check warning is silent for all three.
 4. DRR order-flip validation: on a scratch branch, move `cdm-java` above `drr:rosetta-source` in
    `tests/pom.xml` and confirm tests still resolve DRR's serialisation (v1 would silently resolve
@@ -265,6 +256,11 @@ Consumer-side (rune-testing, `DefaultModelSerialisationTest` synthetic-classload
 
 ## Accepted risks and conventions
 
+- **The version-sync invariant is convention, not code.** Election correctness under direct
+  parents rests on "a model that declares a parent is built with a marker-writing plugin; only
+  roots drift". No check can see a markerless jar's identity, so a violation (fork, shaded jar)
+  surfaces as the multi-leaf throw — loud, with both possible causes named in the message — rather
+  than being prevented. Documented here because it is load-bearing.
 - **`modelId` = the generation module's *direct* Maven parent GA.** Holds for every repo surveyed
   (generation module is a direct child of the repo root). A repo inserting an intermediate parent
   pom between them would record the intermediate and break matching with its children's
@@ -272,8 +268,10 @@ Consumer-side (rune-testing, `DefaultModelSerialisationTest` synthetic-classload
   actually needs one.
 - **`rosetta.parent.*` is declared intent, hand-maintained.** Mitigated by the build-time
   cross-check warning (trusted → verified, at the desk of the person who can fix it). A repo that
-  ignores the warning can still ship an incomplete closure; leaf election then throws on ambiguity
-  rather than guessing — loud, with the fix in the message.
+  ignores the warning can still ship incomplete declarations; leaf election then throws on
+  ambiguity rather than guessing — loud, with the fix in the message. Rot is contained: a wrong
+  declaration only affects the repo that owns it, since nothing copies another repo's declarations
+  into this marker any more.
 - **GA-only matching, versions ignored.** Dependency mediation can change which version is on the
   classpath, and local SNAPSHOT parents never match declared release versions; version skew is the
   version-convention check's job, not election's.
@@ -283,3 +281,8 @@ Consumer-side (rune-testing, `DefaultModelSerialisationTest` synthetic-classload
 - **v1 fallback keeps order-dependence alive during transition.** Any v1 marker on the classpath
   disables election. Bounded by rollout: once fpml/CDM/DRR rebuild with the new plugin, election is
   active for that chain; the info-level resolution log makes the interim state observable.
+- **Markerless model jars are invisible to the cross-check.** Without the pom crawl there is no
+  way to learn a markerless jar's repo identity, so a rotted declaration *for a drifted root*
+  goes unwarned until that root rebuilds with a marker. Accepted: the same invariant that makes
+  direct parents sufficient makes this the only silent case, and it self-heals on the root's next
+  release.

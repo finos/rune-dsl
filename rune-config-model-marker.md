@@ -406,7 +406,7 @@ marker.
   a known model class would close it fully, and that would require making the `defaultSerialisation`
   field lazy in both `TransformTestExtension:86` and `PipelineTestPackWriter:70`. Not worth it.
   **Superseded:** a follow-up design closes this gap without code-source anchoring or consumer
-  configuration — see `rune-config-model-ancestry.md` (marker records `modelId`/`ancestorModels`
+  configuration — see `rune-config-model-ancestry.md` (marker records `modelId`/`parentModels`
   from the `rosetta.parent.*` pom convention; `rune-testing` elects the leaf of the model graph
   instead of trusting classpath order).
 - **New `rune-testing` against an old plugin.** No marker anywhere on the classpath → hard fail.

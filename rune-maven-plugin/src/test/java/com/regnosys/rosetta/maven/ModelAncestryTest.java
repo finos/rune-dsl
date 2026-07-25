@@ -27,11 +27,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -102,64 +102,6 @@ class ModelAncestryTest {
         assertEquals("com.regnosys.rune-fpml:parent:1.2.3", parents.get(0).gav());
     }
 
-    // ---- computeAncestorClosure ----
-
-    @Test
-    void closure_followsTheFullChain() {
-        // DRR -> {CDM, ISO}; CDM -> fpml; ISO and fpml are roots.
-        Properties drr = withParents(Map.of(
-                "common-domain-model", new ModelAncestry.ParentGav("org.finos.cdm", "cdm-parent", "6.23.0"),
-                "iso-20022", new ModelAncestry.ParentGav("org.iso20022", "parent", "1.0.0")));
-        FixtureLoader loader = new FixtureLoader();
-        loader.register("org.finos.cdm:cdm-parent:6.23.0", withParents(Map.of(
-                "rune-fpml", new ModelAncestry.ParentGav("com.regnosys.rune-fpml", "parent", "1.2.3"))));
-        loader.register("org.iso20022:parent:1.0.0", new Properties());
-        loader.register("com.regnosys.rune-fpml:parent:1.2.3", new Properties());
-
-        List<String> closure = ModelAncestry.computeAncestorClosure(drr, loader, warnings::add);
-
-        assertEquals(List.of("org.finos.cdm:cdm-parent", "org.iso20022:parent", "com.regnosys.rune-fpml:parent"),
-                closure);
-        assertTrue(warnings.isEmpty());
-    }
-
-    @Test
-    void closure_rootModelWithNoParentsIsEmpty() {
-        List<String> closure = ModelAncestry.computeAncestorClosure(new Properties(), new FixtureLoader(),
-                warnings::add);
-
-        assertTrue(closure.isEmpty());
-        assertTrue(warnings.isEmpty());
-    }
-
-    @Test
-    void closure_terminatesOnCycles() {
-        Properties child = withParents(Map.of("a", new ModelAncestry.ParentGav("org.example", "a", "1")));
-        FixtureLoader loader = new FixtureLoader();
-        loader.register("org.example:a:1", withParents(Map.of("b", new ModelAncestry.ParentGav("org.example", "b", "1"))));
-        loader.register("org.example:b:1", withParents(Map.of("a", new ModelAncestry.ParentGav("org.example", "a", "1"))));
-
-        List<String> closure = ModelAncestry.computeAncestorClosure(child, loader, warnings::add);
-
-        assertEquals(List.of("org.example:a", "org.example:b"), closure);
-    }
-
-    @Test
-    void closure_warnsAndContinuesOnUnresolvableParentPom() {
-        Properties child = withParents(Map.of(
-                "resolvable", new ModelAncestry.ParentGav("org.example", "resolvable", "1"),
-                "unresolvable", new ModelAncestry.ParentGav("org.example", "unresolvable", "1")));
-        FixtureLoader loader = new FixtureLoader();
-        loader.register("org.example:resolvable:1", new Properties());
-
-        List<String> closure = ModelAncestry.computeAncestorClosure(child, loader, warnings::add);
-
-        // Both direct parents stay in the closure; only the crawl *through* the broken pom is lost.
-        assertEquals(List.of("org.example:resolvable", "org.example:unresolvable"), closure);
-        assertEquals(1, warnings.size());
-        assertTrue(warnings.get(0).contains("org.example:unresolvable:1"));
-    }
-
     // ---- computeModelId ----
 
     @Test
@@ -209,17 +151,37 @@ class ModelAncestryTest {
         assertFalse(ModelAncestry.isModelJar(null));
     }
 
-    @Test
-    void readMarkerModelId_readsFromMarkerAndHandlesAbsence(@TempDir Path dir) throws IOException {
-        File withId = jarWithEntries(dir, Map.of(ModelPropertiesWriter.RELATIVE_PATH,
-                "modelId=org.finos.cdm\\:cdm-parent\n"));
-        File withoutId = jarWithEntries(dir, Map.of(ModelPropertiesWriter.RELATIVE_PATH,
-                "runeConfigPresentInModel=true\n"));
-        File withoutMarker = jarWithEntries(dir, Map.of("model/types.rosetta", ""));
+    // ---- readJarMarker ----
 
-        assertEquals(Optional.of("org.finos.cdm:cdm-parent"), ModelAncestry.readMarkerModelId(withId));
-        assertEquals(Optional.empty(), ModelAncestry.readMarkerModelId(withoutId));
-        assertEquals(Optional.empty(), ModelAncestry.readMarkerModelId(withoutMarker));
+    @Test
+    void readJarMarker_readsIdentityAndParents(@TempDir Path dir) throws IOException {
+        File jar = jarWithEntries(dir, Map.of(ModelPropertiesWriter.RELATIVE_PATH,
+                "modelId=org.finos.cdm\\:cdm-parent\nparentModels=com.regnosys.rune-fpml\\:parent\n"));
+
+        Optional<ModelAncestry.JarMarker> marker = ModelAncestry.readJarMarker(jar);
+
+        assertEquals(Optional.of(new ModelAncestry.JarMarker("org.finos.cdm:cdm-parent",
+                Set.of("com.regnosys.rune-fpml:parent"))), marker);
+    }
+
+    @Test
+    void readJarMarker_rootModelHasEmptyParents(@TempDir Path dir) throws IOException {
+        File jar = jarWithEntries(dir, Map.of(ModelPropertiesWriter.RELATIVE_PATH,
+                "modelId=com.regnosys.rune-fpml\\:parent\nparentModels=\n"));
+
+        Optional<ModelAncestry.JarMarker> marker = ModelAncestry.readJarMarker(jar);
+
+        assertEquals(Optional.of(new ModelAncestry.JarMarker("com.regnosys.rune-fpml:parent", Set.of())), marker);
+    }
+
+    @Test
+    void readJarMarker_absentForPreAncestryMarkerAndMarkerlessJar(@TempDir Path dir) throws IOException {
+        File preAncestry = jarWithEntries(dir, Map.of(ModelPropertiesWriter.RELATIVE_PATH,
+                "runeConfigPresentInModel=true\n"));
+        File markerless = jarWithEntries(dir, Map.of("model/types.rosetta", ""));
+
+        assertEquals(Optional.empty(), ModelAncestry.readJarMarker(preAncestry));
+        assertEquals(Optional.empty(), ModelAncestry.readJarMarker(markerless));
     }
 
     // ---- cross-check ----
@@ -227,10 +189,10 @@ class ModelAncestryTest {
     @Test
     void crossCheck_warnsOnUndeclaredModelJar(@TempDir Path dir) throws IOException {
         File jar = jarWithEntries(dir, Map.of(ModelPropertiesWriter.RELATIVE_PATH,
-                "modelId=org.finos.cdm\\:cdm-parent\n"));
+                "modelId=org.finos.cdm\\:cdm-parent\nparentModels=\n"));
         ModelAncestry.ClasspathJar cdm = new ModelAncestry.ClasspathJar("org.finos.cdm", "cdm-java", "6.23.0", jar);
 
-        ModelAncestry.crossCheckClasspathModels(List.of(cdm), List.of(), new FixtureLoader(), warnings::add);
+        ModelAncestry.crossCheckClasspathModels(List.of(cdm), List.of(), warnings::add);
 
         assertEquals(1, warnings.size());
         assertTrue(warnings.get(0).contains("org.finos.cdm:cdm-java:6.23.0"));
@@ -240,11 +202,28 @@ class ModelAncestryTest {
     @Test
     void crossCheck_silentWhenModelJarIsDeclared(@TempDir Path dir) throws IOException {
         File jar = jarWithEntries(dir, Map.of(ModelPropertiesWriter.RELATIVE_PATH,
-                "modelId=org.finos.cdm\\:cdm-parent\n"));
+                "modelId=org.finos.cdm\\:cdm-parent\nparentModels=\n"));
         ModelAncestry.ClasspathJar cdm = new ModelAncestry.ClasspathJar("org.finos.cdm", "cdm-java", "6.23.0", jar);
 
-        ModelAncestry.crossCheckClasspathModels(List.of(cdm), List.of("org.finos.cdm:cdm-parent"),
-                new FixtureLoader(), warnings::add);
+        ModelAncestry.crossCheckClasspathModels(List.of(cdm), List.of("org.finos.cdm:cdm-parent"), warnings::add);
+
+        assertTrue(warnings.isEmpty());
+    }
+
+    @Test
+    void crossCheck_transitiveAncestorIsAccountedForByItsChildsMarker(@TempDir Path dir) throws IOException {
+        // The DRR case: fpml is on the classpath transitively and is not among DRR's direct
+        // parents, but CDM's marker claims it - no warning.
+        File fpmlJar = jarWithEntries(dir, Map.of(ModelPropertiesWriter.RELATIVE_PATH,
+                "modelId=com.regnosys.rune-fpml\\:parent\nparentModels=\n"));
+        File cdmJar = jarWithEntries(dir, Map.of(ModelPropertiesWriter.RELATIVE_PATH,
+                "modelId=org.finos.cdm\\:cdm-parent\nparentModels=com.regnosys.rune-fpml\\:parent\n"));
+        ModelAncestry.ClasspathJar fpml = new ModelAncestry.ClasspathJar("com.regnosys.rune-fpml", "rosetta-source",
+                "1.2.3", fpmlJar);
+        ModelAncestry.ClasspathJar cdm = new ModelAncestry.ClasspathJar("org.finos.cdm", "cdm-java", "6.23.0", cdmJar);
+
+        ModelAncestry.crossCheckClasspathModels(List.of(fpml, cdm), List.of("org.finos.cdm:cdm-parent"),
+                warnings::add);
 
         assertTrue(warnings.isEmpty());
     }
@@ -255,85 +234,25 @@ class ModelAncestryTest {
         File plainJar = jarWithEntries(dir, Map.of("com/example/Foo.class", ""));
         ModelAncestry.ClasspathJar library = new ModelAncestry.ClasspathJar("org.example", "library", "1.0", plainJar);
 
-        ModelAncestry.crossCheckClasspathModels(List.of(library), List.of(), new FixtureLoader(), warnings::add);
+        ModelAncestry.crossCheckClasspathModels(List.of(library), List.of(), warnings::add);
 
         assertTrue(warnings.isEmpty());
     }
 
     @Test
-    void crossCheck_markerlessModelJarIdentityComesFromItsPomParent(@TempDir Path dir) throws IOException {
-        // A model jar built before markers existed: identity falls back to its pom's Maven parent GA.
+    void crossCheck_skipsMarkerlessModelJarsSilently(@TempDir Path dir) throws IOException {
+        // A model jar without a marker (a root model built before markers existed): its identity is
+        // not knowable from the jar, and by the version-sync invariant only roots may lack markers -
+        // skipped without noise.
         File jar = jarWithEntries(dir, Map.of("model/types.rosetta", ""));
-        ModelAncestry.ClasspathJar cdm = new ModelAncestry.ClasspathJar("org.finos.cdm", "cdm-java", "6.23.0", jar);
-        FixtureLoader loader = new FixtureLoader();
-        loader.register("org.finos.cdm:cdm-java:6.23.0", new Properties(), "org.finos.cdm:cdm-parent");
+        ModelAncestry.ClasspathJar model = new ModelAncestry.ClasspathJar("org.example", "old-root", "1.0", jar);
 
-        ModelAncestry.crossCheckClasspathModels(List.of(cdm), List.of("org.finos.cdm:cdm-parent"), loader,
-                warnings::add);
-        assertTrue(warnings.isEmpty());
-
-        ModelAncestry.crossCheckClasspathModels(List.of(cdm), List.of(), loader, warnings::add);
-        assertEquals(1, warnings.size());
-    }
-
-    @Test
-    void crossCheck_markerlessModelJarWithoutPomParentUsesItsOwnGa(@TempDir Path dir) throws IOException {
-        File jar = jarWithEntries(dir, Map.of("model/types.rosetta", ""));
-        ModelAncestry.ClasspathJar model = new ModelAncestry.ClasspathJar("org.example", "standalone", "1.0", jar);
-        FixtureLoader loader = new FixtureLoader();
-        loader.register("org.example:standalone:1.0", new Properties());
-
-        ModelAncestry.crossCheckClasspathModels(List.of(model), List.of("org.example:standalone"), loader,
-                warnings::add);
+        ModelAncestry.crossCheckClasspathModels(List.of(model), List.of(), warnings::add);
 
         assertTrue(warnings.isEmpty());
-    }
-
-    @Test
-    void crossCheck_warnsButNeverFailsWhenIdentityCannotBeDetermined(@TempDir Path dir) throws IOException {
-        File jar = jarWithEntries(dir, Map.of("model/types.rosetta", ""));
-        ModelAncestry.ClasspathJar model = new ModelAncestry.ClasspathJar("org.example", "broken", "1.0", jar);
-
-        // The loader knows nothing about the jar's pom, so identity resolution fails.
-        ModelAncestry.crossCheckClasspathModels(List.of(model), List.of(), new FixtureLoader(), warnings::add);
-
-        assertEquals(1, warnings.size());
-        assertTrue(warnings.get(0).contains("org.example:broken:1.0"));
     }
 
     // ---- fixtures ----
-
-    private static Properties withParents(Map<String, ModelAncestry.ParentGav> parentsByName) {
-        Properties properties = new Properties();
-        parentsByName.forEach((name, gav) -> {
-            properties.setProperty(ModelAncestry.PARENT_PROPERTY_PREFIX + name + ".groupId", gav.groupId());
-            properties.setProperty(ModelAncestry.PARENT_PROPERTY_PREFIX + name + ".artifactId", gav.artifactId());
-            properties.setProperty(ModelAncestry.PARENT_PROPERTY_PREFIX + name + ".version", gav.version());
-        });
-        return properties;
-    }
-
-    /** In-memory {@link ModelAncestry.ParentPomLoader}; unknown GAVs throw like an unresolvable pom. */
-    private static final class FixtureLoader implements ModelAncestry.ParentPomLoader {
-        private final Map<String, ModelAncestry.EffectivePom> poms = new HashMap<>();
-
-        void register(String gav, Properties properties) {
-            register(gav, properties, null);
-        }
-
-        void register(String gav, Properties properties, String parentGa) {
-            poms.put(gav, new ModelAncestry.EffectivePom(properties, parentGa));
-        }
-
-        @Override
-        public ModelAncestry.EffectivePom load(String groupId, String artifactId, String version) throws Exception {
-            ModelAncestry.EffectivePom pom = poms.get(groupId + ":" + artifactId + ":" + version);
-            if (pom == null) {
-                throw new Exception("could not resolve pom " + groupId + ":" + artifactId + ":" + version);
-            }
-            return pom;
-        }
-    }
 
     private static File jarWithEntries(Path dir, Map<String, String> entries) throws IOException {
         File jar = File.createTempFile("fixture", ".jar", dir.toFile());
