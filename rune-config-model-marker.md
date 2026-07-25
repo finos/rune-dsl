@@ -405,6 +405,10 @@ marker.
   itself, so the change does not increase the risk. Only anchoring the lookup to the code source of
   a known model class would close it fully, and that would require making the `defaultSerialisation`
   field lazy in both `TransformTestExtension:86` and `PipelineTestPackWriter:70`. Not worth it.
+  **Superseded:** a follow-up design closes this gap without code-source anchoring or consumer
+  configuration — see `rune-config-model-ancestry.md` (marker records `modelId`/`ancestorModels`
+  from the `rosetta.parent.*` pom convention; `rune-testing` elects the leaf of the model graph
+  instead of trusting classpath order).
 - **New `rune-testing` against an old plugin.** No marker anywhere on the classpath → hard fail.
   Loud rather than silent, which is the desired direction; the error message carries the fix.
 - **No escape hatch for a relocated config.** Convention is the only lookup, and after the
