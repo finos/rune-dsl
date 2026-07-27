@@ -3,10 +3,13 @@ package com.regnosys.rosetta.formatting2;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
+import org.eclipse.xtext.formatting2.FormatterPreferenceKeys;
 import org.eclipse.xtext.formatting2.FormatterRequest;
 import org.eclipse.xtext.formatting2.IFormatter2;
 import org.eclipse.xtext.formatting2.regionaccess.ITextRegionAccess;
@@ -15,6 +18,7 @@ import org.eclipse.xtext.formatting2.regionaccess.ITextReplacement;
 import org.eclipse.xtext.formatting2.regionaccess.TextRegionAccessBuilder;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.preferences.ITypedPreferenceValues;
+import org.eclipse.xtext.preferences.MapBasedPreferenceValues;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.serializer.impl.Serializer;
 import org.eclipse.xtext.util.ITextRegion;
@@ -70,11 +74,11 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		LOGGER.debug("Formatting file at location " + resource.getURI());
 
 		// setup request and formatter
+		ITextRegionAccess regionAccess = getRegionAccess(resource);
 		FormatterRequest req = formatterRequestProvider.get();
-		req.setPreferences(preferences);
+		req.setPreferences(withDocumentLineSeparator(preferences, regionAccess));
 		IFormatter2 formatter = iFormatter2Provider.get();
 
-		ITextRegionAccess regionAccess = getRegionAccess(resource);
 		req.setTextRegionAccess(regionAccess);
 
 		// list contains all the replacements which should be applied to resource
@@ -102,6 +106,26 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		String formattedString = regionRewriter.renderToString(regionAccess.regionForDocument(), replacements);
 
 		return formattedString;
+	}
+
+	/**
+	 * Unless the caller deliberately configured a line separator, format using the
+	 * separator the document already uses: Xtext's built-in fallback is the platform
+	 * separator, which would mix line endings when formatting a document that was
+	 * written on another operating system. Documents without line breaks default
+	 * to "\n".
+	 */
+	private ITypedPreferenceValues withDocumentLineSeparator(ITypedPreferenceValues preferences,
+			ITextRegionAccess regionAccess) {
+		String configured = preferences == null ? null
+				: preferences.getPreference(FormatterPreferenceKeys.lineSeparator);
+		if (configured != null && !configured.equals(FormatterPreferenceKeys.lineSeparator.getDefaultValue())) {
+			return preferences;
+		}
+		String documentSeparator = regionAccess.regionForDocument().getText().contains("\r\n") ? "\r\n" : "\n";
+		Map<String, String> overrides = new HashMap<>();
+		overrides.put(FormatterPreferenceKeys.lineSeparator.getId(), documentSeparator);
+		return new MapBasedPreferenceValues(preferences, overrides);
 	}
 
 	public FormattedImportsReplacement formattedImportsReplacement(XtextResource resource, ITextRegionAccess regionAccess) {

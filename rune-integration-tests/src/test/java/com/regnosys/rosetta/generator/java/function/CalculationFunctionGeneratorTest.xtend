@@ -16,6 +16,13 @@ class CalculationFunctionGeneratorTest {
 
 	@Inject extension FunctionGeneratorHelper
 	@Inject extension CodeGeneratorTestHelper
+
+	// Xtend rich strings emit the platform line separator at runtime, while generated
+	// code is normalised to "\n" by CodeGeneratorTestHelper. Pin the expectation side
+	// to LF so these comparisons hold on Windows too.
+	private def lf(String s) {
+		s.replace("\r\n", "\n")
+	}
 	
 	@Test
 	def void testSimpleTransDep() {
@@ -113,7 +120,7 @@ class CalculationFunctionGeneratorTest {
 					}
 				}
 			}
-			'''.toString,
+			'''.toString.lf,
 			generated
 		)
 
@@ -353,7 +360,7 @@ class CalculationFunctionGeneratorTest {
 				}
 			}
 			'''
-		assertEquals(expected, calcJava)
+		assertEquals(expected.lf, calcJava)
 		calculation.compileToClasses
 	}
 
@@ -467,7 +474,7 @@ class CalculationFunctionGeneratorTest {
 				}
 			}
 			'''
-		assertEquals(expected, calcJava)
+		assertEquals(expected.lf, calcJava)
 	}
 
 	@Test
@@ -776,8 +783,8 @@ class CalculationFunctionGeneratorTest {
 					}
 				}
 			}
-			'''.toString, generated)
-		
+			'''.toString.lf, generated)
+
 		generatedCode.compileToClasses
 	}
 	
