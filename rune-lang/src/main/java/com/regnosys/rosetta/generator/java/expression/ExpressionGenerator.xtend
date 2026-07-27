@@ -1156,7 +1156,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 	}
 
 	override protected caseThenOperation(ThenOperation expr, Context context) {
-		val thenArgCode = expr.argument.javaCode(context.withExpected(expr.argument.isMulti ? MAPPER_C.wrapExtends(expr.argument) as JavaType : MAPPER_S.wrapExtends(expr.argument)))
+		val thenArgCode = expr.argument.javaCode(context.withExpected(expr.argument.wrapperTypeOfExpression))
 		val thenAsVarCode = thenArgCode.declareAsVariable(true, "thenArg", context.scope)
 		if (expr.function.parameters.size == 0) {
 			context.scope.createKeySynonym(expr.function.implicitVarInContext, thenArgCode)
@@ -1165,10 +1165,23 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 		}
 		thenAsVarCode
 			.then(
-				expr.function.body.javaCode(context.withExpected(expr.isMulti ? MAPPER_C.wrapExtends(expr) as JavaType : MAPPER_S.wrapExtends(expr))),
+				expr.function.body.javaCode(context.withExpected(expr.wrapperTypeOfExpression)),
 				[a, b| b],
 				context.scope
 			)
+	}
+	/**
+	 * The Java wrapper type that represents the value of the given expression:
+	 * a `MapperListOfLists` for a list of lists, a `MapperC` for a list, and a `MapperS` otherwise.
+	 */
+	private def JavaType wrapperTypeOfExpression(RosettaExpression expr) {
+		if (expr.isOutputListOfLists) {
+			MAPPER_LIST_OF_LISTS.wrapExtends(expr) as JavaType
+		} else if (expr.isMulti) {
+			MAPPER_C.wrapExtends(expr) as JavaType
+		} else {
+			MAPPER_S.wrapExtends(expr) as JavaType
+		}
 	}
 
 	private def JavaStatementBuilder conversionOperation(RosettaUnaryOperation expr, Context context, StringConcatenationClient conversion, Class<? extends Exception> errorClass) {
