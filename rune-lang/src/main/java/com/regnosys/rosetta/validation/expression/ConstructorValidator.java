@@ -56,6 +56,7 @@ public class ConstructorValidator extends AbstractExpressionValidator {
 				if (!cardinalityProvider.isFeatureMulti(feature)) {
 					isSingleCheck(expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, "Cannot assign a list to a single value");
 				}
+				isNotListOfListsCheck(expr, pair, CONSTRUCTOR_KEY_VALUE_PAIR__VALUE, "Attribute value");
 			}
 		}
 		

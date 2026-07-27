@@ -491,6 +491,32 @@ public class ExpressionValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
+    void listOfListsAsListLiteralElementShouldError() {
+        RosettaExpression expr = modelService.toTestModel("""
+                type Foo:
+                    xs string (0..*)
+                """).parseExpression("""
+                ["a", foos extract item -> xs]
+                """, "foos Foo (0..*)");
+
+        validationTestHelper.assertError(expr, LIST_LITERAL, null,
+                "List element contains a list of lists, use flatten to create a list.");
+    }
+
+    @Test
+    void listOfListsAsConstructorValueShouldError() {
+        RosettaExpression expr = modelService.toTestModel("""
+                type Foo:
+                    xs string (0..*)
+                """).parseExpression("""
+                Foo { xs: foos extract item -> xs }
+                """, "foos Foo (0..*)");
+
+        validationTestHelper.assertError(expr, CONSTRUCTOR_KEY_VALUE_PAIR, null,
+                "Attribute value contains a list of lists, use flatten to create a list.");
+    }
+
+    @Test
     void listOfListsAsOperandOfDefaultOperationShouldError() {
         RosettaExpression expr = modelService.toTestModel("""
                 type Foo:
@@ -500,7 +526,7 @@ public class ExpressionValidatorTest extends AbstractValidatorTest {
                 """, "foos Foo (0..*)");
 
         validationTestHelper.assertError(expr, DEFAULT_OPERATION, null,
-                "List must be flattened before default operation.");
+                "Left operand contains a list of lists, use flatten to create a list.");
     }
 
     @Test

@@ -111,22 +111,10 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 		subtypeCheck(builtins.BOOLEAN_WITH_NO_META, c.getExpression(), c, CONDITION__EXPRESSION, actual -> "A condition must be a boolean");
 	}
 	
-	/**
-	 * A list of lists can only be handled by the operations that explicitly support it
-	 * (see {@code CanHandleListOfLists}), and by the branches of a conditional or switch.
-	 * Anywhere else it must be flattened first - without this check the generated Java
-	 * code does not compile.
-	 */
 	@Check
 	public void checkListOfListsInBinaryOperation(RosettaBinaryOperation op) {
-		listOfListsCheck(op.getLeft(), op, ROSETTA_BINARY_OPERATION__LEFT, op.getOperator());
-		listOfListsCheck(op.getRight(), op, ROSETTA_BINARY_OPERATION__RIGHT, op.getOperator());
-	}
-
-	private void listOfListsCheck(RosettaExpression expr, EObject source, EStructuralFeature feature, String operator) {
-		if (expr != null && cardinalityProvider.isOutputListOfLists(expr)) {
-			error("List must be flattened before " + operator + " operation.", source, feature);
-		}
+		isNotListOfListsCheck(op.getLeft(), op, ROSETTA_BINARY_OPERATION__LEFT, "Left operand");
+		isNotListOfListsCheck(op.getRight(), op, ROSETTA_BINARY_OPERATION__RIGHT, "Right operand");
 	}
 
 	/**
@@ -351,6 +339,9 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	@Check
 	public void checkListLiteral(ListLiteral expr) {
 		commonTypeCheck(expr.getElements(), expr, LIST_LITERAL__ELEMENTS);
+		for (int i = 0; i < expr.getElements().size(); i++) {
+			isNotListOfListsCheck(expr.getElements().get(i), expr, LIST_LITERAL__ELEMENTS, i, "List element");
+		}
 	}
 	
 	@Check
@@ -411,12 +402,10 @@ public class ExpressionValidator extends AbstractExpressionValidator {
             int paramCount = callable.numberOfParameters();
             int argCount = expr.getArgs().size();
             for (int i = 0; i < argCount; i++) {
-                if (cardinalityProvider.isOutputListOfLists(expr.getArgs().get(i))) {
-                    if (expr.isExplicitArguments()) {
-                        error("Argument contains a list of lists, use flatten to create a list.", expr, ROSETTA_CALLABLE_REFERENCE__RAW_ARGS, i);
-                    } else {
-                        error("Argument contains a list of lists, use flatten to create a list.", expr, null);
-                    }
+                if (expr.isExplicitArguments()) {
+                    isNotListOfListsCheck(expr.getArgs().get(i), expr, ROSETTA_CALLABLE_REFERENCE__RAW_ARGS, i, "Argument");
+                } else {
+                    isNotListOfListsCheck(expr.getArgs().get(i), expr, null, "Argument");
                 }
             }
             if (paramCount != argCount) {
