@@ -12,6 +12,7 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeUtil
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue
 import com.rosetta.model.lib.expression.ComparisonResult
 import com.rosetta.model.lib.mapper.MapperC
+import com.rosetta.model.lib.mapper.MapperListOfLists
 import com.rosetta.model.lib.mapper.MapperS
 import com.rosetta.util.types.JavaPrimitiveType
 import com.rosetta.util.types.JavaReferenceType
@@ -382,6 +383,8 @@ class TypeCoercionService {
 			JavaExpression.from('''«MapperS».<«itemType»>ofNull()''', MAPPER_S.wrap(itemType))
 		} else if (expected.isMapperC) {
 			JavaExpression.from('''«MapperC».<«itemType»>ofNull()''', MAPPER_C.wrap(itemType))
+		} else if (expected.isMapperListOfLists) {
+			JavaExpression.from('''«MapperListOfLists».<«itemType»>of(«Collections».emptyList())''', MAPPER_LIST_OF_LISTS.wrap(itemType))
 		} else if (expected.isComparisonResult) {
 			JavaExpression.from('''«ComparisonResult».ofEmpty()''', COMPARISON_RESULT)
 		} else if (expected == JavaPrimitiveType.BOOLEAN) {

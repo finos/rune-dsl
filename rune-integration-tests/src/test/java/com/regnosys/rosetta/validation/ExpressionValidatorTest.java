@@ -17,7 +17,7 @@ import com.regnosys.rosetta.tests.validation.RosettaValidationTestHelper;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
-public class ExpressionValidatorTest {
+public class ExpressionValidatorTest extends AbstractValidatorTest {
     @Inject
     private RosettaValidationTestHelper validationTestHelper;
     @Inject
@@ -416,5 +416,112 @@ public class ExpressionValidatorTest {
 
         validationTestHelper.assertError(expr, AS_OPERATION, null,
                 "Operator `as` is not supported for type `string`. Supported argument types are complex types and choice types");
+    }
+
+    @Test
+    void listOfListsInConditionalBranchShouldError() {
+        assertIssues("""
+                type Foo:
+                    xs string (0..*)
+
+                func GetStrings:
+                    inputs:
+                        foos Foo (0..*)
+                        test boolean (1..1)
+                    output:
+                        result string (0..*)
+
+                    add result:
+                        if test
+                        then foos extract item -> xs
+                """, """
+                ERROR (null) 'Assign expression contains a list of lists, use flatten to create a list' at 15:9, length 44, on Operation
+                """);
+    }
+
+    @Test
+    void listOfListsInSwitchCaseShouldError() {
+        assertIssues("""
+                type Foo:
+                    xs string (0..*)
+
+                func GetStrings:
+                    inputs:
+                        foos Foo (0..*)
+                        mode string (1..1)
+                    output:
+                        result string (0..*)
+
+                    add result:
+                        mode switch
+                            "all" then foos extract item -> xs,
+                            default empty
+                """, """
+                ERROR (null) 'Assign expression contains a list of lists, use flatten to create a list' at 15:9, length 85, on Operation
+                """);
+    }
+
+    @Test
+    void listOfListsInOnlyOneConditionalBranchShouldError() {
+        RosettaExpression expr = modelService.toTestModel("""
+                type Foo:
+                    xs string (0..*)
+                """).parseExpression("""
+                (if test then foos extract item -> xs else foos -> xs) flatten
+                """, "foos Foo (0..*)", "test boolean (1..1)");
+
+        validationTestHelper.assertError(expr, ROSETTA_CONDITIONAL_EXPRESSION, null,
+                "Branch contains a list of lists, use flatten to create a list.");
+    }
+
+    @Test
+    void listOfListsInOnlyOneSwitchCaseShouldError() {
+        RosettaExpression expr = modelService.toTestModel("""
+                type Foo:
+                    xs string (0..*)
+                """).parseExpression("""
+                (mode switch
+                    "all" then foos extract item -> xs,
+                    default foos -> xs)
+                    flatten
+                """, "foos Foo (0..*)", "mode string (1..1)");
+
+        validationTestHelper.assertError(expr, SWITCH_CASE_OR_DEFAULT, null,
+                "Branch contains a list of lists, use flatten to create a list.");
+    }
+
+    @Test
+    void listOfListsAsOperandOfDefaultOperationShouldError() {
+        RosettaExpression expr = modelService.toTestModel("""
+                type Foo:
+                    xs string (0..*)
+                """).parseExpression("""
+                (foos extract item -> xs) default empty
+                """, "foos Foo (0..*)");
+
+        validationTestHelper.assertError(expr, DEFAULT_OPERATION, null,
+                "List must be flattened before default operation.");
+    }
+
+    @Test
+    void listOfListsAsFunctionArgumentShouldError() {
+        RosettaExpression expr = modelService.toTestModel("""
+                type Foo:
+                    xs string (0..*)
+
+                func Identity:
+                    inputs:
+                        strings string (0..*)
+                    output:
+                        result string (0..*)
+
+                    add result:
+                        strings
+                """).parseExpression("""
+                Identity(foos extract item -> xs)
+                """, "foos Foo (0..*)");
+
+        validationTestHelper.assertError(expr, ROSETTA_SYMBOL_REFERENCE, null,
+                "Argument contains a list of lists, use flatten to create a list.");
     }
 }
