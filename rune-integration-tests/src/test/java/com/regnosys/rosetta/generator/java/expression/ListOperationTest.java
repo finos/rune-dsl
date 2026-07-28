@@ -51,7 +51,7 @@ public class ListOperationTest {
         			filter [ item -> include = True ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -152,7 +152,7 @@ public class ListOperationTest {
         			filter fooItem [ fooItem -> include = True ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -291,7 +291,7 @@ public class ListOperationTest {
         			then filter [ item -> include2 = True ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -394,7 +394,7 @@ public class ListOperationTest {
         			filter [ item -> attr -> scheme = "foo-scheme" ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -499,7 +499,7 @@ public class ListOperationTest {
         			filter [ item -> scheme = "foo-scheme" ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -576,7 +576,7 @@ public class ListOperationTest {
         			filter [ item = True ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -947,7 +947,7 @@ public class ListOperationTest {
         			extract [ if item -> include = True then Foo { include: include, attr: attr + "_bar" } else item ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -1261,7 +1261,7 @@ public class ListOperationTest {
         			extract [ item -> attr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -1380,7 +1380,7 @@ public class ListOperationTest {
         			then extract fooListItem [ fooListItem count ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -1582,7 +1582,7 @@ public class ListOperationTest {
         			then flatten
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -1730,7 +1730,7 @@ public class ListOperationTest {
         			then extract [ item -> attr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -1915,7 +1915,7 @@ public class ListOperationTest {
         		attr
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -2056,7 +2056,7 @@ public class ListOperationTest {
         		attr
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -2221,7 +2221,7 @@ public class ListOperationTest {
 
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -2319,7 +2319,7 @@ public class ListOperationTest {
         			then extract [ item -> fooAttr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("ns1.functions.FuncFoo"));
+        String f = code.get("ns1.functions.FuncFoo");
         assertEquals("""
         package ns1.functions;
         
@@ -2407,7 +2407,7 @@ public class ListOperationTest {
         			then extract [ item -> attr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model0, model1);
-        String f = normalize(code.get("ns2.functions.FuncFoo"));
+        String f = code.get("ns2.functions.FuncFoo");
         assertEquals("""
         package ns2.functions;
         
@@ -2497,7 +2497,7 @@ public class ListOperationTest {
         			then extract [ item -> fooAttr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model0, model1);
-        String f = normalize(code.get("ns2.functions.FuncFoo"));
+        String f = code.get("ns2.functions.FuncFoo");
         assertEquals("""
         package ns2.functions;
         
@@ -2600,7 +2600,7 @@ public class ListOperationTest {
         			then extract [ item -> fooAttr ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model0, model1);
-        String f = normalize(code.get("ns2.functions.FuncFoo"));
+        String f = code.get("ns2.functions.FuncFoo");
         assertEquals("""
         package ns2.functions;
         
@@ -2685,7 +2685,7 @@ public class ListOperationTest {
         		// default else
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -2834,7 +2834,7 @@ public class ListOperationTest {
         			reduce a, b [ a + b ]
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -3308,7 +3308,7 @@ public class ListOperationTest {
         	set foo -> attr: attr
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -3626,7 +3626,7 @@ public class ListOperationTest {
         		numbers sort // sort items
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -3745,7 +3745,7 @@ public class ListOperationTest {
         		foos sort [item -> attr] // sort based on item attribute
         """;
         var code = codeGeneratorTestHelper.generateCode(model);
-        String f = normalize(code.get("com.rosetta.test.model.functions.FuncFoo"));
+        String f = code.get("com.rosetta.test.model.functions.FuncFoo");
         assertEquals("""
         package com.rosetta.test.model.functions;
         
@@ -3948,12 +3948,6 @@ public class ListOperationTest {
         List<Object> res = functionGeneratorHelper.invokeFunc(func, List.class, ImmutableList.of(foo4, foo2, foo3, foo1));
         assertEquals(4, res.size());
         assertEquals(ImmutableList.of(foo1, foo3, foo2, foo4), res);
-    }
-
-    private String normalize(String generatedCode) {
-        // The legacy code generator emits platform line endings (\r\n on Windows), whereas the
-        // expected values are Java text blocks, which the JLS normalizes to \n. Normalize before comparing.
-        return generatedCode.replace("\r\n", "\n");
     }
 
     private RosettaModelObject createFoo(Map<String, Class<?>> classes, String attr) {

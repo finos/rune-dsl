@@ -547,6 +547,9 @@ public interface ExpectedTypeProvider {
                             .collect(Collectors.toSet());
 
                     RMetaAnnotatedType expectedType = getExpectedTypeFromContainer(expr);
+                    if (expectedType == null || expectedType.equals(builtins.NOTHING_WITH_ANY_META)) {
+                        return expectedType;
+                    }
                     List<RMetaAttribute> metaAttributes = expectedType.getMetaAttributes()
                             .stream()
                             .filter(a -> !withMetaKeys.contains(a.getName()))

@@ -74,6 +74,15 @@ const sidebars: SidebarsConfig = {
         'modelling-components/reporting',
       ],
     },
+    // Serialization as standalone page (no dropdown)
+    {
+      type: 'doc',
+      id: 'serialization/serialization',
+      label: 'Serialization',
+      customProps: {
+        icon: '/img/rune/icon/Rune-serialisation-pink.svg',
+      },
+    },
     {
       type: 'category',
       label: 'Developers',

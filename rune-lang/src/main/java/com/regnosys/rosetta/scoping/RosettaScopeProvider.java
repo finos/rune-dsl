@@ -455,6 +455,7 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 
 
 	private IScope createDeepFeatureScope(RType receiverType, EObject context) {
+		receiverType = typeSystem.stripFromTypeAliases(receiverType);
 		if (receiverType instanceof RChoiceType choiceType) {
 			RDataType dataView = choiceType.asRDataType();
 			IScope attributeScope = Scopes.scopeFor(Iterables.filter(Iterables.transform(deepFeatureCallUtil.findDeepFeatures(dataView), RAttribute::getEObject), Objects::nonNull));

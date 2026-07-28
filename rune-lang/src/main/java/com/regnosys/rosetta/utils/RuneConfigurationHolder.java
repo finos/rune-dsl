@@ -48,4 +48,20 @@ public class RuneConfigurationHolder implements Provider<RuneConfiguration>, jav
 	public void reload() {
 		current = source.get();
 	}
+
+	/**
+	 * Bound as the provider for {@link RuneConfiguration} to make direct injection fail fast:
+	 * a directly injected value is captured once at injection time and silently goes stale when the
+	 * configuration is {@link #reload() reloaded}. Inject {@link RuneConfigurationHolder} and call
+	 * {@link #get()} at use time instead.
+	 */
+	public static class DirectInjectionGuard implements Provider<RuneConfiguration>, javax.inject.Provider<RuneConfiguration> {
+		@Override
+		public RuneConfiguration get() {
+			throw new IllegalStateException(
+					"RuneConfiguration must not be injected directly: the injected value is captured once and"
+							+ " goes stale when the configuration is reloaded (e.g. on rosetta/updateConfig)."
+							+ " Inject RuneConfigurationHolder and call get() at use time instead.");
+		}
+	}
 }

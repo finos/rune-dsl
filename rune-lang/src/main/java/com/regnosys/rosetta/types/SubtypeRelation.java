@@ -78,16 +78,16 @@ public class SubtypeRelation {
 			RType t1_ = t1;
 			RType t2_ = t2;
 			return ((RChoiceType)t2).getOwnOptions().stream().anyMatch(t -> safeIsSubtypeOf(t1_, t.getType().getRType(), false, t2_, visited));
+		} else if (t1 instanceof RAliasType) {
+			return safeIsSubtypeOf(((RAliasType)t1).getRefersTo(), t2, treatChoiceTypesAsDataTypes, t1, visited);
+		} else if (t2 instanceof RAliasType) {
+			return safeIsSubtypeOf(t1, ((RAliasType)t2).getRefersTo(), treatChoiceTypesAsDataTypes, t2, visited);
 		} else if (t1 instanceof RDataType) {
 			RType st = ((RDataType)t1).getSuperType();
 			if (st == null) {
 				return false;
 			}
 			return safeIsSubtypeOf(st, t2, treatChoiceTypesAsDataTypes, t1, visited);
-		} else if (t1 instanceof RAliasType) {
-			return safeIsSubtypeOf(((RAliasType)t1).getRefersTo(), t2, treatChoiceTypesAsDataTypes, t1, visited);
-		} else if (t2 instanceof RAliasType) {
-			return safeIsSubtypeOf(t1, ((RAliasType)t2).getRefersTo(), treatChoiceTypesAsDataTypes, t2, visited);
 		}
 		return false;
 	}

@@ -1,0 +1,5 @@
+model:
+  name: Schema reload test model
+dependencies:
+generators:
+namespaceConfig:

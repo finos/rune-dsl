@@ -57,7 +57,7 @@ public class SchemaValidationTest extends AbstractValidatorTest {
 
 	@Test
 	void testExternalConfigWithoutConfigurationIsAnError() {
-		// 'myXmlSchema' has no external serialization configuration configured.
+		// 'myXmlSchema' has no external serialization configuration configured; the error points at the annotation.
 		assertIssues("""
 				namespace test
 				version "1"
@@ -65,7 +65,7 @@ public class SchemaValidationTest extends AbstractValidatorTest {
 				schema myXmlSchema XML
 					[externalConfig]
 				""", """
-				ERROR (null) 'Schema 'myXmlSchema' is marked [externalConfig] but no external serialization configuration is configured for it' at 4:8, length 11, on Schema
+				ERROR (null) 'Schema 'myXmlSchema' is marked [externalConfig] but no external serialization configuration is configured for it' at 5:3, length 14, on AnnotationRef
 				""");
 	}
 

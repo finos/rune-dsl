@@ -2,6 +2,9 @@ model:
   name: Custom config test model
 dependencies:
 generators:
-serializationConfig:
-- id: externalXmlSchema
-  configPath: xml-config/external-xml-schema-config.json
+namespaceConfig:
+- id: external-xml
+  namespace: com.custom.ns
+  schemaConfig:
+    schema: externalXmlSchema
+    configPath: xml-config/external-xml-schema-config.json

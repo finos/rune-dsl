@@ -365,17 +365,22 @@ public class TypeSystem {
 	}
 	private List<RChoiceOption> findChoiceOptionPath(RChoiceType from, RType target, List<RChoiceOption> prefix) {
 		for (RChoiceOption option : from.getOwnOptions()) {
-			RType optionType = stripFromTypeAliases(option.getType().getRType());
+			RType optionType = option.getType().getRType();
+			// Leaf match: alias-sensitive so that two aliases of the same base type (e.g. ISIN and
+			// CUSIP both aliasing string) are distinguished by their alias identity, not their
+			// underlying type.
 			if (target.equals(optionType)) {
 				List<RChoiceOption> result = new ArrayList<>(prefix);
 				result.add(option);
 				return result;
 			}
-			// Only descend into an option whose (nested) choice could contain the target.
-			if (optionType instanceof RChoiceType && isSubtypeOf(target, optionType, false)) {
+			// Descend check: strip to resolve alias-of-choice options, then test subtypehood so we
+			// only recurse into a nested choice that could actually contain the target.
+			RType strippedOptionType = stripFromTypeAliases(optionType);
+			if (strippedOptionType instanceof RChoiceType && isSubtypeOf(target, strippedOptionType, false)) {
 				List<RChoiceOption> extendedPrefix = new ArrayList<>(prefix);
 				extendedPrefix.add(option);
-				List<RChoiceOption> result = findChoiceOptionPath((RChoiceType) optionType, target, extendedPrefix);
+				List<RChoiceOption> result = findChoiceOptionPath((RChoiceType) strippedOptionType, target, extendedPrefix);
 				if (result != null) {
 					return result;
 				}

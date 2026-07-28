@@ -10,6 +10,7 @@ import com.regnosys.rosetta.rosetta.expression.OneOfOperation;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.Data;
+import com.regnosys.rosetta.types.RAliasType;
 import com.regnosys.rosetta.types.RAttribute;
 import com.regnosys.rosetta.types.RChoiceType;
 import com.regnosys.rosetta.types.RDataType;
@@ -84,6 +85,8 @@ public class RosettaEcoreUtil {
 			return Iterables.transform(((RDataType) t).getAllAttributes(), RAttribute::getEObject);
 		} else if (t instanceof RChoiceType) {
 			return allFeaturesExcludingEnumValues(((RChoiceType) t).asRDataType(), resourceSet);
+		} else if (t instanceof RAliasType) {
+			return allFeaturesExcludingEnumValues(((RAliasType) t).getRefersTo(), resourceSet);
 		} else if (t instanceof RRecordType) {
 			if (resourceSet != null) {
 				return builtins.toRosettaType(t, RosettaRecordType.class, resourceSet).getFeatures();

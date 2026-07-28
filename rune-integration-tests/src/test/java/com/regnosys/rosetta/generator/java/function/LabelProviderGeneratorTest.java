@@ -87,7 +87,9 @@ public class LabelProviderGeneratorTest {
 	private void assertSingleGeneratedFile(String expectationFileName, String expectedGeneratedPath) throws IOException {
 		GeneratedFile file = getSingleGeneratedFile();
 		Assertions.assertEquals(expectedGeneratedPath, file.getPath().replace("/test-project/src-gen/main/java", ""));
-		String actualSource = file.getContents().toString();
+		// This file comes straight from the fsa, so normalise the platform line
+		// separator emitted by the Xtend templates
+		String actualSource = file.getContents().toString().replace("\r\n", "\n");
 		String expectedSource = Resources.toString(getClass().getResource("/label-annotations/" + expectationFileName), StandardCharsets.UTF_8);
 		Assertions.assertEquals(expectedSource, actualSource);
 	}

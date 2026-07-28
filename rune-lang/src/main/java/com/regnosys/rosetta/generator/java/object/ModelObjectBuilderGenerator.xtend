@@ -26,7 +26,6 @@ import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
 import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
 import com.rosetta.model.lib.annotations.RuneScopedAttributeKey
-import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 import com.rosetta.model.lib.annotations.RosettaIgnore
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
 import static com.regnosys.rosetta.generator.java.types.JavaPojoPropertyOperationType.*
@@ -174,28 +173,19 @@ class ModelObjectBuilderGenerator {
 		@«RuneIgnore»
 		public «parent.toBuilderTypeExt» «getterName»() «
 			(if (parent.type.isList) {
-				if (originalProp.type.isList) {
-					originalField
-						.addCoercions(parent.type, bodyScope)
-						.collapseToSingleExpression(bodyScope)
-						.mapExpression[
-							val lambdaParam = new JavaVariable(bodyScope.lambdaScope.createUniqueIdentifier(parent.type.itemType.simpleName.toFirstLower), parent.type.itemType)
-							JavaExpression.from(
-								'''«it».stream().map(«lambdaParam» -> «lambdaParam.toBuilder.toLambdaBody»).collect(«Collectors».toList())''',
-								parent.toBuilderTypeExt
-							)
-						]
-				} else {
-					originalField
-						.addCoercions(parent.type.itemType, bodyScope)
-						.mapExpression[
-							if (it == JavaLiteral.NULL) {
-								JavaExpression.from('''«Collections».<«parent.toBuilderTypeSingle»>emptyList()''', parent.toBuilderTypeExt)
-							} else {
-								toBuilder.mapExpression[JavaExpression.from('''«Collections».singletonList(«it»)''', parent.toBuilderTypeExt)]
-							}
-						]
-				}
+				// The child field may be either single- or multi-cardinality. In both cases,
+				// coercing it to the parent's list type is null-safe (a null item becomes an empty
+				// list), so we can uniformly map the resulting list to its builder type.
+				originalField
+					.addCoercions(parent.type, bodyScope)
+					.collapseToSingleExpression(bodyScope)
+					.mapExpression[
+						val lambdaParam = new JavaVariable(bodyScope.lambdaScope.createUniqueIdentifier(parent.type.itemType.simpleName.toFirstLower), parent.type.itemType)
+						JavaExpression.from(
+							'''«it».stream().map(«lambdaParam» -> «lambdaParam.toBuilder.toLambdaBody»).collect(«Collectors».toList())''',
+							parent.toBuilderTypeExt
+						)
+					]
 			} else {
 				originalField
 					.addCoercions(parent.type, bodyScope)

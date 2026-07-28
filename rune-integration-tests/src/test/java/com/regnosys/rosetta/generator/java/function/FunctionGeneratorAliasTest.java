@@ -47,6 +47,31 @@ public class FunctionGeneratorAliasTest {
     }
 
 	@Test
+	void featureCallOnAliasOfChoiceShouldNotThrow() {
+		modelService.toJavaTestModel("""
+				namespace test
+
+				type OptionA:
+				    attr string (0..1)
+
+				type OptionB:
+				    attr string (0..1)
+
+				choice SomeChoice:
+				    OptionA
+				    OptionB
+
+				typeAlias ChoiceAlias: SomeChoice
+
+				func GetOptionA:
+				    inputs: x ChoiceAlias (0..1)
+				    output: result OptionA (0..1)
+				    set result:
+				        x -> OptionA
+				""").compile();
+	}
+
+	@Test
 	void shouldAddComplexTypeListWithIfStatement() {
 		var model = modelService.toJavaTestModel("""
 				type Bar:

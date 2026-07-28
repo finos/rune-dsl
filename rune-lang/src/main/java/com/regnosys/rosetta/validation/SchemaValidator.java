@@ -5,12 +5,12 @@ import java.util.Optional;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.validation.Check;
 
-import com.regnosys.rosetta.config.RuneConfiguration;
-import com.regnosys.rosetta.config.RuneSerializationConfiguration;
+import com.regnosys.rosetta.config.RuneSchemaConfiguration;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
 import com.regnosys.rosetta.rosetta.Schema;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.SimplePackage;
+import com.regnosys.rosetta.utils.RuneConfigurationHolder;
 import com.regnosys.rosetta.utils.TransformAnnotationHelper;
 
 import jakarta.inject.Inject;
@@ -18,7 +18,7 @@ import jakarta.inject.Inject;
 public class SchemaValidator extends AbstractDeclarativeRosettaValidator {
 
     @Inject
-    private RuneConfiguration config;
+    private RuneConfigurationHolder config;
     @Inject
     private TransformAnnotationHelper transformAnnotationHelper;
 
@@ -43,14 +43,14 @@ public class SchemaValidator extends AbstractDeclarativeRosettaValidator {
      */
     @Check
     public void checkExternalConfigMatchesConfiguration(Schema schema) {
-        boolean external = transformAnnotationHelper.isExternalConfig(schema);
-        Optional<RuneSerializationConfiguration> configEntry = Optional.ofNullable(schema.getName())
-                .flatMap(config::findSerializationConfigById)
+        Optional<AnnotationRef> externalAnnotation = transformAnnotationHelper.findExternalConfigAnnotation(schema);
+        Optional<RuneSchemaConfiguration> configEntry = Optional.ofNullable(schema.getName())
+                .flatMap(name -> config.get().findSchemaConfig(name))
                 .filter(c -> c.getConfigPath() != null);
-        if (external && configEntry.isEmpty()) {
+        if (externalAnnotation.isPresent() && configEntry.isEmpty()) {
             error("Schema '" + schema.getName() + "' is marked [externalConfig] but no external serialization configuration is configured for it",
-                    schema, RosettaPackage.Literals.ROSETTA_NAMED__NAME);
-        } else if (!external && configEntry.isPresent()) {
+                    externalAnnotation.get(), SimplePackage.Literals.ANNOTATION_REF__ANNOTATION);
+        } else if (externalAnnotation.isEmpty() && configEntry.isPresent()) {
             warning("An external serialization configuration is configured for schema '" + schema.getName()
                             + "', but the schema is not marked [externalConfig], so it will be ignored",
                     schema, RosettaPackage.Literals.ROSETTA_NAMED__NAME);

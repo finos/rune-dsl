@@ -323,6 +323,175 @@ public class AsOperationTest {
     }
 
     @Test
+    void asChoiceTwoAliasOptionsWithSameBaseTypeShouldNavigateToCorrectField() {
+        JavaTestModel model = modelService.toJavaTestModel("""
+                namespace test
+
+                typeAlias Bar: string
+                typeAlias Qux: string
+
+                choice Foo:
+                    Bar
+                    Qux
+                """).compile();
+
+        // Holds Qux → `as Qux` must return the Qux value.
+        String qux = model.evaluateExpression(String.class, """
+                Foo { Qux: "quxValue", ... } as Qux
+                """);
+        assertEquals("quxValue", qux);
+
+        // Holds Bar → `as Qux` must yield empty, not the Bar value.
+        String absent = model.evaluateExpression(String.class, """
+                Foo { Bar: "barValue", ... } as Qux
+                """);
+        assertNull(absent);
+    }
+
+    @Test
+    void asChoiceTwoEnumAliasOptionsWithSameBaseEnumShouldNavigateToCorrectField() {
+        JavaTestModel model = modelService.toJavaTestModel("""
+                namespace test
+
+                enum Base:
+                    VALUE_1
+                    VALUE_2
+
+                typeAlias Bar: Base
+                typeAlias Qux: Base
+
+                choice Foo:
+                    Bar
+                    Qux
+                """).compile();
+
+        // Holds Qux with VALUE_2 → `as Qux` must return that value.
+        @SuppressWarnings("rawtypes")
+        Class rawEnumClass = model.getEnumJavaClass("Base");
+        @SuppressWarnings("unchecked")
+        Object qux = model.evaluateExpression(rawEnumClass, """
+                Foo { Qux: Base -> VALUE_2, ... } as Qux
+                """);
+        assertEquals(model.getEnumJavaValue("Base", "VALUE_2"), qux);
+
+        // Holds Bar → `as Qux` must yield empty, not the Bar value.
+        @SuppressWarnings("unchecked")
+        Object absent = model.evaluateExpression(rawEnumClass, """
+                Foo { Bar: Base -> VALUE_1, ... } as Qux
+                """);
+        assertNull(absent);
+    }
+
+    @Test
+    void asChoiceTwoDataTypeAliasOptionsWithSameBaseTypeShouldNavigateToCorrectField() {
+        JavaTestModel model = modelService.toJavaTestModel("""
+                namespace test
+
+                type Base:
+                    attr string (1..1)
+
+                typeAlias Bar: Base
+                typeAlias Qux: Base
+
+                choice Foo:
+                    Bar
+                    Qux
+                """).compile();
+
+        // Holds Qux → `as Qux` must return the Qux value.
+        String qux = model.evaluateExpression(String.class, """
+                Foo { Qux: Qux { attr: "quxValue" }, ... } as Qux -> attr
+                """);
+        assertEquals("quxValue", qux);
+
+        // Holds Bar → `as Qux` must yield empty, not the Bar value.
+        String absent = model.evaluateExpression(String.class, """
+                Foo { Bar: Bar { attr: "barValue" }, ... } as Qux -> attr
+                """);
+        assertNull(absent);
+    }
+
+    @Test
+    void asAliasLeafOptionInNestedChoiceShouldNavigateCorrectly() {
+        // `TargetAlias` is a typeAlias used as a leaf option inside a nested choice.
+        // The outer `as TargetAlias` must traverse through `Inner` and find the alias option.
+        JavaTestModel model = modelService.toJavaTestModel("""
+                namespace test
+
+                type TargetType:
+                    attr string (1..1)
+
+                typeAlias TargetAlias: TargetType
+
+                choice Inner:
+                    TargetAlias
+                    Sibling
+
+                type Sibling:
+                    siblingAttr int (1..1)
+
+                choice Outer:
+                    Inner
+                    Other
+
+                type Other:
+                    otherAttr int (1..1)
+                """).compile();
+
+        // Navigate through `Inner` to reach the aliased `TargetAlias` option.
+        String result = model.evaluateExpression(String.class, """
+                Outer { Inner: Inner { TargetAlias: TargetAlias { attr: "val" }, ... }, ... } as TargetAlias -> attr
+                """);
+        assertEquals("val", result);
+
+        // Holds the sibling option → `as TargetAlias` must yield empty.
+        String absent = model.evaluateExpression(String.class, """
+                Outer { Inner: Inner { Sibling: Sibling { siblingAttr: 1 }, ... }, ... } as TargetAlias -> attr
+                """);
+        assertNull(absent);
+    }
+
+    @Test
+    void asAliasIntermediateChoiceOptionShouldNavigateToItsNestedOptions() {
+        // `InnerAlias` is a typeAlias for choice `Inner`, used as an intermediate option in `Outer`.
+        // `as TargetOpt` must look through the alias to find `TargetOpt` inside `Inner`.
+        JavaTestModel model = modelService.toJavaTestModel("""
+                namespace test
+
+                type TargetOpt:
+                    attr string (1..1)
+
+                type Sibling:
+                    siblingAttr int (1..1)
+
+                choice Inner:
+                    TargetOpt
+                    Sibling
+
+                typeAlias InnerAlias: Inner
+
+                choice Outer:
+                    InnerAlias
+                    Other
+
+                type Other:
+                    otherAttr int (1..1)
+                """).compile();
+
+        // Navigate through the `InnerAlias` intermediate to reach `TargetOpt`.
+        String result = model.evaluateExpression(String.class, """
+                Outer { InnerAlias: Inner { TargetOpt: TargetOpt { attr: "val" }, ... }, ... } as TargetOpt -> attr
+                """);
+        assertEquals("val", result);
+
+        // Holds the sibling option → `as TargetOpt` must yield empty.
+        String absent = model.evaluateExpression(String.class, """
+                Outer { InnerAlias: Inner { Sibling: Sibling { siblingAttr: 1 }, ... }, ... } as TargetOpt -> attr
+                """);
+        assertNull(absent);
+    }
+
+    @Test
     void asNestedChoiceOptionTest() {
         JavaTestModel model = modelService.toJavaTestModel("""
                 namespace test

@@ -46,7 +46,7 @@ public class FunctionOperationGeneratorTest {
         	alias i: in2 -> frequency
         	set out: i * 30.0
         """);
-        var generated = generatedCode.get("com.rosetta.test.model.functions.PeriodEnumFunc").replace("\r\n", "\n");
+        var generated = generatedCode.get("com.rosetta.test.model.functions.PeriodEnumFunc");
 
         assertEquals(
             """
@@ -279,7 +279,7 @@ public class FunctionOperationGeneratorTest {
         	set res -> res1:  arg1 + arg2
         	set res -> res2:  arg1 + arg2
         """);
-        var generated = generatedCode.get("com.rosetta.test.model.functions.Calc").replace("\r\n", "\n");
+        var generated = generatedCode.get("com.rosetta.test.model.functions.Calc");
         var expected = """
         package com.rosetta.test.model.functions;
 
@@ -384,7 +384,7 @@ public class FunctionOperationGeneratorTest {
         	set out -> tradingDateTime:
         		tradeDate + tradeTime
         """);
-        var generated = generatedCode.get("com.rosetta.test.model.functions.RTS_22_Fields").replace("\r\n", "\n");
+        var generated = generatedCode.get("com.rosetta.test.model.functions.RTS_22_Fields");
         generatorTestHelper.compileToClasses(generatedCode);
         var expected = """
         package com.rosetta.test.model.functions;
@@ -679,7 +679,7 @@ public class FunctionOperationGeneratorTest {
         	set arg1: SubOne(in2 -> mathInput)
         """);
 
-        var generated = generatedCode.get("com.rosetta.test.model.functions.MathFunc").replace("\r\n", "\n");
+        var generated = generatedCode.get("com.rosetta.test.model.functions.MathFunc");
         assertEquals(
             """
             package com.rosetta.test.model.functions;
