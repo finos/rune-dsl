@@ -151,24 +151,6 @@ public final class ModelAncestry {
     }
 
     /**
-     * Whether the file looks like a Rune model jar: it carries a model marker or any
-     * {@code *.rosetta} source entry. Unreadable or missing files are simply not model jars.
-     */
-    public static boolean isModelJar(File file) {
-        if (file == null || !file.isFile()) {
-            return false;
-        }
-        try (ZipFile zip = new ZipFile(file)) {
-            if (zip.getEntry(ModelPropertiesWriter.RELATIVE_PATH) != null) {
-                return true;
-            }
-            return zip.stream().anyMatch(entry -> !entry.isDirectory() && entry.getName().endsWith(".rosetta"));
-        } catch (IOException e) {
-            return false;
-        }
-    }
-
-    /**
      * The ancestry facts recorded in the jar's model marker, if the jar has one that declares an
      * identity. A marker without {@code modelId} (pre-ancestry) reads as absent, like no marker.
      */
@@ -213,7 +195,7 @@ public final class ModelAncestry {
     public static void crossCheckClasspathModels(Collection<ClasspathJar> classpathJars,
             Collection<String> declaredParents, Consumer<String> warningSink) {
         Map<ClasspathJar, JarMarker> markers = classpathJars.stream()
-                .filter(jar -> isModelJar(jar.file()))
+                .filter(jar -> jar.file() != null && jar.file().isFile())
                 .flatMap(jar -> readJarMarker(jar.file()).map(marker -> Map.entry(jar, marker)).stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         Set<String> accountedFor = new HashSet<>(declaredParents);
