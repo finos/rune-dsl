@@ -16,6 +16,9 @@
 
 package com.regnosys.rosetta.maven;
 
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -167,6 +170,44 @@ class AbstractRuneGeneratorMojoTest {
         AbstractRuneGeneratorMojo.warnIfLegacyConfigFileName(null, warnings::add);
 
         assertTrue(warnings.isEmpty());
+    }
+
+    @Test
+    void classpathJars_keepsCompileProvidedAndSystemScopes(@TempDir File dir) {
+        Artifact compile = artifact("org.example", "compile-model", "1.0.0", Artifact.SCOPE_COMPILE, dir);
+        Artifact provided = artifact("org.example", "provided-model", "1.0.0", Artifact.SCOPE_PROVIDED, dir);
+        Artifact system = artifact("org.example", "system-model", "1.0.0", Artifact.SCOPE_SYSTEM, dir);
+
+        List<ModelAncestry.ClasspathJar> jars = AbstractRuneGeneratorMojo.classpathJars(List.of(compile, provided, system));
+
+        assertEquals(3, jars.size());
+    }
+
+    @Test
+    void classpathJars_excludesTestAndRuntimeScopes(@TempDir File dir) {
+        Artifact test = artifact("org.example", "test-model", "1.0.0", Artifact.SCOPE_TEST, dir);
+        Artifact runtime = artifact("org.example", "runtime-model", "1.0.0", Artifact.SCOPE_RUNTIME, dir);
+
+        List<ModelAncestry.ClasspathJar> jars = AbstractRuneGeneratorMojo.classpathJars(List.of(test, runtime));
+
+        assertTrue(jars.isEmpty());
+    }
+
+    @Test
+    void classpathJars_excludesArtifactsWithoutAFile() {
+        Artifact unresolved = new DefaultArtifact("org.example", "unresolved-model", "1.0.0",
+                Artifact.SCOPE_COMPILE, "jar", null, new DefaultArtifactHandler("jar"));
+
+        List<ModelAncestry.ClasspathJar> jars = AbstractRuneGeneratorMojo.classpathJars(List.of(unresolved));
+
+        assertTrue(jars.isEmpty());
+    }
+
+    private static Artifact artifact(String groupId, String artifactId, String version, String scope, File dir) {
+        Artifact artifact = new DefaultArtifact(groupId, artifactId, version, scope, "jar", null,
+                new DefaultArtifactHandler("jar"));
+        artifact.setFile(new File(dir, artifactId + ".jar"));
+        return artifact;
     }
 
     private static File createResourcesDir(File basedir) throws IOException {

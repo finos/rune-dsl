@@ -21,6 +21,8 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.regnosys.rosetta.config.file.RuneConfigurationFileProvider;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
@@ -40,6 +42,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -250,12 +253,27 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
         }
     }
 
-    private List<ModelAncestry.ClasspathJar> classpathJars() {
-        return getProject().getArtifacts().stream()
+    /**
+     * Narrows {@code artifacts} to the compile classpath (scopes {@code compile}, {@code provided}
+     * and {@code system}). {@link MavenProject#getArtifacts()} returns every artifact resolved for
+     * this Mojo execution regardless of scope, but {@link ModelAncestry#crossCheckClasspathModels}
+     * and its warning text are documented in terms of "the compile classpath", so this filter is
+     * what keeps that claim accurate — without it a test- or runtime-scope model jar could trigger a
+     * warning to declare a parent that is not actually a compile dependency. Extracted as a static,
+     * pure function (no Mojo state) so it is directly unit-testable.
+     */
+    static List<ModelAncestry.ClasspathJar> classpathJars(Collection<Artifact> artifacts) {
+        ArtifactFilter compileScope = new ScopeArtifactFilter(Artifact.SCOPE_COMPILE);
+        return artifacts.stream()
                 .filter(artifact -> artifact.getFile() != null)
+                .filter(compileScope::include)
                 .map(artifact -> new ModelAncestry.ClasspathJar(artifact.getGroupId(), artifact.getArtifactId(),
                         artifact.getVersion(), artifact.getFile()))
                 .collect(Collectors.toList());
+    }
+
+    private List<ModelAncestry.ClasspathJar> classpathJars() {
+        return classpathJars(getProject().getArtifacts());
     }
 
     @Override
