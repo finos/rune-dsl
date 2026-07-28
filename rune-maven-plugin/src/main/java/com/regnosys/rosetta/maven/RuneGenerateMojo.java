@@ -60,7 +60,12 @@ public class RuneGenerateMojo extends AbstractRuneGeneratorMojo {
 	protected String getClassOutputDirectory() {
 		return getProject().getBuild().getOutputDirectory();
 	}
-	
+
+	@Override
+	protected boolean writesModelProperties() {
+		return true;
+	}
+
 	/**
 	 * Project source roots. List of folders, where the source models are
 	 * located.<br>
