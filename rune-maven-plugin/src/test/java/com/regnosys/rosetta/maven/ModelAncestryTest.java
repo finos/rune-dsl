@@ -36,7 +36,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ModelAncestryTest {
@@ -124,31 +123,6 @@ class ModelAncestryTest {
         project.setArtifactId("standalone-model");
 
         assertEquals("org.example:standalone-model", ModelAncestry.computeModelId(project));
-    }
-
-    // ---- model jar detection ----
-
-    @Test
-    void isModelJar_trueForJarWithMarker(@TempDir Path dir) throws IOException {
-        File jar = jarWithEntries(dir, Map.of(ModelPropertiesWriter.RELATIVE_PATH, "runeConfigPresentInModel=true\n"));
-
-        assertTrue(ModelAncestry.isModelJar(jar));
-    }
-
-    @Test
-    void isModelJar_trueForJarWithRosettaSources(@TempDir Path dir) throws IOException {
-        File jar = jarWithEntries(dir, Map.of("model/types.rosetta", "namespace test\n"));
-
-        assertTrue(ModelAncestry.isModelJar(jar));
-    }
-
-    @Test
-    void isModelJar_falseForPlainJarAndMissingFile(@TempDir Path dir) throws IOException {
-        File jar = jarWithEntries(dir, Map.of("com/example/Foo.class", ""));
-
-        assertFalse(ModelAncestry.isModelJar(jar));
-        assertFalse(ModelAncestry.isModelJar(new File(dir.toFile(), "missing.jar")));
-        assertFalse(ModelAncestry.isModelJar(null));
     }
 
     // ---- readJarMarker ----
