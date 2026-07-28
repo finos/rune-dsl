@@ -107,7 +107,9 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 			} catch (IOException e) {
 				throw new UncheckedIOException(e);
 			}
-			expectedCode.put(relativePath, normalizeLineEndings(fileContents));
+			// The .gitattributes forces LF checkout for the expectation files, so no
+			// normalisation is needed on this side
+			expectedCode.put(relativePath, fileContents);
 		});
 	}
 

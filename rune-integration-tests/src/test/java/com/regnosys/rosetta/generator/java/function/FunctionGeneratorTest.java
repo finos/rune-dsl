@@ -1118,7 +1118,7 @@ public class FunctionGeneratorTest {
                 """);
 
         var funcCode = code.get("com.rosetta.test.model.functions.Foo");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -2212,7 +2212,7 @@ public class FunctionGeneratorTest {
                 		result string (0..1)
                 """;
         var generatedCode = generatorTestHelper.generateCode(code);
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -2264,7 +2264,7 @@ public class FunctionGeneratorTest {
                 		result string (0..*)
                 """;
         var generatedCode = generatorTestHelper.generateCode(code);
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -2318,7 +2318,7 @@ public class FunctionGeneratorTest {
                 		result number (0..*)
                 """;
         var generatedCode = generatorTestHelper.generateCode(code);
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -2373,7 +2373,7 @@ public class FunctionGeneratorTest {
                 		result int (0..*)
                 """;
         var generatedCode = generatorTestHelper.generateCode(code);
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -2427,7 +2427,7 @@ public class FunctionGeneratorTest {
                 		result date (0..*)
                 """;
         var generatedCode = generatorTestHelper.generateCode(code);
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -2837,7 +2837,7 @@ public class FunctionGeneratorTest {
         );
 
         var extractBar = code.get("com.rosetta.test.model.agreement.functions.ExtractBar");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.agreement.functions;
 
@@ -3082,7 +3082,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f3 = code.get("com.rosetta.test.model.functions.F3");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -3147,7 +3147,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f1 = code.get("com.rosetta.test.model.functions.F1");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -3186,7 +3186,7 @@ public class FunctionGeneratorTest {
                 f1
         );
         var f2 = code.get("com.rosetta.test.model.functions.F2");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -3261,7 +3261,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f1 = code.get("com.rosetta.test.model.functions.F1");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -3303,7 +3303,7 @@ public class FunctionGeneratorTest {
                 f1
         );
         var f2 = code.get("com.rosetta.test.model.functions.F2");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -3348,7 +3348,7 @@ public class FunctionGeneratorTest {
                 f2
         );
         var f3 = code.get("com.rosetta.test.model.functions.F3");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -3825,7 +3825,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f = code.get("com.rosetta.test.model.functions.DistinctFunc");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -3893,7 +3893,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f = code.get("com.rosetta.test.model.functions.DistinctFunc");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -4013,7 +4013,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f = code.get("com.rosetta.test.model.functions.DistinctFunc");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -4115,7 +4115,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f = code.get("com.rosetta.test.model.functions.DistinctFunc");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -4433,7 +4433,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -4503,7 +4503,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -4582,7 +4582,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -4653,7 +4653,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -4736,7 +4736,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -4825,7 +4825,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -4918,7 +4918,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -4982,7 +4982,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -5064,7 +5064,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f = code.get("com.rosetta.test.model.functions.FuncFoo");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -5612,7 +5612,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f = code.get("com.rosetta.test.model.validation.datarule.FooBar");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.validation.datarule;
 
@@ -5707,7 +5707,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f = code.get("com.rosetta.test.model.functions.B");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -5777,7 +5777,7 @@ public class FunctionGeneratorTest {
                 """;
         var code = generatorTestHelper.generateCode(model);
         var f = code.get("com.rosetta.test.model.functions.IsDateGreaterThan");
-        assertJavaEquals(
+        assertEquals(
                 """
 				package com.rosetta.test.model.functions;
 
@@ -5843,9 +5843,4 @@ public class FunctionGeneratorTest {
         return new java.util.ArrayList<>(Arrays.asList(elements));
     }
 
-    private static void assertJavaEquals(String expected, String actual) {
-        // The legacy generator emits platform line separators (\r\n on Windows); normalize the
-        // generated side to \n so it matches the expected Java text block, which the JLS keeps as \n.
-        assertEquals(expected, actual == null ? null : actual.replace("\r\n", "\n"));
-    }
 }
