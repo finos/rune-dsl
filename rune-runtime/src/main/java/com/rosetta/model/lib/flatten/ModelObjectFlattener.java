@@ -42,31 +42,51 @@ public class ModelObjectFlattener {
      * @return A new list of RosettaPathValues with metadata paths removed.
      */
     private List<RosettaPathValue> removeAllMetaPaths(List<RosettaPath> metaPaths, List<RosettaPathValue> pathValues) {
-        return pathValues.stream()
-                .map(pathValue -> new RosettaPathValue(removeAllMetaPaths(metaPaths, pathValue.getPath()), pathValue.getValue()))
-                .collect(Collectors.toList());
+        // A meta path is always a prefix of the value paths it applies to, so testing every value
+        // path against every meta path is unnecessary: looking each ancestor up in a set is O(depth)
+        // rather than O(metaPaths). This is the dominant cost when flattening large samples.
+        Set<RosettaPath> metaPathSet = new HashSet<>(metaPaths);
+        List<RosettaPathValue> result = new ArrayList<>(pathValues.size());
+        for (RosettaPathValue pathValue : pathValues) {
+            result.add(new RosettaPathValue(removeAllMetaPaths(metaPathSet, pathValue.getPath()), pathValue.getValue()));
+        }
+        return result;
     }
 
     /**
      * Removes all metadata path segments from the provided RosettaPath.
      *
-     * @param metaPaths The list of metadata paths to use for filtering.
+     * @param metaPaths The metadata paths to use for filtering.
      * @param path      The RosettaPath to filter.
-     * @return A new RosettaPath with metadata segments removed.
+     * @return A new RosettaPath with metadata segments removed, and its first element trimmed.
      */
-    private RosettaPath removeAllMetaPaths(List<RosettaPath> metaPaths, RosettaPath path) {
-        LinkedList<RosettaPath.Element> elements = path.allElements();
-        metaPaths.stream()
-                .filter(path::startsWith)
-                .map(RosettaPath::allElements)
-                .map(LinkedList::size)
-                .map(i -> i - 1)
-                .distinct()
-                .sorted(Comparator.reverseOrder())
-                .forEach(i -> elements.remove((int) i));
+    private RosettaPath removeAllMetaPaths(Set<RosettaPath> metaPaths, RosettaPath path) {
+        int depth = path.depth();
+        RosettaPath.Element[] elements = new RosettaPath.Element[depth];
+        boolean[] isMetaSegment = new boolean[depth];
 
-        RosettaPath newPath = RosettaPath.createPathFromElements(elements);
-        return newPath.trimFirst();
+        int i = depth - 1;
+        for (RosettaPath ancestor = path; ancestor != null; ancestor = ancestor.getParent(), i--) {
+            elements[i] = ancestor.getElement();
+            // an ancestor that is itself a meta path contributes the segment naming the metadata field
+            isMetaSegment[i] = metaPaths.contains(ancestor);
+        }
+
+        RosettaPath result = null;
+        boolean firstRemainingTrimmed = false;
+        for (int j = 0; j < depth; j++) {
+            if (isMetaSegment[j]) {
+                continue;
+            }
+            if (!firstRemainingTrimmed) {
+                firstRemainingTrimmed = true;
+                continue;
+            }
+            result = result == null
+                    ? RosettaPath.createPath(elements[j])
+                    : result.newSubPath(elements[j]);
+        }
+        return result;
     }
 
     /**

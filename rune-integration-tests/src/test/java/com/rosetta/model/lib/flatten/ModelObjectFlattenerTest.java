@@ -120,6 +120,49 @@ class ModelObjectFlattenerTest {
 	}
 
 	@Test
+	void flattenTestWithMetadataNestedSeveralLevelsDeep() throws IOException {
+		JavaTestModel model = modelService.toJavaTestModel("""
+				namespace test
+
+				type Root:
+				    outer Outer (0..*)
+
+				type Outer:
+				    inner Inner (0..*)
+
+				type Inner:
+				    [metadata key]
+				    val string (0..*)
+				        [metadata scheme]
+				""").compile();
+
+		RosettaModelObject instance = model.evaluateExpression(RosettaModelObject.class, """
+				Root {
+		            outer: [
+		                Outer {
+		                    inner: [
+		                        Inner { val: ["A", "B"] },
+		                        Inner { val: ["C"] }
+		                    ]
+		                },
+		                Outer {
+		                    inner: [
+		                        Inner { val: ["D"] }
+		                    ]
+		                }
+		            ]
+		        }
+				""");
+
+		assertFlattenedValues(instance, """
+				outer(0).inner(0).val(0): A
+				outer(0).inner(0).val(1): B
+				outer(0).inner(1).val(0): C
+				outer(1).inner(0).val(0): D
+				""");
+	}
+
+	@Test
 	void flattenTestWithInheritance() throws IOException {
 		JavaTestModel model = modelService.toJavaTestModel("""
 				namespace test
