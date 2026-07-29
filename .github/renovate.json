@@ -36,7 +36,6 @@
       "groupName": "all non-breaking dependencies",
       "groupSlug": "all-non-breaking",
       "matchPackageNames": [
-        "*",
         "!/^org\\.eclipse\\./"
       ]
     }

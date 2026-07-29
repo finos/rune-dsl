@@ -19,7 +19,10 @@ package com.regnosys.rosetta.maven;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import com.regnosys.rosetta.config.file.RuneConfigurationFileProvider;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.filter.ArtifactFilter;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
@@ -34,13 +37,16 @@ import org.eclipse.xtext.maven.Language;
 import org.eclipse.xtext.xbase.lib.IterableExtensions;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 // TODO: decouple from `AbstractXtextGeneratorMojo`/`xtext-maven-plugin`. They differ too much,
@@ -60,15 +66,22 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
     private String classPathLookupFilter;
 
     /**
-     * Path to the Rune configuration file.
+     * @deprecated The configuration file is now discovered by convention at
+     * {@code src/main/resources/rune-config.yml} (or the legacy {@code rosetta-config.yml}) and
+     * this parameter carries no information the plugin cannot derive itself. It is kept for
+     * backwards compatibility and will be removed in the next major Rune DSL release. If both
+     * {@code runeConfig} and {@code rosettaConfig} are set, {@code runeConfig} takes precedence.
      */
+    @Deprecated
     @Parameter
     private String runeConfig;
 
     /**
-     * @deprecated Use {@code runeConfig} instead. This parameter is kept for backwards
-     * compatibility and will be removed in a future release. If both are set, {@code runeConfig}
-     * takes precedence.
+     * @deprecated The configuration file is now discovered by convention at
+     * {@code src/main/resources/rune-config.yml} (or the legacy {@code rosetta-config.yml}) and
+     * this parameter carries no information the plugin cannot derive itself. It is kept for
+     * backwards compatibility and will be removed in the next major Rune DSL release. If both
+     * {@code runeConfig} and {@code rosettaConfig} are set, {@code runeConfig} takes precedence.
      */
     @Deprecated
     @Parameter
@@ -117,6 +130,13 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
     // NOTE: we have a different default from Xtext!! We want to have this enabled by default.
     private boolean incrementalXtextBuild;
 
+    /**
+     * Directory the per-model marker file ({@code META-INF/rune/model.properties}) is written
+     * under. Defaults to the build output directory; overridable so tests can redirect it.
+     */
+    @Parameter(defaultValue = "${project.build.outputDirectory}")
+    private String modelPropertiesOutputDirectory;
+
     // TODO: add this method to Xtext so I don't have to overwrite `internalExecute`
     // and duplicate all of the above parameters.
     protected Module createModule() {
@@ -124,22 +144,136 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
     }
 
     /**
-     * Resolves the configuration file path, preferring the {@code runeConfig} parameter and
-     * falling back to the deprecated {@code rosettaConfig} parameter for backwards compatibility.
+     * Whether this Mojo should emit the {@code META-INF/rune/model.properties} marker. Only
+     * {@code RuneGenerateMojo} does; {@code RuneTestGenerateMojo} writes to the test output
+     * directory, and a second marker there would compete on the classpath with the main one.
      */
-    private String resolveConfig() {
+    protected boolean writesModelProperties() {
+        return false;
+    }
+
+    static final String CONFIG_DEPRECATION_WARNING =
+            "The 'runeConfig'/'rosettaConfig' parameter is deprecated and will be removed in the next "
+            + "major Rune DSL release. The configuration file is now discovered by convention at "
+            + "'src/main/resources/rune-config.yml' (or the legacy 'rosetta-config.yml'); remove this "
+            + "parameter and let the plugin locate it automatically.";
+
+    static final String LEGACY_CONFIG_FILE_NAME_WARNING =
+            "Found a legacy '" + RuneConfigurationFileProvider.LEGACY_FILE_NAME + "' configuration file. Please "
+            + "rename it to '" + RuneConfigurationFileProvider.FILE_NAME + "'; support for the legacy name is "
+            + "deprecated and will be removed in a future release.";
+
+    /**
+     * Probes the conventional location for a model's Rune configuration file, on disk, relative
+     * to the model's own {@code basedir}. Returns the config {@link File}, or {@code null} if
+     * neither the current nor the legacy name is present. This is the single definition of the
+     * convention: both {@link #resolveConfig()} and the marker's presence check key off it.
+     */
+    static File findConventionalConfigFile(File basedir) {
+        File resourcesDir = new File(basedir, "src/main/resources");
+        File configFile = new File(resourcesDir, RuneConfigurationFileProvider.FILE_NAME);
+        if (configFile.isFile()) {
+            return configFile;
+        }
+        File legacyConfigFile = new File(resourcesDir, RuneConfigurationFileProvider.LEGACY_FILE_NAME);
+        if (legacyConfigFile.isFile()) {
+            return legacyConfigFile;
+        }
+        return null;
+    }
+
+    /**
+     * Resolution logic for {@link #resolveConfig()}, extracted as a pure function (no Mojo state)
+     * so it is directly unit-testable. If either deprecated parameter is set, it is still honoured
+     * (transitional behaviour), with {@code runeConfig} preferred when both are set; either way the
+     * shared deprecation warning is logged. If neither is set, the conventional file is resolved by
+     * {@link #findConventionalConfigFile(File)}.
+     */
+    static String resolveConfig(String runeConfig, String rosettaConfig, File basedir, Consumer<String> deprecationWarningSink) {
+        if (runeConfig != null || rosettaConfig != null) {
+            deprecationWarningSink.accept(CONFIG_DEPRECATION_WARNING);
+        }
         if (runeConfig != null) {
-            if (rosettaConfig != null) {
-                getLog().warn("Both 'runeConfig' and the deprecated 'rosettaConfig' parameters are set; "
-                        + "using 'runeConfig' and ignoring 'rosettaConfig'.");
-            }
             return runeConfig;
         }
         if (rosettaConfig != null) {
-            getLog().warn("The 'rosettaConfig' parameter is deprecated; use 'runeConfig' instead.");
             return rosettaConfig;
         }
-        return null;
+        File conventional = findConventionalConfigFile(basedir);
+        return conventional != null ? conventional.getAbsolutePath() : null;
+    }
+
+    /**
+     * Resolves the configuration file path: the deprecated {@code runeConfig}/{@code rosettaConfig}
+     * parameters if set (with a deprecation warning), otherwise the conventional location.
+     */
+    private String resolveConfig() {
+        return resolveConfig(runeConfig, rosettaConfig, getProject().getBasedir(), getLog()::warn);
+    }
+
+    /**
+     * Warns when the conventional configuration file found for the marker is the legacy
+     * {@code rosetta-config.yml} rather than {@code rune-config.yml}, so a model owner is nudged to
+     * rename it. Extracted as a pure function (no Mojo state) so it is directly unit-testable,
+     * matching {@link #resolveConfig(String, String, File, Consumer)}.
+     */
+    static void warnIfLegacyConfigFileName(File conventionalConfigFile, Consumer<String> warningSink) {
+        if (conventionalConfigFile != null
+                && RuneConfigurationFileProvider.LEGACY_FILE_NAME.equals(conventionalConfigFile.getName())) {
+            warningSink.accept(LEGACY_CONFIG_FILE_NAME_WARNING);
+        }
+    }
+
+    private void writeModelProperties() throws MojoExecutionException {
+        File conventionalConfigFile = findConventionalConfigFile(getProject().getBasedir());
+        warnIfLegacyConfigFileName(conventionalConfigFile, getLog()::warn);
+        MavenProject project = getProject();
+        String modelSourceGav = project.getGroupId() + ":" + project.getArtifactId() + ":" + project.getVersion();
+        String modelId;
+        List<String> parentModels;
+        try {
+            modelId = ModelAncestry.computeModelId(project);
+            parentModels = ModelAncestry.parseDirectParents(project.getProperties(), getLog()::warn).stream()
+                    .map(ModelAncestry.ParentGav::ga)
+                    .collect(Collectors.toList());
+            ModelAncestry.crossCheckClasspathModels(classpathJars(), parentModels, getLog()::warn);
+        } catch (RuntimeException e) {
+            // Broken ancestry computation must degrade the marker (consumers fall back to classpath
+            // order when modelId is absent), never fail the build.
+            getLog().warn("Failed to compute the model's ancestry for the model marker; writing it without "
+                    + "identity/ancestry information.", e);
+            modelId = null;
+            parentModels = null;
+        }
+        try {
+            new ModelPropertiesWriter().write(new File(modelPropertiesOutputDirectory), conventionalConfigFile != null,
+                    mojoExecution.getVersion(), modelSourceGav, modelId, parentModels);
+        } catch (IOException e) {
+            throw new MojoExecutionException("Failed to write model properties.", e);
+        }
+    }
+
+    /**
+     * Narrows {@code artifacts} to the compile classpath (scopes {@code compile}, {@code provided}
+     * and {@code system}). {@link MavenProject#getArtifacts()} returns every artifact resolved for
+     * this Mojo execution regardless of scope, but {@link ModelAncestry#crossCheckClasspathModels}
+     * and its warning text are documented in terms of "the compile classpath", so this filter is
+     * what keeps that claim accurate — without it a test- or runtime-scope model jar could trigger a
+     * warning to declare a parent that is not actually a compile dependency. Extracted as a static,
+     * pure function (no Mojo state) so it is directly unit-testable.
+     */
+    static List<ModelAncestry.ClasspathJar> classpathJars(Collection<Artifact> artifacts) {
+        ArtifactFilter compileScope = new ScopeArtifactFilter(Artifact.SCOPE_COMPILE);
+        return artifacts.stream()
+                .filter(artifact -> artifact.getFile() != null)
+                .filter(compileScope::include)
+                .map(artifact -> new ModelAncestry.ClasspathJar(artifact.getGroupId(), artifact.getArtifactId(),
+                        artifact.getVersion(), artifact.getFile()))
+                .collect(Collectors.toList());
+    }
+
+    private List<ModelAncestry.ClasspathJar> classpathJars() {
+        return classpathJars(getProject().getArtifacts());
     }
 
     @Override
@@ -190,6 +324,9 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
         boolean errorDetected = !builder.launch();
         if (errorDetected && failOnValidationError) {
             throw new MojoExecutionException("Execution failed due to a severe validation error.");
+        }
+        if (writesModelProperties()) {
+            writeModelProperties();
         }
     }
     // Override to ensure we use this class's injected MavenProject
