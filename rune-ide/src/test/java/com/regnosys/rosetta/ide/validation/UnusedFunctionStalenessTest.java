@@ -5,30 +5,24 @@ import java.util.List;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticTag;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTest;
 
 /**
- * Known-bug tests: the "unused" editor marker does not refresh when the last (or first) usage of an
- * element changes in a <em>different</em> file.
+ * The "unused" editor marker must refresh when the last (or first) usage of an element changes in a
+ * <em>different</em> file, not just in the file that declares the element.
  *
- * <p>Cause: the language server only revalidates <em>affected</em> resources. Xtext derives that set
- * via {@code Indexer.computeAndIndexAffected}, which asks
- * {@code DefaultResourceDescriptionManager.isAffected}. The file that <em>declares</em> the element did
- * not change and does not reference the file that did, so it is never considered affected and never
- * revalidated — leaving the previous marker in place.
+ * <p>The language server only revalidates resources it considers <em>affected</em>, and Xtext's notion of
+ * affected is one-directional: a resource is affected when it references something that changed. The file
+ * that <em>declares</em> the element did not change and does not reference the file that did, so it is
+ * never revalidated and keeps whatever marker it had. Fixed by
+ * {@code RosettaStatefulIncrementalBuilder#revalidateResourcesWithChangedIncomingReferences}, which
+ * revalidates resources whose declarations gained or lost a reference from a resource the build did touch;
+ * see {@code IncomingReferenceChanges} for how that set is derived.
  *
  * <p>Note this is orthogonal to how usages are detected (live AST vs. Xtext index): it is purely about
- * which resources get revalidated. Fixing it requires a custom
- * {@code IResourceDescription.Manager#isAffected} that also marks resources <em>owning</em> an element
- * whose incoming-reference set changed.
- *
- * <p>These tests are disabled because they document a bug that is not yet fixed. Remove the
- * {@link Disabled} annotations as the acceptance criteria for that fix. The bug becomes considerably
- * more visible once the marker is extended from functions to types and enums, where cross-file
- * references are the norm rather than the exception.
+ * which resources get revalidated.
  *
  * <p>Both tests use fully qualified references ({@code decl.F()}) rather than an {@code import}, so that
  * adding/removing the call site does not also produce "Unused import" warnings that would obscure the
@@ -39,7 +33,6 @@ public class UnusedFunctionStalenessTest extends AbstractRosettaLanguageServerVa
 	private static final String UNUSED_F = "Function 'F' is never used";
 
 	@Test
-	@Disabled("Known bug: the declaring file is not revalidated when a usage appears in another file")
 	void unusedMarkerIsRemovedWhenFirstCallSiteIsAddedInAnotherFile() {
 		String declURI = createModel("decl.rosetta", """
 				namespace decl
@@ -72,7 +65,6 @@ public class UnusedFunctionStalenessTest extends AbstractRosettaLanguageServerVa
 	}
 
 	@Test
-	@Disabled("Known bug: the declaring file is not revalidated when its last usage is removed in another file")
 	void unusedMarkerIsAddedWhenLastCallSiteIsRemovedInAnotherFile() {
 		String declURI = createModel("decl.rosetta", """
 				namespace decl
