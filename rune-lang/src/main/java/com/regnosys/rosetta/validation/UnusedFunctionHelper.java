@@ -78,9 +78,15 @@ public class UnusedFunctionHelper {
      * Collects the URIs of every function that is the target of a symbol reference (i.e. is called)
      * anywhere in the resource set, walking the live AST once and caching the result per resource.
      *
-     * <p>The cross-reference index cannot be used: Rosetta's {@code RosettaResourceDescriptionStrategy}
-     * does not descend into expressions, so function-call references are absent from it. The live AST
-     * is the only source that sees function usages.
+     * <p>The cross-reference index is not a viable alternative here, even though it does contain
+     * function-call references: {@code createReferenceDescriptions} is not overridden by
+     * {@code RosettaResourceDescriptionStrategy}, so it descends into expressions and records these
+     * calls just like any other cross-reference. What rules it out is that
+     * {@code DefaultResourceDescriptionStrategy.isResolvedAndExternal} only records references that
+     * cross a resource boundary, so same-file calls are invisible to it; and
+     * {@code IResourceDescriptions} exposes no target-to-source reverse lookup, so answering "is this
+     * function called anywhere" would still require scanning every resource's outgoing references. The
+     * live AST walk sees both same-file and cross-file calls uniformly with one mechanism.
      */
     private Set<URI> getReferencedFunctionUris(Resource resource) {
         return cache.get(REFERENCED_FUNCTIONS_CACHE_KEY, resource, () -> {
