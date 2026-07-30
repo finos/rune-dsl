@@ -129,6 +129,21 @@ public class RosettaFormattingTest {
 	}
 
 	@Test
+	void testFormatTypeAliasWithAnnotation() {
+		formatAndAssert("""
+				namespace test
+
+				typeAlias max4String: string(minLength: 1, maxLength: 4)   [suppressUnused]
+				""", """
+				namespace test
+
+				typeAlias max4String:
+					string(minLength: 1, maxLength: 4)
+					[suppressUnused]
+				""");
+	}
+
+	@Test
 	void testFormatSchemaWithAnnotationOnIndentedLine() {
 		formatAndAssert("""
 				namespace test

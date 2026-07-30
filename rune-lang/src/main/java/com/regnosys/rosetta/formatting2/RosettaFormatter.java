@@ -172,6 +172,10 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 		formattingUtil.formatInlineOrMultiline(document, ele,
 				doc -> {
 					doc.format(doc.prepend(ele.getTypeCall(), IHiddenRegionFormatter::oneSpace));
+					ele.getAnnotations().forEach(ann -> {
+						doc.prepend(ann, IHiddenRegionFormatter::newLine);
+						doc.format(ann);
+					});
 					ele.getConditions().forEach(cond -> {
 						doc.prepend(cond, f -> f.setNewLines(2));
 						doc.format(cond);
@@ -179,6 +183,10 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 				},
 				doc -> {
 					doc.format(doc.prepend(ele.getTypeCall(), IHiddenRegionFormatter::newLine));
+					ele.getAnnotations().forEach(ann -> {
+						doc.prepend(ann, IHiddenRegionFormatter::newLine);
+						doc.format(ann);
+					});
 					ele.getConditions().forEach(cond -> {
 						doc.prepend(cond, f -> f.setNewLines(2));
 						doc.format(cond);

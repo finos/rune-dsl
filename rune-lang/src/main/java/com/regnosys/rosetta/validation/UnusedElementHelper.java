@@ -119,10 +119,11 @@ public class UnusedElementHelper {
     }
 
     /**
-     * The built-in models are read-only, so a marker on one could never be acted upon, and none of the kinds
-     * they declare — basic types, record types, library functions, type aliases, annotations — can carry
-     * {@code [suppressUnused]}. Every builtin a given model happens not to use would therefore be marked
-     * permanently.
+     * The built-in models are read-only, so a marker on one could never be acted upon, and most of the kinds
+     * they declare — basic types, record types, library functions, annotations — cannot carry
+     * {@code [suppressUnused]} regardless (the {@code calculation} type alias also declared there now could,
+     * but this exclusion is checked first, so it never gets the chance to matter). Every builtin a given
+     * model happens not to use would therefore be marked permanently.
      *
      * <p>{@code IncomingReferenceChanges} in {@code rune-ide} skips the same resources, for the related
      * reason that revalidating a resource which can never carry a marker cannot change its diagnostics.
@@ -135,9 +136,10 @@ public class UnusedElementHelper {
      * Whether an otherwise unreferenced declaration should be left unmarked anyway.
      *
      * <p>{@code [suppressUnused]} is handled generically for anything {@code Annotated}, which in practice
-     * means a function, type, enumeration or schema. The other candidate kinds have no {@code Annotations}
-     * fragment in their grammar rule, so the annotation cannot be written on them and their annotation list
-     * is always empty — that is accepted rather than worked around, so those kinds have no opt-out.
+     * means a function, type, enumeration, type alias or schema. The other candidate kinds have no
+     * {@code Annotations} fragment in their grammar rule, so the annotation cannot be written on them and
+     * their annotation list is always empty — that is accepted rather than worked around, so those kinds
+     * have no opt-out.
      */
     private boolean isExempt(RosettaRootElement element) {
         if (element instanceof Annotated annotated && isAnnotatedWith(annotated, SUPPRESS_UNUSED_ANNOTATION)) {

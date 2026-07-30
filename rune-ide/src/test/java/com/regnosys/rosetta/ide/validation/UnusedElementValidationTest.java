@@ -22,9 +22,9 @@ import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTes
  *
  * <p>Where a test needs scaffolding that would itself attract a marker, that scaffolding is annotated
  * ({@code [rootType]} on a type, {@code [suppressUnused]} on a function) so the expected marker set stays
- * exactly the one behaviour under test. Only functions, types, enumerations and schemas can be annotated;
- * the other kinds have no {@code Annotations} fragment in their grammar rule, so where such a declaration is
- * only scaffolding its marker is asserted rather than suppressed, with a comment saying so.
+ * exactly the one behaviour under test. Only functions, types, enumerations, type aliases and schemas can be
+ * annotated; the other kinds have no {@code Annotations} fragment in their grammar rule, so where such a
+ * declaration is only scaffolding its marker is asserted rather than suppressed, with a comment saying so.
  */
 public class UnusedElementValidationTest extends AbstractRosettaLanguageServerValidationTest {
 
@@ -810,6 +810,20 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 				type Trade:
 					[rootType]
 					notional Amount (1..1)
+				""");
+
+		assertNoIssues();
+		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+	}
+
+	/** A type alias's grammar rule now has {@code Annotations*}, so it is one of the suppressible kinds. */
+	@Test
+	void suppressUnusedOptsOutForTypeAlias() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				typeAlias Amount: number
+					[suppressUnused]
 				""");
 
 		assertNoIssues();
