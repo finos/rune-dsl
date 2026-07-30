@@ -35,6 +35,9 @@ public class RosettaBuiltinsService {
 	public final URI basicTypesURI = URI.createHierarchicalURI("classpath", null, null, basicTypesPath, null, null);
 	public final URI annotationsURI = URI.createHierarchicalURI("classpath", null, null, annotationsPath, null, null);
 
+	public final URL basicTypesURL = Objects.requireNonNull(this.getClass().getResource(basicTypesURI.path()));
+	public final URL annotationsURL = Objects.requireNonNull(this.getClass().getResource(annotationsURI.path()));
+
 	/**
 	 * Whether the given resource URI is one of the built-in models shipped in {@code rune-runtime}.
 	 *
@@ -44,6 +47,11 @@ public class RosettaBuiltinsService {
 	 * several jars on the classpath. Both {@link #getModel} and
 	 * {@code RosettaNamesAreUniqueValidationHelper#isBuiltin} already work around the same thing; see the TODO
 	 * on the latter for the root fix.
+	 *
+	 * <p>Consequence of matching on the name alone: a model file of the user's own called
+	 * {@code annotations.rosetta} or {@code basictypes.rosetta} is treated as a builtin, so it is exempt from
+	 * the duplicate-name check and gets no "never used" markers. Fixing that means fixing the classpath-URI
+	 * support the TODO above refers to.
 	 */
 	public static boolean isBuiltinResource(URI uri) {
 		if (uri == null) {
@@ -52,9 +60,7 @@ public class RosettaBuiltinsService {
 		String fileName = uri.trimFragment().lastSegment();
 		return BASIC_TYPES_FILE_NAME.equals(fileName) || ANNOTATIONS_FILE_NAME.equals(fileName);
 	}
-	public final URL basicTypesURL = Objects.requireNonNull(this.getClass().getResource(basicTypesURI.path()));
-	public final URL annotationsURL = Objects.requireNonNull(this.getClass().getResource(annotationsURI.path()));
-	
+
 	// TODO: cache?
 	private RosettaModel getModel(ResourceSet resourceSet, URI uri) {
 		Resource resource = resourceSet.getResource(uri, false);

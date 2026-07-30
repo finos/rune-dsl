@@ -110,6 +110,79 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 	}
 
 	/**
+	 * A dispatch case is not referenceable at all: {@code RosettaScopeProvider} keeps {@code FunctionDispatch}
+	 * out of the scope a call resolves against, so a caller always points at the main declaration and never at
+	 * a case. Flagging one would therefore be a permanent false positive on live, generated-into code — the
+	 * same correctness argument that excludes {@code metaType}, not a matter of taste.
+	 *
+	 * <p>The models below cannot use {@code assertNoIssues()}: the main declaration of a dispatch function has
+	 * no body by design, which {@code FunctionValidator} warns about independently of anything here.
+	 */
+	@Test
+	void dispatchCasesOfACalledFunctionAreNotFlagged() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				enum DayCountFractionEnum:
+					ACT_360
+					ACT_365L
+
+				func Caller:
+					[suppressUnused]
+					inputs: dcf DayCountFractionEnum (1..1)
+					output: result int (1..1)
+					set result: DayCountBasis(dcf)
+
+				func DayCountBasis:
+					inputs: dcf DayCountFractionEnum (1..1)
+					output: basis int (1..1)
+
+				func DayCountBasis(dcf: DayCountFractionEnum -> ACT_360):
+					set basis: 360
+
+				func DayCountBasis(dcf: DayCountFractionEnum -> ACT_365L):
+					set basis: 365
+				""");
+
+		assertNoErrors(uri);
+		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+	}
+
+	/**
+	 * And they stay unflagged when nothing calls the function either, since a case is used exactly when its
+	 * main declaration is. Nothing at all is reported here: the main declaration is separately exempt as a
+	 * function with no body. {@code Dead} is present so the assertion is not vacuous — it proves markers are
+	 * being produced for this model.
+	 */
+	@Test
+	void dispatchCasesOfAnUncalledFunctionAreNotFlagged() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				enum DayCountFractionEnum:
+					ACT_360
+					ACT_365L
+
+				func DayCountBasis:
+					inputs: dcf DayCountFractionEnum (1..1)
+					output: basis int (1..1)
+
+				func DayCountBasis(dcf: DayCountFractionEnum -> ACT_360):
+					set basis: 360
+
+				func DayCountBasis(dcf: DayCountFractionEnum -> ACT_365L):
+					set basis: 365
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
+				""");
+
+		assertNoErrors(uri);
+		Assertions.assertEquals(List.of("Function 'Dead' is never used"), unusedMarkers(uri));
+	}
+
+	/**
 	 * [ingest XML] functions are called from outside the model (by the runtime), so they must not be
 	 * flagged as unused. This test also verifies that `XML` resolves without a linking error — if
 	 * basictypes.rosetta is not loaded properly, assertNoIssues() would fail with a Linking diagnostic.
@@ -1345,6 +1418,19 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 		List<String> messages = getDiagnostics().get(uri).stream().map(Diagnostic::getMessage).toList();
 		Assertions.assertTrue(messages.contains("There is no rule reference to remove"),
 				"Expected the validation error to survive alongside the unused markers, but got " + messages);
+	}
+
+	/**
+	 * Asserts the model is free of errors, for a model that legitimately carries a warning and so cannot use
+	 * {@code assertNoIssues()}. Without it a broken AST would silently change what the marker assertions
+	 * measure.
+	 */
+	private void assertNoErrors(String uri) {
+		List<String> errors = getDiagnostics().get(uri).stream()
+				.filter(d -> d.getSeverity() == DiagnosticSeverity.Error)
+				.map(Diagnostic::getMessage)
+				.toList();
+		Assertions.assertEquals(List.of(), errors);
 	}
 
 	/**

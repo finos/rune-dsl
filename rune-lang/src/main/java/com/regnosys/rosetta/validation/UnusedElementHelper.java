@@ -8,6 +8,7 @@ import com.regnosys.rosetta.rosetta.simple.Annotated;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
+import com.regnosys.rosetta.rosetta.simple.FunctionDispatch;
 import jakarta.inject.Inject;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
@@ -18,6 +19,7 @@ import org.eclipse.xtext.naming.QualifiedName;
 import org.eclipse.xtext.util.IResourceScopeCache;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -157,6 +159,14 @@ public class UnusedElementHelper {
         if (function.getSuperFunction() != null) {
             return true;
         }
+        // A dispatch case is not referenceable at all: RosettaScopeProvider excludes FunctionDispatch from
+        // the scope callers resolve against, so nothing in the grammar can ever point at one and the walk
+        // below could never see it as used. It is used exactly when the main function of the same name is,
+        // which is judged on that declaration. Excluded for the same correctness reason as a metaType
+        // (see #isMetaType), not as a policy choice.
+        if (function instanceof FunctionDispatch) {
+            return true;
+        }
         // Transform functions (ingest/projection) are entry points called from outside the model.
         if (!function.getTransform().isEmpty()) {
             return true;
@@ -175,7 +185,9 @@ public class UnusedElementHelper {
     }
 
     private boolean isReferenced(ElementId candidate, ResourceSet resourceSet) {
-        for (Resource resource : resourceSet.getResources()) {
+        // Iterate a copy: the walk below resolves cross-references, and resolving a proxy that is still
+        // unresolved demand-loads its resource into this very list.
+        for (Resource resource : List.copyOf(resourceSet.getResources())) {
             if (outgoingReferences(resource).contains(candidate)) {
                 return true;
             }

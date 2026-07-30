@@ -87,6 +87,10 @@ public class RosettaStatefulIncrementalBuilder extends InternalStatefulIncrement
      * <p>No code is generated for them, since unchanged input produces identical output.
      */
     private void revalidateResourcesWithChangedIncomingReferences(IncrementalBuilder.Result result) {
+        if (getRequest().isIndexOnly()) {
+            // An index-only project is deliberately never validated, so it must not be validated here either.
+            return;
+        }
         List<IResourceDescription.Delta> deltas = result.getAffectedResources();
         Set<URI> built = deltas.stream().map(IResourceDescription.Delta::getUri).collect(Collectors.toSet());
         Set<URI> toRevalidate = IncomingReferenceChanges.resourcesToRevalidate(
@@ -95,11 +99,12 @@ public class RosettaStatefulIncrementalBuilder extends InternalStatefulIncrement
             return;
         }
         toRevalidate.forEach(this::unloadResource);
+        // Unloading every resource up front is safe because `executeClustered` loads a whole cluster into
+        // the resource set before applying the operation to any of it. Were it to load and validate one at a
+        // time, revalidating the first would see the rest as missing from the resource set — and a
+        // declaration whose only user is a still-unloaded file reads as unused.
         List<URI> revalidated = new ArrayList<>();
-        // `executeClustered` is lazy, so iterating its result is what actually performs the revalidation.
-        for (URI uri : getContext().executeClustered(toRevalidate, this::revalidate)) {
-            revalidated.add(uri);
-        }
+        getContext().executeClustered(toRevalidate, this::revalidate).forEach(revalidated::add);
         if (INCREMENTAL_BUILDER_STATISTICS_ENABLED) {
             LOGGER.info("Revalidated {} files whose incoming references changed: {}", revalidated.size(), revalidated);
         }

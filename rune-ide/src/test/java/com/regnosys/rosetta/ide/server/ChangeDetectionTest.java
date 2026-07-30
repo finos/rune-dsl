@@ -2,14 +2,12 @@ package com.regnosys.rosetta.ide.server;
 
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
-import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTest;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidationTest {
 	@Test
