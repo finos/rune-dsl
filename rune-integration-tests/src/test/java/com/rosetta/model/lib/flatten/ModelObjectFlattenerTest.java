@@ -15,6 +15,7 @@ import javax.inject.Inject;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CancellationException;
 import java.util.stream.Collectors;
 
 @ExtendWith(InjectionExtension.class)
@@ -160,6 +161,32 @@ class ModelObjectFlattenerTest {
 				outer(0).inner(1).val(0): C
 				outer(1).inner(0).val(0): D
 				""");
+	}
+
+	@Test
+	void flattenAbandonsWorkWhenTheCallingThreadIsInterrupted() throws IOException {
+		JavaTestModel model = modelService.toJavaTestModel("""
+				namespace test
+
+				type Root:
+				    a string (0..1)
+				""").compile();
+		RosettaModelObject instance = model.evaluateExpression(RosettaModelObject.class, """
+				Root { a: "VALUE" }
+				""");
+
+		// sanity check: it flattens normally when not interrupted
+		Assertions.assertEquals(1, modelObjectFlattener.flatten(instance).size());
+
+		try {
+			Thread.currentThread().interrupt();
+			Assertions.assertThrows(CancellationException.class, () -> modelObjectFlattener.flatten(instance));
+			Assertions.assertTrue(Thread.currentThread().isInterrupted(),
+				"the interrupt flag must be left set for the caller to act on");
+		} finally {
+			// clear the flag so it cannot leak into other tests on this thread
+			Thread.interrupted();
+		}
 	}
 
 	@Test

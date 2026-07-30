@@ -9,7 +9,7 @@ import com.rosetta.model.lib.process.AttributeMeta;
 import com.rosetta.model.lib.process.BuilderProcessor;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.CancellationException;
 
 /**
  * Flattens a {@link RosettaModelObject} into a list of {@link RosettaPathValue} objects.
@@ -19,10 +19,22 @@ import java.util.stream.Collectors;
 public class ModelObjectFlattener {
 
     /**
+     * How many visited nodes to cover per interrupt check. Flattening is uninterruptible CPU work,
+     * so callers that bound it with a timeout need it to observe interruption; polling in batches
+     * keeps the cost of that immeasurably small relative to the work done per node.
+     */
+    private static final int INTERRUPT_CHECK_MASK = 1023;
+
+    /**
      * Flattens the provided RosettaModelObject.
+     * <p>
+     * Large objects can take a long time to flatten, so this honours interruption of the calling
+     * thread: if the thread's interrupt flag is set, flattening abandons its work and throws
+     * {@link CancellationException}. The interrupt flag is left set for the caller to act on.
      *
      * @param modelObject The RosettaModelObject to flatten.
      * @return A list of RosettaPathValue objects representing the flattened object.
+     * @throws CancellationException if the calling thread is interrupted while flattening.
      */
     public List<RosettaPathValue> flatten(RosettaModelObject modelObject) {
         FlattenerBuilderProcessor processor = new FlattenerBuilderProcessor();
@@ -32,6 +44,18 @@ public class ModelObjectFlattener {
         List<RosettaPathValue> pathValues = processor.getRosettaPathValue();
 
         return removeAllMetaPaths(metaPaths, pathValues);
+    }
+
+    /**
+     * Aborts if the calling thread has been interrupted, checking only once every
+     * {@link #INTERRUPT_CHECK_MASK}+1 calls.
+     *
+     * @param visitCount a monotonically increasing count of nodes visited so far.
+     */
+    private static void abortIfInterrupted(int visitCount) {
+        if ((visitCount & INTERRUPT_CHECK_MASK) == 0 && Thread.currentThread().isInterrupted()) {
+            throw new CancellationException("Interrupted while flattening a model object");
+        }
     }
 
     /**
@@ -47,7 +71,9 @@ public class ModelObjectFlattener {
         // rather than O(metaPaths). This is the dominant cost when flattening large samples.
         Set<RosettaPath> metaPathSet = new HashSet<>(metaPaths);
         List<RosettaPathValue> result = new ArrayList<>(pathValues.size());
+        int visited = 0;
         for (RosettaPathValue pathValue : pathValues) {
+            abortIfInterrupted(visited++);
             result.add(new RosettaPathValue(removeAllMetaPaths(metaPathSet, pathValue.getPath()), pathValue.getValue()));
         }
         return result;
@@ -97,6 +123,7 @@ public class ModelObjectFlattener {
 
         private final List<RosettaPathValue> rosettaPathValues = new ArrayList<>();
         private final List<RosettaPath> metaPaths = new ArrayList<>();
+        private int visited;
 
         /**
          * Returns the list of identified metadata paths.
@@ -116,6 +143,7 @@ public class ModelObjectFlattener {
 
         @Override
         public <R extends RosettaModelObject> boolean processRosetta(RosettaPath path, Class<R> rosettaType, RosettaModelObjectBuilder builder, RosettaModelObjectBuilder parent, AttributeMeta... metas) {
+            abortIfInterrupted(visited++);
             if (builder != null && parent instanceof FieldWithMeta) {
                 metaPaths.add(path);
             }
@@ -133,6 +161,7 @@ public class ModelObjectFlattener {
 
         @Override
         public <T> void processBasic(RosettaPath path, Class<T> rosettaType, T instance, RosettaModelObjectBuilder parent, AttributeMeta... metas) {
+            abortIfInterrupted(visited++);
             if (instance != null) {
                 if (parent instanceof FieldWithMeta) {
                     rosettaPathValues.add(new RosettaPathValue(path.getParent(), instance));
