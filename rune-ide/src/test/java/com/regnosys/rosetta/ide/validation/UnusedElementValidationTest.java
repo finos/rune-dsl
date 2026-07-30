@@ -11,8 +11,9 @@ import org.junit.jupiter.api.Test;
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTest;
 
 /**
- * The "is never used" editor marker, across every kind of declaration that can carry one: functions,
- * types (including choice types), enumerations and rules.
+ * The "is never used" editor marker. Every <em>named</em> root element can carry one, so the cases below
+ * range from functions and types through rules, type aliases, annotations and schemas to the documentation
+ * elements ({@code body}, {@code corpus}, {@code segment}) and {@code rule source}.
  *
  * <p>Detection is a single generic walk over cross-references rather than a check per grammar rule, so the
  * point of the many cases below is coverage of the <em>reference shapes</em> — each one is a way a
@@ -21,8 +22,9 @@ import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTes
  *
  * <p>Where a test needs scaffolding that would itself attract a marker, that scaffolding is annotated
  * ({@code [rootType]} on a type, {@code [suppressUnused]} on a function) so the expected marker set stays
- * exactly the one behaviour under test. Rules cannot be annotated — {@code RosettaRule} is not
- * {@code Annotated} in the grammar — so they have no opt-out.
+ * exactly the one behaviour under test. Only functions, types, enumerations and schemas can be annotated;
+ * the other kinds have no {@code Annotations} fragment in their grammar rule, so where such a declaration is
+ * only scaffolding its marker is asserted rather than suppressed, with a comment saying so.
  */
 public class UnusedElementValidationTest extends AbstractRosettaLanguageServerValidationTest {
 
@@ -700,7 +702,9 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		// `Overrides` itself is scaffolding no report references, and a rule source has no opt-out, so its
+		// own marker is expected here. What this test is about is that `Extract` does not get one.
+		Assertions.assertEquals(List.of("Rule source 'Overrides' is never used"), unusedMarkers(uri));
 	}
 
 	/**
@@ -768,7 +772,536 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of("Reporting rule 'Unmentioned' is never used"), unusedMarkers(uri));
+		// `Overrides` is scaffolding no report references, and has no opt-out — see the note on
+		// reportingRuleUsedByRuleSourceIsNotFlagged.
+		Assertions.assertEquals(
+				List.of("Reporting rule 'Unmentioned' is never used", "Rule source 'Overrides' is never used"),
+				unusedMarkers(uri));
+	}
+
+	// ------------------------------------------------------------- type aliases
+
+	@Test
+	void unusedTypeAliasIsMarkedAsUnnecessary() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				typeAlias Amount: number
+				""");
+
+		assertNoIssues();
+
+		List<Diagnostic> diagnostics = getDiagnostics().get(uri);
+		Assertions.assertEquals(1, diagnostics.size());
+		Diagnostic diagnostic = diagnostics.get(0);
+		Assertions.assertEquals("Type alias 'Amount' is never used", diagnostic.getMessage());
+		Assertions.assertEquals(DiagnosticSeverity.Hint, diagnostic.getSeverity());
+		Assertions.assertTrue(diagnostic.getTags().contains(DiagnosticTag.Unnecessary));
+	}
+
+	/** A type alias is a {@code RosettaType}, so it is used through {@code TypeCall.type} like any type. */
+	@Test
+	void typeAliasUsedAsAttributeTypeIsNotFlagged() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				typeAlias Amount: number
+
+				type Trade:
+					[rootType]
+					notional Amount (1..1)
+				""");
+
+		assertNoIssues();
+		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+	}
+
+	// -------------------------------------------------------------- annotations
+
+	@Test
+	void unusedAnnotationIsMarkedAsUnnecessary() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				annotation tagged: <"A test annotation.">
+				""");
+
+		assertNoIssues();
+
+		List<Diagnostic> diagnostics = getDiagnostics().get(uri);
+		Assertions.assertEquals(1, diagnostics.size());
+		Diagnostic diagnostic = diagnostics.get(0);
+		Assertions.assertEquals("Annotation 'tagged' is never used", diagnostic.getMessage());
+		Assertions.assertEquals(DiagnosticSeverity.Hint, diagnostic.getSeverity());
+		Assertions.assertTrue(diagnostic.getTags().contains(DiagnosticTag.Unnecessary));
+	}
+
+	/** {@code AnnotationRef.annotation}. */
+	@Test
+	void annotationAppliedToATypeIsNotFlagged() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				annotation tagged: <"A test annotation.">
+
+				type Marked:
+					[rootType]
+					[tagged]
+					a string (1..1)
+				""");
+
+		assertNoIssues();
+		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+	}
+
+	/**
+	 * {@code AnnotationRef.attribute} — {@code [tagged tag]}, the shape the builtin {@code [metadata key]}
+	 * uses. The grammar always names the annotation before its attribute, so this cannot be reduced to a pure
+	 * container-rollup case; it does confirm that naming an attribute does not somehow <em>stop</em> the
+	 * annotation counting as used.
+	 */
+	@Test
+	void annotationUsedWithOneOfItsAttributesIsNotFlagged() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				annotation tagged: <"A test annotation.">
+					tag string (0..1)
+
+				type Marked:
+					[rootType]
+					[tagged tag]
+					a string (1..1)
+				""");
+
+		assertNoIssues();
+		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+	}
+
+	/**
+	 * An annotation has no {@code Annotations} fragment in its grammar rule, so {@code [suppressUnused]}
+	 * cannot be written on one even though {@code Annotation} extends {@code RootElement} and therefore
+	 * <em>is</em> {@code Annotated} in the EMF model. Recorded as a test so the gap is visible rather than
+	 * discovered.
+	 */
+	@Test
+	void suppressUnusedCannotBeWrittenOnAnAnnotation() {
+		createModel("model.rosetta", """
+				namespace test
+
+				annotation tagged:
+					[suppressUnused]
+				""");
+
+		List<String> messages = getDiagnostics().values().stream()
+				.flatMap(List::stream)
+				.map(Diagnostic::getMessage)
+				.toList();
+		Assertions.assertTrue(messages.stream().anyMatch(m -> m.contains("suppressUnused")),
+				"Expected [suppressUnused] on an annotation to be a syntax error, but got " + messages);
+	}
+
+	// ----------------------------------------------------------------- schemas
+
+	@Test
+	void unusedSchemaIsMarkedAsUnnecessary() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				schema fixml XML
+				""");
+
+		assertNoIssues();
+
+		List<Diagnostic> diagnostics = getDiagnostics().get(uri);
+		Assertions.assertEquals(1, diagnostics.size());
+		Diagnostic diagnostic = diagnostics.get(0);
+		Assertions.assertEquals("Schema 'fixml' is never used", diagnostic.getMessage());
+		Assertions.assertEquals(DiagnosticSeverity.Hint, diagnostic.getSeverity());
+		Assertions.assertTrue(diagnostic.getTags().contains(DiagnosticTag.Unnecessary));
+	}
+
+	/** {@code TransformAnnotation.ref} — {@code [ingest fixml]}. */
+	@Test
+	void schemaUsedByTransformAnnotationIsNotFlagged() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				schema fixml XML
+
+				type Foo:
+					[rootType]
+					a string (1..1)
+
+				func IngestFoo:
+					[ingest fixml]
+					inputs:
+						input string (1..1)
+					output:
+						result Foo (1..1)
+					set result: Foo { a: input }
+				""");
+
+		assertNoIssues();
+		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+	}
+
+	/** A schema's grammar rule does have {@code Annotations*}, so it is one of the suppressible kinds. */
+	@Test
+	void suppressUnusedOptsOutForSchema() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				schema fixml XML
+					[suppressUnused]
+				""");
+
+		assertNoIssues();
+		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+	}
+
+	// ------------------------------------------------------------ rule sources
+
+	@Test
+	void unusedRuleSourceIsMarkedAsUnnecessary() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				type Input:
+					[rootType]
+					a string (1..1)
+
+				type Output:
+					[rootType]
+					a string (1..1)
+
+				reporting rule Extract from Input:
+					extract a
+
+				rule source Overrides
+				{
+					Output:
+						+ a
+							[ruleReference Extract]
+				}
+				""");
+
+		assertNoIssues();
+
+		Assertions.assertEquals(List.of("Rule source 'Overrides' is never used"), unusedMarkers(uri));
+		Assertions.assertTrue(getDiagnostics().get(uri).stream()
+						.allMatch(d -> d.getSeverity() == DiagnosticSeverity.Hint),
+				"A rule source marker must be a Hint like every other unused marker");
+	}
+
+	/** {@code RosettaReport.ruleSource} — {@code with source}. */
+	@Test
+	void ruleSourceUsedByReportIsNotFlagged() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				body Authority Auth
+				corpus Auth Doc
+
+				type Input:
+					[rootType]
+					a string (1..1)
+
+				type Output:
+					[rootType]
+					a string (1..1)
+
+				eligibility rule Eligible from Input:
+					True
+
+				reporting rule Extract from Input:
+					extract a
+
+				rule source Overrides
+				{
+					Output:
+						+ a
+							[ruleReference Extract]
+				}
+
+				report Auth Doc in T+1
+					from Input when Eligible
+					with type Output
+					with source Overrides
+				""");
+
+		assertNoIssues();
+		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+	}
+
+	/** {@code RosettaExternalRuleSource.superSource} — {@code rule source Derived extends Base}. */
+	@Test
+	void ruleSourceUsedAsSuperSourceIsNotFlagged() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				type Input:
+					[rootType]
+					a string (1..1)
+					b string (1..1)
+
+				type Output:
+					[rootType]
+					a string (1..1)
+					b string (1..1)
+
+				reporting rule ExtractA from Input:
+					extract a
+
+				reporting rule ExtractB from Input:
+					extract b
+
+				rule source Base
+				{
+					Output:
+						+ a
+							[ruleReference ExtractA]
+				}
+
+				rule source Derived extends Base
+				{
+					Output:
+						+ b
+							[ruleReference ExtractB]
+				}
+				""");
+
+		assertNoIssues();
+		// `Base` is used by `Derived`'s `extends`. `Derived` itself is used by nothing — non-transitively, so
+		// an unused rule source does not stop the source it extends counting as used.
+		Assertions.assertEquals(List.of("Rule source 'Derived' is never used"), unusedMarkers(uri));
+	}
+
+	// -------------------------------------------------- documentation elements
+
+	@Test
+	void unusedBodyCorpusAndSegmentAreMarkedAsUnnecessary() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				body Authority Auth
+				corpus Regulation Doc
+				segment field
+				""");
+
+		assertNoIssues();
+		Assertions.assertEquals(
+				List.of("Body 'Auth' is never used", "Corpus 'Doc' is never used", "Segment 'field' is never used"),
+				unusedMarkers(uri));
+	}
+
+	/**
+	 * {@code RegulatoryDocumentReference.body} / {@code .corpusList} and {@code RosettaSegmentRef.segment} —
+	 * all three reached through a {@code [docReference]}, which hangs off the {@code References} fragment on
+	 * an attribute and therefore rolls up to the enclosing type.
+	 */
+	@Test
+	void bodyCorpusAndSegmentUsedByDocReferenceAreNotFlagged() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				body Authority Auth
+				corpus Regulation Doc
+				segment field
+
+				type Documented:
+					[rootType]
+					a string (1..1)
+						[docReference Auth Doc field "1.2" provision "As described."]
+				""");
+
+		assertNoIssues();
+		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+	}
+
+	/**
+	 * {@code RosettaCorpus.body} — a corpus naming its body. Also the clearest illustration of
+	 * non-transitivity: {@code Auth} counts as used even though the only thing using it is itself unused.
+	 */
+	@Test
+	void bodyUsedByCorpusIsNotFlagged() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				body Authority Auth
+				corpus Regulation Auth Doc
+				""");
+
+		assertNoIssues();
+		Assertions.assertEquals(List.of("Corpus 'Doc' is never used"), unusedMarkers(uri));
+	}
+
+	// ------------------------------------------------------- library functions
+
+	@Test
+	void unusedLibraryFunctionIsMarkedAsUnnecessary() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				library function Twice(x number) number
+				""");
+
+		assertNoIssues();
+
+		List<Diagnostic> diagnostics = getDiagnostics().get(uri);
+		Assertions.assertEquals(1, diagnostics.size());
+		Diagnostic diagnostic = diagnostics.get(0);
+		Assertions.assertEquals("Library function 'Twice' is never used", diagnostic.getMessage());
+		Assertions.assertEquals(DiagnosticSeverity.Hint, diagnostic.getSeverity());
+		Assertions.assertTrue(diagnostic.getTags().contains(DiagnosticTag.Unnecessary));
+	}
+
+	/**
+	 * {@code RosettaSymbolReference.symbol} — a library function is a {@code RosettaCallableWithArgs}, so it
+	 * is called exactly like a {@code func}.
+	 */
+	@Test
+	void calledLibraryFunctionIsNotFlagged() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				library function Twice(x number) number
+
+				func Caller:
+					[suppressUnused]
+					output: result number (1..1)
+					set result: Twice(21)
+				""");
+
+		assertNoIssues();
+		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+	}
+
+	// ------------------------------------------------- built-in kinds and guards
+
+	/**
+	 * {@code basicType} and {@code recordType} are candidates like any other named root element — it is the
+	 * built-in <em>files</em> that are excluded, not these kinds.
+	 */
+	@Test
+	void unusedBasicAndRecordTypesAreMarkedAsUnnecessary() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				basicType money
+
+				recordType interval
+				{
+					low int
+					high int
+				}
+				""");
+
+		assertNoIssues();
+		Assertions.assertEquals(
+				List.of("Basic type 'money' is never used", "Record type 'interval' is never used"),
+				unusedMarkers(uri));
+	}
+
+	@Test
+	void basicAndRecordTypesUsedAsAttributeTypesAreNotFlagged() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				basicType money
+
+				recordType interval
+				{
+					low int
+					high int
+				}
+
+				type Quote:
+					[rootType]
+					price money (1..1)
+					window interval (1..1)
+				""");
+
+		assertNoIssues();
+		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+	}
+
+	/**
+	 * A {@code metaType} is never the target of a cross-reference — it is resolved by name through the index
+	 * — so the walk could never see one as used and a marker on it would be permanent. It is therefore
+	 * excluded from candidacy outright, unlike every other named root element.
+	 */
+	@Test
+	void metaTypeIsNeverFlagged() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				metaType reference string
+				""");
+
+		assertNoIssues();
+		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+	}
+
+	/**
+	 * A {@code report} is the one root element with no name, so it is not a candidate: there would be nowhere
+	 * to put the marker. Nothing can reference a report either, so without the naming rule every report in
+	 * every model would be flagged.
+	 */
+	@Test
+	void reportIsNeverFlagged() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				body Authority Auth
+				corpus Auth Doc
+
+				type Input:
+					[rootType]
+					a string (1..1)
+
+				type Output:
+					[rootType]
+					a string (1..1)
+
+				eligibility rule Eligible from Input:
+					True
+
+				report Auth Doc in T+1
+					from Input when Eligible
+					with type Output
+				""");
+
+		assertNoIssues();
+		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+	}
+
+	/**
+	 * The built-in models are read-only and none of the kinds they declare can carry {@code [suppressUnused]},
+	 * so every builtin a given model happens not to use would otherwise be marked permanently. Asserted
+	 * across every file the server published diagnostics for, since the builtins are part of the resource set
+	 * and do get validated.
+	 */
+	@Test
+	void builtinDeclarationsAreNeverFlagged() {
+		createModel("model.rosetta", """
+				namespace test
+
+				type Foo:
+					[rootType]
+					a string (1..1)
+				""");
+
+		assertNoIssues();
+
+		List<String> builtinMarkers = getDiagnostics().entrySet().stream()
+				.filter(e -> e.getKey().endsWith("basictypes.rosetta") || e.getKey().endsWith("annotations.rosetta"))
+				.flatMap(e -> e.getValue().stream())
+				.filter(d -> d.getTags() != null && d.getTags().contains(DiagnosticTag.Unnecessary))
+				.map(Diagnostic::getMessage)
+				.sorted()
+				.toList();
+		Assertions.assertEquals(List.of(), builtinMarkers);
 	}
 
 	// ----------------------------------------------------------- interoperation

@@ -1,8 +1,9 @@
 package com.regnosys.rosetta.validation;
 
-import com.regnosys.rosetta.rosetta.RosettaEnumeration;
+import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
+import com.regnosys.rosetta.rosetta.RosettaMetaType;
+import com.regnosys.rosetta.rosetta.RosettaNamed;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
-import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.Annotated;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Data;
@@ -21,8 +22,11 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Detects declarations that are never referenced anywhere in the resource set: functions, types
- * (including choice types), enumerations and rules.
+ * Detects declarations that are never referenced anywhere in the resource set.
+ *
+ * <p>Every <em>named</em> root element is a candidate — see {@link #isCandidate}. That is deliberately a rule
+ * rather than a list of kinds, so a root element added to the grammar in future is covered by default instead
+ * of being a silent omission.
  *
  * <p>This is intentionally <em>not</em> a validator {@code @Check}: it is consumed only by the
  * editor/LSP layer (see {@code UnusedElementResourceValidator} in {@code rune-ide}) so that the
@@ -71,11 +75,11 @@ public class UnusedElementHelper {
      * anywhere in the resource set, and is not exempt.
      */
     public boolean isUnused(RosettaRootElement element) {
-        if (!isCandidate(element) || isExempt(element)) {
-            return false;
-        }
         Resource resource = element.eResource();
         if (resource == null || resource.getResourceSet() == null) {
+            return false;
+        }
+        if (!isCandidate(element, resource) || isExempt(element)) {
             return false;
         }
         ElementId id = idOf(element);
@@ -86,40 +90,69 @@ public class UnusedElementHelper {
     }
 
     /**
-     * Whether the marker applies to this kind of declaration at all. Reports, rule sources, annotations
-     * and type aliases are deliberately excluded — see the plan in {@code .claude/plans}.
+     * Whether the marker applies to this declaration at all: every root element that carries a name does,
+     * with two exclusions that are matters of correctness rather than policy.
+     *
+     * <p>The naming requirement excludes {@code RosettaReport}, the one root element with no name — there
+     * would be nothing to attach the marker to.
+     *
+     * @see #isMetaType
+     * @see #isInBuiltinResource
      */
-    private boolean isCandidate(RosettaRootElement element) {
-        return element instanceof Function
-                || element instanceof Data
-                || element instanceof RosettaEnumeration
-                || element instanceof RosettaRule;
+    private boolean isCandidate(RosettaRootElement element, Resource resource) {
+        if (isMetaType(element) || isInBuiltinResource(resource)) {
+            return false;
+        }
+        return element instanceof RosettaNamed named && named.getName() != null;
     }
 
+    /**
+     * A {@code metaType} is named, but nothing in the grammar ever cross-references one, so the walk below
+     * could never see it as used and the marker would be permanent. Meta types are resolved by <em>name</em>
+     * against the index instead ({@code RosettaConfigExtension#findMetaTypes}, itself deprecated pending
+     * their removal from the model): a model writes {@code [metadata reference]}, whose
+     * {@code AnnotationRef.attribute} points at the {@code reference} attribute of the builtin
+     * {@code metadata} <em>annotation</em>, never at the {@code metaType reference string} declaration.
+     */
+    private boolean isMetaType(RosettaRootElement element) {
+        return element instanceof RosettaMetaType;
+    }
+
+    /**
+     * The built-in models are read-only, so a marker on one could never be acted upon, and none of the kinds
+     * they declare — basic types, record types, library functions, type aliases, annotations — can carry
+     * {@code [suppressUnused]}. Every builtin a given model happens not to use would therefore be marked
+     * permanently.
+     *
+     * <p>{@code IncomingReferenceChanges} in {@code rune-ide} skips the same resources, for the related
+     * reason that revalidating a resource which can never carry a marker cannot change its diagnostics.
+     */
+    private boolean isInBuiltinResource(Resource resource) {
+        return RosettaBuiltinsService.isBuiltinResource(resource.getURI());
+    }
+
+    /**
+     * Whether an otherwise unreferenced declaration should be left unmarked anyway.
+     *
+     * <p>{@code [suppressUnused]} is handled generically for anything {@code Annotated}, which in practice
+     * means a function, type, enumeration or schema. The other candidate kinds have no {@code Annotations}
+     * fragment in their grammar rule, so the annotation cannot be written on them and their annotation list
+     * is always empty — that is accepted rather than worked around, so those kinds have no opt-out.
+     */
     private boolean isExempt(RosettaRootElement element) {
+        if (element instanceof Annotated annotated && isAnnotatedWith(annotated, SUPPRESS_UNUSED_ANNOTATION)) {
+            return true;
+        }
         if (element instanceof Function function) {
             return isExemptFunction(function);
         }
-        if (element instanceof Data data) {
-            // A root type is an entry point by definition: it is what a model exposes to be built.
-            return isAnnotatedWith(data, SUPPRESS_UNUSED_ANNOTATION)
-                    || isAnnotatedWith(data, ROOT_TYPE_ANNOTATION);
-        }
-        if (element instanceof RosettaEnumeration enumeration) {
-            return isAnnotatedWith(enumeration, SUPPRESS_UNUSED_ANNOTATION);
-        }
-        // A rule has no exemptions: it is not `Annotated` in the grammar, so `[suppressUnused]` cannot be
-        // written on one, and it has no analogue of `superFunction`, `transform` or an empty body.
-        return false;
+        // A root type is an entry point by definition: it is what a model exposes to be built.
+        return element instanceof Data data && isAnnotatedWith(data, ROOT_TYPE_ANNOTATION);
     }
 
     private boolean isExemptFunction(Function function) {
         // Function extensions are not independent entry points.
         if (function.getSuperFunction() != null) {
-            return true;
-        }
-        // Explicit opt-out for intentional entry points (e.g. consumed by downstream models).
-        if (isAnnotatedWith(function, SUPPRESS_UNUSED_ANNOTATION)) {
             return true;
         }
         // Transform functions (ingest/projection) are entry points called from outside the model.

@@ -26,11 +26,32 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 
 public class RosettaBuiltinsService {
-	private final String[] basicTypesPath = new String[]{"model", "basictypes.rosetta"};
-	private final String[] annotationsPath = new String[]{"model", "annotations.rosetta"};
-	
+	public static final String BASIC_TYPES_FILE_NAME = "basictypes.rosetta";
+	public static final String ANNOTATIONS_FILE_NAME = "annotations.rosetta";
+
+	private final String[] basicTypesPath = new String[]{"model", BASIC_TYPES_FILE_NAME};
+	private final String[] annotationsPath = new String[]{"model", ANNOTATIONS_FILE_NAME};
+
 	public final URI basicTypesURI = URI.createHierarchicalURI("classpath", null, null, basicTypesPath, null, null);
 	public final URI annotationsURI = URI.createHierarchicalURI("classpath", null, null, annotationsPath, null, null);
+
+	/**
+	 * Whether the given resource URI is one of the built-in models shipped in {@code rune-runtime}.
+	 *
+	 * <p>Matched on the file name rather than against {@link #basicTypesURI} / {@link #annotationsURI},
+	 * because the builtins reach a resource set under their physical location rather than their canonical
+	 * {@code classpath:} URI — and under more than one physical location when the same builtin is present in
+	 * several jars on the classpath. Both {@link #getModel} and
+	 * {@code RosettaNamesAreUniqueValidationHelper#isBuiltin} already work around the same thing; see the TODO
+	 * on the latter for the root fix.
+	 */
+	public static boolean isBuiltinResource(URI uri) {
+		if (uri == null) {
+			return false;
+		}
+		String fileName = uri.trimFragment().lastSegment();
+		return BASIC_TYPES_FILE_NAME.equals(fileName) || ANNOTATIONS_FILE_NAME.equals(fileName);
+	}
 	public final URL basicTypesURL = Objects.requireNonNull(this.getClass().getResource(basicTypesURI.path()));
 	public final URL annotationsURL = Objects.requireNonNull(this.getClass().getResource(annotationsURI.path()));
 	

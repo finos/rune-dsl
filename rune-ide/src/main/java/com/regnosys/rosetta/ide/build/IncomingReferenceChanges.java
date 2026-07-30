@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -15,8 +14,8 @@ import org.eclipse.xtext.resource.IReferenceDescription;
 import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.IResourceDescriptions;
 
+import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
-import com.regnosys.rosetta.rosetta.simple.SimplePackage;
 
 /**
  * Given the deltas a build produced, works out which <em>other</em> resources declare an element whose set
@@ -52,17 +51,6 @@ import com.regnosys.rosetta.rosetta.simple.SimplePackage;
  * because of a change within itself.
  */
 final class IncomingReferenceChanges {
-    /**
-     * The kinds of declaration that can carry an "is never used" marker, mirroring
-     * {@code UnusedElementHelper#isCandidate}. Matched with {@code isSuperTypeOf} so that subclasses —
-     * {@code Choice} of {@code Data}, {@code FunctionDispatch} of {@code Function} — are included.
-     */
-    private static final List<EClass> MARKER_CAPABLE_KINDS = List.of(
-            SimplePackage.Literals.FUNCTION,
-            SimplePackage.Literals.DATA,
-            RosettaPackage.Literals.ROSETTA_ENUMERATION,
-            RosettaPackage.Literals.ROSETTA_RULE);
-
     private IncomingReferenceChanges() {
     }
 
@@ -139,10 +127,11 @@ final class IncomingReferenceChanges {
     /**
      * The URI fragments of the marker-capable declarations the given resource exports. Empty when the
      * description is missing, which happens only for a resource the build deleted — one there is no point
-     * revalidating either way.
+     * revalidating either way — and empty for the built-in models, which are read-only and which
+     * {@code UnusedElementHelper} therefore never marks.
      */
     private static Set<String> markerCapableFragments(IResourceDescription description) {
-        if (description == null) {
+        if (description == null || RosettaBuiltinsService.isBuiltinResource(description.getURI())) {
             return Set.of();
         }
         Set<String> fragments = new HashSet<>();
@@ -158,8 +147,19 @@ final class IncomingReferenceChanges {
         return fragments;
     }
 
+    /**
+     * Mirrors {@code UnusedElementHelper#isCandidate}: a named root element, excluding {@code metaType}.
+     *
+     * <p>Both conditions are needed. Requiring a name excludes {@code RosettaReport}; requiring a root
+     * element excludes the named things <em>nested</em> inside declarations — {@code RosettaFeature} extends
+     * {@code RosettaNamed}, so attributes, enum values and record features are all named too, and treating
+     * them as marker-capable in their own right would defeat the pruning below. They are still accounted for,
+     * as containment paths under the declaration that owns them; see {@link #retainMarkerRelevant}.
+     */
     private static boolean isMarkerCapable(EClass eClass) {
-        return MARKER_CAPABLE_KINDS.stream().anyMatch(kind -> kind.isSuperTypeOf(eClass));
+        return RosettaPackage.Literals.ROSETTA_ROOT_ELEMENT.isSuperTypeOf(eClass)
+                && RosettaPackage.Literals.ROSETTA_NAMED.isSuperTypeOf(eClass)
+                && !RosettaPackage.Literals.ROSETTA_META_TYPE.isSuperTypeOf(eClass);
     }
 
     /**

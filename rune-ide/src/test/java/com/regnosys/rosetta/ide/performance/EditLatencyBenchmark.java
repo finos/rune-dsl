@@ -65,9 +65,24 @@ public class EditLatencyBenchmark extends AbstractRosettaLanguageServerTest {
     private static final String MODEL_DIR_PROPERTY = "rune.benchmark.model.dir";
     private static final int ROUNDS = 3;
 
-    /** `func Name:` / `type Name:` / `enum Name:` at the start of a line. */
+    /**
+     * `func Name:` / `type Name:` / `enum Name:` at the start of a line. Used to pick the edit anchors, so
+     * deliberately narrow: keeping it to the three kinds it has always covered is what makes a run comparable
+     * with an earlier one. Use {@link #DECLARATION_KEYWORD} for counting, not this.
+     */
     private static final Pattern DECLARATION =
             Pattern.compile("^(func|type|enum)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*[:(]", Pattern.MULTILINE);
+
+    /**
+     * The leading keyword of any root-element declaration, for the census denominators. Names are not
+     * captured — {@code corpus} alone takes an optional body reference and an optional display string before
+     * its name — because a count is all the census needs.
+     */
+    private static final Pattern DECLARATION_KEYWORD = Pattern.compile(
+            "^(func|type|choice|enum|typeAlias|annotation|schema|basicType|recordType|metaType"
+                    + "|body|corpus|segment|report|reporting rule|eligibility rule|rule source"
+                    + "|library function)\\s",
+            Pattern.MULTILINE);
 
     private final Map<String, String> originalContents = new LinkedHashMap<>();
     private final Map<String, Integer> versions = new LinkedHashMap<>();
@@ -107,11 +122,19 @@ public class EditLatencyBenchmark extends AbstractRosettaLanguageServerTest {
                 .filter(diagnostic -> diagnostic.getTags() != null
                         && diagnostic.getTags().contains(DiagnosticTag.Unnecessary))
                 .collect(Collectors.groupingBy(
-                        diagnostic -> diagnostic.getMessage().split(" ")[0], TreeMap::new, Collectors.counting()));
+                        // The noun is everything before the quoted name. Splitting on the first space instead
+                        // would fold "Type alias" into "Type" and silently overstate the type count.
+                        diagnostic -> diagnostic.getMessage().substring(0, diagnostic.getMessage().indexOf(" '")),
+                        TreeMap::new, Collectors.counting()));
         Map<String, Integer> declarationsByKeyword = new TreeMap<>();
-        Stream.of("func", "type", "enum").forEach(
-                keyword -> declarationsByKeyword.put(keyword, declarations(keyword).size()));
-        System.out.println("  markers: " + markersByKind + " against declarations " + declarationsByKeyword);
+        originalContents.values().forEach(content -> {
+            Matcher matcher = DECLARATION_KEYWORD.matcher(content);
+            while (matcher.find()) {
+                declarationsByKeyword.merge(matcher.group(1), 1, Integer::sum);
+            }
+        });
+        System.out.println("  markers: " + markersByKind);
+        System.out.println("  declarations: " + declarationsByKeyword);
     }
 
     private record Edit(String uri, String newContent) {

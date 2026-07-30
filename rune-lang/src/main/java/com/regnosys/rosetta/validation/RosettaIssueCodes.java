@@ -53,12 +53,25 @@ public interface RosettaIssueCodes {
 	static final String UNUSED_ENUMERATION = PREFIX + "unusedEnumeration";
 	static final String UNUSED_REPORTING_RULE = PREFIX + "unusedReportingRule";
 	static final String UNUSED_ELIGIBILITY_RULE = PREFIX + "unusedEligibilityRule";
+	static final String UNUSED_TYPE_ALIAS = PREFIX + "unusedTypeAlias";
+	static final String UNUSED_ANNOTATION = PREFIX + "unusedAnnotation";
+	static final String UNUSED_SCHEMA = PREFIX + "unusedSchema";
+
+	/**
+	 * The fallback code for a declaration kind with no code of its own: the documentation elements
+	 * ({@code body}, {@code corpus}, {@code segment}), {@code rule source}, the builtin-shaped kinds
+	 * ({@code basicType}, {@code recordType}, {@code library function}) and any root element the grammar
+	 * gains in future. Splitting one of these out into its own code later is not a breaking change, because
+	 * consumers gate on {@link #UNUSED_CODES} rather than on an individual code.
+	 */
+	static final String UNUSED_DECLARATION = PREFIX + "unusedDeclaration";
 
 	/**
 	 * The issue codes for declarations that are never referenced. These are the codes the language server
-	 * renders as a faded editor marker rather than a problem; the codes are kept separate per kind so that
-	 * kind-specific quick fixes remain possible.
+	 * renders as a faded editor marker rather than a problem; the codes are kept separate per kind, where a
+	 * kind-specific quick fix is plausible, so that one remains possible.
 	 */
 	static final Set<String> UNUSED_CODES = Set.of(
-			UNUSED_FUNCTION, UNUSED_TYPE, UNUSED_ENUMERATION, UNUSED_REPORTING_RULE, UNUSED_ELIGIBILITY_RULE);
+			UNUSED_FUNCTION, UNUSED_TYPE, UNUSED_ENUMERATION, UNUSED_REPORTING_RULE, UNUSED_ELIGIBILITY_RULE,
+			UNUSED_TYPE_ALIAS, UNUSED_ANNOTATION, UNUSED_SCHEMA, UNUSED_DECLARATION);
 }
