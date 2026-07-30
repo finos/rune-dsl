@@ -16,6 +16,8 @@
 
 package com.regnosys.rosetta.validation;
 
+import java.util.Set;
+
 public interface RosettaIssueCodes {
 	
 	static final String PREFIX = "RosettaIssueCodes.";
@@ -47,4 +49,16 @@ public interface RosettaIssueCodes {
     static final String CHANGED_EXTENDED_FUNCTION_PARAMETERS = PREFIX + "changedExtendedFunctionParameters";
 
 	static final String UNUSED_FUNCTION = PREFIX + "unusedFunction";
+	static final String UNUSED_TYPE = PREFIX + "unusedType";
+	static final String UNUSED_ENUMERATION = PREFIX + "unusedEnumeration";
+	static final String UNUSED_REPORTING_RULE = PREFIX + "unusedReportingRule";
+	static final String UNUSED_ELIGIBILITY_RULE = PREFIX + "unusedEligibilityRule";
+
+	/**
+	 * The issue codes for declarations that are never referenced. These are the codes the language server
+	 * renders as a faded editor marker rather than a problem; the codes are kept separate per kind so that
+	 * kind-specific quick fixes remain possible.
+	 */
+	static final Set<String> UNUSED_CODES = Set.of(
+			UNUSED_FUNCTION, UNUSED_TYPE, UNUSED_ENUMERATION, UNUSED_REPORTING_RULE, UNUSED_ELIGIBILITY_RULE);
 }

@@ -149,7 +149,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(ruleAURI, 2, 22, "string", "int");
 
 		// There should be a type error in rule B
-		List<Diagnostic> issues = getDiagnostics().get(ruleBURI);
+		List<Diagnostic> issues = filterSevereDiagnostics(ruleBURI);
 		Assertions.assertEquals(1, issues.size());
 		Assertions.assertEquals(
 				"Expected type `int`, but got `string` instead. Rule `A` cannot be called with type `string`",
@@ -253,7 +253,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		assertNoIssues();
 
 		makeChange(nsA, 2, 0, "", "break me");
-		List<Diagnostic> issues = getDiagnostics().get(nsB);
+		List<Diagnostic> issues = filterSevereDiagnostics(nsB);
 
         assertIssues("""
                 Error [4, 25] -> [4, 28]: Couldn't resolve reference to RosettaType 'a.Y'.
@@ -290,7 +290,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		assertNoIssues();
 
 		makeChange(nsA, 2, 0, "", "break me");
-		List<Diagnostic> issues = getDiagnostics().get(nsB);
+		List<Diagnostic> issues = filterSevereDiagnostics(nsB);
 
         assertIssues("""
                 Error [5, 25] -> [5, 30]: Couldn't resolve reference to RosettaSymbol 'a.SSS'.
@@ -321,7 +321,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		assertNoIssues();
 
 		makeChange(nsA, 2, 0, "", "break me");
-		List<Diagnostic> issues = getDiagnostics().get(nsB);
+		List<Diagnostic> issues = filterSevereDiagnostics(nsB);
 
         assertIssues("""
                 Error [3, 25] -> [3, 28]: Couldn't resolve reference to RosettaSymbol 'a.Y'.

@@ -4,12 +4,19 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.IReferenceDescription;
 import org.eclipse.xtext.resource.IResourceDescription;
+import org.eclipse.xtext.resource.IResourceDescriptions;
+
+import com.regnosys.rosetta.rosetta.RosettaPackage;
+import com.regnosys.rosetta.rosetta.simple.SimplePackage;
 
 /**
  * Given the deltas a build produced, works out which <em>other</em> resources declare an element whose set
@@ -20,7 +27,7 @@ import org.eclipse.xtext.resource.IResourceDescription;
  * affected, and its notion of "affected" is one-directional: a candidate is affected when it references
  * something that changed. The reverse — the declaring file must be revalidated because a <em>call site</em>
  * elsewhere appeared or disappeared — has no equivalent, so the marker goes stale (see
- * {@code UnusedFunctionStalenessTest}).
+ * {@code UnusedElementStalenessTest}).
  *
  * <p><b>Why this is computed after the build rather than in {@code IResourceDescription.Manager#isAffected}.</b>
  * Overriding {@code isAffected} is the natural place and cannot work. At the point
@@ -45,6 +52,17 @@ import org.eclipse.xtext.resource.IResourceDescription;
  * because of a change within itself.
  */
 final class IncomingReferenceChanges {
+    /**
+     * The kinds of declaration that can carry an "is never used" marker, mirroring
+     * {@code UnusedElementHelper#isCandidate}. Matched with {@code isSuperTypeOf} so that subclasses —
+     * {@code Choice} of {@code Data}, {@code FunctionDispatch} of {@code Function} — are included.
+     */
+    private static final List<EClass> MARKER_CAPABLE_KINDS = List.of(
+            SimplePackage.Literals.FUNCTION,
+            SimplePackage.Literals.DATA,
+            RosettaPackage.Literals.ROSETTA_ENUMERATION,
+            RosettaPackage.Literals.ROSETTA_RULE);
+
     private IncomingReferenceChanges() {
     }
 
@@ -52,9 +70,19 @@ final class IncomingReferenceChanges {
      * The resources that need revalidating because one of the given deltas added or removed a reference to
      * an element they declare. Resources in {@code alreadyBuilt} are left out, since the build has just
      * revalidated them anyway.
+     *
+     * <p>{@code index} is the build's resulting index, used to establish what kind of declaration each
+     * changed reference points at so that references which can never move a marker are ignored — see
+     * {@link #markerCapableFragments}. Without that, this pass fires for every changed cross-resource
+     * reference of any kind, and since references between types are the norm in a real model rather than
+     * the exception, widening the marker beyond functions would also widen this trigger to most edits.
      */
-    static Set<URI> resourcesToRevalidate(Collection<IResourceDescription.Delta> deltas, Set<URI> alreadyBuilt) {
+    static Set<URI> resourcesToRevalidate(
+            Collection<IResourceDescription.Delta> deltas,
+            Set<URI> alreadyBuilt,
+            IResourceDescriptions index) {
         Set<URI> result = new LinkedHashSet<>();
+        Map<URI, Set<String>> markerCapableFragmentsByResource = new HashMap<>();
         for (IResourceDescription.Delta delta : deltas) {
             Map<URI, Set<URI>> before = targetsByDeclaringResource(delta.getOld());
             Map<URI, Set<URI>> after = targetsByDeclaringResource(delta.getNew());
@@ -67,7 +95,16 @@ final class IncomingReferenceChanges {
                 if (alreadyBuilt.contains(candidate) || result.contains(candidate)) {
                     continue;
                 }
-                if (!targetsIn(before, candidate).equals(targetsIn(after, candidate))) {
+                Set<String> markerCapable = markerCapableFragmentsByResource.computeIfAbsent(
+                        candidate, uri -> markerCapableFragments(index.getResourceDescription(uri)));
+                if (markerCapable.isEmpty()) {
+                    // Nothing this resource declares can carry a marker (e.g. the builtin annotations), so
+                    // revalidating it could not change its diagnostics.
+                    continue;
+                }
+                Set<URI> relevantBefore = retainMarkerRelevant(targetsIn(before, candidate), markerCapable);
+                Set<URI> relevantAfter = retainMarkerRelevant(targetsIn(after, candidate), markerCapable);
+                if (!relevantBefore.equals(relevantAfter)) {
                     result.add(candidate);
                 }
             }
@@ -97,5 +134,66 @@ final class IncomingReferenceChanges {
 
     private static Set<URI> targetsIn(Map<URI, Set<URI>> targetsByResource, URI resource) {
         return targetsByResource.getOrDefault(resource, Set.of());
+    }
+
+    /**
+     * The URI fragments of the marker-capable declarations the given resource exports. Empty when the
+     * description is missing, which happens only for a resource the build deleted — one there is no point
+     * revalidating either way.
+     */
+    private static Set<String> markerCapableFragments(IResourceDescription description) {
+        if (description == null) {
+            return Set.of();
+        }
+        Set<String> fragments = new HashSet<>();
+        for (IEObjectDescription exported : description.getExportedObjects()) {
+            if (!isMarkerCapable(exported.getEClass())) {
+                continue;
+            }
+            String fragment = exported.getEObjectURI().fragment();
+            if (fragment != null) {
+                fragments.add(fragment);
+            }
+        }
+        return fragments;
+    }
+
+    private static boolean isMarkerCapable(EClass eClass) {
+        return MARKER_CAPABLE_KINDS.stream().anyMatch(kind -> kind.isSuperTypeOf(eClass));
+    }
+
+    /**
+     * Keeps only the targets that could move a marker: a marker-capable declaration itself, or something
+     * nested inside one. The nested case matters because {@code UnusedElementHelper} attributes a reference
+     * to the declaration containing its target, so a reference to an attribute counts as a use of its type
+     * and a reference to an enum value as a use of its enumeration.
+     *
+     * <p>Containment is read off the URI fragment, whose EMF form is a path of containment steps
+     * ({@code //@elements.3/@attributes.1}) — no {@code IFragmentProvider} is bound, so this holds. The
+     * trailing separator is what stops {@code //@elements.3} from matching {@code //@elements.30}.
+     */
+    private static Set<URI> retainMarkerRelevant(Set<URI> targets, Set<String> markerCapableFragments) {
+        Set<URI> relevant = new HashSet<>();
+        for (URI target : targets) {
+            if (isDeclaredByMarkerCapable(target.fragment(), markerCapableFragments)) {
+                relevant.add(target);
+            }
+        }
+        return relevant;
+    }
+
+    /** Walks up the containment path, so the cost is the nesting depth rather than the number of exports. */
+    private static boolean isDeclaredByMarkerCapable(String fragment, Set<String> markerCapableFragments) {
+        for (String current = fragment; current != null; current = containerFragment(current)) {
+            if (markerCapableFragments.contains(current)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static String containerFragment(String fragment) {
+        int lastStep = fragment.lastIndexOf('/');
+        return lastStep <= 0 ? null : fragment.substring(0, lastStep);
     }
 }

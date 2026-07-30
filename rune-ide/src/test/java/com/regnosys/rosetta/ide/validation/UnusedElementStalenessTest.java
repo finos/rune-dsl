@@ -28,7 +28,7 @@ import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTes
  * adding/removing the call site does not also produce "Unused import" warnings that would obscure the
  * assertions.
  */
-public class UnusedFunctionStalenessTest extends AbstractRosettaLanguageServerValidationTest {
+public class UnusedElementStalenessTest extends AbstractRosettaLanguageServerValidationTest {
 
 	private static final String UNUSED_F = "Function 'F' is never used";
 

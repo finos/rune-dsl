@@ -74,13 +74,13 @@ public class RosettaStatefulIncrementalBuilder extends InternalStatefulIncrement
     /**
      * Revalidates resources that the build did not touch but whose declarations gained or lost a reference
      * from a resource it did, so that markers describing how a declaration is used elsewhere — currently
-     * "unused function", see {@code UnusedFunctionResourceValidator} — do not go stale. See
+     * "is never used", see {@code UnusedElementResourceValidator} — do not go stale. See
      * {@link IncomingReferenceChanges} for how the set is derived, and why it can only be derived here and
      * not in {@code IResourceDescription.Manager#isAffected}.
      *
      * <p>These resources are unloaded first. Their content has not changed, so revalidating them in place
      * would just hand back the previous answer: {@code CachingResourceValidator} memoises issues per
-     * resource, {@code UnusedFunctionHelper} memoises the set of called functions per resource, and both
+     * resource, {@code UnusedElementHelper} memoises the declarations each resource references, and both
      * caches live on the resource, which {@code ProjectManager#createFreshResourceSet} carries over from
      * one build to the next. Unloading is how the regular affected-resource path gets a clean slate too.
      *
@@ -89,7 +89,8 @@ public class RosettaStatefulIncrementalBuilder extends InternalStatefulIncrement
     private void revalidateResourcesWithChangedIncomingReferences(IncrementalBuilder.Result result) {
         List<IResourceDescription.Delta> deltas = result.getAffectedResources();
         Set<URI> built = deltas.stream().map(IResourceDescription.Delta::getUri).collect(Collectors.toSet());
-        Set<URI> toRevalidate = IncomingReferenceChanges.resourcesToRevalidate(deltas, built);
+        Set<URI> toRevalidate = IncomingReferenceChanges.resourcesToRevalidate(
+                deltas, built, result.getIndexState().getResourceDescriptions());
         if (toRevalidate.isEmpty()) {
             return;
         }
