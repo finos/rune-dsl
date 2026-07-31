@@ -942,7 +942,7 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 	}
 
 	/**
-	 * {@code AnnotationRef.attribute} — {@code [tagged tag]}, the shape the builtin {@code [metadata key]}
+	 * {@code AnnotationRef.attribute} — {@code [tagged key]}, the shape the builtin {@code [metadata key]}
 	 * uses. The grammar always names the annotation before its attribute, so this cannot be reduced to a pure
 	 * container-rollup case; it does confirm that naming an attribute does not somehow <em>stop</em> the
 	 * annotation counting as used.
@@ -953,11 +953,11 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 				namespace test
 
 				annotation tagged: <"A test annotation.">
-					tag string (0..1)
+					key string (0..1)
 
 				type Marked:
 					[rootType]
-					[tagged tag]
+					[tagged key]
 					a string (1..1)
 				""");
 
