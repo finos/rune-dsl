@@ -255,6 +255,53 @@ public class RosettaPathTest {
     }
     
     @Test
+    void shouldStartWithItself() {
+    	RosettaPath p = RosettaPath.valueOf("a.b.c");
+    	assertThat(p.startsWith(p), is(true));
+    }
+
+    @Test
+    void shouldStartWithProperPrefix() {
+    	RosettaPath p = RosettaPath.valueOf("a.b.c.d");
+    	assertThat(p.startsWith(RosettaPath.valueOf("a")), is(true));
+    	assertThat(p.startsWith(RosettaPath.valueOf("a.b")), is(true));
+    	assertThat(p.startsWith(RosettaPath.valueOf("a.b.c")), is(true));
+    }
+
+    @Test
+    void shouldNotStartWithLongerPath() {
+    	assertThat(RosettaPath.valueOf("a.b").startsWith(RosettaPath.valueOf("a.b.c")), is(false));
+    }
+
+    @Test
+    void shouldNotStartWithDivergingPrefix() {
+    	RosettaPath p = RosettaPath.valueOf("a.b.c");
+    	assertThat(p.startsWith(RosettaPath.valueOf("a.x")), is(false));
+    	assertThat(p.startsWith(RosettaPath.valueOf("x.b")), is(false));
+    }
+
+    @Test
+    void shouldTakeIndexIntoAccountWhenMatchingPrefix() {
+    	RosettaPath p = RosettaPath.valueOf("a.b(1).c");
+    	assertThat(p.startsWith(RosettaPath.valueOf("a.b(1)")), is(true));
+    	assertThat(p.startsWith(RosettaPath.valueOf("a.b(2)")), is(false));
+    }
+
+    @Test
+    void shouldTreatZeroIndexAsEquivalentToNoIndexWhenMatchingPrefix() {
+    	assertThat(RosettaPath.valueOf("a.b(0).c").startsWith(RosettaPath.valueOf("a.b")), is(true));
+    	assertThat(RosettaPath.valueOf("a.b.c").startsWith(RosettaPath.valueOf("a.b(0)")), is(true));
+    }
+
+    @Test
+    void shouldReportDepth() {
+    	assertThat(RosettaPath.valueOf("a").depth(), is(1));
+    	assertThat(RosettaPath.valueOf("a.b.c").depth(), is(3));
+    	// depth must stay in step with allElements(), which startsWith relies on
+    	assertThat(RosettaPath.valueOf("a.b.c.d").depth(), is(RosettaPath.valueOf("a.b.c.d").allElements().size()));
+    }
+
+    @Test
     void shouldMatchEquivalentPaths() {
     	RosettaPath path1 = RosettaPath.valueOf("root.a.b.c")
         		.newSubPath(Element.create("d", OptionalInt.of(0), of())) // index of 0 is equivalent to empty index
