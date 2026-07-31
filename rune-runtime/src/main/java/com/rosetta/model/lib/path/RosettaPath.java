@@ -43,7 +43,10 @@ public class RosettaPath implements Comparable<RosettaPath> {
 	
     private final RosettaPath parent;
     private final Element element;
-    
+    // number of elements from the root to this path (inclusive); cached so startsWith()
+    // can align two paths without repeatedly rebuilding LinkedLists via allElements()
+    private final int depth;
+
     //a Path that has 0 notional elements so when you create a subPath from it you get a path with 1 element
     public static class NullPath extends RosettaPath {
     	public NullPath() {
@@ -58,6 +61,7 @@ public class RosettaPath implements Comparable<RosettaPath> {
     private RosettaPath(RosettaPath parent, Element element) {
         this.parent = parent;
         this.element = element;
+        this.depth = (parent == null ? 0 : parent.depth) + 1;
     }
 
     public static RosettaPath createPath(RosettaPath parent, Element element) {
@@ -148,6 +152,13 @@ public class RosettaPath implements Comparable<RosettaPath> {
         return parent;
     }
 
+    /**
+     * @return the number of elements from the root to this path, inclusive.
+     */
+    public int depth() {
+        return depth;
+    }
+
     public Element getElement() {
         return element;
     }
@@ -173,20 +184,29 @@ public class RosettaPath implements Comparable<RosettaPath> {
     	return parent.containsPath(subPath);
     }
 
+    // Walks the parent chains directly instead of materialising allElements() LinkedLists,
+    // which showed up as the dominant CPU/allocation hotspot when flattening large samples
+    // (many startsWith checks against many meta paths) - see STORY-1843.
     public boolean startsWith(RosettaPath other) {
-        LinkedList<RosettaPath.Element> list = this.allElements();
-        LinkedList<RosettaPath.Element> prefix = other.allElements();
-        if (prefix == null || prefix.isEmpty()) {
+        if (other.depth == 0) {
             return true;
         }
-        if (list == null || list.size() < prefix.size()) {
+        if (this.depth < other.depth) {
             return false;
         }
 
-        for (int i = 0; i < prefix.size(); i++) {
-            if (!list.get(i).equals(prefix.get(i))) {
+        RosettaPath cursor = this;
+        for (int toSkip = this.depth - other.depth; toSkip > 0; toSkip--) {
+            cursor = cursor.parent;
+        }
+
+        RosettaPath otherCursor = other;
+        while (otherCursor != null) {
+            if (!Objects.equals(cursor.element, otherCursor.element)) {
                 return false;
             }
+            cursor = cursor.parent;
+            otherCursor = otherCursor.parent;
         }
 
         return true;

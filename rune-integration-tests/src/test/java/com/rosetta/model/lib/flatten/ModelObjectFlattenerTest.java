@@ -15,6 +15,7 @@ import javax.inject.Inject;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CancellationException;
 import java.util.stream.Collectors;
 
 @ExtendWith(InjectionExtension.class)
@@ -117,6 +118,75 @@ class ModelObjectFlattenerTest {
 				bar(1).b3(0): VALUE19
 				bar(1).b3(1): VALUE20
 				""");
+	}
+
+	@Test
+	void flattenTestWithMetadataNestedSeveralLevelsDeep() throws IOException {
+		JavaTestModel model = modelService.toJavaTestModel("""
+				namespace test
+
+				type Root:
+				    outer Outer (0..*)
+
+				type Outer:
+				    inner Inner (0..*)
+
+				type Inner:
+				    [metadata key]
+				    val string (0..*)
+				        [metadata scheme]
+				""").compile();
+
+		RosettaModelObject instance = model.evaluateExpression(RosettaModelObject.class, """
+				Root {
+		            outer: [
+		                Outer {
+		                    inner: [
+		                        Inner { val: ["A", "B"] },
+		                        Inner { val: ["C"] }
+		                    ]
+		                },
+		                Outer {
+		                    inner: [
+		                        Inner { val: ["D"] }
+		                    ]
+		                }
+		            ]
+		        }
+				""");
+
+		assertFlattenedValues(instance, """
+				outer(0).inner(0).val(0): A
+				outer(0).inner(0).val(1): B
+				outer(0).inner(1).val(0): C
+				outer(1).inner(0).val(0): D
+				""");
+	}
+
+	@Test
+	void flattenAbandonsWorkWhenTheCallingThreadIsInterrupted() throws IOException {
+		JavaTestModel model = modelService.toJavaTestModel("""
+				namespace test
+
+				type Root:
+				    a string (0..1)
+				""").compile();
+		RosettaModelObject instance = model.evaluateExpression(RosettaModelObject.class, """
+				Root { a: "VALUE" }
+				""");
+
+		// sanity check: it flattens normally when not interrupted
+		Assertions.assertEquals(1, modelObjectFlattener.flatten(instance).size());
+
+		try {
+			Thread.currentThread().interrupt();
+			Assertions.assertThrows(CancellationException.class, () -> modelObjectFlattener.flatten(instance));
+			Assertions.assertTrue(Thread.currentThread().isInterrupted(),
+				"the interrupt flag must be left set for the caller to act on");
+		} finally {
+			// clear the flag so it cannot leak into other tests on this thread
+			Thread.interrupted();
+		}
 	}
 
 	@Test
