@@ -64,9 +64,19 @@ The [Examples](#6-examples) section contains illustrations of all the _special_ 
 
 The serialized form contains the model, version and fully qualified type name. These will always appear at the top of the JSON.
 
+A model's `@model` name and its default serialisation format are both configured in that model's `rune-config.yml`, which must live at `src/main/resources` in the model project. For example, the demo model's [rune-config.yml](https://github.com/rosetta-models/demo/blob/master/rosetta-source/src/main/resources/rune-config.yml):
+
+``` yaml
+model:
+  name: DEMO
+  defaultSerialisationFormat: RUNE_JSON
+```
+
+`defaultSerialisationFormat` determines which format Rosetta and tooling (e.g. tests, pipelines) use to serialize/deserialize the model's objects when no format is explicitly requested. Set it to `RUNE_JSON` to use this format, or `JSON` to use the legacy format. Each model must ship its own `rune-config.yml` to opt in — a model with no config of its own does not inherit a parent model's setting, and defaults to the legacy format.
+
 | New | Example | Desc |
 | --- | --- | --- |
-| `@model` | `"@model": "DEMO"` | This is the short name for the model, as defined in a config file (see the demo model's [rune-config.yml](https://github.com/rosetta-models/demo/blob/master/rosetta-source/src/main/resources/rune-config.yml)). |
+| `@model` | `"@model": "DEMO"` | This is the short name for the model, as configured in `rune-config.yml` (see above). |
 | `@type` | `"@type": "demo.emissions.model.VehicleOwnership"` | This is formatted as the namespace followed by the type name in the model with the case matching the model (AKA "Fully Qualified Type Name") |
 | `@version` | `"@version": "0.0.1"` | This is the release of the model, as defined by the model's published release (e.g. a [GitHub Release](https://github.com/rosetta-models/demo/releases)) |
 
