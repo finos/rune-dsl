@@ -169,8 +169,9 @@ final class IncomingReferenceChanges {
      * and a reference to an enum value as a use of its enumeration.
      *
      * <p>Containment is read off the URI fragment, whose EMF form is a path of containment steps
-     * ({@code //@elements.3/@attributes.1}) — no {@code IFragmentProvider} is bound, so this holds. The
-     * trailing separator is what stops {@code //@elements.3} from matching {@code //@elements.30}.
+     * ({@code //@elements.3/@attributes.1}) — no {@code IFragmentProvider} is bound, so this holds. Each
+     * step along the path is compared for whole-string equality rather than as a string prefix, so
+     * {@code //@elements.3} cannot match a target under {@code //@elements.30}.
      */
     private static Set<URI> retainMarkerRelevant(Set<URI> targets, Set<String> markerCapableFragments) {
         Set<URI> relevant = new HashSet<>();
