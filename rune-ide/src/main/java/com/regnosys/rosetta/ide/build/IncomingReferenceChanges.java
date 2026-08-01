@@ -126,9 +126,13 @@ final class IncomingReferenceChanges {
 
     /**
      * The URI fragments of the marker-capable declarations the given resource exports. Empty when the
-     * description is missing, which happens only for a resource the build deleted — one there is no point
-     * revalidating either way — and empty for the built-in models, which are read-only and which
-     * {@code UnusedElementHelper} therefore never marks.
+     * description is missing: for a resource the build deleted (no point revalidating it either way), but
+     * also for a candidate owned by another project, since the index passed in covers only the building
+     * project — a cross-project incoming-reference change is therefore silently skipped and that marker
+     * goes stale. Accepted: known deployments run a single-project workspace, so the case is unreachable;
+     * a real fix would have to run this diff at the workspace level (see the design record). Also empty
+     * for the built-in models, which are read-only and which {@code UnusedElementHelper} therefore never
+     * marks.
      */
     private static Set<String> markerCapableFragments(IResourceDescription description) {
         if (description == null || RosettaBuiltinsService.isBuiltinResource(description.getURI())) {
