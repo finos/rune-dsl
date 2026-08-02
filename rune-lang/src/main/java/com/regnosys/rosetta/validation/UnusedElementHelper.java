@@ -206,15 +206,40 @@ public class UnusedElementHelper {
      * Collects every declaration referenced from the given resource, by walking its live AST and following
      * each object's cross-references.
      *
-     * <p>The cross-reference index is not a viable alternative here, even though it does contain these
-     * references: {@code createReferenceDescriptions} is not overridden by
-     * {@code RosettaResourceDescriptionStrategy}, so it descends into expressions and records calls just
-     * like any other cross-reference. What rules it out is that
+     * <p>The cross-reference index — read directly or through Xtext's {@code IReferenceFinder}, which wraps
+     * the same data — is not a viable alternative here, even though it does contain these references
+     * ({@code createReferenceDescriptions} is not overridden by {@code RosettaResourceDescriptionStrategy},
+     * so it descends into expressions and records calls just like any other cross-reference). Three things
+     * rule it out:
+     *
+     * <ul>
+     * <li><b>Same-file references are not indexed.</b>
      * {@code DefaultResourceDescriptionStrategy.isResolvedAndExternal} only records references that cross a
-     * resource boundary, so same-file references are invisible to it; and {@code IResourceDescriptions}
-     * exposes no target-to-source reverse lookup, so answering "is this declaration referenced anywhere"
-     * would still require scanning every resource's outgoing references. The live AST walk sees both
-     * same-file and cross-file references uniformly with one mechanism.
+     * resource boundary, so an index-based check would still need this walk for the candidate's own file —
+     * two mechanisms instead of one. And {@code IResourceDescriptions} exposes no target-to-source reverse
+     * lookup, so the cross-file half would still scan every resource's outgoing references —
+     * {@code ReferenceFinder} does exactly that, on every call, with no caching.</li>
+     * <li><b>The index is stale exactly when this code runs.</b> This helper executes inside validation,
+     * i.e. inside {@code IncrementalBuilder}'s per-resource loop, while that same loop is still populating
+     * the index: a dirty-but-unprocessed resource's description deliberately reports no references at all
+     * ({@code ResolvedResourceDescription#getReferenceDescriptions} returns empty). With two files dirty in
+     * one build, the only call site of a declaration can be invisible while its declaring file is validated
+     * — a false "unused" marker, and one nothing later corrects: the post-build repair pass
+     * ({@code IncomingReferenceChanges} in {@code rune-ide}) diffs settled before/after index states, to
+     * which transient mid-build wrongness is invisible. Other index consumers do not share this problem —
+     * find-references and friends run as read requests that {@code RequestManager} orders after the build,
+     * so they only ever see the settled index; validation is the one place that would read it mid-mutation.
+     * The live AST is the very state being validated, so it cannot be stale by construction.</li>
+     * <li><b>The index records raw positional URIs.</b> No {@code IFragmentProvider} is bound (see
+     * {@link ElementId} for why that matters), so recorded targets renumber whenever declarations move, and
+     * attributing a reference to the root element declaring its target would mean re-deriving
+     * {@link #declaringRootElement} in URI-fragment space over those fragile fragments.</li>
+     * </ul>
+     *
+     * <p>The live AST walk instead sees same-file and cross-file references uniformly, with one mechanism,
+     * from state that is current by definition. Only the second objection is about <em>when</em> the check
+     * runs rather than what it reads — so even a redesign that computed markers after the build would keep
+     * this walk and gain nothing from the index.
      *
      * <p>Two properties make a single generic walk correct for every reference shape in the grammar, so
      * that a new grammar rule cannot silently reintroduce a false positive:
