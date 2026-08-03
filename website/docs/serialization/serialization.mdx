@@ -44,29 +44,41 @@ The following table illustrates all the _special_ attributes that are provided a
 
 | New | Example | Model Syntax | Specification |
 | --- | --- | --- | --- |
-|  `@model` | `"@model": "DEMO"` | N/A | [See 4.1](#41-include-model-version-and-type-in-top-level-json) |
-|  `@version` | `"@version": "0.0.1"` | N/A | [See 4.1](#41-include-model-version-and-type-in-top-level-json) |
-|  `@type` | `"@type": "demo.emissions.model.VehicleOwnership"` | N/A | [See 4.1](#41-include-model-version-and-type-in-top-level-json) |
-|  `@data`| `"@data": "attribute-data"` | [See 4.3](#43-types-with-meta) | [See 4.3](#43-types-with-meta) |
-|  `@key` | `"@key": "abcd1234"` | [See 4.4.1.1](#4411-global-key) | [See 4.4.1.1](#4411-global-key) |
-|  `@ref` | `"@ref": "abcd1234"` | [See 4.4.1.2](#4412-global-reference) | [See 4.4.1.2](#4412-global-reference) |
-|  `@key:external` | `"@key:external": "my-external-key"` | [See 4.4.1.1](#4411-global-key)  | [See 4.4.1.1](#4411-global-key)  |
-|  `@ref:external` | `"@ref:external": "my-external-key"` | [See 4.4.1.2](#4412-global-reference)  | [See 4.4.1.2](#4412-global-reference)  |
-|  `@key:scoped` | `"@key:scoped": "my-scoped-key"` | [See 4.4.2.1](#4421-location-key)  | [See 4.4.2.1](#4421-location-key)  |
-|  `@ref:scoped` | `"@ref:scoped": "my-scoped-key"` | [See 4.4.2.2](#4422-address-reference)  | [See 4.4.2.2](#4422-address-reference)  |
-|  `@scheme` | `"@scheme": "urn:iso:std:iso:3166"` | [See 4.4.3](#443-scheme) | [See 4.4.3](#443-scheme) |
+|  `@model` | `"@model": "DEMO"` | N/A | [See 4.2](#42-include-model-version-and-type-in-top-level-json) |
+|  `@version` | `"@version": "0.0.1"` | N/A | [See 4.2](#42-include-model-version-and-type-in-top-level-json) |
+|  `@type` | `"@type": "demo.emissions.model.VehicleOwnership"` | N/A | [See 4.2](#42-include-model-version-and-type-in-top-level-json) |
+|  `@data`| `"@data": "attribute-data"` | [See 4.4](#44-types-with-meta) | [See 4.4](#44-types-with-meta) |
+|  `@key` | `"@key": "abcd1234"` | [See 4.5.1.1](#4511-global-key) | [See 4.5.1.1](#4511-global-key) |
+|  `@ref` | `"@ref": "abcd1234"` | [See 4.5.1.2](#4512-global-reference) | [See 4.5.1.2](#4512-global-reference) |
+|  `@key:external` | `"@key:external": "my-external-key"` | [See 4.5.1.1](#4511-global-key)  | [See 4.5.1.1](#4511-global-key)  |
+|  `@ref:external` | `"@ref:external": "my-external-key"` | [See 4.5.1.2](#4512-global-reference)  | [See 4.5.1.2](#4512-global-reference)  |
+|  `@key:scoped` | `"@key:scoped": "my-scoped-key"` | [See 4.5.2.1](#4521-location-key)  | [See 4.5.2.1](#4521-location-key)  |
+|  `@ref:scoped` | `"@ref:scoped": "my-scoped-key"` | [See 4.5.2.2](#4522-address-reference)  | [See 4.5.2.2](#4522-address-reference)  |
+|  `@scheme` | `"@scheme": "urn:iso:std:iso:3166"` | [See 4.5.3](#453-scheme) | [See 4.5.3](#453-scheme) |
 
 The [Examples](#6-examples) section contains illustrations of all the _special_ attributes.
 
 ## 4. Implementation
 
-### 4.1 Include Model, Version and Type in Top level JSON
+### 4.1 Default Serialisation Format
+
+A model's default serialisation format is configured in that model's `rune-config.yml`, which must live at `src/main/resources` in the model project. For example, the demo model's [rune-config.yml](https://github.com/rosetta-models/demo/blob/master/rosetta-source/src/main/resources/rune-config.yml):
+
+``` yaml
+model:
+  name: DEMO
+  defaultSerialisationFormat: RUNE_JSON
+```
+
+`defaultSerialisationFormat` determines which format Rosetta and tooling (e.g. tests, pipelines) use to serialize/deserialize the model's objects when no format is explicitly requested. Set it to `RUNE_JSON` to use this format, or `JSON` to use the legacy format. Each model must ship its own `rune-config.yml` to opt in — a model with no config of its own does not inherit a parent model's setting, and defaults to the legacy format.
+
+### 4.2 Include Model, Version and Type in Top level JSON
 
 The serialized form contains the model, version and fully qualified type name. These will always appear at the top of the JSON.
 
 | New | Example | Desc |
 | --- | --- | --- |
-| `@model` | `"@model": "DEMO"` | This is the short name for the model, as defined in a config file (see the demo model's [rune-config.yml](https://github.com/rosetta-models/demo/blob/master/rosetta-source/src/main/resources/rune-config.yml)). |
+| `@model` | `"@model": "DEMO"` | This is the short name for the model, matching the root of the model's namespace. |
 | `@type` | `"@type": "demo.emissions.model.VehicleOwnership"` | This is formatted as the namespace followed by the type name in the model with the case matching the model (AKA "Fully Qualified Type Name") |
 | `@version` | `"@version": "0.0.1"` | This is the release of the model, as defined by the model's published release (e.g. a [GitHub Release](https://github.com/rosetta-models/demo/releases)) |
 
@@ -78,7 +90,7 @@ The serialized form contains the model, version and fully qualified type name. T
 }
 ```
 
-### 4.2 Include Type when required
+### 4.3 Include Type when required
 
 When required, for example when a Choice type or Base class is used as an attribute, serialization includes `@type` to determine the subclass/choice.
 
@@ -99,7 +111,7 @@ For example, the demo model defines `Vehicle` as a choice between `ElectricCar`,
 }
 ```
 
-### 4.3 Types with meta
+### 4.4 Types with meta
 
 The serialized form reflects that any attribute with a meta annotation (regardless of cardinality or type i.e. basic, complex or enum) will ALWAYS be an object.
 
@@ -152,7 +164,7 @@ type DrivingLicence:
    ]
 ```
 
-### 4.4 Referencing Model
+### 4.5 Referencing Model
 
 The referencing mechanism in Rune model definitions uses keywords for keys and references. The following table compares how these keywords are serialized in each format:
 
@@ -166,7 +178,7 @@ The referencing mechanism in Rune model definitions uses keywords for keys and r
 
 > NOTE 2: In the Rune serialization format the `location`, `address` and `scope` annotations now all converge on the use of `@key:scoped` and `@ref:scoped`. The external keys and refs (`@key:external` and `@ref:external`) will remain for now, but may also be able to be replaced by `@key` and `@ref` in the future. Serialization needs to support existing behaviour, whilst paving a way forward so all Rune referencing mechanisms can be unified.
 
-#### 4.4.1 Global/External References
+#### 4.5.1 Global/External References
 
 References and external references follow the structure and naming in the model.
 
@@ -176,7 +188,7 @@ The external references i.e. `externalKey`/`@key:external` are user defined data
 
 Serialization is just taking the data in these _special_ attributes, not defining it i.e. the content of `@key` and `@key:external` is outside the scope of serialization.
 
-##### 4.4.1.1 Global key
+##### 4.5.1.1 Global key
 
 The demo model's `VehicleOrderItem` type is annotated with `[metadata key]`, so it can be the target of a reference:
 
@@ -219,7 +231,7 @@ type VehicleOrderItem:
   }
 ```
 
-##### 4.4.1.2 Global reference
+##### 4.5.1.2 Global reference
 
 The `OrderConfirmation` type's `orderItemReference` attribute is annotated with `[metadata reference]` and points at an `VehicleOrderItem` by its key:
 
@@ -266,7 +278,7 @@ type OrderHistory:
 
 The first entry references the `@key` of an identifier defined elsewhere in the document, while the second holds a literal value.
 
-#### 4.4.2 Scoped references
+#### 4.5.2 Scoped references
 
 Scoped references also follow the structure in the model, and use `@key:scoped` and `@ref:scoped`.
 
@@ -278,7 +290,7 @@ The `scope` annotation allows the scope of the reference to be defined e.g. to a
 
 More information on scoped references can be found in the [Metadata documentation](/docs/modelling-components/metadata#3-cross-referencing).
 
-##### 4.4.2.1 Location (key)
+##### 4.5.2.1 Location (key)
 
 The demo model's `VehicleOrder` type marks its `customer` attribute as a `location`, so that other parts of the document can point at it:
 
@@ -316,9 +328,9 @@ type VehicleOrder:
   }
 ```
 
-Where the annotated attribute is a complex type rather than a basic type, `@key:scoped` is merged into the serialized object alongside its other attributes and no `@data` wrapper is used — just as `@key` is in [4.4.1.1](#4411-global-key).
+Where the annotated attribute is a complex type rather than a basic type, `@key:scoped` is merged into the serialized object alongside its other attributes and no `@data` wrapper is used — just as `@key` is in [4.5.1.1](#4511-global-key).
 
-##### 4.4.2.2 Address (reference)
+##### 4.5.2.2 Address (reference)
 
 The `OrderConfirmation` type's `customerReference` attribute is an `address` (i.e. reference) that points at the customer's `customer` location (i.e. key):
 
@@ -350,11 +362,11 @@ type OrderConfirmation:
    }
 ```
 
-#### 4.4.3 Scheme
+#### 4.5.3 Scheme
 
 Scheme gives control over the set of values that an attribute can take, without having to define this attribute as an enumeration in the model.
 
-##### 4.4.3.1 Single cardinality attribute with scheme
+##### 4.5.3.1 Single cardinality attribute with scheme
 
 The demo model's `DrivingLicence` type annotates its `countryOfIssuance` attribute with `[metadata scheme]`, allowing the country code to be qualified by the coding scheme it is drawn from:
 
@@ -378,7 +390,7 @@ The demo model's `DrivingLicence` type annotates its `countryOfIssuance` attribu
    }
 ```
 
-##### 4.4.3.2 Multiple cardinality (List) attribute, some with scheme
+##### 4.5.3.2 Multiple cardinality (List) attribute, some with scheme
 
 For example, if the driving licence's multi-cardinality `vehicleEntitlement` attribute were annotated with `[metadata scheme]`, values may individually carry a scheme:
 
