@@ -2,6 +2,7 @@ package com.regnosys.rosetta.config.file;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.inject.Singleton;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -17,6 +18,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Locates the Rune configuration file(s) to read.
+ * <p>
+ * Bound as a singleton so that whoever creates the injector can still point the provider at an
+ * explicit config file and/or a project classloader <em>after</em> the injector exists (see
+ * {@code RosettaStandaloneSetup#createInjectorAndDoEMFRegistration()}). The configuration itself is
+ * only read lazily, on first use, so post-creation configuration is picked up.
+ */
+@Singleton
 public class RuneConfigurationFileProvider implements Provider<URL> {
     public static final String FILE_NAME = "rune-config.yml";
     public static final String LEGACY_FILE_NAME = "rosetta-config.yml";
@@ -25,8 +35,8 @@ public class RuneConfigurationFileProvider implements Provider<URL> {
     private static final AtomicBoolean LEGACY_WARNING_LOGGED = new AtomicBoolean(false);
 
     // When null, the default name is resolved with a fallback to the legacy name.
-    private final String fileName;
-    private final boolean loadFromClasspath;
+    private String fileName;
+    private boolean loadFromClasspath;
     // The classloader used to discover configuration files on the classpath. When null, the thread
     // context classloader is used. In a Maven build the thread context classloader is the plugin
     // realm, which does not see the project's compile dependencies, so the plugin sets this to a
@@ -38,6 +48,16 @@ public class RuneConfigurationFileProvider implements Provider<URL> {
     }
     public static RuneConfigurationFileProvider createFromClasspath(String fileName) {
         return new RuneConfigurationFileProvider(true, fileName);
+    }
+
+    /**
+     * Points this provider at an explicit configuration file on disk, instead of discovering the
+     * primary config on the classpath. Dependency configs are still discovered from the classpath
+     * (see {@link #getResources()}).
+     */
+    public void setConfigFile(String configFile) {
+        this.loadFromClasspath = false;
+        this.fileName = configFile;
     }
 
     /** Sets the classloader used to discover configuration files on the classpath. */
