@@ -4,10 +4,8 @@
  */
 package com.regnosys.rosetta;
 
-import com.google.inject.Binder;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Module;
 import com.regnosys.rosetta.config.file.RuneConfigurationFileProvider;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
 import com.regnosys.rosetta.rosetta.expression.ExpressionPackage;
@@ -27,6 +25,10 @@ public class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
         new RosettaStandaloneSetup().createInjectorAndDoEMFRegistration();
     }
 
+    /**
+     * Points the setup at an explicit configuration file, instead of discovering the project's own
+     * config on the classpath. Applied by {@link #createInjectorAndDoEMFRegistration()}.
+     */
     public RosettaStandaloneSetup setConfigFile(String configFile) {
         this.configFile = configFile;
         return this;
@@ -37,6 +39,7 @@ public class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
      * the classpath. In a Maven build the thread context classloader is the plugin realm, which does
      * not see the project's compile dependencies, so the plugin passes a classloader over the project
      * classpath here so that dependency {@code serializationConfig} entries are unioned in.
+     * Applied by {@link #createInjectorAndDoEMFRegistration()}.
      */
     public RosettaStandaloneSetup setClasspathClassLoader(ClassLoader classpathClassLoader) {
         this.classpathClassLoader = classpathClassLoader;
@@ -45,17 +48,7 @@ public class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
 
     @Override
     public Injector createInjector() {
-        return Guice.createInjector(new RosettaRuntimeModule(), binder -> {
-            if (configFile != null || classpathClassLoader != null) {
-                RuneConfigurationFileProvider fileProvider = configFile != null
-                        ? RuneConfigurationFileProvider.createFromFile(configFile)
-                        : new RuneConfigurationFileProvider();
-                if (classpathClassLoader != null) {
-                    fileProvider.setClassLoader(classpathClassLoader);
-                }
-                binder.bind(RuneConfigurationFileProvider.class).toInstance(fileProvider);
-            }
-        });
+        return Guice.createInjector(new RosettaRuntimeModule());
     }
 
 
@@ -71,6 +64,43 @@ public class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
         if (!EPackage.Registry.INSTANCE.containsKey(ExpressionPackage.eNS_URI)) {
             EPackage.Registry.INSTANCE.put(ExpressionPackage.eNS_URI, ExpressionPackage.eINSTANCE);
         }
-        return super.createInjectorAndDoEMFRegistration();
+        Injector injector = super.createInjectorAndDoEMFRegistration();
+        configureRuneConfigurationFileProvider(injector);
+        return injector;
+    }
+
+    /**
+     * Applies {@link #setConfigFile(String)}/{@link #setClasspathClassLoader(ClassLoader)} to the
+     * injector's {@link RuneConfigurationFileProvider}.
+     * <p>
+     * This deliberately happens <em>after</em> the injector has been built, rather than as an extra
+     * Guice module inside {@link #createInjector()}: virtually every subclass of this setup (the IDE
+     * and language-server setups here, and custom generator setups downstream) overrides
+     * {@code createInjector()} to mix in its own module, and any binding added there would be
+     * silently dropped by those subclasses. Dropping it means the model's own {@code rune-config.yml}
+     * is not read and, worse, dependency configs are looked up through the thread context
+     * classloader — which in a Maven build is the plugin realm and cannot see the project's model
+     * dependencies at all. Configuring the (singleton) provider afterwards works whatever the
+     * subclass does with {@code createInjector()}. The configuration is only read lazily on first
+     * use, so this is still in time.
+     */
+    private void configureRuneConfigurationFileProvider(Injector injector) {
+        if (configFile == null && classpathClassLoader == null) {
+            return;
+        }
+        RuneConfigurationFileProvider fileProvider = injector.getInstance(RuneConfigurationFileProvider.class);
+        if (fileProvider != injector.getInstance(RuneConfigurationFileProvider.class)) {
+            throw new IllegalStateException(RuneConfigurationFileProvider.class.getSimpleName()
+                    + " is not bound as a singleton in " + getClass().getName() + "'s injector, so the configured "
+                    + "config file and classpath classloader would not reach the instance that reads the "
+                    + "configuration. Remove the non-singleton binding of "
+                    + RuneConfigurationFileProvider.class.getName() + " from the runtime module.");
+        }
+        if (configFile != null) {
+            fileProvider.setConfigFile(configFile);
+        }
+        if (classpathClassLoader != null) {
+            fileProvider.setClassLoader(classpathClassLoader);
+        }
     }
 }
