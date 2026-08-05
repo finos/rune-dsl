@@ -11,7 +11,6 @@ import java.util.Map
 import com.regnosys.rosetta.types.RDataType
 import com.rosetta.util.DottedPath
 import com.regnosys.rosetta.rosetta.simple.LabelAnnotation
-import com.regnosys.rosetta.rosetta.RosettaRule
 import java.util.List
 import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
@@ -25,8 +24,6 @@ import java.util.stream.Collectors
 import java.util.HashSet
 import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil
-import com.regnosys.rosetta.rules.RuleReferenceService
-import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation
 import com.regnosys.rosetta.generator.java.RObjectJavaClassGenerator
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
@@ -38,7 +35,6 @@ class LabelProviderGenerator extends RObjectJavaClassGenerator<RFunction, RGener
 	@Inject JavaTypeTranslator typeTranslator
 	@Inject DeepFeatureCallUtil deepPathUtil
 	@Inject LabelProviderGeneratorUtil util
-	@Inject RuleReferenceService ruleService
 	@Inject AnnotationPathExpressionUtil annotationPathUtil
 	
 	
@@ -56,20 +52,6 @@ class LabelProviderGenerator extends RObjectJavaClassGenerator<RFunction, RGener
 		typeTranslator.toLabelProviderJavaClass(function)
 	}
 	override protected generateClass(RFunction function, RGeneratedJavaClass<?> labelClass, String version, JavaClassScope classScope) {
-		val functionOrigin = function.EObject
-		val attributeToRuleMap = if (functionOrigin instanceof RosettaReport) {
-			ruleService.traverse(
-				functionOrigin.ruleSource,
-				function.output.RMetaAnnotatedType.RType as RDataType,
-				newHashMap,
-				[map,context|
-					map
-				]
-			)
-		} else {
-			emptyMap
-		}
-		
 		val constructorScope = classScope.createMethodScope("constructor")
 
 		val Map<RDataType, Map<DottedPath, String>> labelsPerNode = newLinkedHashMap
@@ -81,7 +63,7 @@ class LabelProviderGenerator extends RObjectJavaClassGenerator<RFunction, RGener
 			outputType
 		}
 		if (startNode instanceof RDataType) {
-			buildLabelGraph(startNode, labelsPerNode, edgesPerNode, attributeToRuleMap)
+			buildLabelGraph(startNode, labelsPerNode, edgesPerNode)
 			pruneLabelGraph(labelsPerNode, edgesPerNode)
 		}
 		constructorScope.createIdentifier(startNode, "startNode")
@@ -126,7 +108,7 @@ class LabelProviderGenerator extends RObjectJavaClassGenerator<RFunction, RGener
 		'''«Arrays».asList(«path.stream.map[StringEscapeUtils.escapeJava(it)].collect(Collectors.joining("\", \"", "\"", "\""))»)'''
 	}
 	
-	private def void buildLabelGraph(RDataType currentNode, Map<RDataType, Map<DottedPath, String>> labelsPerNode, Map<RDataType, Map<String, RDataType>> edgesPerNode, Map<RAttribute, RosettaRule> attributeToRuleMap) {
+	private def void buildLabelGraph(RDataType currentNode, Map<RDataType, Map<DottedPath, String>> labelsPerNode, Map<RDataType, Map<String, RDataType>> edgesPerNode) {
 		if (labelsPerNode.containsKey(currentNode)) {
 			// Circular reference: we already computed this node.
 			return
@@ -137,7 +119,7 @@ class LabelProviderGenerator extends RObjectJavaClassGenerator<RFunction, RGener
 		edgesPerNode.put(currentNode, edges)
 		for (attr : currentNode.allAttributes) {
 			val attrPath = DottedPath.of(attr.name)
-			
+
 			// 1. Register labels on the type of this attribute
 			var attrType = attr.RMetaAnnotatedType.RType
 			val t = if (attrType instanceof RChoiceType) {
@@ -147,9 +129,9 @@ class LabelProviderGenerator extends RObjectJavaClassGenerator<RFunction, RGener
 			}
 			if (t instanceof RDataType) {
 				edges.put(attr.name, t)
-				buildLabelGraph(t, labelsPerNode, edgesPerNode, attributeToRuleMap)
+				buildLabelGraph(t, labelsPerNode, edgesPerNode)
 			}
-			
+
 			// 2. Register label annotations
 			attr.allLabelAnnotations.forEach[
 				registerLabelAnnotation(it, attrPath, labels)
