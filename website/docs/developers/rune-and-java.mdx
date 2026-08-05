@@ -108,6 +108,21 @@ Vehicle prunedVehicle = builder.build();
 assert prunedVehicle.getOwner().getAddress() == null;
 ```
 
+### 1.3. Label providers
+When a type carries a `[label ...]` annotation on one of its own, inherited, or overridden attributes, its generated pojo interface carries a `@RuneLabelProvider` annotation pointing at a generated `LabelProvider` class rooted at that type:
+
+``` Haskell
+@RuneDataType(value="EuropeanParliamentReport", builder=EuropeanParliamentReport.EuropeanParliamentReportBuilderImpl.class, version="x.y.z")
+@RuneLabelProvider(labelProvider=EuropeanParliamentReportLabelProvider.class)
+public interface EuropeanParliamentReport extends RosettaModelObject {
+    // Getters, builder, process(...) — as in any other generated interface
+}
+```
+
+The provider class is generated at `<namespace>.labels.types.<Type>LabelProvider`, for any type in the model with at least one direct label — not only for report and function output types.
+
+A transform function or report also generates its own label provider, rooted at the function's output type (see [Reports and rules](#4-reports-and-rules)) — that provider is `@Deprecated` in favour of the type-rooted one, where one exists. Prefer the type-rooted provider in hand-written code; the function/report provider is still generated and remains correct for the transform's output root.
+
 ## 2. Functions 
 Coming soon.
 
@@ -183,7 +198,7 @@ reporting rule VehicleClassificationType from VehicleOwnership: <"Classification
 ```
 
 #### Generated Java code for the report
-The report becomes an abstract Java class:
+The report becomes an abstract Java class. This `@RuneLabelProvider` is `@Deprecated` — see [Label providers](#13-label-providers) — in favour of the type-rooted provider on `EuropeanParliamentReport` itself, where one exists:
 ``` Haskell
 @RosettaReport(namespace="test.reg", body="EuropeanParliament", corpusList={"EmissionPerformanceStandardsEU"})
 @RuneLabelProvider(labelProvider=EuropeanParliamentEmissionPerformanceStandardsEULabelProvider.class)
