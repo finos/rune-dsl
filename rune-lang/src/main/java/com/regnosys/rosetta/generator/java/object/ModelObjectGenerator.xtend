@@ -45,7 +45,7 @@ import com.rosetta.util.types.JavaType
 import com.regnosys.rosetta.generator.java.scoping.JavaMethodScope
 import com.regnosys.rosetta.generator.java.types.JavaPojoImpl
 import com.rosetta.model.lib.annotations.RuneChoiceType
-import com.regnosys.rosetta.generator.java.function.LabelProviderGeneratorUtil
+import com.regnosys.rosetta.generator.java.labels.LabelProviderGeneratorUtil
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass
 import com.rosetta.model.lib.annotations.RuneLabelProvider
 import com.rosetta.model.lib.functions.LabelProvider

@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.function;
+package com.regnosys.rosetta.generator.java.labels;
 
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.types.RDataType;

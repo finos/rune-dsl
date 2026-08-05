@@ -6,6 +6,7 @@ import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator
 import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider
 import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
+import com.regnosys.rosetta.generator.java.labels.LabelProviderGeneratorUtil
 import com.regnosys.rosetta.generator.java.statement.JavaStatement
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder

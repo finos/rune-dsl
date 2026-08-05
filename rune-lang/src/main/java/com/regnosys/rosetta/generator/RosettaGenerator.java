@@ -10,7 +10,7 @@ import com.regnosys.rosetta.generator.java.condition.ConditionGenerator;
 import com.regnosys.rosetta.generator.java.enums.EnumGenerator;
 import com.regnosys.rosetta.generator.java.expression.DeepPathUtilGenerator;
 import com.regnosys.rosetta.generator.java.function.FunctionGenerator;
-import com.regnosys.rosetta.generator.java.function.LabelProviderGenerator;
+import com.regnosys.rosetta.generator.java.labels.LabelProviderGenerator;
 import com.regnosys.rosetta.generator.java.object.JavaPackageInfoGenerator;
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator;
 import com.regnosys.rosetta.generator.java.object.ModelMetaGenerator;

@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.function
+package com.regnosys.rosetta.generator.java.labels
 
 import com.regnosys.rosetta.rosetta.simple.Function
 import com.regnosys.rosetta.rosetta.simple.Data
@@ -24,13 +24,11 @@ import com.regnosys.rosetta.lib.labelprovider.LabelNode
 import java.util.Arrays
 import java.util.stream.Collectors
 import java.util.HashSet
-import com.regnosys.rosetta.types.RAttribute
 import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil
 import com.regnosys.rosetta.generator.java.RObjectJavaClassGenerator
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
 import com.regnosys.rosetta.rosetta.RosettaModel
-import com.rosetta.model.lib.annotations.RuneLabelProvider
 
 /**
  * Generates a {@link com.regnosys.rosetta.lib.labelprovider.GraphBasedLabelProvider} for:
@@ -143,7 +141,7 @@ class LabelProviderGenerator extends RObjectJavaClassGenerator<RObject, RGenerat
 			«IF target instanceof RFunction»
 				/**
 				 * @deprecated Prefer the type-rooted label provider referenced by
-				 *     {@code @}{@link «RuneLabelProvider»} on the root type's interface, where one exists.
+				 *     {@code @RuneLabelProvider} on the root type's interface, where one exists.
 				 *     Retained because a provider rooted at a transform's output type cannot always be
 				 *     replaced by one generated for that type - see the class javadoc of
 				 *     {@code LabelProviderGenerator}.

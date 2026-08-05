@@ -1,4 +1,4 @@
-package com.regnosys.rosetta.generator.java.function;
+package com.regnosys.rosetta.generator.java.labels;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -94,7 +94,7 @@ public class LabelProviderGeneratorTest {
 		Class<? extends LabelProvider> clazz = compiled.get(file.getJavaClassName()).asSubclass(LabelProvider.class);
 		return injector.getInstance(clazz);
 	}
-	private void assertSingleGeneratedFile(String expectationFileName, String expectedGeneratedPath) throws IOException {
+	private void assertGeneratedFileMatches(String expectationFileName, String expectedGeneratedPath) throws IOException {
 		GeneratedFile file = getGeneratedFile(expectedGeneratedPath);
 		// This file comes straight from the fsa, so normalise the platform line
 		// separator emitted by the Xtend templates
@@ -170,7 +170,7 @@ public class LabelProviderGeneratorTest {
 		assertGeneratedFiles(
 				"/test/labels/MyFuncLabelProvider.java",
 				"/test/labels/types/FooLabelProvider.java");
-		assertSingleGeneratedFile("func-ingest/MyFuncLabelProvider.java", "/test/labels/MyFuncLabelProvider.java");
+		assertGeneratedFileMatches("func-ingest/MyFuncLabelProvider.java", "/test/labels/MyFuncLabelProvider.java");
 		assertLabels(
 			"/test/labels/MyFuncLabelProvider.java",
 			"attr:My attribute",
@@ -245,15 +245,16 @@ public class LabelProviderGeneratorTest {
 		// Besides the (unchanged) report provider, a type-rooted provider is generated for every type
 		// in this model that carries a *direct* label on its own/inherited/overridden attributes:
 		// SuperFoo (attr1, qux), Foo (attr1 override, qux override, attr2, bar), Bar (barAttr) and
-		// Opt1 (opt1Attr). NestedBar and Opt2 have none of their own, so they get nothing; Qux is a
-		// choice, whose options are not label-carrying attributes.
+		// Opt1 (opt1Attr). NestedBar, Opt2 and Qux have none of their own, so they get nothing - note
+		// that Qux is excluded only because none of its options carries a label here, not because it is
+		// a choice: see testLabelOnAChoiceOptionGeneratesATypeRootedProvider.
 		assertGeneratedFiles(
 				"/test/labels/BodyCorpusLabelProvider.java",
 				"/test/labels/types/SuperFooLabelProvider.java",
 				"/test/labels/types/FooLabelProvider.java",
 				"/test/labels/types/BarLabelProvider.java",
 				"/test/labels/types/Opt1LabelProvider.java");
-		assertSingleGeneratedFile("report-with-complex-labels/BodyCorpusLabelProvider.java", "/test/labels/BodyCorpusLabelProvider.java");
+		assertGeneratedFileMatches("report-with-complex-labels/BodyCorpusLabelProvider.java", "/test/labels/BodyCorpusLabelProvider.java");
 		assertLabels(
 			"/test/labels/BodyCorpusLabelProvider.java",
 			"attr1:My Overridden Label",
@@ -319,7 +320,7 @@ public class LabelProviderGeneratorTest {
 				"/test/labels/types/BarLabelProvider.java",
 				"/test/labels/types/ALabelProvider.java",
 				"/test/labels/types/BLabelProvider.java");
-		assertSingleGeneratedFile("func-circular/MyFuncLabelProvider.java", "/test/labels/MyFuncLabelProvider.java");
+		assertGeneratedFileMatches("func-circular/MyFuncLabelProvider.java", "/test/labels/MyFuncLabelProvider.java");
 		assertLabels(
 			"/test/labels/MyFuncLabelProvider.java",
 			"fooAttr:Foo attribute",
@@ -353,11 +354,45 @@ public class LabelProviderGeneratorTest {
 		generateLabelProvider(model);
 
 		assertGeneratedFiles("/test/labels/types/FooLabelProvider.java");
+		// Pins the emitted source of a type-rooted provider, not just its behaviour: the package, the
+		// absence of the @Deprecated header that function/report providers carry, and the whitespace the
+		// Xtend template is sensitive to. This is the parity gate for migrating the generator to Java.
+		assertGeneratedFileMatches("type-flat/FooLabelProvider.java", "/test/labels/types/FooLabelProvider.java");
 		assertLabels(
 			"/test/labels/types/FooLabelProvider.java",
 			"attr1:Attr One",
 			"attr2:Attr Two",
 			"attr3:null"
+		);
+	}
+
+	@Test
+	void testLabelOnAChoiceOptionGeneratesATypeRootedProvider() throws IOException {
+		// A `choice` is a Data type like any other and its options are attributes that can carry a
+		// [label ...] of their own, so a choice qualifies under exactly the same "direct labels only"
+		// gate as a `type` does. Nothing special-cases choices either way.
+		RosettaTestModel model = loadModel("""
+				namespace test
+
+				choice Qux:
+					Opt1
+						[label "Option One"]
+					Opt2
+
+				type Opt1:
+					id string (1..1)
+
+				type Opt2:
+					id string (1..1)
+				""");
+
+		generateLabelProvider(model);
+
+		assertGeneratedFiles("/test/labels/types/QuxLabelProvider.java");
+		assertLabels(
+			"/test/labels/types/QuxLabelProvider.java",
+			"Opt1:Option One",
+			"Opt2:null"
 		);
 	}
 
