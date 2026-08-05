@@ -473,5 +473,13 @@ public class LabelProviderGeneratorTest {
 				"/test/labels/types/FooLabelProvider.java");
 		assertLabels("/test/labels/FooLabelProvider.java", "attr:Foo attribute");
 		assertLabels("/test/labels/types/FooLabelProvider.java", "attr:Foo attribute");
+
+		// The two providers are byte-identical in content (§2.8), but only the function-rooted one is
+		// deprecated (§2.9): it is a steer towards the type-rooted provider, not a removal notice, since
+		// a function/report provider must stay self-contained permanently for roots defined upstream.
+		String functionSource = getGeneratedFile("/test/labels/FooLabelProvider.java").getContents().toString();
+		String typeSource = getGeneratedFile("/test/labels/types/FooLabelProvider.java").getContents().toString();
+		Assertions.assertTrue(functionSource.contains("@Deprecated"), "Expected the function-rooted provider to be @Deprecated");
+		Assertions.assertFalse(typeSource.contains("@Deprecated"), "Expected the type-rooted provider not to be @Deprecated");
 	}
 }

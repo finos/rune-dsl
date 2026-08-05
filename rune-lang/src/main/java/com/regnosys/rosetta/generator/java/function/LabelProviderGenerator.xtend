@@ -30,6 +30,7 @@ import com.regnosys.rosetta.generator.java.RObjectJavaClassGenerator
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope
 import com.regnosys.rosetta.rosetta.RosettaModel
+import com.rosetta.model.lib.annotations.RuneLabelProvider
 
 /**
  * Generates a {@link com.regnosys.rosetta.lib.labelprovider.GraphBasedLabelProvider} for:
@@ -73,6 +74,13 @@ import com.regnosys.rosetta.rosetta.RosettaModel
  * the output type has no labels at all - {@code pruneLabelGraph} already collapses that case to an empty
  * provider today. Keep every function/report provider self-contained, generated in full into the function's
  * own namespace, independent of whether a type-rooted twin exists.
+ * <p>
+ * <b>3. The {@code @Deprecated} on a function/report provider is a steer, not a removal notice.</b> It tells
+ * a reader and hand-written code to prefer the type-rooted provider where one exists; it says nothing about
+ * removing the function/report provider itself, which invariant 2 above already rules out permanently. A
+ * reader who sees the annotation and reaches for deleting or collapsing the class is exactly the failure mode
+ * this paragraph exists to head off - the preceding paragraph's argument (an upstream artifact cannot emit a
+ * provider for a root that only a downstream transform creates) still applies in full.
  */
 class LabelProviderGenerator extends RObjectJavaClassGenerator<RObject, RGeneratedJavaClass<?>> {
 	@Inject RObjectFactory rObjectFactory
@@ -132,6 +140,16 @@ class LabelProviderGenerator extends RObjectJavaClassGenerator<RObject, RGenerat
 		]
 
 		'''
+			«IF target instanceof RFunction»
+				/**
+				 * @deprecated Prefer the type-rooted label provider referenced by
+				 *     {@code @}{@link «RuneLabelProvider»} on the root type's interface, where one exists.
+				 *     Retained because a provider rooted at a transform's output type cannot always be
+				 *     replaced by one generated for that type - see the class javadoc of
+				 *     {@code LabelProviderGenerator}.
+				 */
+				@Deprecated
+			«ENDIF»
 			public class «labelClass» extends «GraphBasedLabelProvider» {
 				public «labelClass»() {
 					super(new «LabelNode»());
