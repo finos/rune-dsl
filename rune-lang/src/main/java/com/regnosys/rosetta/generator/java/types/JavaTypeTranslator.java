@@ -146,7 +146,19 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		String simpleName = function.getAlphanumericName() + "LabelProvider";
 		return RGeneratedJavaClass.create(JavaPackageName.escape(packageName), simpleName, LabelProvider.class);
 	}
-	
+	/**
+	 * Naming for a type-rooted label provider, as opposed to the function/report-rooted providers above.
+	 * The two live in separate {@code <ns>.labels} / {@code <ns>.labels.types} sub-packages by design -
+	 * see the class javadoc of {@code LabelProviderGenerator} for why the two are generated independently
+	 * and never delegate to one another.
+	 */
+	public RGeneratedJavaClass<? extends LabelProvider> toLabelProviderJavaClass(RDataType type) {
+		ModelSymbolId typeId = type.getSymbolId();
+		DottedPath packageName = typeId.getNamespace().child("labels").child("types");
+		return RGeneratedJavaClass.create(
+				JavaPackageName.escape(packageName), typeId.getName() + "LabelProvider", LabelProvider.class);
+	}
+
 	public JavaConditionInterface toConditionJavaClass(Condition condition) {
 		return JavaConditionInterface.create(condition, modelIdProvider, typeProvider, typeSystem, typeUtil, this);
 	}
