@@ -121,7 +121,7 @@ public interface EuropeanParliamentReport extends RosettaModelObject {
 
 The provider class is generated at `<namespace>.labels.types.<Type>LabelProvider`, for any type in the model with at least one direct label — not only for report and function output types.
 
-A transform function or report also generates its own label provider, rooted at the function's output type (see [Reports and rules](#4-reports-and-rules)) — that provider is `@Deprecated` in favour of the type-rooted one, where one exists. Prefer the type-rooted provider in hand-written code; the function/report provider is still generated and remains correct for the transform's output root.
+A transform function or report also generates its own label provider, rooted at the function's output type (see [Reports and rules](#4-reports-and-rules)) — that provider is `@Deprecated` in favour of the type-rooted one, where one exists. Prefer the type-rooted provider in hand-written code; the function/report provider is still generated and remains correct for the transform's output root, and is scheduled for removal at the next major version — not before, since a function's output type can live in a different artifact that has no type-rooted provider to fall back to until it is rebuilt against a DSL version that generates one.
 
 ## 2. Functions 
 Coming soon.
