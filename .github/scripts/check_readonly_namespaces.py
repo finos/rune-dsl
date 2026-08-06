@@ -19,22 +19,14 @@ The build also fails if a configured (head) pattern matches no namespace in the
 repository, which catches stale or mistyped patterns, and if the config file does not
 exist in the working tree, which catches a mistyped config path.
 
-The checker is self-contained: it only uses the Python standard library, git, and the
-shared ``namespace_patterns`` module beside it, which also defines how a pattern is read.
+The checker needs only git, PyYAML and the shared ``namespace_patterns`` module beside it,
+which also defines how a pattern is read and how the config is parsed.
 """
 import argparse
 import sys
 from pathlib import Path
 
-from namespace_patterns import (
-    changed_files,
-    entry_value,
-    git_show,
-    matches,
-    matches_any,
-    namespace_config_entries,
-    namespace_of,
-)
+from namespace_patterns import changed_files, git_show, matches, matches_any, namespace_config, namespace_of
 
 
 def parse_readonly_namespaces(text):
@@ -43,9 +35,9 @@ def parse_readonly_namespaces(text):
     A namespace is read-only when its ``namespaceConfig`` entry declares ``readOnly: true``.
     """
     return [
-        entry_value(entry, "namespace")
-        for entry in namespace_config_entries(text)
-        if (entry_value(entry, "readOnly") or "").lower() == "true" and entry_value(entry, "namespace")
+        entry["namespace"]
+        for entry in namespace_config(text)
+        if entry.get("readOnly") is True and entry.get("namespace")
     ]
 
 

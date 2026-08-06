@@ -1,0 +1,124 @@
+---
+title: Generated namespaces
+sidebar_label: Generated namespaces
+description: "Mark the namespaces produced by an importer so that hand edits to them are visible in review."
+slug: /developers/generated-namespaces
+---
+
+# Generated namespaces
+
+Some namespaces in a model are produced by a tool rather than written by hand. A **generated**
+namespace records which tool produced it, and a supplied GitHub workflow then annotates any pull
+request that changes one — leaving the check green, so the change is visible without being blocked.
+
+This is the counterpart to [read-only namespaces](./read-only-namespaces), and the
+difference is what the generated model is derived from:
+
+| | Derived from | Editing it | The check |
+|---|---|---|---|
+| [Read-only](./read-only-namespaces) | An authoritative schema (XSD, JSON Schema) that declares its types | Makes the model drift from the schema it mirrors | **Fails** the build until deliberately allowed |
+| Generated | Data samples (CSV, JSON), which carry no constraints, no complete enumerations and no documentation | Is the intended workflow — the import produces a working stub that a modeller refines | **Reports**, and stays green |
+
+An import from samples can only infer so much: a maximum length, a code list or a description was
+never in the data and never will be. So the importer produces a model that works immediately but is
+not yet precise, and the modeller narrows types, completes enumerations and adds documentation
+directly in Rune afterwards. Blocking that would put a bypass label on nearly every pull request,
+and the signal would decay into a ritual — so the check annotates instead.
+
+The two markers are independent. A namespace can be read-only, generated, both (a schema-derived
+import that also records what produced it), or neither.
+
+## Declaring a generated namespace
+
+Generated namespaces are declared in the `namespaceConfig` list of the `rune-config.yml`, alongside
+read-only ones. An entry carries an `origin` marker naming the tool that produced it:
+
+```yaml
+model:
+  name: My Model
+namespaceConfig:
+- namespace: demo.unavista.csv
+  origin:
+    modelImport: csv
+  schemaConfig:
+    schema: unavistaTransaction
+    configPath: csv-config/unavistaTransaction-csv-config.json
+```
+
+`modelImport` names the source format the importer read (`csv`, `xsd`, …). The marker is keyed on
+the producing tool, so another generator can record its own provenance later without a second
+top-level flag.
+
+Note what is *not* there: `readOnly` is absent, because a sample-derived namespace is editable.
+The `origin` marker is also separate from `schemaConfig` — a hand-written type may legitimately
+carry a schema configuration without any import having taken place.
+
+### Namespace patterns
+
+The `namespace` of an entry is either an exact namespace, or a namespace followed by `.*`, which
+covers that namespace **and** all of its subnamespaces:
+
+| Pattern | `demo.csv` | `demo.csv.sub` | `demo.csvextra` |
+|---|---|---|---|
+| `demo.csv` | matches | — | — |
+| `demo.csv.*` | matches | matches | — |
+
+Matching is segment-aware, so `demo.csv.*` never matches `demo.csvextra`. This is the same
+interpretation everywhere a namespace pattern appears, including `generators.namespaces`.
+
+## Adding the workflow
+
+The annotation runs in the same reusable workflow as the read-only check, so a repository that
+already calls it gets the annotation with no change:
+
+```yaml
+name: Read-only namespaces
+
+on:
+  pull_request:
+
+jobs:
+  readonly-namespaces:
+    uses: finos/rune-dsl/.github/workflows/verify-readonly-namespaces.yml@main
+    with:
+      config-path: rosetta-source/src/main/resources/rune-config.yml
+      root: rosetta-source/src/main/rosetta
+```
+
+The two checks run as steps of one job, so this costs a consumer nothing extra: one check, one
+checkout. The read-only step fails on a hand edit to a read-only namespace; the generated-namespace
+step never does.
+
+## What a reviewer sees
+
+Each changed file in a generated namespace gets one annotation, anchored at the top of the file and
+appearing inline in *Files changed*, plus a row in a summary table on the workflow run. GitHub shows
+at most ten annotations per level, so beyond that the summary table is the complete list — and a
+final notice says how many did not fit. The level says how far the change reaches:
+
+| Change | Level |
+|--------|-------|
+| Disappears once documentation and comments are stripped | notice |
+| Only adds declarations — data that parsed before still parses | notice |
+| Modifies or removes a declaration | **warning** — a renamed label, a narrowed alias or a changed type can break how data binds to the model |
+
+Classification is deliberately **fail-safe**: rather than recognising a list of risky constructs —
+which would silently under-report anything it had not been taught — it recognises only what is
+provably harmless and treats everything else as worth a reviewer's attention. A construct the check
+has never seen therefore lands in the warning bucket rather than being missed.
+
+A warning is not a defect. It marks the class of edit that can change how data binds to the model —
+most often a `[label]`, an attribute name or an attribute type — and asks a reviewer to confirm that
+ingestion still resolves.
+
+## Parameters
+
+The reusable workflow's inputs are documented under
+[read-only namespaces](./read-only-namespaces#parameters). One applies only to this check:
+
+| Input | Required | Default | Description |
+|-------|----------|---------|-------------|
+| `generated-namespaces-docs-url` | No | This page | The documentation link appended to every annotation. Point it at your own documentation if your repository explains generated namespaces in its own terms. |
+
+`config-path` and `root` are shared with the read-only check. Unlike that check, a missing config
+file is reported and skipped rather than failing — this check never fails.

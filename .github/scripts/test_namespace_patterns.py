@@ -6,12 +6,9 @@ Run with:  python3 -m unittest test_namespace_patterns
 import pathlib
 import unittest
 
-# The corpus is YAML so that it can carry a comment explaining each case. PyYAML is the only
-# dependency anything here has, it is test-only, and it is deliberately imported rather than
-# guarded: a corpus test that quietly skips is a divergence guard that is quietly off.
-#   pip install pyyaml
-# The checkers themselves stay standard-library-only -- they run in other repositories with
-# nothing but `setup-python`.
+# The corpus is YAML so that it can carry a comment explaining each case. PyYAML is the checkers'
+# only dependency -- see requirements.txt -- and is imported rather than guarded here: a corpus test
+# that quietly skips is a divergence guard that is quietly off.
 import yaml
 
 import namespace_patterns as ns
@@ -80,27 +77,26 @@ class NamespaceOfTest(unittest.TestCase):
         self.assertIsNone(ns.namespace_of(None))
 
 
-class NamespaceConfigEntriesTest(unittest.TestCase):
-    def test_splits_the_section_into_entries_keeping_nested_keys(self):
-        entries = ns.namespace_config_entries(CONFIG)
-        self.assertEqual(len(entries), 3)
-        self.assertIn("modelImport: csv", entries[1])
-        self.assertIn("configPath: c.json", entries[2])
+class NamespaceConfigTest(unittest.TestCase):
+    def test_reads_the_entries_as_mappings(self):
+        entries = ns.namespace_config(CONFIG)
+        self.assertEqual([e["namespace"] for e in entries],
+                         ["com.example.locked", "com.example.generated", "com.example.open"])
+        self.assertEqual(entries[0]["readOnly"], True)
+        self.assertEqual(entries[1]["origin"], {"modelImport": "csv"})
+        self.assertEqual(entries[2]["schemaConfig"]["configPath"], "c.json")
 
-    def test_stops_at_the_next_top_level_key(self):
-        # `generators` follows the section, and must not be swallowed into the last entry
-        self.assertNotIn("com.example.*", ns.namespace_config_entries(CONFIG)[2])
+    def test_flow_style_reads_the_same_as_block_style(self):
+        # Both are valid YAML and the Java side accepts both, so this side must too.
+        block = "namespaceConfig:\n- namespace: a\n  origin:\n    modelImport: csv\n"
+        flow = "namespaceConfig:\n- {namespace: a, origin: {modelImport: csv}}\n"
+        self.assertEqual(ns.namespace_config(block), ns.namespace_config(flow))
 
-    def test_reads_top_level_entry_values(self):
-        entries = ns.namespace_config_entries(CONFIG)
-        self.assertEqual(ns.entry_value(entries[0], "namespace"), "com.example.locked")
-        self.assertEqual(ns.entry_value(entries[0], "readOnly"), "true")
-        self.assertIsNone(ns.entry_value(entries[1], "readOnly"))
-
-    def test_empty_or_missing_config_yields_nothing(self):
-        self.assertEqual(ns.namespace_config_entries(""), [])
-        self.assertEqual(ns.namespace_config_entries(None), [])
-        self.assertEqual(ns.namespace_config_entries("model:\n  name: X\n"), [])
+    def test_empty_missing_or_unparseable_config_yields_nothing(self):
+        self.assertEqual(ns.namespace_config(""), [])
+        self.assertEqual(ns.namespace_config(None), [])
+        self.assertEqual(ns.namespace_config("model:\n  name: X\n"), [])
+        self.assertEqual(ns.namespace_config("model: [unclosed\n"), [])
 
 
 if __name__ == "__main__":

@@ -20,11 +20,14 @@ beside this file -- so a divergence between them fails a test. It deliberately i
 ``fnmatch``: a glob would read ``abc.def.*`` as excluding ``abc.def`` itself and as
 matching ``abc.defghi``.
 
-Only the Python standard library is used, so the ``rune-config.yml`` parsing here walks
-the block-style YAML directly rather than parsing it fully.
+``rune-config.yml`` is parsed with PyYAML, so that this side and the Java side read the same
+file the same way. It is the only dependency the checkers have, and the reusable workflow
+installs it.
 """
 import re
 import subprocess
+
+import yaml
 
 # Matches `namespace foo.bar`, optionally preceded by the `override` keyword and optionally quoted.
 NAMESPACE_RE = re.compile(r'^\s*(?:override\s+)?namespace\s+"?([A-Za-z0-9_.]+)"?', re.MULTILINE)
@@ -97,70 +100,20 @@ def changed_files(base, *pathspecs):
             i += 2
 
 
-def namespace_config_entries(text):
-    """Yield the text of each ``namespaceConfig`` list item of a rune-config.yml.
+def namespace_config(text):
+    """The ``namespaceConfig`` entries of a rune-config.yml, as a list of mappings.
 
-    Each entry is returned as its own block, dedented so that its own keys sit at column zero
-    and **nesting is preserved** -- the keys under ``origin`` or ``schemaConfig`` stay indented
-    beneath them. A caller can then pick out the keys it cares about without tracking YAML
-    state itself, and without a nested key being mistaken for a top-level one.
+    Parsed with PyYAML rather than walked by hand, so that every shape the Java side accepts is
+    read the same way here -- flow style, valueless keys, nested values. Hand-walking the block
+    structure made this a second, subtly different implementation of one file format.
     """
     if not text:
         return []
-
-    entries = []
-    current = None
-    in_section = False
-    section_indent = 0
-    item_indent = None
-    key_indent = None
-
-    def flush():
-        if current is not None:
-            entries.append("\n".join(current))
-
-    for raw in text.splitlines():
-        line = re.sub(r'\s+#.*$', '', raw).rstrip()  # strip trailing comments
-        if not line.strip():
-            continue
-        indent = len(line) - len(line.lstrip())
-
-        if not in_section:
-            if re.match(r'^(\s*)namespaceConfig\s*:\s*$', line):
-                in_section = True
-                section_indent = indent
-                item_indent = None
-                current = None
-            continue
-
-        # A key at or below the section indent that is not a list item ends the section.
-        if indent <= section_indent and not line.lstrip().startswith("-"):
-            flush()
-            current = None
-            in_section = False
-            continue
-
-        item = re.match(r'^(\s*)-(\s*)(.*)$', line)
-        if item and (item_indent is None or len(item.group(1)) == item_indent):
-            item_indent = len(item.group(1))
-            # The first key sits where the `- ` marker ends; the entry's other keys align with it.
-            key_indent = item_indent + 1 + len(item.group(2))
-            flush()
-            current = [item.group(3)]
-        elif current is not None:
-            current.append(line[key_indent:] if indent >= key_indent else line.lstrip())
-    flush()
-    return entries
-
-
-def entry_value(entry, key):
-    """The scalar value of a top-level `key` of a ``namespaceConfig`` entry, or None."""
-    for line in entry.splitlines():
-        match = re.match(r'^(\w+)\s*:\s*(.*)$', line)
-        if match and match.group(1) == key:
-            return _clean(match.group(2))
-    return None
-
-
-def _clean(value):
-    return value.strip().strip('"').strip("'")
+    try:
+        config = yaml.safe_load(text)
+    except yaml.YAMLError:
+        return []
+    if not isinstance(config, dict):
+        return []
+    entries = config.get("namespaceConfig") or []
+    return [entry for entry in entries if isinstance(entry, dict)]
