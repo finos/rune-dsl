@@ -354,9 +354,9 @@ public class LabelProviderGeneratorTest {
 		generateLabelProvider(model);
 
 		assertGeneratedFiles("/test/labels/types/FooLabelProvider.java");
-		// Pins the emitted source of a type-rooted provider, not just its behaviour: the package, the
-		// absence of the @Deprecated header that function/report providers carry, and the whitespace the
-		// Xtend template is sensitive to. This is the parity gate for migrating the generator to Java.
+		// Pins the emitted source of a type-rooted provider, not just its behaviour: the package and the
+		// whitespace the Xtend template is sensitive to. This is the parity gate for migrating the
+		// generator to Java.
 		assertGeneratedFileMatches("type-flat/FooLabelProvider.java", "/test/labels/types/FooLabelProvider.java");
 		assertLabels(
 			"/test/labels/types/FooLabelProvider.java",
@@ -508,13 +508,5 @@ public class LabelProviderGeneratorTest {
 				"/test/labels/types/FooLabelProvider.java");
 		assertLabels("/test/labels/FooLabelProvider.java", "attr:Foo attribute");
 		assertLabels("/test/labels/types/FooLabelProvider.java", "attr:Foo attribute");
-
-		// The two providers are byte-identical in content (§2.8), but only the function-rooted one is
-		// deprecated (§2.9): it is a steer towards the type-rooted provider, not a removal notice, since
-		// a function/report provider must stay self-contained permanently for roots defined upstream.
-		String functionSource = getGeneratedFile("/test/labels/FooLabelProvider.java").getContents().toString();
-		String typeSource = getGeneratedFile("/test/labels/types/FooLabelProvider.java").getContents().toString();
-		Assertions.assertTrue(functionSource.contains("@Deprecated"), "Expected the function-rooted provider to be @Deprecated");
-		Assertions.assertFalse(typeSource.contains("@Deprecated"), "Expected the type-rooted provider not to be @Deprecated");
 	}
 }

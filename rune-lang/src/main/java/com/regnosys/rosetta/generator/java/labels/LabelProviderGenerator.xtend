@@ -49,11 +49,11 @@ import com.regnosys.rosetta.rosetta.RosettaModel
  * merge, delegate to, or dedupe between providers rooted at different types.
  * <p>
  * <b>2. A function/report provider must not extend, delegate to, or have its label-provider annotation
- * point at a type-rooted provider before the next major version.</b> The obvious "simplification" -
+ * point at a type-rooted provider.</b> The obvious "simplification" -
  * {@code <Func>LabelProvider extends <Type>LabelProvider}, or dropping the function class and pointing
  * its annotation at the type provider - looks like removing duplication when a function's output type
  * happens to have direct labels (in which case the two providers are byte-identical anyway; see the
- * "not the reason" note below). It is wrong today, because of where each provider is emitted:
+ * "not the reason" note below). It is wrong, because of where each provider is emitted:
  * <ul>
  * <li>A type-rooted provider is emitted only when the <i>type's own</i> model is generated, into that
  * type's own namespace.
@@ -64,22 +64,18 @@ import com.regnosys.rosetta.rosetta.RosettaModel
  * gate above) - and even then, a dependency built with an older DSL version may have no {@code labels.types}
  * package at all.
  * </ul>
- * So a function/report provider cannot today be replaced by, or delegate to, a type-rooted one: the
+ * So a function/report provider cannot be replaced by, or delegate to, a type-rooted one: the
  * target class may simply not exist, and no amount of widening the gate fixes this, because the information
  * that would justify emitting it (that some downstream model roots a transform at this type) does not exist
  * where the type is defined. Not the reason, for completeness: it is not that the function gate can fire when
  * the output type has no labels at all - {@code pruneLabelGraph} already collapses that case to an empty
  * provider today. Keep every function/report provider self-contained, generated in full into the function's
- * own namespace, independent of whether a type-rooted twin exists - until the next major version, by which
- * point every artifact in the dependency chain has had a full major-version cycle to regenerate with
- * type-rooted providers, and this fallback can be dropped.
- * <p>
- * <b>3. The {@code @Deprecated} on a function/report provider has a real, scheduled expiry - the next major
- * version - not an indefinite steer.</b> It tells a reader and hand-written code to prefer the type-rooted
- * provider where one exists, and flags the function/report provider itself for removal once that major
- * version lands; invariant 2 above is why removal can't happen sooner (an upstream artifact cannot emit a
- * provider for a root that only a downstream transform creates, so the fallback is still load-bearing today).
- * A reader who deletes or collapses the class ahead of that release hits exactly the gap invariant 2 describes.
+ * own namespace, independent of whether a type-rooted twin exists. This is not a migration ramp: the gate in
+ * {@link LabelProviderGeneratorUtil#shouldGenerateLabelProvider(RDataType)} is deliberately "direct labels
+ * only" (see its javadoc), so an output type whose labels are all on nested descendants never gets a
+ * type-rooted provider at all, in any DSL version, regardless of how many dependencies regenerate. The
+ * function/report provider is therefore permanently load-bearing for that shape, not a stopgap awaiting a
+ * type-rooted replacement - it must never be marked {@code @Deprecated}.
  */
 class LabelProviderGenerator extends RObjectJavaClassGenerator<RObject, RGeneratedJavaClass<?>> {
 	@Inject RObjectFactory rObjectFactory
@@ -139,18 +135,6 @@ class LabelProviderGenerator extends RObjectJavaClassGenerator<RObject, RGenerat
 		]
 
 		'''
-			«IF target instanceof RFunction»
-				/**
-				 * @deprecated Prefer the type-rooted label provider referenced by
-				 *     {@code @RuneLabelProvider} on the root type's interface, where one exists.
-				 *     Scheduled for removal at the next major version, once every dependency has had
-				 *     a full major-version cycle to regenerate with type-rooted providers - not removed
-				 *     yet because a provider rooted at a transform's output type cannot always be
-				 *     replaced by one generated for that type - see the class javadoc of
-				 *     {@code LabelProviderGenerator}.
-				 */
-				@Deprecated
-			«ENDIF»
 			public class «labelClass» extends «GraphBasedLabelProvider» {
 				public «labelClass»() {
 					super(new «LabelNode»());
