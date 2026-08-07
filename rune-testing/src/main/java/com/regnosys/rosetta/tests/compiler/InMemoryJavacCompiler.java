@@ -140,6 +140,12 @@ public class InMemoryJavacCompiler {
 					continue;
 				}
 				exceptionMsg.append("\n").append("Class ").append(className);
+				SourceCode failedSource = sourceCodes.get(className);
+				if (failedSource != null) {
+					exceptionMsg.append("\n--- DIAGNOSTIC: full generated source for ").append(className)
+							.append(" ---\n").append(failedSource.getCharContent(true))
+							.append("\n--- END DIAGNOSTIC SOURCE ---\n");
+				}
 				int number = 0;
 				for (Diagnostic<? extends JavaFileObject> d : diagnostics) {
 					switch (d.getKind()) {
