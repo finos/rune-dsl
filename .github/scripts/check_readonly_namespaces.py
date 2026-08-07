@@ -19,127 +19,34 @@ The build also fails if a configured (head) pattern matches no namespace in the
 repository, which catches stale or mistyped patterns, and if the config file does not
 exist in the working tree, which catches a mistyped config path.
 
-The checker is self-contained: it only uses the Python standard library and git.
+The checker is self-contained: it only uses the Python standard library, git, and the
+shared ``namespace_patterns`` module beside it, which also defines how a pattern is read.
 """
 import argparse
-import fnmatch
-import re
-import subprocess
 import sys
 from pathlib import Path
 
-# Matches `namespace foo.bar`, optionally preceded by the `override` keyword and optionally quoted.
-NAMESPACE_RE = re.compile(r'^\s*(?:override\s+)?namespace\s+"?([A-Za-z0-9_.]+)"?', re.MULTILINE)
-
-
-def git(*args):
-    return subprocess.run(["git", *args], capture_output=True, text=True, check=True).stdout
-
-
-def git_show(ref, path):
-    """Content of `path` at `ref`, or None if it does not exist there."""
-    result = subprocess.run(["git", "show", f"{ref}:{path}"], capture_output=True, text=True)
-    return result.stdout if result.returncode == 0 else None
-
-
-def namespace_of(text):
-    if text is None:
-        return None
-    match = NAMESPACE_RE.search(text)
-    return match.group(1) if match else None
+from namespace_patterns import (
+    changed_files,
+    entry_value,
+    git_show,
+    matches,
+    matches_any,
+    namespace_config_entries,
+    namespace_of,
+)
 
 
 def parse_readonly_namespaces(text):
     """Read the read-only namespaces from the ``namespaceConfig`` list of rune-config.yml content.
 
     A namespace is read-only when its ``namespaceConfig`` entry declares ``readOnly: true``.
-    Only the standard library is used, so this walks the block-style YAML directly rather than
-    parsing it fully: it collects the ``namespace`` of each list item that also sets
-    ``readOnly: true``, ignoring any nested keys (e.g. those under ``schemaConfig``).
     """
-    if not text:
-        return []
-
-    patterns = []
-    in_section = False
-    section_indent = 0
-    item_indent = None
-    current = None  # {"namespace": str|None, "read_only": bool} for the entry being parsed
-
-    def flush():
-        if current and current["read_only"] and current["namespace"]:
-            patterns.append(current["namespace"])
-
-    for raw in text.splitlines():
-        line = re.sub(r'\s+#.*$', '', raw).rstrip()  # strip trailing comments
-        if not line.strip():
-            continue
-        indent = len(line) - len(line.lstrip())
-
-        if not in_section:
-            if re.match(r'^(\s*)namespaceConfig\s*:\s*$', line):
-                in_section = True
-                section_indent = indent
-                item_indent = None
-                current = None
-            continue
-
-        # A key at or below the section indent that is not a list item ends the section.
-        if indent <= section_indent and not line.lstrip().startswith("-"):
-            flush()
-            current = None
-            in_section = False
-            continue
-
-        item = re.match(r'^(\s*)-\s*(.*)$', line)
-        if item and (item_indent is None or len(item.group(1)) == item_indent):
-            item_indent = len(item.group(1))
-            flush()
-            current = {"namespace": None, "read_only": False}
-            _apply(current, item.group(2))
-        elif current is not None:
-            _apply(current, line.lstrip())
-    flush()
-    return patterns
-
-
-def _apply(current, text):
-    """Track the ``namespace`` and ``readOnly`` keys of the current ``namespaceConfig`` entry."""
-    kv = re.match(r'^(\w+)\s*:\s*(.*)$', text)
-    if not kv:
-        return
-    key, value = kv.group(1), _clean(kv.group(2))
-    if key == "namespace":
-        current["namespace"] = value
-    elif key == "readOnly":
-        current["read_only"] = value.lower() == "true"
-
-
-def _clean(value):
-    return value.strip().strip('"').strip("'")
-
-
-def changed_rosetta_files(base):
-    """Yield (status, old_path, new_path) for changed files between base and HEAD."""
-    out = git("diff", "--name-status", "-z", f"{base}...HEAD")
-    tokens = out.split("\0")
-    i = 0
-    while i < len(tokens):
-        status = tokens[i]
-        if not status:
-            i += 1
-            continue
-        code = status[0]
-        if code in ("R", "C"):
-            yield code, tokens[i + 1], tokens[i + 2]
-            i += 3
-        else:
-            yield code, tokens[i + 1], tokens[i + 1]
-            i += 2
-
-
-def matches_any(namespace, patterns):
-    return namespace is not None and any(fnmatch.fnmatchcase(namespace, pattern) for pattern in patterns)
+    return [
+        entry_value(entry, "namespace")
+        for entry in namespace_config_entries(text)
+        if (entry_value(entry, "readOnly") or "").lower() == "true" and entry_value(entry, "namespace")
+    ]
 
 
 def repository_namespaces(root):
@@ -214,14 +121,14 @@ def main():
     # 1. Stale-pattern check: every configured head pattern must match at least one namespace.
     all_namespaces = repository_namespaces(args.root)
     for pattern in head_patterns:
-        if not any(fnmatch.fnmatchcase(ns, pattern) for ns in all_namespaces):
+        if not any(matches(ns, pattern) for ns in all_namespaces):
             failures.append(
                 f"Read-only namespace pattern '{pattern}' does not match any .rosetta namespace "
                 f"under '{args.root}' (stale or mistyped pattern?)."
             )
 
     # 2. Changed-file check.
-    for code, old, new in changed_rosetta_files(args.base):
+    for code, old, new in changed_files(args.base):
         if not (old.endswith(".rosetta") or new.endswith(".rosetta")):
             continue
         ns_before = None if code in ("A", "C") else namespace_of(git_show(args.base, old))
