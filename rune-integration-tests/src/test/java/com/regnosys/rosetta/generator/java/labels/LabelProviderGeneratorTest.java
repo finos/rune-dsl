@@ -448,10 +448,10 @@ public class LabelProviderGeneratorTest {
 
 	@Test
 	void testOuterTypesDeepPathLabelDeliberatelyDisagreesWithInnerTypesOwnLabel() throws IOException {
-		// Decision §2.5/§3.2: providers are not composable or substitutable. A deep-path label declared
-		// on an outer type deliberately overrides what the nested type's own label would give for that
-		// same relative path, so the outer type's provider and the inner type's own provider disagree on
-		// purpose. This is intended behaviour, not a bug to be "fixed" by delegating one to the other.
+		// Providers are not composable or substitutable. A deep-path label declared on an outer type
+		// deliberately overrides what the nested type's own label would give for that same relative path,
+		// so the outer type's provider and the inner type's own provider disagree on purpose. This is
+		// intended behaviour, not a bug to be "fixed" by delegating one to the other.
 		RosettaTestModel model = loadModel("""
 				namespace test
 
