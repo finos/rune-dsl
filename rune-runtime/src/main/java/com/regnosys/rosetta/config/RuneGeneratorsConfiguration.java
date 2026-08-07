@@ -1,6 +1,5 @@
 package com.regnosys.rosetta.config;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
@@ -8,7 +7,6 @@ import java.util.function.Predicate;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.rosetta.util.DottedPath;
 
 public class RuneGeneratorsConfiguration {
 	private final List<String> namespaces;
@@ -63,9 +61,9 @@ public class RuneGeneratorsConfiguration {
 	}
 
 	/**
-	 * A predicate testing whether a namespace is generated, derived from {@link #getNamespaces()}: an
-	 * empty list matches everything, an {@code abc.*} pattern matches that prefix, and a plain
-	 * {@code abc.def} matches exactly.
+	 * A predicate testing whether code is generated for a namespace, derived from
+	 * {@link #getNamespaces()}. An empty list places no restriction and so matches everything; otherwise
+	 * the patterns are interpreted by {@link RuneNamespacePattern}.
 	 */
 	@JsonIgnore
 	public Predicate<String> getNamespaceFilter() {
@@ -73,22 +71,11 @@ public class RuneGeneratorsConfiguration {
 	}
 
 	private static Predicate<String> buildNamespaceFilter(List<String> namespaces) {
+		// No configured namespaces means generation is not restricted, which is specific to generators:
+		// everywhere else an empty pattern list matches nothing.
 		if (namespaces.isEmpty()) {
-			return n -> true;
+			return name -> true;
 		}
-		List<DottedPath> genericNamespaces = new ArrayList<>(); // of the form `abc.efg.*`
-		List<DottedPath> specificNamespaces = new ArrayList<>(); // of the form `abc.efg`
-		for (String pattern : namespaces) {
-			DottedPath namespacePattern = DottedPath.splitOnDots(pattern);
-			if (namespacePattern.last().equals("*")) {
-				genericNamespaces.add(namespacePattern.parent());
-			} else {
-				specificNamespaces.add(namespacePattern);
-			}
-		}
-		return name -> {
-			DottedPath namespace = DottedPath.splitOnDots(name);
-			return genericNamespaces.stream().anyMatch(namespace::startsWith) || specificNamespaces.contains(namespace);
-		};
+		return RuneNamespacePattern.anyOf(namespaces);
 	}
 }

@@ -10,4 +10,4 @@ The Rune DSL documentation includes:
 - [Additional resources including rune keywords, FAQs and glossary](./docs/resources)
 
   
-Changes to the docs are on the [Rune DSL documentation website](https://rune-docs.netlify.app/)
+Changes to the docs are on the [Rune DSL documentation website](https://rune.finos.org/docs)

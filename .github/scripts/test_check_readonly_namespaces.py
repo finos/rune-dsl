@@ -71,6 +71,16 @@ class ClassifyTest(unittest.TestCase):
     def test_modify_is_allowed_when_not_readonly(self):
         self.assertIsNone(self.classify("M", "ns.open", "ns.open", self.EMPTY, self.EMPTY))
 
+    # Patterns are interpreted by the shared matcher, not by fnmatch.
+    def test_wildcard_covers_the_namespace_itself_and_its_children(self):
+        wildcard = ["ns.locked.*"]
+        self.assertIsNotNone(self.classify("M", "ns.locked", "ns.locked", wildcard, wildcard))
+        self.assertIsNotNone(self.classify("M", "ns.locked.sub", "ns.locked.sub", wildcard, wildcard))
+
+    def test_wildcard_is_segment_aware(self):
+        wildcard = ["ns.locked.*"]
+        self.assertIsNone(self.classify("M", "ns.lockedtoo", "ns.lockedtoo", wildcard, wildcard))
+
     # Renames between namespaces reuse the entry (base) and leave (head) checks.
     def test_rename_into_base_readonly_namespace_is_blocked(self):
         self.assertIsNotNone(self.classify("R", "ns.open", "ns.locked", self.LOCKED, self.LOCKED))

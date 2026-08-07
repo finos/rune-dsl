@@ -105,6 +105,10 @@ const sidebars: SidebarsConfig = {
           type: 'doc',
           id: 'developers/read-only-namespaces',
         },
+        {
+          type: 'doc',
+          id: 'developers/generated-namespaces',
+        },
       ],
     },
     {
