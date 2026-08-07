@@ -125,6 +125,21 @@ public class JavaTestModel {
 		return getClass(RosettaModelObject.class, getTypeJavaType(name));
 	}
 	
+	private JavaType getTypeJavaLabelProviderType(String name) {
+		Data type = rosettaModel.getType(name);
+		RDataType t = rObjectFactory.buildRDataType(type);
+		return typeTranslator.toLabelProviderJavaClass(t);
+	}
+	public String getTypeJavaLabelProviderSource(String name) {
+		return getSource(getTypeJavaLabelProviderType(name));
+	}
+	public Class<? extends LabelProvider> getTypeJavaLabelProviderClass(String name) {
+		return getClass(LabelProvider.class, getTypeJavaLabelProviderType(name));
+	}
+	public LabelProvider getTypeJavaLabelProviderInstance(String name) {
+		return injector.getInstance(getTypeJavaLabelProviderClass(name));
+	}
+
 	private RJavaEnum getEnumJavaType(String name) {
 		RosettaEnumeration enumeration = rosettaModel.getEnum(name);
 		REnumType t = rObjectFactory.buildREnumType(enumeration);

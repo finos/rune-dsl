@@ -30,6 +30,7 @@ import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.regnosys.rosetta.tests.util.ModelHelper;
 import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.annotations.RuneLabelProvider;
 import com.rosetta.model.lib.records.Date;
 import com.rosetta.util.DottedPath;
 
@@ -64,6 +65,31 @@ class ModelObjectGeneratorTest {
 						name exists
 				""");
 		generatorTestHelper.compileToClasses(code);
+	}
+
+	@Test
+	void shouldAnnotatePojoWithRuneLabelProviderWhenTypeHasDirectLabel() throws Exception {
+		Map<String, Class<?>> classes = generatorTestHelper.compileJava8("""
+				type Foo:
+					attr string (1..1)
+						[label "My attribute"]
+				""");
+
+		Class<?> fooClass = classes.get(modelHelper.rootPackage() + ".Foo");
+		RuneLabelProvider annotation = fooClass.getAnnotation(RuneLabelProvider.class);
+		assertNotNull(annotation);
+		assertEquals(modelHelper.rootPackage() + ".labels.types.FooLabelProvider", annotation.labelProvider().getName());
+	}
+
+	@Test
+	void shouldNotAnnotatePojoWithRuneLabelProviderWhenTypeHasNoLabel() throws Exception {
+		Map<String, Class<?>> classes = generatorTestHelper.compileJava8("""
+				type Foo:
+					attr string (1..1)
+				""");
+
+		Class<?> fooClass = classes.get(modelHelper.rootPackage() + ".Foo");
+		assertNull(fooClass.getAnnotation(RuneLabelProvider.class));
 	}
 
 	@Test

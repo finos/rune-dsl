@@ -108,6 +108,21 @@ Vehicle prunedVehicle = builder.build();
 assert prunedVehicle.getOwner().getAddress() == null;
 ```
 
+### 1.3. Label providers
+When a type carries a `[label ...]` annotation on one of its own, inherited, or overridden attributes, its generated pojo interface carries a `@RuneLabelProvider` annotation pointing at a generated `LabelProvider` class rooted at that type:
+
+``` Haskell
+@RuneDataType(value="EuropeanParliamentReport", builder=EuropeanParliamentReport.EuropeanParliamentReportBuilderImpl.class, version="x.y.z")
+@RuneLabelProvider(labelProvider=EuropeanParliamentReportLabelProvider.class)
+public interface EuropeanParliamentReport extends RosettaModelObject {
+    // Getters, builder, process(...) — as in any other generated interface
+}
+```
+
+The provider class is generated at `<namespace>.labels.types.<Type>LabelProvider`, for any type in the model with at least one direct label on its own, inherited or overridden attributes — not only for report and function output types. This exists primarily for users of the serialiser outside of a transform function — for example, working with a flat CSV-shaped type directly — so the gate is narrow by design: a type that merely contains a labelled descendant, with no label of its own, gets no provider.
+
+A transform function or report also generates its own label provider, rooted at the function's output type (see [Reports and rules](#4-reports-and-rules)). This is a separate, permanent provider, not a fallback for the type-rooted one: an output type whose labels are only on nested descendants never gets a type-rooted provider under the gate above, in any DSL version, so the function/report provider is the only one that ever exists for that shape. Where a transform's output type does carry a direct label of its own, both providers are generated with identical content — prefer either.
+
 ## 2. Functions 
 Coming soon.
 
@@ -183,7 +198,7 @@ reporting rule VehicleClassificationType from VehicleOwnership: <"Classification
 ```
 
 #### Generated Java code for the report
-The report becomes an abstract Java class:
+The report becomes an abstract Java class. This `@RuneLabelProvider` is the report's own label provider — see [Label providers](#13-label-providers) — generated independently of (and, where `EuropeanParliamentReport` itself carries direct labels, alongside) the type-rooted provider:
 ``` Haskell
 @RosettaReport(namespace="test.reg", body="EuropeanParliament", corpusList={"EmissionPerformanceStandardsEU"})
 @RuneLabelProvider(labelProvider=EuropeanParliamentEmissionPerformanceStandardsEULabelProvider.class)
