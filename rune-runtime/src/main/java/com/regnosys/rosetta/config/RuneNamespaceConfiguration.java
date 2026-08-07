@@ -8,10 +8,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Configuration for one unit of model content applying to a namespace. It ties together the aspects
- * that apply to that namespace &mdash; whether it is read-only, and its external schema configuration
- * &mdash; so that they share a single identity and lifecycle. Each aspect is optional, so the features
- * remain usable independently (a plain read-only namespace, or a plain schema configuration), while
- * model-import can declare them together and clean them up as a unit.
+ * that apply to that namespace &mdash; whether it is read-only, which tool produced it, and its
+ * external schema configuration &mdash; so that they share a single identity and lifecycle. Each
+ * aspect is optional, so the features remain usable independently (a plain read-only namespace, or a
+ * plain schema configuration), while model-import can declare them together and clean them up as a
+ * unit.
  * <p>
  * The optional {@code id} gives the entry a stable identity: when present it is the key on which
  * configs are unioned across a project and its dependencies (so a re-declared entry replaces rather
@@ -21,18 +22,27 @@ public class RuneNamespaceConfiguration {
 	private final String id;
 	private final String namespace;
 	private final boolean readOnly;
+	private final RuneOriginConfiguration origin;
 	private final RuneSchemaConfiguration schemaConfig;
+
+	/** A namespace configuration with no provenance recorded. */
+	public RuneNamespaceConfiguration(String id, String namespace, boolean readOnly,
+			RuneSchemaConfiguration schemaConfig) {
+		this(id, namespace, readOnly, null, schemaConfig);
+	}
 
 	@JsonCreator
 	public RuneNamespaceConfiguration(
 			@JsonProperty("id") String id,
 			@JsonProperty("namespace") String namespace,
 			@JsonProperty("readOnly") boolean readOnly,
+			@JsonProperty("origin") RuneOriginConfiguration origin,
 			@JsonProperty("schemaConfig") RuneSchemaConfiguration schemaConfig) {
 		Objects.requireNonNull(namespace);
 		this.id = id;
 		this.namespace = namespace;
 		this.readOnly = readOnly;
+		this.origin = origin;
 		this.schemaConfig = schemaConfig;
 	}
 
@@ -53,6 +63,16 @@ public class RuneNamespaceConfiguration {
 	@JsonInclude(JsonInclude.Include.NON_DEFAULT)
 	public boolean isReadOnly() {
 		return readOnly;
+	}
+
+	/**
+	 * Which tool produced this namespace, or {@code null} when it is hand-written. A namespace with an
+	 * origin is generated, and &mdash; unlike a read-only one &mdash; is expected to be refined by hand
+	 * afterwards.
+	 */
+	@JsonInclude(value = JsonInclude.Include.CUSTOM, valueFilter = RuneOriginConfiguration.EmptyFilter.class)
+	public RuneOriginConfiguration getOrigin() {
+		return origin;
 	}
 
 	/** The external schema configuration for this namespace, or {@code null} if none is configured. */
