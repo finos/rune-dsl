@@ -52,8 +52,9 @@ public class RuneConfigurationFileProvider implements Provider<URL> {
 
     /**
      * Points this provider at an explicit configuration file on disk, instead of discovering the
-     * primary config on the classpath. Dependency configs are still discovered from the classpath
-     * (see {@link #getResources()}).
+     * primary config on the classpath. A {@code null} value explicitly means that the current
+     * project has no config. Dependency configs are still discovered from the classpath (see
+     * {@link #getResources()}).
      */
     public void setConfigFile(String configFile) {
         this.loadFromClasspath = false;
@@ -81,6 +82,9 @@ public class RuneConfigurationFileProvider implements Provider<URL> {
 
     @Override
     public URL get() {
+        if (!loadFromClasspath && fileName == null) {
+            return null;
+        }
         if (fileName != null) {
             // An explicit file name was requested: resolve it as-is, without any fallback.
             return loadFromClasspath ? fromClasspath(fileName) : requireFile(fileName);

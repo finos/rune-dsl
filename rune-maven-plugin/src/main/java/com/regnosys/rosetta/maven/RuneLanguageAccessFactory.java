@@ -42,9 +42,9 @@ public class RuneLanguageAccessFactory {
                         + " must implement " + RosettaStandaloneSetup.class.getName());
             }
             RosettaStandaloneSetup setup = (RosettaStandaloneSetup) loadClass.getDeclaredConstructor().newInstance();
-            if (rosettaConfig != null) {
-                setup.setConfigFile(rosettaConfig);
-            }
+            // A null value explicitly means this project has no config; dependency configs must not
+            // become the primary config and restrict this project's generators.
+            setup.setConfigFile(rosettaConfig);
             // The thread context classloader during the build is the plugin realm, which cannot see the
             // project's compile dependencies. Hand the config provider a classloader over the project
             // classpath so dependency serializationConfig entries are discovered and unioned.
