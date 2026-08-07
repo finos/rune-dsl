@@ -31,11 +31,10 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: '3.x'
-    # PyYAML reads the shared pattern corpus. It is a test-only dependency: the checkers
-    # themselves use only the standard library, since they run in other repositories with
-    # nothing but `setup-python`.
-    - name: Install test dependencies
-      run: pip install pyyaml
+        cache: 'pip'
+        cache-dependency-path: .github/scripts/requirements.txt
+    - name: Install checker dependencies
+      run: pip install --disable-pip-version-check --quiet -r .github/scripts/requirements.txt
     # The checkers under .github/scripts are consumed by other repositories through the
     # reusable verify-readonly-namespaces workflow, so they are tested here.
     - name: Run checker unit tests

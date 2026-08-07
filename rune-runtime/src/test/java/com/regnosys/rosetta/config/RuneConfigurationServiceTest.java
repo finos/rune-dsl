@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 
 import com.rosetta.model.lib.transform.SerializationFormat;
 
@@ -128,6 +129,65 @@ class RuneConfigurationServiceTest {
 				.addNamespaceConfig(new RuneNamespaceConfiguration(null, "cdm.base.datetime", true, null))
 				.build();
 		assertEquals(2, updated.getNamespaceConfig().size());
+	}
+
+	private static final String GENERATED_CONFIG =
+			"model:\n"
+			+ "  name: DEMO\n"
+			+ "namespaceConfig:\n"
+			+ "- namespace: demo.unavista.csv\n"
+			+ "  origin:\n"
+			+ "    modelImport: csv\n"
+			+ "  schemaConfig:\n"
+			+ "    schema: unavistaTransaction\n"
+			+ "    configPath: csv-config/unavistaTransaction-csv-config.json\n";
+
+	@Test
+	void originMarkerIsReadAndRoundtrips() throws IOException {
+		RuneConfiguration config = service.readString(GENERATED_CONFIG);
+
+		RuneNamespaceConfiguration entry = config.getNamespaceConfig().get(0);
+		assertEquals("csv", entry.getOrigin().getModelImport());
+		// a sample-derived namespace is editable, so `readOnly` stays absent
+		assertFalse(entry.isReadOnly());
+
+		String out = service.writeString(config);
+		assertTrue(out.contains("origin:"), out);
+		assertTrue(out.contains("modelImport: csv"), out);
+		assertFalse(out.contains("readOnly"), out);
+	}
+
+	@Test
+	void aNamespaceCanBeReadOnlyWithoutCarryingAnOrigin() throws IOException {
+		RuneConfiguration config = service.readString(CONFIG);
+
+		RuneNamespaceConfiguration entry = config.getNamespaceConfig().get(0);
+		assertNull(entry.getOrigin());
+		assertTrue(entry.isReadOnly());
+	}
+
+	@Test
+	void anUnrecognizedOriginKeyIsDroppedLikeAnyOtherUnknownProperty() throws IOException {
+		// A configuration is only ever read by the version that wrote it or a newer one, so a key this
+		// version does not recognize can only be a mistake -- and is dropped, as `tabulators` is above.
+		String yaml = "model:\n  name: X\n"
+				+ "namespaceConfig:\n"
+				+ "- namespace: demo.future\n"
+				+ "  origin:\n"
+				+ "    someUnknownTool: v1\n";
+		RuneConfiguration config = service.readString(yaml);
+
+		assertNull(config.getNamespaceConfig().get(0).getOrigin().getModelImport());
+		assertFalse(service.writeString(config).contains("someUnknownTool"));
+	}
+
+	@Test
+	void anOriginNamingNoToolIsNotWrittenBack() throws IOException {
+		String yaml = "model:\n  name: X\nnamespaceConfig:\n- namespace: demo.plain\n  origin: {}\n";
+		RuneConfiguration config = service.readString(yaml);
+
+		assertNull(config.getNamespaceConfig().get(0).getOrigin().getModelImport());
+		assertFalse(service.writeString(config).contains("origin"), service.writeString(config));
 	}
 
 	@Test
