@@ -1,0 +1,90 @@
+# The definition of namespace-pattern matching, as cases rather than prose.
+#
+# Read by RuneNamespacePatternTest (Java, rune-runtime) and test_namespace_patterns.py
+# (Python), so the two implementations cannot drift apart without a test failing. Add a case
+# here rather than to either test on its own.
+#
+# A namespace pattern is one of two things: an exact namespace, or a namespace followed by a
+# terminal `.*` covering it and all of its subnamespaces. Nothing else is a wildcard.
+
+cases:
+
+- pattern: foo.bar
+  # A bare pattern is an exact match.
+  matches:
+  - foo.bar
+  does-not-match:
+  - foo
+  - foo.bar.baz
+  - foo.barbaz
+  - afoo.bar
+
+- pattern: foo.bar.*
+  # A terminal `.*` covers the namespace itself and all of its subnamespaces, by whole
+  # segments. Both halves of that sentence matter, so both are pinned here.
+  matches:
+  - foo.bar
+  - foo.bar.baz
+  - foo.bar.baz.qux
+  does-not-match:
+  - foo
+  - foo.barbaz
+  - foo.barbaz.qux
+
+- pattern: foo
+  # A single-segment exact pattern behaves like any other exact one.
+  matches:
+  - foo
+  does-not-match:
+  - foo.bar
+  - foobar
+
+- pattern: foo.*
+  # The same rule at the top level.
+  matches:
+  - foo
+  - foo.bar
+  - foo.bar.baz
+  does-not-match:
+  - foobar
+  - bar.foo
+
+- pattern: "*"
+  # The degenerate case of `abc.*`: an empty prefix, which every namespace starts with.
+  matches:
+  - foo
+  - foo.bar
+  - com.rosetta.model
+  does-not-match: []
+
+- pattern: foo*
+  # Not a supported form. Only a terminal `.*` is a wildcard, so this is an exact match
+  # against a namespace that cannot exist.
+  matches: []
+  does-not-match:
+  - foo
+  - foobar
+  - foo.bar
+
+- pattern: a?c
+  # Glob single-character wildcards are not supported.
+  matches: []
+  does-not-match:
+  - abc
+  - a.c
+
+- pattern: a[bc]
+  # Glob character classes are not supported.
+  matches: []
+  does-not-match:
+  - ab
+  - ac
+
+- pattern: com.rosetta.model.*
+  # The shape every consumer repository actually uses.
+  matches:
+  - com.rosetta.model
+  - com.rosetta.model.metafields
+  does-not-match:
+  - com.rosetta.modelling
+  - com.rosetta
