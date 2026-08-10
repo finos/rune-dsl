@@ -45,9 +45,13 @@ import com.rosetta.util.types.JavaType
 import com.regnosys.rosetta.generator.java.scoping.JavaMethodScope
 import com.regnosys.rosetta.generator.java.types.JavaPojoImpl
 import com.rosetta.model.lib.annotations.RuneChoiceType
+import com.regnosys.rosetta.generator.java.labels.LabelProviderGeneratorUtil
+import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass
+import com.rosetta.model.lib.annotations.RuneLabelProvider
+import com.rosetta.model.lib.functions.LabelProvider
 
 class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojoInterface> {
-	
+
 	@Inject extension ModelObjectBoilerPlate
 	@Inject extension ModelObjectBuilderGenerator
 	@Inject extension ImportManagerExtension
@@ -55,7 +59,8 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 	@Inject extension JavaTypeUtil
 	@Inject extension TypeCoercionService
 	@Inject extension RObjectFactory
-	
+	@Inject LabelProviderGeneratorUtil labelProviderUtil
+
 	override protected streamObjects(RosettaModel model) {
 		model.elements.stream.filter[it instanceof Data].map[it as Data].map[buildRDataType]
 	}
@@ -63,10 +68,15 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 		t.toJavaReferenceType
 	}
 	override protected generateClass(RDataType t, JavaPojoInterface javaType, String version, JavaClassScope pojoScope) {
-		classBody(javaType, pojoScope, javaType.toJavaMetaDataClass, version)
+		val labelProviderClass = labelProviderUtil.shouldGenerateLabelProvider(t) ? t.toLabelProviderJavaClass : null
+		classBody(javaType, pojoScope, javaType.toJavaMetaDataClass, version, labelProviderClass)
 	}
 
-	def StringConcatenationClient classBody(JavaPojoInterface javaType, JavaClassScope pojoScope, JavaClass<?> metaType, String version) {		
+	def StringConcatenationClient classBody(JavaPojoInterface javaType, JavaClassScope pojoScope, JavaClass<?> metaType, String version) {
+		classBody(javaType, pojoScope, metaType, version, null)
+	}
+
+	def StringConcatenationClient classBody(JavaPojoInterface javaType, JavaClassScope pojoScope, JavaClass<?> metaType, String version, RGeneratedJavaClass<? extends LabelProvider> labelProviderClass) {
 		val superInterface = javaType.superPojo
 		val extendSuperImpl = superInterface !== null && javaType.ownProperties.forall[isCompatibleTypeWithParent]
 		val metaDataIdentifier = pojoScope.createUniqueIdentifier("metaData");
@@ -82,6 +92,7 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 			@«RosettaDataType»(value="«javaType.rosettaName»", builder=«builderImplClass».class, version="«javaType.version»")
 			@«RuneDataType»(value="«javaType.rosettaName»", model="«modelShortName»", builder=«builderImplClass».class, version="«javaType.version»")
 			«IF javaType.choiceType»@«RuneChoiceType»«ENDIF»
+			«IF labelProviderClass !== null»@«RuneLabelProvider»(labelProvider=«labelProviderClass».class)«ENDIF»
 			public «javaType.asInterfaceDeclaration» {
 
 				«metaType» «metaDataIdentifier» = new «metaType»();
