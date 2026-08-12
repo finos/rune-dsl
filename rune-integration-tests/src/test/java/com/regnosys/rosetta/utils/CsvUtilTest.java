@@ -141,4 +141,98 @@ public class CsvUtilTest {
         var data = model.getType(typeName);
         return rObjectFactory.buildRDataType(data);
     }
+    // ---------------------------------------------------------------------------
+    // Metadata-annotated attributes are not tabular
+    //
+    // A metadata annotation generates a FieldWithMeta* wrapper rather than a scalar, and a CSV cell
+    // has no shape for an object. Measured in rune-common: writing one fails with "CSV generator does
+    // not support Object values", reading one fails with "Cannot construct instance of
+    // FieldWithMetaString ... from String value". Neither direction round-trips, at either
+    // cardinality, so such a type is refused here rather than at runtime.
+    // ---------------------------------------------------------------------------
+
+    @Test
+    void typeWithSchemeMetadataAttributeIsNotTabular() {
+        assertNotTabular("Foo", """
+                type Foo:
+                	withScheme string (1..1)
+                		[metadata scheme]
+                """);
+    }
+
+    @Test
+    void typeWithIdMetadataAttributeIsNotTabular() {
+        assertNotTabular("Foo", """
+                type Foo:
+                	withId string (1..1)
+                		[metadata id]
+                """);
+    }
+
+    @Test
+    void typeWithMultiCardinalityMetadataAttributeIsNotTabular() {
+        // The cardinality relaxation must not let this one through: it is rejected for carrying
+        // metadata, not for being a list.
+        assertNotTabular("Foo", """
+                type Foo:
+                	schemeList string (0..*)
+                		[metadata scheme]
+                """);
+    }
+
+    @Test
+    void typeWithInheritedMetadataAttributeIsNotTabular() {
+        // getAllAttributes() includes inherited attributes, so a supertype's metadata attribute
+        // disqualifies the subtype too.
+        assertNotTabular("Foo", """
+                type Base:
+                	withScheme string (1..1)
+                		[metadata scheme]
+
+                type Foo extends Base:
+                	own string (0..1)
+                """);
+    }
+
+    @Test
+    void typeWhoseMetadataAttributeIsRemovedIsStillNotTabular() {
+        // The plain sibling of the above, to show the rejection is the metadata and nothing else.
+        assertTabular("Foo", """
+                type Base:
+                	plain string (1..1)
+
+                type Foo extends Base:
+                	own string (0..1)
+                """);
+    }
+
+    // ---------------------------------------------------------------------------
+    // Inheritance, pinned because getNonSimpleAttributes walks getAllAttributes()
+    // ---------------------------------------------------------------------------
+
+    @Test
+    void typeWithInheritedMultiCardinalitySimpleAttributeIsTabular() {
+        assertTabular("Foo", """
+                type Base:
+                	stringList string (0..*)
+
+                type Foo extends Base:
+                	own string (0..1)
+                """);
+    }
+
+    @Test
+    void typeWithInheritedComplexAttributeIsNotTabular() {
+        assertNotTabular("Foo", """
+                type Bar:
+
+                type Base:
+                	complexAttr Bar (1..1)
+
+                type Foo extends Base:
+                	own string (0..1)
+                """);
+    }
+
+
 }
