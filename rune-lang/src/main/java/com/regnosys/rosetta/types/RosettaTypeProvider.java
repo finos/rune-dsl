@@ -615,6 +615,12 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
 
     @Override
     protected RMetaAnnotatedType caseToEnumOperation(ToEnumOperation expr, Map<RosettaSymbol, RMetaAnnotatedType> cycleTracker) {
+        // An unresolved enumeration is a proxy, which has no containing model: building an REnumType
+        // from it yields a type whose name cannot be computed, and any validator that reports on this
+        // expression then fails with an NPE instead of the linking error the user needs to see.
+        if (!extensions.isResolved(expr.getEnumeration())) {
+            return builtins.NOTHING_WITH_ANY_META;
+        }
         return RMetaAnnotatedType.withNoMeta(rObjectFactory.buildREnumType(expr.getEnumeration()));
     }
 
