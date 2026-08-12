@@ -39,7 +39,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     @Test
     void csvIngestionInputMustBeTabular() {
     	assertIssues("""
-                type Input:
+                type Thing:
                    attr string (1..1)
                    complexAttr Foo (1..1)
                 
@@ -48,9 +48,9 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
                 func MyFunc:
                    [ingest CSV]
                    inputs:
-                       inp Input (1..1)
+                       inp Thing (1..1)
                 """, """
-                ERROR (null) 'The input of a CSV ingest function must be a tabular type. Type `Input` has non-simple attributes: `complexAttr`' at 13:12, length 5, on Attribute
+                ERROR (null) 'The input of a CSV ingest function must be a tabular type. Type `Thing` has non-simple attributes: `complexAttr`' at 13:12, length 5, on Attribute
                 """
     		);
     }
@@ -58,7 +58,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     @Test
     void csvProjectionOutputMustBeTabular() {
         assertIssues("""
-                type Input:
+                type Thing:
                    attr string (1..1)
                    complexAttr Foo (1..1)
                 
@@ -67,11 +67,11 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
                 func MyFunc:
                    [projection CSV]
                    output:
-                       inp Input (1..1)
+                       inp Thing (1..1)
                 """, """
                 WARNING (null) 'A function should specify an implementation, or they should be annotated with codeImplementation' at 10:6, length 6, on Function
                 ERROR (null) 'Transform functions must have a single input.' at 11:4, length 16, on TransformAnnotation
-                ERROR (null) 'The output of a CSV projection function must be a tabular type. Type `Input` has non-simple attributes: `complexAttr`' at 13:12, length 5, on Attribute
+                ERROR (null) 'The output of a CSV projection function must be a tabular type. Type `Thing` has non-simple attributes: `complexAttr`' at 13:12, length 5, on Attribute
                 """
         );
     }
@@ -79,14 +79,14 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     @Test
     void csvIngestionMayNotHaveMultipleInputs() {
         assertIssues("""
-                type Input:
+                type Thing:
                    attr string (1..1)
                 
                 func MyFunc:
                    [ingest CSV]
                    inputs:
-                       inp Input (1..1)
-                       inp2 Input (1..1)
+                       inp Thing (1..1)
+                       inp2 Thing (1..1)
                 """, """
                 ERROR (null) 'Transform functions may only have a single input.' at 11:8, length 17, on Attribute
                 """
@@ -96,13 +96,13 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     @Test
     void csvIngestionMayNotHaveMultiInput() {
         assertIssues("""
-                type Input:
+                type Thing:
                    attr string (1..1)
                 
                 func MyFunc:
                    [ingest CSV]
                    inputs:
-                       inp Input (0..*)
+                       inp Thing (0..*)
                 """, """
                 ERROR (null) 'The input of a CSV ingest function must be single cardinality' at 10:18, length 6, on Attribute
                 """
@@ -112,14 +112,14 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     @Test
     void csvIngestionInputWithMultiCardinalitySimpleAttributeIsTabular() {
         assertNoIssues("""
-                type Input:
+                type Thing:
                    attr string (1..1)
                    stringList string (0..*)
 
                 func MyFunc:
                    [ingest CSV]
                    inputs:
-                       inp Input (1..1)
+                       inp Thing (1..1)
                 """
         );
     }
@@ -127,7 +127,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     @Test
     void csvProjectionOutputWithMultiCardinalitySimpleAttributeIsTabular() {
         assertNoIssues("""
-                type Input:
+                type Thing:
                    attr string (1..1)
                    stringList string (0..*)
 
@@ -136,9 +136,9 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
                    inputs:
                        inp string (1..1)
                    output:
-                       result Input (1..1)
+                       result Thing (1..1)
 
-                   set result: Input { attr: inp, stringList: empty }
+                   set result: Thing { attr: inp, stringList: empty }
                 """
         );
     }
@@ -146,7 +146,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     @Test
     void csvProjectionOutputMustBeSingleCardinality() {
     	assertIssues("""
-                type Input:
+                type Thing:
                    attr string (1..1)
 
                 func MyFunc:
@@ -154,9 +154,9 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
                    inputs:
                        inp string (1..1)
                    output:
-                       result Input (0..*)
+                       result Thing (0..*)
 
-                   set result: [ Input { attr: inp } ]
+                   set result: [ Thing { attr: inp } ]
                 """, """
                 ERROR (null) 'The output of a CSV projection function must be single cardinality' at 12:21, length 6, on Attribute
                 """
@@ -166,7 +166,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     @Test
     void csvLabelledProjectionOutputMustBeTabular() {
         assertIssues("""
-                type Input:
+                type Thing:
                    attr string (1..1)
                    complexAttr Foo (1..1)
 
@@ -177,11 +177,11 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
                    inputs:
                        inp string (1..1)
                    output:
-                       result Input (1..1)
+                       result Thing (1..1)
 
-                   set result: Input { attr: inp, complexAttr: Foo { } }
+                   set result: Thing { attr: inp, complexAttr: Foo { } }
                 """, """
-                ERROR (null) 'The output of a CSV projection function must be a tabular type. Type `Input` has non-simple attributes: `complexAttr`' at 15:15, length 5, on Attribute
+                ERROR (null) 'The output of a CSV projection function must be a tabular type. Type `Thing` has non-simple attributes: `complexAttr`' at 15:15, length 5, on Attribute
                 """
         );
     }
@@ -189,7 +189,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     @Test
     void csvLabelledIngestionInputMustBeTabular() {
         assertIssues("""
-                type Input:
+                type Thing:
                    attr string (1..1)
                    complexAttr Foo (1..1)
 
@@ -198,9 +198,9 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
                 func MyFunc:
                    [ingest CSV_LABELLED]
                    inputs:
-                       inp Input (1..1)
+                       inp Thing (1..1)
                 """, """
-                ERROR (null) 'The input of a CSV ingest function must be a tabular type. Type `Input` has non-simple attributes: `complexAttr`' at 13:12, length 5, on Attribute
+                ERROR (null) 'The input of a CSV ingest function must be a tabular type. Type `Thing` has non-simple attributes: `complexAttr`' at 13:12, length 5, on Attribute
                 """
         );
     }
@@ -208,7 +208,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     @Test
     void csvLabelledProjectionOverFlatTypeIsTabular() {
         assertNoIssues("""
-                type Input:
+                type Thing:
                    attr string (1..1)
                    enumAttr Bar (1..1)
                    aliasAttr Qux (1..1)
@@ -225,9 +225,9 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
                    inputs:
                        inp string (1..1)
                    output:
-                       result Input (1..1)
+                       result Thing (1..1)
 
-                   set result: Input { attr: inp, enumAttr: Bar -> VALUE1, aliasAttr: inp }
+                   set result: Thing { attr: inp, enumAttr: Bar -> VALUE1, aliasAttr: inp }
                 """
         );
     }
@@ -235,7 +235,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     @Test
     void csvLabelledProjectionOutputWithMultiCardinalitySimpleAttributeIsTabular() {
         assertNoIssues("""
-                type Input:
+                type Thing:
                    attr string (1..1)
                    stringList string (0..*)
 
@@ -244,9 +244,9 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
                    inputs:
                        inp string (1..1)
                    output:
-                       result Input (1..1)
+                       result Thing (1..1)
 
-                   set result: Input { attr: inp, stringList: empty }
+                   set result: Thing { attr: inp, stringList: empty }
                 """
         );
     }
@@ -254,13 +254,13 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     @Test
     void csvLabelledIngestionInputMustBeSingleCardinality() {
         assertIssues("""
-                type Input:
+                type Thing:
                    attr string (1..1)
 
                 func MyFunc:
                    [ingest CSV_LABELLED]
                    inputs:
-                       inp Input (0..*)
+                       inp Thing (0..*)
                 """, """
                 ERROR (null) 'The input of a CSV ingest function must be single cardinality' at 10:18, length 6, on Attribute
                 """
@@ -270,7 +270,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     @Test
     void csvIngestionMustHaveOneInput() {
         assertIssues("""
-                type Input:
+                type Thing:
                    attr string (1..1)
                 
                 func MyFunc:
