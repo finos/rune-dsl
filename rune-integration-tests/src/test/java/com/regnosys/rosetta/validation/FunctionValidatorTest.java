@@ -110,6 +110,164 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
+    void csvIngestionInputWithMultiCardinalitySimpleAttributeIsTabular() {
+        assertNoIssues("""
+                type Input:
+                   attr string (1..1)
+                   stringList string (0..*)
+
+                func MyFunc:
+                   [ingest CSV]
+                   inputs:
+                       inp Input (1..1)
+                """
+        );
+    }
+
+    @Test
+    void csvProjectionOutputWithMultiCardinalitySimpleAttributeIsTabular() {
+        assertNoIssues("""
+                type Input:
+                   attr string (1..1)
+                   stringList string (0..*)
+
+                func MyFunc:
+                   [projection CSV]
+                   inputs:
+                       inp string (1..1)
+                   output:
+                       result Input (1..1)
+
+                   set result: Input { attr: inp, stringList: empty }
+                """
+        );
+    }
+
+    @Test
+    void csvProjectionOutputMustBeSingleCardinality() {
+    	assertIssues("""
+                type Input:
+                   attr string (1..1)
+
+                func MyFunc:
+                   [projection CSV]
+                   inputs:
+                       inp string (1..1)
+                   output:
+                       result Input (0..*)
+
+                   set result: [ Input { attr: inp } ]
+                """, """
+                ERROR (null) 'The output of a CSV projection function must be single cardinality' at 12:21, length 6, on Attribute
+                """
+    		);
+    }
+
+    @Test
+    void csvLabelledProjectionOutputMustBeTabular() {
+        assertIssues("""
+                type Input:
+                   attr string (1..1)
+                   complexAttr Foo (1..1)
+
+                type Foo:
+
+                func MyFunc:
+                   [projection CSV_LABELLED]
+                   inputs:
+                       inp string (1..1)
+                   output:
+                       result Input (1..1)
+
+                   set result: Input { attr: inp, complexAttr: Foo { } }
+                """, """
+                ERROR (null) 'The output of a CSV projection function must be a tabular type. Type `Input` has non-simple attributes: `complexAttr`' at 15:15, length 5, on Attribute
+                """
+        );
+    }
+
+    @Test
+    void csvLabelledIngestionInputMustBeTabular() {
+        assertIssues("""
+                type Input:
+                   attr string (1..1)
+                   complexAttr Foo (1..1)
+
+                type Foo:
+
+                func MyFunc:
+                   [ingest CSV_LABELLED]
+                   inputs:
+                       inp Input (1..1)
+                """, """
+                ERROR (null) 'The input of a CSV ingest function must be a tabular type. Type `Input` has non-simple attributes: `complexAttr`' at 13:12, length 5, on Attribute
+                """
+        );
+    }
+
+    @Test
+    void csvLabelledProjectionOverFlatTypeIsTabular() {
+        assertNoIssues("""
+                type Input:
+                   attr string (1..1)
+                   enumAttr Bar (1..1)
+                   aliasAttr Qux (1..1)
+
+                enum Bar:
+                    VALUE1
+                    VALUE2
+
+                typeAlias Qux:
+                    string
+
+                func MyFunc:
+                   [projection CSV_LABELLED]
+                   inputs:
+                       inp string (1..1)
+                   output:
+                       result Input (1..1)
+
+                   set result: Input { attr: inp, enumAttr: Bar -> VALUE1, aliasAttr: inp }
+                """
+        );
+    }
+
+    @Test
+    void csvLabelledProjectionOutputWithMultiCardinalitySimpleAttributeIsTabular() {
+        assertNoIssues("""
+                type Input:
+                   attr string (1..1)
+                   stringList string (0..*)
+
+                func MyFunc:
+                   [projection CSV_LABELLED]
+                   inputs:
+                       inp string (1..1)
+                   output:
+                       result Input (1..1)
+
+                   set result: Input { attr: inp, stringList: empty }
+                """
+        );
+    }
+
+    @Test
+    void csvLabelledIngestionInputMustBeSingleCardinality() {
+        assertIssues("""
+                type Input:
+                   attr string (1..1)
+
+                func MyFunc:
+                   [ingest CSV_LABELLED]
+                   inputs:
+                       inp Input (0..*)
+                """, """
+                ERROR (null) 'The input of a CSV ingest function must be single cardinality' at 10:18, length 6, on Attribute
+                """
+        );
+    }
+
+    @Test
     void csvIngestionMustHaveOneInput() {
         assertIssues("""
                 type Input:

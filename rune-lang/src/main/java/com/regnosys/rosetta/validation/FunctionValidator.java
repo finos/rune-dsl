@@ -75,7 +75,8 @@ public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
     private boolean hasCsvTransformAnnotation(Function function, TransformKind kind) {
         return transformAnnotationHelper.getTransformAnnotation(function)
                 .filter(a -> a.getKind() == kind)
-                .map(a -> transformAnnotationHelper.hasFormat(a, SerializationFormat.CSV))
+                .map(a -> transformAnnotationHelper.hasFormat(a, SerializationFormat.CSV)
+                        || transformAnnotationHelper.hasFormat(a, SerializationFormat.CSV_LABELLED))
                 .orElse(false);
     }
     
