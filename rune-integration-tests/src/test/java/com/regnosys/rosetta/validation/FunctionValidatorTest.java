@@ -330,4 +330,32 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
             WARNING (null) 'Functions annotated with codeImplementation should not have any setter operations as they will be overriden' at 4:6, length 3, on Function
             """);
     }
+    /**
+     * The modeller-facing outcome of refusing a metadata-annotated attribute: it is reported by the
+     * same "must be a tabular type" error that a complex attribute gets, and names the attribute. Such
+     * an attribute generates a FieldWithMeta* wrapper, which no CSV serialiser can write to a cell or
+     * read back from one.
+     */
+    @Test
+    void csvProjectionOutputWithMetadataAttributeIsNotTabular() {
+        assertIssues("""
+                type Thing:
+                   attr string (1..1)
+                   withScheme string (1..1)
+                      [metadata scheme]
+
+                func MyFunc:
+                   [projection CSV]
+                   inputs:
+                       inp string (1..1)
+                   output:
+                       result Thing (1..1)
+
+                   set result -> attr: inp
+                """, """
+                ERROR (null) 'The output of a CSV projection function must be a tabular type. Type `Thing` has non-simple attributes: `withScheme`' at 14:15, length 5, on Attribute
+                """
+        );
+    }
+
 }
