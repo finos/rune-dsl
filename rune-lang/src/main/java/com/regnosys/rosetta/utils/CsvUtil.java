@@ -22,9 +22,6 @@ public class CsvUtil {
     }
     
     private boolean isSimpleAttribute(RAttribute attr) {
-        if (attr.isMulti()) {
-            return false;
-        }
         RType baseType = typeSystem.stripFromTypeAliases(attr.getRMetaAnnotatedType().getRType());
         return !(baseType instanceof RDataType) && !(baseType instanceof RChoiceType);
     }

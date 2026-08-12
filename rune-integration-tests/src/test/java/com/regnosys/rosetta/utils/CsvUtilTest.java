@@ -44,19 +44,83 @@ public class CsvUtilTest {
     }
     
     @Test
-    void typeWithMultiAttributeIsNotTabular() {
-        assertNotTabular("Foo", """
+    void typeWithMultiCardinalitySimpleAttributeIsTabular() {
+        assertTabular("Foo", """
                 type Foo:
                 	stringList string (0..*)
                 """);
     }
-    
+
+    @Test
+    void typeWithMultiCardinalityEnumAttributeIsTabular() {
+        assertTabular("Foo", """
+                type Foo:
+                	barList Bar (0..*)
+
+                enum Bar:
+                    VALUE1
+                    VALUE2
+                """);
+    }
+
+    @Test
+    void typeWithMultiCardinalityTypeAliasOverBasicAttributeIsTabular() {
+        assertTabular("Foo", """
+                type Foo:
+                	quxList Qux (0..*)
+
+                typeAlias Qux:
+                    date
+                """);
+    }
+
+    @Test
+    void typeWithMultiCardinalityDataTypeAttributeIsNotTabular() {
+        assertNotTabular("Foo", """
+                type Foo:
+                	barList Bar (0..*)
+
+                type Bar:
+                """);
+    }
+
+    @Test
+    void typeWithMultiCardinalityChoiceTypeAttributeIsNotTabular() {
+        assertNotTabular("Foo", """
+                type Foo:
+                	fooList Baz (0..*)
+
+                type Bar:
+                    barAttr int (1..1)
+
+                type Qux:
+                    quxAttr int (1..1)
+
+                choice Baz:
+                    Bar
+                    Qux
+                """);
+    }
+
+    @Test
+    void typeWithMultiCardinalityTypeAliasOverDataTypeAttributeIsNotTabular() {
+        assertNotTabular("Foo", """
+                type Foo:
+                	barList Qux (0..*)
+
+                type Bar:
+
+                typeAlias Qux:
+                    Bar
+                """);
+    }
+
     @Test
     void typeWithComplexAttributeIsNotTabular() {
         assertNotTabular("Foo", """
                 type Foo:
                 	complex Bar (1..1)
-                
+
                 type Bar:
                 """);
     }
