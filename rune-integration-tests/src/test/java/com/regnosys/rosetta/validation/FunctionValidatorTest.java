@@ -330,12 +330,6 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
             WARNING (null) 'Functions annotated with codeImplementation should not have any setter operations as they will be overriden' at 4:6, length 3, on Function
             """);
     }
-    /**
-     * The modeller-facing outcome of refusing a metadata-annotated attribute: it is reported by the
-     * same "must be a tabular type" error that a complex attribute gets, and names the attribute. Such
-     * an attribute generates a FieldWithMeta* wrapper, which no CSV serialiser can write to a cell or
-     * read back from one.
-     */
     @Test
     void csvProjectionOutputWithMetadataAttributeIsNotTabular() {
         assertIssues("""

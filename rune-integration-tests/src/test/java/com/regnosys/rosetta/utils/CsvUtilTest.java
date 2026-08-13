@@ -141,15 +141,7 @@ public class CsvUtilTest {
         var data = model.getType(typeName);
         return rObjectFactory.buildRDataType(data);
     }
-    // ---------------------------------------------------------------------------
-    // Metadata-annotated attributes are not tabular
-    //
-    // A metadata annotation generates a FieldWithMeta* wrapper rather than a scalar, and a CSV cell
-    // has no shape for an object. Measured in rune-common: writing one fails with "CSV generator does
-    // not support Object values", reading one fails with "Cannot construct instance of
-    // FieldWithMetaString ... from String value". Neither direction round-trips, at either
-    // cardinality, so such a type is refused here rather than at runtime.
-    // ---------------------------------------------------------------------------
+    // Metadata generates a FieldWithMeta* wrapper, which a CSV cell can't hold in either direction.
 
     @Test
     void typeWithSchemeMetadataAttributeIsNotTabular() {
@@ -171,8 +163,6 @@ public class CsvUtilTest {
 
     @Test
     void typeWithMultiCardinalityMetadataAttributeIsNotTabular() {
-        // The cardinality relaxation must not let this one through: it is rejected for carrying
-        // metadata, not for being a list.
         assertNotTabular("Foo", """
                 type Foo:
                 	schemeList string (0..*)
@@ -182,8 +172,6 @@ public class CsvUtilTest {
 
     @Test
     void typeWithInheritedMetadataAttributeIsNotTabular() {
-        // getAllAttributes() includes inherited attributes, so a supertype's metadata attribute
-        // disqualifies the subtype too.
         assertNotTabular("Foo", """
                 type Base:
                 	withScheme string (1..1)
@@ -195,8 +183,7 @@ public class CsvUtilTest {
     }
 
     @Test
-    void typeWhoseMetadataAttributeIsRemovedIsStillNotTabular() {
-        // The plain sibling of the above, to show the rejection is the metadata and nothing else.
+    void typeWhoseMetadataAttributeIsRemovedIsTabular() {
         assertTabular("Foo", """
                 type Base:
                 	plain string (1..1)
@@ -205,10 +192,6 @@ public class CsvUtilTest {
                 	own string (0..1)
                 """);
     }
-
-    // ---------------------------------------------------------------------------
-    // Inheritance, pinned because getNonSimpleAttributes walks getAllAttributes()
-    // ---------------------------------------------------------------------------
 
     @Test
     void typeWithInheritedMultiCardinalitySimpleAttributeIsTabular() {
