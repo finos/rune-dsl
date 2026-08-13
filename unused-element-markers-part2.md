@@ -1,6 +1,7 @@
 # Plan part 2: a generic post-build diagnostics service, with unused-elements as its first provider
 
-Status: **SESSION 1 DONE** (2026-08-13) — the mechanism swap has landed; sessions 2 and 3 remain.
+Status: **SESSIONS 1 AND 2 DONE** (2026-08-13) — the mechanism swap and hardening have landed; session 3
+(benchmark) remains.
 Prerequisite: everything in `unused-element-markers.md` (part 1), complete on
 branch `unused-functions-editor-only`. Part 1 is not released — it is still open as PR #1299 — so this work
 continues **on that same branch**, not a fresh one on top of it. That is also what §7 recommends: since this
@@ -269,25 +270,44 @@ memoised per language for the duration of one sweep, so the snapshot is still bu
 
 Capture test counts before and after in each module (CLAUDE.md rule). Part 1 recorded `rune-ide` 123 /
 0 skipped and `rune-integration-tests` 1491 / 21 skipped; both are stale — commits landed on the branch
-since. **Measured after session 1 (2026-08-13): `rune-ide` 125 / 0 skipped, `rune-integration-tests`
-1504 / 21 skipped.** Session 1 added and removed no tests: `rune-ide`'s `@Test` count is identical to the
-commit it started from, and `rune-integration-tests` has no working-tree change at all.
+since. Measured after session 1 (2026-08-13): `rune-ide` 125 / 0 skipped, `rune-integration-tests`
+1504 / 21 skipped. **Measured after session 2 (2026-08-13): `rune-ide` 128 / 0 skipped,
+`rune-integration-tests` 1504 / 21 skipped — unchanged**, confirming session 2 touched nothing outside
+`rune-ide` (the +3 are exactly the new tests below).
 
-1. `mvn -o test -pl rune-ide -Dtest='UnusedElement*'` — all **67** green with assertions unchanged
-   (60 validation + 2 staleness + 5 marker). The staleness pair is the acceptance gate for the whole plan.
-2. New tests:
+1. `mvn -o test -pl rune-ide -Dtest='UnusedElement*'` — **DONE.** All **70** green with the original 67's
+   assertions unchanged (60 validation + 2 staleness + 5 marker), plus the 3 new tests below. The staleness
+   pair is the acceptance gate for the whole plan.
+2. New tests — **DONE**, all added to `UnusedElementStalenessTest.java` except the third:
    - deleting the file containing the only call site adds the marker to the declaring file; deleting the
      declaring file leaves no stale store entry (assert via a subsequent unrelated build not republishing).
+     **Correction found while writing this test:** a watched-file deletion's own bookkeeping (the delta with
+     `getNew() == null`) is not guaranteed to land in the build that reports the deletion — Xtext's clustering
+     can carry it into the *next* build instead (§3.8.6's caveat, observed directly here rather than only in
+     theory). The test accounts for this with one settling build after the delete before taking its baseline,
+     then asserts a second, independent build adds nothing further. Also load-bearing: simulate the deletion
+     with `didChangeWatchedFiles`/`FileChangeType.Deleted`, not `deleteFile` + `close()` — the latter's
+     deletion detection depends on `WorkspaceManager#exists`, which was observed to still report the file
+     present immediately after deletion in this harness, so nothing was noticed until a later, unrelated
+     build stumbled onto it. The explicit watched-file event is unconditional and does not have this gap.
    - an edited file's single `publishDiagnostics` contains both its validation issues and its unused hints
-     (guards the §3.4 merge — this is the assertion that would catch hint-clobbering regressions).
-   - **a declaration in one source folder referenced from another is not flagged** — the multi-source-folder
-     case the review asked for, and the only test that pins §3.8.8.
-3. Full `rune-ide` and `rune-integration-tests` suites; then full `mvn install` (checkstyle enforced).
-   `rune-integration-tests` should be untouched — nothing here is a validator `@Check`.
+     (guards the §3.4 merge). Realised with a file that has both an unused import (a genuine
+     `RosettaSimpleValidator#checkImport` warning) and an unused function, asserted right after creation and
+     again after an edit that leaves both issues unchanged — the case where the sweep republishes nothing and
+     the merged build-time publish is the only one the client ever sees.
+   - **`UnusedElementMultiSourceFolderTest`** — a declaration in one source folder referenced from another is
+     not flagged, pinning §3.8.8. `SingleProjectWorkspaceConfigFactory` (the production one-project-many-
+     source-folders factory) lives in `bsp-server`, outside this repository, so the test binds a small
+     equivalent locally: one `FileProjectConfig` with two source folders, via a test-only
+     `IMultiRootWorkspaceConfigFactory` bound through a `RosettaServerModule` subclass (the same pattern
+     `GenerationErrorHandlingTest` uses to override a binding for one test). Verified the test is not vacuous
+     by temporarily breaking the cross-folder call and confirming the marker then does appear.
+3. Full `rune-ide` and `rune-integration-tests` suites; then full `mvn install` (checkstyle enforced) —
+   **DONE, green.** `rune-integration-tests` untouched, confirmed by the unchanged 1504/21 count above.
 4. `EditLatencyBenchmark` on CDM (`-Drune.benchmark.model.dir=...`), A/B against the part-1 branch, medians
    of 3, same five scenarios. Targets: keystroke ≤ 30 ms (the sweep must not be measurable after §3.5);
    reference-toggle at or below today's 44–48 ms (expect ~30); mass edit **materially** below 620 ms
-   (expect ≤ ~300 ms — this case is the reason the plan exists); cold build within +100 ms.
+   (expect ≤ ~300 ms — this case is the reason the plan exists); cold build within +100 ms. **Session 3.**
 
 ## 5. Session plan
 
@@ -327,13 +347,25 @@ javadoc that named a now-deleted class (`IncomingReferenceChanges`, `UnusedEleme
 the `computeOutgoingReferences` staleness bullet and closing paragraph, since leaving those would have made
 the code lie.
 
-### Session 2 — hardening and full verification (**Sonnet**)
+### Session 2 — hardening and full verification (**Sonnet**) — **DONE 2026-08-13**
 
 The §4.2 new tests; the javadoc updates listed in §3.7; update part 1's phase-2 section with a pointer
 ("superseded by part 2's post-build service"). Mechanical work against a design that session 1 has already
 proven.
 
-**Acceptance:** full `mvn install` green; both modules' counts recorded; no `rune-integration-tests` change.
+**Acceptance met:** full `mvn install` green; `rune-ide` 128/0 skipped (+3 new tests), `rune-integration-tests`
+1504/21 skipped (unchanged) — see §4.
+
+**The §3.7 javadoc rewrites needed no further changes.** Re-checked every file in §3.7's table
+(`RosettaStatefulIncrementalBuilder`, `RosettaWorkspaceManager`, `UnusedElementHelper`, `RosettaIdeModule`,
+and the three new `server/diagnostics` classes) and grepped the tree for the deleted classes' names and for
+phrases session 1's notes called out (`revalidateResourcesWithChangedIncomingReferences`, `isMarkerCapable`,
+"would keep this walk") — none remain. Session 1's cleanup was already complete; this session's only
+javadoc-adjacent change is part 1's phase-2 pointer (§ above).
+
+**What this session found, not anticipated by the plan:** the deletion-mechanism and clustering-delay
+findings recorded under §4.2's first new test. Both were surfaced by writing the test against the real
+language server rather than assumed from reading the code.
 
 ### Session 3 — benchmark (**Sonnet**, needs the user)
 

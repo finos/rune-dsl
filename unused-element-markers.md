@@ -394,6 +394,15 @@ expressions aren't descended into.
 
 ### Phase 2 — fix invalidation — DONE (2026-07-29)
 
+**Superseded (2026-08-13) by part 2's post-build service.** Everything below this point — the
+`IncomingReferenceChanges` diff, the unload-before-revalidate step, the per-kind pruning of §3.9 — describes
+the mechanism as it shipped in this PR. Part 2 replaces it outright with a language-agnostic
+`WorkspaceDerivedDiagnosticsService` that recomputes markers for every resource after each build instead of
+diffing which resources' incoming references changed; see `unused-element-markers-part2.md` §1 and §3.7 for
+why and what moved. `IncomingReferenceChanges` and the revalidation methods on
+`RosettaStatefulIncrementalBuilder` no longer exist. The measurements and remaining-caveats sections below are
+kept as the record of why the replacement was worth doing (§3.6's mass-edit cost is part 2's §1 point 3).
+
 Acceptance met: both `UnusedFunctionStalenessTest` cases pass with `@Disabled` removed. `rune-ide` went
 from 66 tests / 2 skipped to 66 tests / 0 skipped, no other change.
 
