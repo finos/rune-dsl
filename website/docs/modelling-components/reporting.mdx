@@ -169,6 +169,8 @@ To ensure the reporting model is valid, all of these must already exist in the r
 
 A report simply assembles these components into a **complete recipe** that firms can implement directly to meet regulatory reporting obligations.
 
+### 2.5 Labels beyond reporting
+`label` annotations are not specific to reports — any type in a Rune model can carry them on its own, inherited, or overridden attributes, and Rune generates a label provider for that type regardless of whether it is used as a report or function output. This is what lets labelled serialisation (for example, CSV) match columns by label for any type, not only report types. See [Label providers](../developers/rune-and-java#13-label-providers) for how this is generated and exposed in Java.
 
 ## 3. Report rules
 Rune takes a **functional approach** to regulatory reporting. A reporting rule is simply a function, **y=f(x)**, where:

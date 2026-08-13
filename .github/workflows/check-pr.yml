@@ -22,3 +22,21 @@ jobs:
     steps:
     - uses: actions/checkout@v6
     - uses: ./.github/actions/maven-build
+
+  namespace-checkers:
+    name: Namespace checker unit tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'
+        cache: 'pip'
+        cache-dependency-path: .github/scripts/requirements.txt
+    - name: Install checker dependencies
+      run: pip install --disable-pip-version-check --quiet -r .github/scripts/requirements.txt
+    # The checkers under .github/scripts are consumed by other repositories through the
+    # reusable verify-readonly-namespaces workflow, so they are tested here.
+    - name: Run checker unit tests
+      working-directory: .github/scripts
+      run: python -m unittest discover -p 'test_*.py' -v

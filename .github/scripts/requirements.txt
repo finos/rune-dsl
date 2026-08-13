@@ -1,0 +1,6 @@
+# The checkers' only dependency. They read the same rune-config.yml the DSL does, and parsing it by
+# hand made them a second, subtly different implementation of that format.
+#
+# Pinned deliberately: check_readonly_namespaces.py fails the build in every repository that calls
+# the reusable workflow, so a bad upstream release must not be able to break them.
+PyYAML==6.0.3
