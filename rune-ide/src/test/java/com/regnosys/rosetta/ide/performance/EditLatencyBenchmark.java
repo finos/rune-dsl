@@ -38,11 +38,11 @@ import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerTest;
  * files it validates in doing so.
  *
  * <p>This exists because the "is never used" markers are cross-file by nature: a declaration's marker
- * depends on every other file, so both detection (a walk of the whole resource set, see
- * {@code UnusedElementHelper}) and invalidation (revalidating files whose incoming references changed, see
- * {@code RosettaStatefulIncrementalBuilder}) scale with model size in a way ordinary validation does not.
- * The numbers that matter are the marginal ones — an edit that changes no cross-file reference must stay
- * as cheap as it was, and an edit that toggles one must stay within a keystroke's budget.
+ * depends on every other file, so the post-build sweep that recomputes them for the whole workspace (see
+ * {@code WorkspaceDerivedDiagnosticsService} and {@code UnusedElementHelper}) scales with model size in a way
+ * ordinary validation does not. The numbers that matter are the marginal ones — an edit that changes no
+ * cross-file reference must stay as cheap as it was, and an edit that toggles one must stay within a
+ * keystroke's budget.
  *
  * <p><b>Not a CI test.</b> The class name does not match surefire's {@code *Test} include patterns, so a
  * normal build never picks it up; the assumption below is a second line of defence for anyone who widens

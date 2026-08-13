@@ -15,14 +15,13 @@ import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTes
  *
  * <p>The language server only revalidates resources it considers <em>affected</em>, and Xtext's notion of
  * affected is one-directional: a resource is affected when it references something that changed. The file
- * that <em>declares</em> the element did not change and does not reference the file that did, so it is
- * never revalidated and keeps whatever marker it had. Fixed by
- * {@code RosettaStatefulIncrementalBuilder#revalidateResourcesWithChangedIncomingReferences}, which
- * revalidates resources whose declarations gained or lost a reference from a resource the build did touch;
- * see {@code IncomingReferenceChanges} for how that set is derived.
+ * that <em>declares</em> the element did not change and does not reference the file that did, so it is never
+ * revalidated and would keep whatever marker it had. This is the acceptance test for
+ * {@code WorkspaceDerivedDiagnosticsService}, which sidesteps that by recomputing the markers for every
+ * resource once the build has settled and republishing the ones that changed.
  *
  * <p>Note this is orthogonal to how usages are detected (live AST vs. Xtext index): it is purely about
- * which resources get revalidated.
+ * which resources get their markers refreshed.
  *
  * <p>Both tests use fully qualified references ({@code decl.F()}) rather than an {@code import}, so that
  * adding/removing the call site does not also produce "Unused import" warnings that would obscure the

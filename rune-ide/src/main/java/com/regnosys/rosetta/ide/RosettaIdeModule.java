@@ -4,10 +4,12 @@
  */
 package com.regnosys.rosetta.ide;
 
+import com.google.inject.Binder;
+import com.google.inject.multibindings.Multibinder;
+import com.regnosys.rosetta.ide.server.diagnostics.IWorkspaceDerivedDiagnosticsProvider;
 import com.regnosys.rosetta.ide.symbol.RosettaDocumentSymbolService;
-import com.regnosys.rosetta.ide.validation.UnusedElementResourceValidator;
+import com.regnosys.rosetta.ide.validation.UnusedElementDiagnosticsProvider;
 import org.eclipse.xtext.documentation.IEObjectDocumentationProvider;
-import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.generator.IContextualOutputConfigurationProvider;
 import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalProvider;
 import org.eclipse.xtext.ide.editor.quickfix.IQuickFixProvider;
@@ -148,11 +150,12 @@ public class RosettaIdeModule extends AbstractRosettaIdeModule {
     }
 
     /**
-     * Editor-only override: augment validation with "unused declaration" diagnostics. Bound here (the IDE
-     * injector) rather than in the runtime module so the markers appear in the language server only,
-     * and never as build/test validation issues.
+     * Editor-only: contribute the "unused declaration" markers. Bound here (the IDE injector) rather than in
+     * the runtime module so they appear in the language server only, and never as build/test validation
+     * issues.
      */
-    public Class<? extends IResourceValidator> bindIResourceValidator() {
-        return UnusedElementResourceValidator.class;
+    public void configureWorkspaceDerivedDiagnosticsProviders(Binder binder) {
+        Multibinder.newSetBinder(binder, IWorkspaceDerivedDiagnosticsProvider.class)
+                .addBinding().to(UnusedElementDiagnosticsProvider.class);
     }
 }

@@ -23,38 +23,36 @@ import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.xtext.service.OperationCanceledError;
-import org.eclipse.xtext.util.CancelIndicator;
-import org.eclipse.xtext.validation.CheckMode;
+import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.xtext.validation.CheckType;
 import org.eclipse.xtext.validation.FeatureBasedDiagnostic;
 import org.eclipse.xtext.validation.IDiagnosticConverter;
 import org.eclipse.xtext.validation.Issue;
 import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 
+import com.regnosys.rosetta.ide.server.diagnostics.IWorkspaceDerivedDiagnosticsProvider;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.SimplePackage;
-import com.regnosys.rosetta.validation.CachingResourceValidator;
 import com.regnosys.rosetta.validation.RosettaIssueCodes;
 import com.regnosys.rosetta.validation.UnusedElementHelper;
+import com.regnosys.rosetta.validation.UnusedElementHelper.UsageSnapshot;
 
 import jakarta.inject.Inject;
 
 /**
- * Editor-only resource validator that augments the standard validation with "unused declaration"
- * diagnostics for every named root element — see {@link UnusedElementHelper}.
+ * Contributes the "unused declaration" marker for every named root element — see {@link UnusedElementHelper}.
  *
- * <p>This is bound exclusively in the IDE injector ({@code RosettaIdeModule}), so it runs in the
- * language server but never in the runtime injector used by {@code ValidationTestHelper}. The
- * resulting issues carry {@link RosettaIssueCodes#UNUSED_DECLARATION}, which
- * {@code RosettaLanguageServerImpl#toDiagnostic} renders as a {@code Hint} with the
- * {@code Unnecessary} tag — i.e. a greyed-out declaration — without surfacing as a build/test warning.
+ * <p>Whether a declaration is used depends on every other file, so this is a workspace-derived diagnostic
+ * rather than a validator check: it is recomputed after each build and never enters the validation issue
+ * stream that batch builds and {@code ValidationTestHelper} tests assert against. The issues carry
+ * {@link RosettaIssueCodes#UNUSED_DECLARATION}, which {@code RosettaLanguageServerImpl#toDiagnostic} renders
+ * as a {@code Hint} with the {@code Unnecessary} tag — a greyed-out declaration.
  */
-public class UnusedElementResourceValidator extends CachingResourceValidator {
+public class UnusedElementDiagnosticsProvider implements IWorkspaceDerivedDiagnosticsProvider {
     /**
      * How a declaration of a given kind is described in its marker.
      *
@@ -93,22 +91,12 @@ public class UnusedElementResourceValidator extends CachingResourceValidator {
     private IDiagnosticConverter diagnosticConverter;
 
     @Override
-    public List<Issue> validate(Resource resource, CheckMode mode, CancelIndicator cancelIndicator)
-            throws OperationCanceledError {
-        List<Issue> issues = super.validate(resource, mode, cancelIndicator);
-        if (!mode.shouldCheck(CheckType.NORMAL)) {
-            return issues;
-        }
-        List<Issue> unusedElementIssues = computeUnusedElementIssues(resource);
-        if (unusedElementIssues.isEmpty()) {
-            return issues;
-        }
-        List<Issue> combined = new ArrayList<>(issues);
-        combined.addAll(unusedElementIssues);
-        return combined;
+    public Sweep beginSweep(ResourceSet resourceSet) {
+        UsageSnapshot snapshot = unusedElementHelper.snapshot(resourceSet);
+        return resource -> computeUnusedElementIssues(resource, snapshot);
     }
 
-    private List<Issue> computeUnusedElementIssues(Resource resource) {
+    private List<Issue> computeUnusedElementIssues(Resource resource, UsageSnapshot snapshot) {
         List<Issue> result = new ArrayList<>();
         for (EObject content : resource.getContents()) {
             if (!(content instanceof RosettaModel model)) {
@@ -116,7 +104,7 @@ public class UnusedElementResourceValidator extends CachingResourceValidator {
             }
             // Every candidate is a root element, so there is no need to descend into the whole model.
             for (RosettaRootElement element : model.getElements()) {
-                if (unusedElementHelper.isUnused(element)) {
+                if (unusedElementHelper.isUnused(element, snapshot)) {
                     FeatureBasedDiagnostic diagnostic = new FeatureBasedDiagnostic(
                             Diagnostic.WARNING,
                             markerMessageFor(element),

@@ -31,12 +31,16 @@ import java.util.Set;
  * of being a silent omission.
  *
  * <p>This is intentionally <em>not</em> a validator {@code @Check}: it is consumed only by the
- * editor/LSP layer (see {@code UnusedElementResourceValidator} in {@code rune-ide}) so that the
+ * editor/LSP layer (see {@code UnusedElementDiagnosticsProvider} in {@code rune-ide}) so that the
  * result surfaces as a faded marker in the editor without polluting the validation issue stream that
  * batch builds and {@code ValidationTestHelper} tests assert against.
  *
  * <p>Detection is purely syntactic and non-transitive: a declaration referenced only by another
  * unused declaration still counts as used, so peeling dead code takes one edit per layer.
+ *
+ * <p>The API is two-step — {@link #snapshot} once for a whole resource set, then {@link #isUnused} per
+ * declaration — because the union of every resource's references is the same for every candidate, and
+ * rebuilding it per candidate is what makes the naive version quadratic.
  */
 public class UnusedElementHelper {
     /**
@@ -73,22 +77,44 @@ public class UnusedElementHelper {
     }
 
     /**
-     * Returns {@code true} if the given declaration is a candidate for the marker, has no references
-     * anywhere in the resource set, and is not exempt.
+     * Every declaration referenced from anywhere in a resource set, as of the moment it was taken.
      */
-    public boolean isUnused(RosettaRootElement element) {
+    public static final class UsageSnapshot {
+        private final Set<ElementId> referenced;
+
+        private UsageSnapshot(Set<ElementId> referenced) {
+            this.referenced = referenced;
+        }
+    }
+
+    /**
+     * Unions the declarations each resource references. Per-resource results are cached, so a resource whose
+     * contents did not change contributes without being walked again.
+     */
+    public UsageSnapshot snapshot(ResourceSet resourceSet) {
+        Set<ElementId> referenced = new HashSet<>();
+        // Iterate a copy: the walk below resolves cross-references, and resolving a proxy that is still
+        // unresolved demand-loads its resource into this very list.
+        for (Resource resource : List.copyOf(resourceSet.getResources())) {
+            referenced.addAll(outgoingReferences(resource));
+        }
+        return new UsageSnapshot(referenced);
+    }
+
+    /**
+     * Returns {@code true} if the given declaration is a candidate for the marker, is not exempt, and is
+     * referenced nowhere in the given snapshot.
+     */
+    public boolean isUnused(RosettaRootElement element, UsageSnapshot snapshot) {
         Resource resource = element.eResource();
-        if (resource == null || resource.getResourceSet() == null) {
+        if (resource == null) {
             return false;
         }
         if (!isCandidate(element, resource) || isExempt(element)) {
             return false;
         }
         ElementId id = idOf(element);
-        if (id == null) {
-            return false;
-        }
-        return !isReferenced(id, resource.getResourceSet());
+        return id != null && !snapshot.referenced.contains(id);
     }
 
     /**
@@ -126,9 +152,6 @@ public class UnusedElementHelper {
      * {@code [suppressUnused]} regardless (the {@code calculation} type alias also declared there now could,
      * but this exclusion is checked first, so it never gets the chance to matter). Every builtin a given
      * model happens not to use would therefore be marked permanently.
-     *
-     * <p>{@code IncomingReferenceChanges} in {@code rune-ide} skips the same resources, for the related
-     * reason that revalidating a resource which can never carry a marker cannot change its diagnostics.
      */
     private boolean isInBuiltinResource(Resource resource) {
         return RosettaBuiltinsService.isBuiltinResource(resource.getURI());
@@ -184,17 +207,6 @@ public class UnusedElementHelper {
                 .anyMatch(annotation -> annotationName.equals(annotation.getName()));
     }
 
-    private boolean isReferenced(ElementId candidate, ResourceSet resourceSet) {
-        // Iterate a copy: the walk below resolves cross-references, and resolving a proxy that is still
-        // unresolved demand-loads its resource into this very list.
-        for (Resource resource : List.copyOf(resourceSet.getResources())) {
-            if (outgoingReferences(resource).contains(candidate)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private Set<ElementId> outgoingReferences(Resource resource) {
         if (resource.getContents().isEmpty()) {
             return Set.of();
@@ -209,7 +221,7 @@ public class UnusedElementHelper {
      * <p>The cross-reference index — read directly or through Xtext's {@code IReferenceFinder}, which wraps
      * the same data — is not a viable alternative here, even though it does contain these references
      * ({@code createReferenceDescriptions} is not overridden by {@code RosettaResourceDescriptionStrategy},
-     * so it descends into expressions and records calls just like any other cross-reference). Three things
+     * so it descends into expressions and records calls just like any other cross-reference). Two things
      * rule it out:
      *
      * <ul>
@@ -219,27 +231,13 @@ public class UnusedElementHelper {
      * two mechanisms instead of one. And {@code IResourceDescriptions} exposes no target-to-source reverse
      * lookup, so the cross-file half would still scan every resource's outgoing references —
      * {@code ReferenceFinder} does exactly that, on every call, with no caching.</li>
-     * <li><b>The index is stale exactly when this code runs.</b> This helper executes inside validation,
-     * i.e. inside {@code IncrementalBuilder}'s per-resource loop, while that same loop is still populating
-     * the index: a dirty-but-unprocessed resource's description deliberately reports no references at all
-     * ({@code ResolvedResourceDescription#getReferenceDescriptions} returns empty). With two files dirty in
-     * one build, the only call site of a declaration can be invisible while its declaring file is validated
-     * — a false "unused" marker, and one nothing later corrects: the post-build repair pass
-     * ({@code IncomingReferenceChanges} in {@code rune-ide}) diffs settled before/after index states, to
-     * which transient mid-build wrongness is invisible. Other index consumers do not share this problem —
-     * find-references and friends run as read requests that {@code RequestManager} orders after the build,
-     * so they only ever see the settled index; validation is the one place that would read it mid-mutation.
-     * The live AST is the very state being validated, so it cannot be stale by construction.</li>
      * <li><b>The index records raw positional URIs.</b> No {@code IFragmentProvider} is bound (see
      * {@link ElementId} for why that matters), so recorded targets renumber whenever declarations move, and
      * attributing a reference to the root element declaring its target would mean re-deriving
      * {@link #declaringRootElement} in URI-fragment space over those fragile fragments.</li>
      * </ul>
      *
-     * <p>The live AST walk instead sees same-file and cross-file references uniformly, with one mechanism,
-     * from state that is current by definition. Only the second objection is about <em>when</em> the check
-     * runs rather than what it reads — so even a redesign that computed markers after the build would keep
-     * this walk and gain nothing from the index.
+     * <p>The live AST walk instead sees same-file and cross-file references uniformly, with one mechanism.
      *
      * <p>Two properties make a single generic walk correct for every reference shape in the grammar, so
      * that a new grammar rule cannot silently reintroduce a false positive:

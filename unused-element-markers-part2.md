@@ -1,6 +1,7 @@
 # Plan part 2: a generic post-build diagnostics service, with unused-elements as its first provider
 
-Status: **NOT STARTED**. Prerequisite: everything in `unused-element-markers.md` (part 1), complete on
+Status: **SESSION 1 DONE** (2026-08-13) — the mechanism swap has landed; sessions 2 and 3 remain.
+Prerequisite: everything in `unused-element-markers.md` (part 1), complete on
 branch `unused-functions-editor-only`. Part 1 is not released — it is still open as PR #1299 — so this work
 continues **on that same branch**, not a fresh one on top of it. That is also what §7 recommends: since this
 plan deletes `IncomingReferenceChanges` outright, folding it into the PR before merge means the
@@ -90,23 +91,29 @@ needs unloading, and the cached base issues are exactly what gets reused at repu
 New package `rune-ide/.../server/diagnostics` (language-agnostic — nothing in it may import
 `com.regnosys.rosetta.rosetta.*`):
 
+As built (the `Object sweepState` this plan originally proposed was replaced by a closure, which is the
+cleaner shape the section invited — no cast, no type parameter):
+
 ```java
 public interface IWorkspaceDerivedDiagnosticsProvider {
-    /** Prepare whatever whole-workspace state the sweep needs, once. */
-    Object beginSweep(ResourceSet resourceSet);
+    /** Prepares the whole-workspace state, once, and returns the per-resource step that reads it. */
+    Sweep beginSweep(ResourceSet resourceSet);
 
-    /** Diagnostics this provider contributes to one resource, given that state. */
-    List<Issue> computeDiagnostics(Resource resource, Object sweepState);
+    interface Sweep {
+        List<Issue> computeDiagnostics(Resource resource);
+    }
 }
 ```
 
 Two phases rather than one method because the useful shape of the state is provider-specific — Rune's is
-`UsageSnapshot` (§3.5) — and computing it per resource is what makes the naive version quadratic. If a
-cleaner generic type parameter falls out during implementation, use it; the two-phase shape is the fixed
-part, not the `Object`.
+`UsageSnapshot` (§3.5) — and computing it per resource is what makes the naive version quadratic.
 
 The service owns the store (§3.3), the sweep, the diff, and the republish. Providers are contributed via a
 Guice multibinder from the language module, so a second future consumer is an added binding and one class.
+The service runs on the server injector and so cannot inject that set; it resolves it per resource through
+`IResourceServiceProvider.get(Injector.class).getExistingBinding(...)`, because
+`IResourceServiceProvider#get(Class)` cannot express a multibound `Set`. A language contributing nothing
+yields an empty set rather than an error.
 
 ### 3.2 The pass
 
@@ -122,10 +129,22 @@ delegates to the service:
    cancellation per resource, as the current `revalidate()` does.
 4. Diff each resource's new list against the store (§3.3). For each URI whose list changed, republish
    `baseIssues + newDiagnostics`, then — and only then — update that URI's store entry (§3.8.4 explains the
-   ordering). `baseIssues` come from the language's `IResourceValidator` (`CachingResourceValidator`), a
-   cache hit because the resource didn't change or was just validated. Do **not** unload anything.
+   ordering). Do **not** unload anything.
+   **Correction made during session 1:** `baseIssues` must be *what was last published* for the URI, not a
+   fresh `IResourceValidator.validate` call. Not every diagnostic comes from the validator —
+   `RosettaStatefulIncrementalBuilder#generate` reports a code-generation failure straight to
+   `afterValidate` — so re-deriving the base from validation alone silently drops generation errors on the
+   republish. `GenerationErrorHandlingTest` catches this immediately. The wrapper of §3.4 is the one place
+   that sees every publish, so it records the base; see §3.3.
+   A second consequence: only resources something has already published for are eligible for a republish.
+   That is the right rule anyway (a dependency loaded only to resolve references is not ours to report on)
+   and it subsumes the builtin exclusion of §3.8.3.
 5. Prune store entries for URIs the deltas report deleted. `afterBuild` receives the deltas directly, so
    this needs no inference.
+6. `afterBuild` is handed no `CancelIndicator`, and step 3 needs one. `RosettaWorkspaceManager` captures the
+   current build's indicator in a field by overriding `didChangeFiles` (wrapping the returned `Buildable`)
+   and `refreshWorkspaceConfig` — between them, every build path. Request handling is serialised, so a field
+   is enough.
 
 **The publish channel.** `WorkspaceManager` hands its `issueAcceptor` to each `ProjectManager` at
 initialize; that acceptor is `LanguageServerImpl#publishDiagnostics` (`:510`), which routes through
@@ -146,12 +165,19 @@ base issues merged in, never hints alone.
 
 ### 3.3 The store
 
-A `@Singleton` on the server injector, e.g. `server/diagnostics/DerivedDiagnosticsStore`:
+A `@Singleton` on the server injector, `server/diagnostics/DerivedDiagnosticsStore`. As built it records
+both halves of what the client has been told about each resource, keyed by resource `URI`:
 
-- Keyed by resource `URI`, then by provider. URIs are absolute, so one store across projects is harmless.
-- The value must support equality for the diff. Xtext `Issue` implementations do not implement `equals`,
-  so store an immutable record per diagnostic — `(message, issueCode, offset, length)` is sufficient and
-  stable — and compare lists. Keep the actual `Issue` objects only transiently for publishing.
+- the **base**: the issues last published for it by something other than a sweep, captured by the §3.4
+  wrapper. This is what makes a republish faithful — see the correction in §3.2 step 4. An entry existing at
+  all is also the "has anything been published for this resource" test the sweep gates on.
+- the **derived** half, per provider.
+- URIs are absolute, so one store across projects is harmless.
+- The diff needs equality. Xtext `Issue` implementations do not implement `equals`, so comparison reduces
+  each issue to an immutable `(message, issueCode, offset, length)` record — sufficient and stable — and
+  compares the per-provider maps, with an empty contribution comparing equal to no entry. The actual `Issue`
+  objects are *retained*, not discarded: republishing needs the line and column information they carry, which
+  the value record deliberately omits. They hold no reference to the model.
 - Cleared on `initialize`, so a test server reusing an injector across cases cannot leak entries.
 
 ### 3.4 Merging into the build's own publishes (anti-flicker)
@@ -161,13 +187,15 @@ validator no longer computes them). Left alone, an edited file would publish val
 and get its hints back milliseconds later — a per-keystroke blink of the faded rendering.
 
 Fix: wrap the issue acceptor **once**, at `initialize` (§3.2), so every publish through it has the store's
-*current* entries for that URI appended. One wrap for the life of the workspace manager — not part 1's
+*current* derived entries for that URI appended. One wrap for the life of the workspace manager — not part 1's
 per-build wrap of `BuildRequest.afterValidate` — so there is no accumulation question and no interaction to
 reason about with `resetBuildStatistics`, which wraps a different callback and is untouched by this plan.
-The wrap also covers the pass's own republishes, so §3.2 step 4 publishes base issues and lets the wrapper
-attach the rest; update the store entry first in that one direction only if the wrapper reads it, which is
-the ordering trap called out in §3.8.4 — resolve it by having the pass publish the merged list explicitly
-and the wrapper skip URIs the pass is currently republishing.
+
+**Double-attach, resolved:** the wrapper is not in the pass's path at all. `install` captures the *unwrapped*
+acceptor and the pass publishes its merged list straight through that, so exactly one component owns each
+publish and there is no "skip the URIs the pass is republishing" bookkeeping. The same wrapper is where the
+base half of the store is recorded (§3.3), which is the only reason the pass can assemble a faithful merged
+list without re-running validation.
 
 Consequence, accepted: a built file's own hints are one pass stale *within* the build (e.g. deleting the
 last same-file call to a function in the same file), corrected by the §3.2 republish in the same write
@@ -195,9 +223,9 @@ class holds all the policy and none of the lifecycle.
 
 Getting it from the service: the service runs on the server injector, the provider on the language
 injector. Resolve per resource through the `IResourceServiceProvider` registry — the same lookup the
-builder's inherited `validate(Resource)` uses — to obtain both the provider and the `IResourceValidator`.
-Every `.rosetta` resource is the one language, but do the lookup per resource anyway rather than caching a
-single provider.
+builder's inherited `validate(Resource)` uses — see §3.1 for how the multibound set is reached from there.
+Every `.rosetta` resource is the one language, but the lookup is per resource anyway; `beginSweep` is
+memoised per language for the duration of one sweep, so the snapshot is still built once.
 
 ### 3.7 Relocations and deletions
 
@@ -205,7 +233,7 @@ single provider.
 |---|---|
 | `rune-ide/.../build/IncomingReferenceChanges.java` | **delete** (all ~204 lines) |
 | `rune-ide/.../build/RosettaStatefulIncrementalBuilder.java` | delete `revalidateResourcesWithChangedIncomingReferences` + `revalidate`; rewrite class javadoc. Nothing from this plan is added here — the class returns to its generation-error duties only |
-| `rune-ide/.../server/RosettaWorkspaceManager.java` | override both `initialize` overloads (capture acceptor, install wrapper, clear store) and `afterBuild` (§3.2) |
+| `rune-ide/.../server/RosettaWorkspaceManager.java` | override the `List<WorkspaceFolder>` `initialize` (install the wrapper — the `baseDir` overload funnels into it, so wrapping there too would double-wrap), `afterBuild`, and `didChangeFiles`/`refreshWorkspaceConfig` for the cancel indicator (§3.2) |
 | `rune-ide/.../server/diagnostics/IWorkspaceDerivedDiagnosticsProvider.java` | new, §3.1 |
 | `rune-ide/.../server/diagnostics/WorkspaceDerivedDiagnosticsService.java` | new, §3.1–§3.2 |
 | `rune-ide/.../server/diagnostics/DerivedDiagnosticsStore.java` | new, §3.3 |
@@ -239,8 +267,11 @@ single provider.
 
 ## 4. Verification
 
-Capture test counts before and after in each module (CLAUDE.md rule). Current baselines from part 1:
-`rune-ide` 123 tests / 0 skipped, `rune-integration-tests` 1491 / 21 skipped.
+Capture test counts before and after in each module (CLAUDE.md rule). Part 1 recorded `rune-ide` 123 /
+0 skipped and `rune-integration-tests` 1491 / 21 skipped; both are stale — commits landed on the branch
+since. **Measured after session 1 (2026-08-13): `rune-ide` 125 / 0 skipped, `rune-integration-tests`
+1504 / 21 skipped.** Session 1 added and removed no tests: `rune-ide`'s `@Test` count is identical to the
+commit it started from, and `rune-integration-tests` has no working-tree change at all.
 
 1. `mvn -o test -pl rune-ide -Dtest='UnusedElement*'` — all **67** green with assertions unchanged
    (60 validation + 2 staleness + 5 marker). The staleness pair is the acceptance gate for the whole plan.
@@ -264,23 +295,43 @@ Reassessed 2026-08-13 after PR review. The generic SPI adds a layer to what was 
 and the long pole is still verification: the 60-case LSP suite catches subtle publish-ordering mistakes.
 **Do not attempt the whole plan in one session.** Each session lands independently verifiable.
 
-### Session 1 — the mechanism swap (**Opus**)
+### Session 1 — the mechanism swap (**Opus**) — **DONE 2026-08-13**
 
 §3.5 helper restructure → §3.1 SPI + service + store → §3.6 provider relocation → §3.2 `afterBuild`
 override and acceptor capture → §3.4 wrap → deletions and unbinding, in that order (each step compiles).
 Opus rather than Sonnet because the publish-channel plumbing (protected/private acceptor, wrapper vs pass
 ordering in §3.4) is the part most likely to produce plausible-but-wrong code.
 
-**Acceptance:** `rune-lang` compiles with checkstyle; `mvn -o test -pl rune-ide -Dtest='UnusedElement*'` =
-67/67 green, assertions unchanged. If the staleness tests fail, the likely causes in order: republish
-missing the base-issue merge (§3.2), diff comparing `Issue` objects instead of value records (§3.3), store
-updated before publish (§3.8.4), wrapper installed after `refreshWorkspaceConfig` (§3.2).
+**Acceptance met:** `mvn -o test -pl rune-ide -Dtest='UnusedElement*'` = 67/67 green with assertions
+unchanged (60 validation + 2 staleness + 5 marker), and `mvn -o install` green across the reactor with
+checkstyle enforced — so session 2's full-suite acceptance is already satisfied too.
+
+**What the plan got wrong, found by the tests:**
+
+- **Base issues (§3.2 step 4).** Re-deriving them from `IResourceValidator` drops any diagnostic that does
+  not come from the validator. `GenerationErrorHandlingTest` fails immediately: a republish over a file with
+  a code-generation error replaces the error with the unused hint. Fixed by recording the base in the §3.4
+  wrapper. See §3.2 and §3.3 for the corrected design.
+- **A latent part-1 bug surfaced by that fix.** Previously the generation-error publish ran *after* the
+  validate publish and clobbered the file's unused hints, so a file with a generation error silently lost its
+  markers. It now shows both, which is correct. `GenerationErrorHandlingTest`'s two assertions were narrowed
+  to filter by the generation-error issue code — the only test change in session 1 that was not a rename,
+  and the subject of that test is unaffected.
+- **Wrapper/pass double-attach (§3.4, §6).** Simpler than the plan assumed: the pass publishes through the
+  unwrapped acceptor, so no skip-list is needed.
+- **No cancel indicator in `afterBuild`.** Not noticed when writing §3.2; see step 6 there.
+
+**Remaining for session 2**, unchanged: the §4.2 new tests, the javadoc rewrites in §3.7 that were not
+forced by a deleted class reference, and part 1's phase-2 pointer. Note session 1 already fixed every
+javadoc that named a now-deleted class (`IncomingReferenceChanges`, `UnusedElementResourceValidator`) plus
+the `computeOutgoingReferences` staleness bullet and closing paragraph, since leaving those would have made
+the code lie.
 
 ### Session 2 — hardening and full verification (**Sonnet**)
 
-The §4.2 new tests; full-suite runs and count capture; the javadoc updates listed in §3.7; update this
-plan's status header and part 1's phase-2 section with a pointer ("superseded by part 2's post-build
-service"). Mechanical work against a design that session 1 has already proven.
+The §4.2 new tests; the javadoc updates listed in §3.7; update part 1's phase-2 section with a pointer
+("superseded by part 2's post-build service"). Mechanical work against a design that session 1 has already
+proven.
 
 **Acceptance:** full `mvn install` green; both modules' counts recorded; no `rune-integration-tests` change.
 
@@ -296,14 +347,14 @@ short-circuits are the second.
 - **Publish-path regressions are silent** — they manifest as missing or flickering diagnostics, not
   errors. The §4.2 merged-publish test and the staleness pair are the tripwires; run them after every
   change to the pass, not just at the end.
-- **Wrapper/pass double-attach.** §3.4's acceptor wrapper and §3.2's explicit merge can both add hints to
-  the same publish. Decide one owner per publish and assert it in the merged-publish test.
+- ~~**Wrapper/pass double-attach.**~~ Resolved by construction in session 1 — the pass bypasses the wrapper
+  (§3.4). The merged-publish test of §4.2 is still worth having as a regression guard.
 - **`Issue` equality**: the diff silently never firing (always-equal records) or always firing
   (identity comparison) both produce plausible-looking behaviour locally; the staleness tests catch the
   former, the merged-publish test plus a publish-count assertion catch the latter.
 - **Store lifetime**: server-injector singleton means test servers sharing an injector could leak entries
-  between cases. §3.3 clears on `initialize`; confirm `AbstractRosettaLanguageServerValidationTest`'s
-  per-test `initializeContext` reaches it.
+  between cases. §3.3 clears on `initialize`. In practice `AbstractLanguageServerTest#setup` builds a fresh
+  injector per test method, so the store is per-test regardless.
 
 ## 7. Outstanding review items not covered here
 

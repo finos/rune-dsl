@@ -3,14 +3,10 @@ package com.regnosys.rosetta.ide.build;
 import com.regnosys.rosetta.generator.AggregateGenerationException;
 import com.regnosys.rosetta.generator.GenerationException;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import com.regnosys.rosetta.utils.EnvironmentUtil;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.build.BuildRequest;
 import org.eclipse.xtext.build.IncrementalBuilder;
 import org.eclipse.xtext.build.IncrementalBuilder.InternalStatefulIncrementalBuilder;
@@ -19,8 +15,6 @@ import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.INode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
-import org.eclipse.xtext.resource.IResourceDescription;
-import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.util.ITextRegionWithLineInformation;
 import org.eclipse.xtext.util.LineAndColumn;
 import org.eclipse.xtext.validation.Issue;
@@ -29,16 +23,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * This class handles errors thrown during code generation and sends them back to the
  * client in the form of diagnostics.
- *
- * It also revalidates resources whose declarations gained or lost a reference from a resource the build
- * touched, which Xtext's own notion of "affected" does not cover — see
- * {@link #revalidateResourcesWithChangedIncomingReferences}.
  *
  * It also supports turning on logging of build statistics by setting an environment variable to `true`.
  * If enabled, for each build, it will log:
@@ -66,59 +55,9 @@ public class RosettaStatefulIncrementalBuilder extends InternalStatefulIncrement
             // Prevent empty builds from cluttering the logs.
             return new IncrementalBuilder.Result(getRequest().getState(), List.of());
         }
-        IncrementalBuilder.Result result = doLaunch();
-        revalidateResourcesWithChangedIncomingReferences(result);
-        return result;
+        return doLaunch();
     }
 
-    /**
-     * Revalidates resources that the build did not touch but whose declarations gained or lost a reference
-     * from a resource it did, so that markers describing how a declaration is used elsewhere — currently
-     * "is never used", see {@code UnusedElementResourceValidator} — do not go stale. See
-     * {@link IncomingReferenceChanges} for how the set is derived, and why it can only be derived here and
-     * not in {@code IResourceDescription.Manager#isAffected}.
-     *
-     * <p>These resources are unloaded first. Their content has not changed, so revalidating them in place
-     * would just hand back the previous answer: {@code CachingResourceValidator} memoises issues per
-     * resource, {@code UnusedElementHelper} memoises the declarations each resource references, and both
-     * caches live on the resource, which {@code ProjectManager#createFreshResourceSet} carries over from
-     * one build to the next. Unloading is how the regular affected-resource path gets a clean slate too.
-     *
-     * <p>No code is generated for them, since unchanged input produces identical output.
-     */
-    private void revalidateResourcesWithChangedIncomingReferences(IncrementalBuilder.Result result) {
-        if (getRequest().isIndexOnly()) {
-            // An index-only project is deliberately never validated, so it must not be validated here either.
-            return;
-        }
-        List<IResourceDescription.Delta> deltas = result.getAffectedResources();
-        Set<URI> built = deltas.stream().map(IResourceDescription.Delta::getUri).collect(Collectors.toSet());
-        Set<URI> toRevalidate = IncomingReferenceChanges.resourcesToRevalidate(
-                deltas, built, result.getIndexState().getResourceDescriptions());
-        if (toRevalidate.isEmpty()) {
-            return;
-        }
-        toRevalidate.forEach(this::unloadResource);
-        // Unloading every resource up front is safe because `executeClustered` loads a whole cluster into
-        // the resource set before applying the operation to any of it. Were it to load and validate one at a
-        // time, revalidating the first would see the rest as missing from the resource set — and a
-        // declaration whose only user is a still-unloaded file reads as unused.
-        List<URI> revalidated = new ArrayList<>();
-        getContext().executeClustered(toRevalidate, this::revalidate).forEach(revalidated::add);
-        if (INCREMENTAL_BUILDER_STATISTICS_ENABLED) {
-            LOGGER.info("Revalidated {} files whose incoming references changed: {}", revalidated.size(), revalidated);
-        }
-    }
-
-    private URI revalidate(Resource resource) {
-        getOperationCanceledManager().checkCanceled(getRequest().getCancelIndicator());
-        // Trigger init, then link, exactly as the regular build loop does before validating.
-        resource.getContents();
-        EcoreUtil2.resolveLazyCrossReferences(resource, CancelIndicator.NullImpl);
-        validate(resource);
-        return resource.getURI();
-    }
-    
     protected IncrementalBuilder.Result doLaunch() {
         if (INCREMENTAL_BUILDER_STATISTICS_ENABLED) {
             resetBuildStatistics();

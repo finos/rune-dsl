@@ -24,7 +24,7 @@ import com.regnosys.rosetta.rosetta.simple.SimplePackage;
  * <p>This is the test that makes {@code UnusedElementHelper}'s "every named root element is a candidate" rule
  * safe to state. Candidacy is a rule, so a root element added to the grammar becomes a candidate with no code
  * change — and would then be passed to
- * {@link UnusedElementResourceValidator#markerMessageFor(RosettaRootElement)}, which must produce a usable
+ * {@link UnusedElementDiagnosticsProvider#markerMessageFor(RosettaRootElement)}, which must produce a usable
  * message for it rather than throw. The failure mode of throwing there is unusually bad: it happens while
  * diagnostics are being computed for publication, so it surfaces as <em>fewer</em> diagnostics rather than as
  * a visible error.
@@ -87,11 +87,11 @@ public class UnusedElementMarkerTest {
 		RosettaRule rule = RosettaFactory.eINSTANCE.createRosettaRule();
 		rule.setName("Thing");
 		Assertions.assertEquals("Reporting rule 'Thing' is never used",
-				UnusedElementResourceValidator.markerMessageFor(rule));
+				UnusedElementDiagnosticsProvider.markerMessageFor(rule));
 
 		rule.setEligibility(true);
 		Assertions.assertEquals("Eligibility rule 'Thing' is not used by any report",
-				UnusedElementResourceValidator.markerMessageFor(rule));
+				UnusedElementDiagnosticsProvider.markerMessageFor(rule));
 	}
 
 	/**
@@ -111,7 +111,7 @@ public class UnusedElementMarkerTest {
 		EStructuralFeature nameFeature = eClass.getEStructuralFeature(
 				RosettaPackage.Literals.ROSETTA_NAMED__NAME.getName());
 		element.eSet(nameFeature, name);
-		return UnusedElementResourceValidator.markerMessageFor(element);
+		return UnusedElementDiagnosticsProvider.markerMessageFor(element);
 	}
 
 	/** Every instantiable named root element in the model, i.e. exactly the candidate set. */
