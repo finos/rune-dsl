@@ -11,13 +11,11 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.regnosys.rosetta.ide.validation.UnusedElementResourceValidator.Marker;
 import com.regnosys.rosetta.rosetta.RosettaFactory;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.SimplePackage;
-import com.regnosys.rosetta.validation.RosettaIssueCodes;
 
 /**
  * Guards the mapping from a declaration to the marker reported for it, over <em>every</em> named root element
@@ -26,9 +24,13 @@ import com.regnosys.rosetta.validation.RosettaIssueCodes;
  * <p>This is the test that makes {@code UnusedElementHelper}'s "every named root element is a candidate" rule
  * safe to state. Candidacy is a rule, so a root element added to the grammar becomes a candidate with no code
  * change — and would then be passed to
- * {@link UnusedElementResourceValidator#markerFor(RosettaRootElement)}, which must produce a usable marker for
- * it rather than throw. The failure mode of throwing there is unusually bad: it happens while diagnostics are
- * being computed for publication, so it surfaces as <em>fewer</em> diagnostics rather than as a visible error.
+ * {@link UnusedElementResourceValidator#markerMessageFor(RosettaRootElement)}, which must produce a usable
+ * message for it rather than throw. The failure mode of throwing there is unusually bad: it happens while
+ * diagnostics are being computed for publication, so it surfaces as <em>fewer</em> diagnostics rather than as
+ * a visible error.
+ *
+ * <p>The message is also the only place the kind of declaration is named — every unused marker carries the
+ * same issue code — so "which noun does this kind get" is a user-visible contract, not a cosmetic one.
  *
  * <p>Deliberately not a language-server test — it constructs model objects directly, so it covers kinds that
  * have no convenient concrete syntax and stays fast.
@@ -43,16 +45,12 @@ public class UnusedElementMarkerTest {
 				"Expected the model to declare at least 15 named root elements, found " + kinds.size());
 
 		for (EClass eClass : kinds) {
-			Marker marker = markerFor(eClass, "Thing");
-			Assertions.assertTrue(RosettaIssueCodes.UNUSED_CODES.contains(marker.issueCode()),
-					eClass.getName() + " produced issue code " + marker.issueCode()
-							+ ", which is not in UNUSED_CODES — the language server gates the faded marker on"
-							+ " that set, so it would be published as an ordinary problem instead");
-			Assertions.assertTrue(marker.message().contains("'Thing'"),
-					eClass.getName() + " produced the message \"" + marker.message()
+			String message = markerMessageFor(eClass, "Thing");
+			Assertions.assertTrue(message.contains("'Thing'"),
+					eClass.getName() + " produced the message \"" + message
 							+ "\", which does not name the declaration");
-			Assertions.assertTrue(Character.isUpperCase(marker.message().charAt(0)),
-					eClass.getName() + " produced the message \"" + marker.message()
+			Assertions.assertTrue(Character.isUpperCase(message.charAt(0)),
+					eClass.getName() + " produced the message \"" + message
 							+ "\", which does not start with a capital");
 		}
 	}
@@ -60,27 +58,24 @@ public class UnusedElementMarkerTest {
 	@Test
 	void knownKindsAreDescribedByTheirOwnNoun() {
 		Assertions.assertEquals("Function 'Thing' is never used",
-				markerFor(SimplePackage.Literals.FUNCTION, "Thing").message());
+				markerMessageFor(SimplePackage.Literals.FUNCTION, "Thing"));
 		Assertions.assertEquals("Type 'Thing' is never used",
-				markerFor(SimplePackage.Literals.DATA, "Thing").message());
+				markerMessageFor(SimplePackage.Literals.DATA, "Thing"));
 		Assertions.assertEquals("Type alias 'Thing' is never used",
-				markerFor(RosettaPackage.Literals.ROSETTA_TYPE_ALIAS, "Thing").message());
+				markerMessageFor(RosettaPackage.Literals.ROSETTA_TYPE_ALIAS, "Thing"));
 		Assertions.assertEquals("Library function 'Thing' is never used",
-				markerFor(RosettaPackage.Literals.ROSETTA_EXTERNAL_FUNCTION, "Thing").message());
+				markerMessageFor(RosettaPackage.Literals.ROSETTA_EXTERNAL_FUNCTION, "Thing"));
 		Assertions.assertEquals("Rule source 'Thing' is never used",
-				markerFor(RosettaPackage.Literals.ROSETTA_EXTERNAL_RULE_SOURCE, "Thing").message());
+				markerMessageFor(RosettaPackage.Literals.ROSETTA_EXTERNAL_RULE_SOURCE, "Thing"));
 	}
 
 	/** A subclass is described by its parent's entry, so {@code choice} reads as a type. */
 	@Test
 	void subclassesInheritTheirParentsNoun() {
-		Marker choice = markerFor(SimplePackage.Literals.CHOICE, "Thing");
-		Assertions.assertEquals("Type 'Thing' is never used", choice.message());
-		Assertions.assertEquals(RosettaIssueCodes.UNUSED_TYPE, choice.issueCode());
-
-		Marker dispatch = markerFor(SimplePackage.Literals.FUNCTION_DISPATCH, "Thing");
-		Assertions.assertEquals("Function 'Thing' is never used", dispatch.message());
-		Assertions.assertEquals(RosettaIssueCodes.UNUSED_FUNCTION, dispatch.issueCode());
+		Assertions.assertEquals("Type 'Thing' is never used",
+				markerMessageFor(SimplePackage.Literals.CHOICE, "Thing"));
+		Assertions.assertEquals("Function 'Thing' is never used",
+				markerMessageFor(SimplePackage.Literals.FUNCTION_DISPATCH, "Thing"));
 	}
 
 	/**
@@ -92,15 +87,11 @@ public class UnusedElementMarkerTest {
 		RosettaRule rule = RosettaFactory.eINSTANCE.createRosettaRule();
 		rule.setName("Thing");
 		Assertions.assertEquals("Reporting rule 'Thing' is never used",
-				UnusedElementResourceValidator.markerFor(rule).message());
-		Assertions.assertEquals(RosettaIssueCodes.UNUSED_REPORTING_RULE,
-				UnusedElementResourceValidator.markerFor(rule).issueCode());
+				UnusedElementResourceValidator.markerMessageFor(rule));
 
 		rule.setEligibility(true);
 		Assertions.assertEquals("Eligibility rule 'Thing' is not used by any report",
-				UnusedElementResourceValidator.markerFor(rule).message());
-		Assertions.assertEquals(RosettaIssueCodes.UNUSED_ELIGIBILITY_RULE,
-				UnusedElementResourceValidator.markerFor(rule).issueCode());
+				UnusedElementResourceValidator.markerMessageFor(rule));
 	}
 
 	/**
@@ -111,17 +102,16 @@ public class UnusedElementMarkerTest {
 	 */
 	@Test
 	void unknownKindsFallBackToADerivedNoun() {
-		Marker marker = markerFor(RosettaPackage.Literals.ROSETTA_META_TYPE, "Thing");
-		Assertions.assertEquals("Meta type 'Thing' is never used", marker.message());
-		Assertions.assertEquals(RosettaIssueCodes.UNUSED_DECLARATION, marker.issueCode());
+		Assertions.assertEquals("Meta type 'Thing' is never used",
+				markerMessageFor(RosettaPackage.Literals.ROSETTA_META_TYPE, "Thing"));
 	}
 
-	private static Marker markerFor(EClass eClass, String name) {
+	private static String markerMessageFor(EClass eClass, String name) {
 		RosettaRootElement element = (RosettaRootElement) EcoreUtil.create(eClass);
 		EStructuralFeature nameFeature = eClass.getEStructuralFeature(
 				RosettaPackage.Literals.ROSETTA_NAMED__NAME.getName());
 		element.eSet(nameFeature, name);
-		return UnusedElementResourceValidator.markerFor(element);
+		return UnusedElementResourceValidator.markerMessageFor(element);
 	}
 
 	/** Every instantiable named root element in the model, i.e. exactly the candidate set. */

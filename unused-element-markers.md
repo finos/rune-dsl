@@ -658,7 +658,8 @@ not (3a.1). Reword the annotation's description in
 wording again — 4.9 — because the set of kinds that get the marker and the set that can suppress it diverge
 once every named root element is a candidate.)*
 
-**3.4 Issue codes.** Add `UNUSED_TYPE`, `UNUSED_ENUMERATION`, `UNUSED_REPORTING_RULE` and
+**3.4 Issue codes.** *(Superseded 2026-08-13 — collapsed to a single `UNUSED_DECLARATION`; see "Review
+changes" at the end of this plan.)* Add `UNUSED_TYPE`, `UNUSED_ENUMERATION`, `UNUSED_REPORTING_RULE` and
 `UNUSED_ELIGIBILITY_RULE` next to `UNUSED_FUNCTION`, plus a `Set<String> UNUSED_CODES`. Separate codes
 leave room for kind-specific quick fixes later.
 `RosettaLanguageServerImpl.toDiagnostic` becomes `UNUSED_CODES.contains(issue.getCode())`.
@@ -927,8 +928,9 @@ Display nouns: `Type alias`, `Annotation`, `Schema`, `Rule source`, `Body`, `Cor
 `Basic type`, `Record type`, `Library function` — messages stay in the existing
 `"<Noun> 'X' is never used"` shape (the two rule messages keep their special wording).
 
-Issue codes: the phase-3 rationale for one code per kind was room for kind-specific quick fixes. That is
-worth keeping only where a quick fix is plausible, so add `UNUSED_TYPE_ALIAS`, `UNUSED_ANNOTATION` and
+Issue codes: *(superseded 2026-08-13 — every kind now shares `UNUSED_DECLARATION`; see "Review changes" at
+the end of this plan.)* the phase-3 rationale for one code per kind was room for kind-specific quick fixes.
+That is worth keeping only where a quick fix is plausible, so add `UNUSED_TYPE_ALIAS`, `UNUSED_ANNOTATION` and
 `UNUSED_SCHEMA`, and give the documentation and builtin-ish kinds (rule source, body, corpus, segment, basic
 type, record type, library function) plus the generic fallback a single shared `UNUSED_DECLARATION`. Add all
 of them to `UNUSED_CODES` — that set, not the individual code, is what `RosettaLanguageServerImpl` gates on,
@@ -1200,6 +1202,41 @@ owning `ProjectManager` unload + revalidate its own) only if a deployment ever r
 materializes dependency models as separate folders. Pointing the per-project pass at the full index is *not*
 a fix — it would detect cross-project candidates but cannot revalidate another project's resources, so it
 costs the diff without curing the staleness.
+
+### Review changes (2026-08-13): one issue code for every kind — DONE
+
+PR review asked why each kind needs its own issue code rather than one `UNUSED_DECLARATION`. Taken, and
+shipped: `UNUSED_FUNCTION`, `UNUSED_TYPE`, `UNUSED_ENUMERATION`, `UNUSED_REPORTING_RULE`,
+`UNUSED_ELIGIBILITY_RULE`, `UNUSED_TYPE_ALIAS`, `UNUSED_ANNOTATION`, `UNUSED_SCHEMA` and the `UNUSED_CODES`
+set are all deleted. Every unused marker now carries `UNUSED_DECLARATION`, and the kind of declaration is
+named only in the message — which it already was.
+
+Why the "room for a kind-specific quick fix later" rationale did not survive contact with the API:
+
+- `AbstractDeclarativeIdeQuickfixProvider#getFixMethodPredicate` dispatches on the code string alone, and the
+  `@QuickFix` method receives only the `DiagnosticResolutionAcceptor` — the diagnostic and the `EObject`
+  arrive later, via `DiagnosticResolution#configure`. So one code still permits a kind-specific *fix*
+  (`ISemanticModification`/`ITextModification` both get the `EObject`), but not a kind-specific *label*, and
+  not withholding a fix from a kind.
+- The one future fix that would want that is "add `[suppressUnused]`", which only applies to the kinds that
+  can carry annotations (3b.3). If it is ever built, splitting a code back out then is a one-line change to
+  the `toDiagnostic` gate — nothing outside this repo reads these strings, and they have never been
+  released.
+
+Fallout, all mechanical: `RosettaLanguageServerImpl#toDiagnostic` gates on
+`UNUSED_DECLARATION.equals(issue.getCode())`, which puts the constant on the left and so subsumes the phase-3
+null-code guard (the `UnusedElementValidationTest` case covering a null code stays as the regression test);
+`KindDescriptor` loses its `issueCode` component; the one-field `Marker` record collapses, so
+`markerFor` → `markerMessageFor` returning the message; `UnusedElementMarkerTest` loses its five issue-code
+assertions. The end-to-end guarantee those assertions stood in for — that the published diagnostic is a
+`Hint` with the `Unnecessary` tag — is asserted by `UnusedElementValidationTest` per kind, so nothing is
+uncovered.
+
+Verified: `mvn -o install -pl rune-ide` green, 125 tests / 0 skipped, including 67 `UnusedElement*`
+(60 validation + 2 staleness + 5 marker), with the staleness pair unchanged. `rune-integration-tests`
+test-compiles against the reduced `RosettaIssueCodes` (nothing there ever referenced the deleted constants).
+*(The 123-test `rune-ide` baseline quoted in part 2 §4 predates this and is 2 short of what the module
+actually runs; this change adds and removes no tests.)*
 
 ## 5. Open decisions — RESOLVED (2026-07-30)
 

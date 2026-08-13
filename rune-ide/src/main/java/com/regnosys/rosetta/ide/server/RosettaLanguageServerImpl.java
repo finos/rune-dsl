@@ -96,9 +96,9 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl implements Ros
 	@Override
 	protected Diagnostic toDiagnostic(Issue issue) {
 		Diagnostic diagnostic = super.toDiagnostic(issue);
-		// Not every issue carries a code, and UNUSED_CODES is an immutable set, which rejects a null probe
-		// with an NPE. Throwing here would lose the diagnostics for the whole resource.
-		if (issue.getCode() != null && RosettaIssueCodes.UNUSED_CODES.contains(issue.getCode())) {
+		// Not every issue carries a code, so the constant goes on the left: throwing here would lose the
+		// diagnostics for the whole resource.
+		if (RosettaIssueCodes.UNUSED_DECLARATION.equals(issue.getCode())) {
 			diagnostic.setTags(List.of(DiagnosticTag.Unnecessary));
 			diagnostic.setSeverity(DiagnosticSeverity.Hint);
 		}

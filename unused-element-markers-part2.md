@@ -129,8 +129,9 @@ delegates to the service:
 
 **The publish channel.** `WorkspaceManager` hands its `issueAcceptor` to each `ProjectManager` at
 initialize; that acceptor is `LanguageServerImpl#publishDiagnostics` (`:510`), which routes through
-`toDiagnostics:523` → `toDiagnostic:536` → `RosettaLanguageServerImpl#toDiagnostic:97`, where `UNUSED_CODES`
-become `Hint` + `DiagnosticTag.Unnecessary`. The service must publish through that acceptor, not through
+`toDiagnostics:523` → `toDiagnostic:536` → `RosettaLanguageServerImpl#toDiagnostic:97`, where
+`UNUSED_DECLARATION` becomes `Hint` + `DiagnosticTag.Unnecessary`. The service must publish through that
+acceptor, not through
 `getLanguageClient()` directly, or the tag mapping is lost.
 
 Reaching it needs a workaround: `WorkspaceManager.issueAcceptor` is private (`:78`) and
@@ -186,11 +187,11 @@ The only production caller is the Rune provider (§3.6); update any direct helpe
 
 ### 3.6 The Rune provider
 
-`UnusedElementResourceValidator`'s Rune-specific content — the `KINDS` table, `markerFor`, `fallbackNoun`,
-and the issue-construction loop — moves to a language-injector class implementing
+`UnusedElementResourceValidator`'s Rune-specific content — the `KINDS` table, `markerMessageFor`,
+`fallbackNoun`, and the issue-construction loop — moves to a language-injector class implementing
 `IWorkspaceDerivedDiagnosticsProvider`, e.g. `rune-ide/.../validation/UnusedElementDiagnosticsProvider`.
-`markerFor` stays static and package-private; `UnusedElementMarkerTest` asserts on it directly. This class
-holds all the policy and none of the lifecycle.
+`markerMessageFor` stays static and package-private; `UnusedElementMarkerTest` asserts on it directly. This
+class holds all the policy and none of the lifecycle.
 
 Getting it from the service: the service runs on the server injector, the provider on the language
 injector. Resolve per resource through the `IResourceServiceProvider` registry — the same lookup the
@@ -306,9 +307,11 @@ short-circuits are the second.
 
 ## 7. Outstanding review items not covered here
 
-- **Per-kind issue codes.** The review asks why not a single `UNUSED_DECLARATION` for every kind. That is a
-  part-1 decision (`RosettaIssueCodes`, `UNUSED_CODES` is what the LSP gates on, so splitting a code out
-  later is non-breaking) and is independent of this plan either way. Resolve it on the PR, not here.
+- ~~**Per-kind issue codes.**~~ **DONE (2026-08-13), on the branch.** Taken: the eight per-kind codes and the
+  `UNUSED_CODES` set are deleted and every marker carries `UNUSED_DECLARATION`. Part 1's "Review changes"
+  section has the reasoning and the verification; the only thing this plan inherits is that §3.6's provider
+  supplies one constant rather than a per-kind code, and the merged-publish test of §4.2 can identify unused
+  hints by that single code.
 - **PR split.** The review asks for #1299 to land as three pieces: generic infrastructure, Rune provider,
   grammar-level suppression. Since this plan deletes `IncomingReferenceChanges` outright, landing part 1's
   version of the infrastructure and then replacing it is wasted review effort — prefer folding this plan
