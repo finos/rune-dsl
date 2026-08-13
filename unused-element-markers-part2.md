@@ -1,12 +1,19 @@
-# Plan part 2: move the unused-element check to a post-build pass
+# Plan part 2: a generic post-build diagnostics service, with unused-elements as its first provider
 
 Status: **NOT STARTED**. Prerequisite: everything in `unused-element-markers.md` (part 1), complete on
-branch `unused-functions-editor-only`. This plan is a follow-up refactor of that shipped feature — land
-part 1 first; do this on a fresh branch on top of it.
+branch `unused-functions-editor-only`. Part 1 is not released — it is still open as PR #1299 — so this work
+continues **on that same branch**, not a fresh one on top of it. That is also what §7 recommends: since this
+plan deletes `IncomingReferenceChanges` outright, folding it into the PR before merge means the
+infrastructure lands once, in its final generic form.
 
 **One sentence:** stop computing "unused" hints inside per-resource validation and instead compute them
-once per build, after `doLaunch()`, from the settled resource set — publishing only the diffs — which
-deletes `IncomingReferenceChanges` and the unload-and-revalidate machinery outright.
+once per build, after the build completes, from the settled workspace — publishing only the diffs — behind a
+language-agnostic provider SPI, which deletes `IncomingReferenceChanges` and the unload-and-revalidate
+machinery outright.
+
+Review feedback on PR #1299 (SimonCockx, 2026-08-04) endorsed the post-build direction and asked for the
+lifecycle to be generic rather than Rune-specific. §3.1 is that ask. His suggestion to source references
+from `IReferenceFinder` is declined — see §2.
 
 ## 1. Why
 
@@ -24,9 +31,11 @@ downstream of it:
 3. **The cost problem.** Revalidation is a full re-parse + link + all validators per triggered file —
    measured in part 1 (§3.6) at ~62% of the fan-out cost. The mass-edit case costs ~620 ms, 5–6× the
    build itself, and is user-perceptible.
-4. **The cancellation window.** If the build is cancelled between `doLaunch()` and the pass, or mid-pass,
+4. **The cancellation window.** If the build is cancelled between the build and the pass, or mid-pass,
    the deltas' triggers are consumed and lost — the stale marker persists until some unrelated future edit
    happens to change references into the same file. Nothing repairs it.
+5. **No reuse.** "A diagnostic that depends on more than the resource being validated" is a general
+   language-server problem. Part 1 solves it once, privately, inside a Rune builder subclass.
 
 A post-build recompute replaces the *diff-of-inputs* mechanism (guess whose answers changed from index
 deltas) with a *diff-of-outputs* mechanism (recompute all answers cheaply, publish the ones that changed).
@@ -35,129 +44,197 @@ needs unloading, and the cached base issues are exactly what gets reused at repu
 
 ## 2. Decisions already made — do not relitigate
 
-- **Keep `UnusedElementHelper`'s live-AST walk. Do not use `IReferenceFinder` or the index.** The full
-  reasoning is in the javadoc on `UnusedElementHelper#computeOutgoingReferences` (three objections; only
-  the staleness one is about *when* the check runs, and it is the only one this plan's move neutralises).
-  Recorded 2026-08-02 after a dedicated investigation; the walk survives this refactor byte-for-byte apart
-  from §3.4.
+- **Keep `UnusedElementHelper`'s live-AST walk. Do not use `IReferenceFinder` or the index.** Three
+  objections are recorded on `UnusedElementHelper#computeOutgoingReferences`. Moving the check post-build
+  kills the second one and leaves the other two standing, so the conclusion is unchanged:
+  - *Same-file references are never indexed.* `RosettaResourceDescriptionStrategy` does not override
+    `createReferenceDescriptions`, so recording is gated by `DefaultResourceDescriptionStrategy`, whose
+    `isResolvedAndExternal` returns `from.eResource() != to.eResource()` (Xtext 2.38, line 133). A function
+    calling a function in its own file produces no reference description, so an index query reports it
+    unused. All 60 cases in `UnusedElementValidationTest` are single-file, and 34 of them assert that a
+    reference keeps a declaration unmarked; an index-based implementation fails all 34. Keeping the walk for
+    the candidate's own resource and the index for the rest means two mechanisms with two notions of what a
+    reference is, both needing container rollup and self-reference exclusion — more code than the walk.
+  - *(Dead) The index is stale mid-build.* True while the check ran inside validation. Post-build the index
+    is settled, so this objection no longer applies. The closing paragraph of that javadoc says as much and
+    must be rewritten (§3.7).
+  - *The index records positional URIs.* Nothing binds `IFragmentProvider` and Xtext's
+    `DefaultFragmentProvider.getFragment` delegates to the EMF fallback, so `getTargetEObjectUri()` returns
+    fragments like `//@elements.3/@attributes.1` that renumber on insertion. Matching those against
+    candidates, and re-deriving `declaringRootElement` in fragment space so a reference to an enum value
+    counts as a use of its enumeration, is strictly worse than the walk.
+
+  The *batching* half of the review comment is accepted and is §3.5: build one snapshot per sweep rather
+  than scanning per candidate.
+- **The pass hooks `WorkspaceManager#afterBuild`, not the incremental builder.** Verified in Xtext 2.38:
+  `WorkspaceManager#didChangeFiles` (`:297-304`) returns a `Buildable` whose body is
+  `buildable.build(...)` then `afterBuild(deltas)`, and `LanguageServerImpl#runBuildable` (`:487-489`) runs
+  that buildable inside `requestManager.runWrite`. So `afterBuild` executes in the build's own write request
+  and part 1's ordering guarantee holds. Every document path funnels through `didChangeFiles`
+  (`didChangeTextDocumentContent:406`, `didOpen:422`, `didClose:431/433`), and the cold build is covered by
+  `refreshWorkspaceConfig:254`. The LSP test harness drives the same entry points
+  (`AbstractLanguageServerTest#open:401` → `didOpen`; `makeChange` → `didChange`).
 - Hint severity, editor-only binding, `[suppressUnused]`/`[rootType]` exemptions, dispatch/metaType/builtin
   exclusions, non-transitivity, and the qualified-name `ElementId` keying are all unchanged (part 1 §1a,
   §3b.2, §4.3, post-phase-5 notes).
-- The single-project limitation stands, unchanged in shape: the pass runs per `ProjectManager` resource
-  set, same as part 1's pass. (Resolved as document-and-accept in part 1's post-phase-5 record.)
+- The single-project limitation stands. The review independently confirmed the deployment model:
+  `SingleProjectWorkspaceConfigFactory` creates one `MultiRootProjectConfig` with all workspace folders as
+  source folders of that one project. Document it and add a multi-source-folder test (§4.2); do not build
+  multi-project support.
 - `UnusedElementStalenessTest` is the acceptance gate and must not be weakened.
 
 ## 3. Target design
 
-### 3.1 The pass
+### 3.1 The generic service and its SPI
 
-In `RosettaStatefulIncrementalBuilder#launch()`, replace the call to
-`revalidateResourcesWithChangedIncomingReferences(result)` with a new pass that runs after `doLaunch()`:
+New package `rune-ide/.../server/diagnostics` (language-agnostic — nothing in it may import
+`com.regnosys.rosetta.rosetta.*`):
 
-1. Skip when `getRequest().isIndexOnly()` (keep the existing guard and its comment).
-2. Sweep every resource in the build context's resource set whose content is a `RosettaModel`; for each,
-   compute its hint list with the relocated marker logic (§3.5) against a usage snapshot built once for the
-   whole sweep (§3.4). Check cancellation per resource, exactly as the current `revalidate()` does.
-3. Diff each resource's new hint list against the store (§3.2). For each URI whose hints changed:
-   republish `baseIssues + newHints` through `getRequest().getAfterValidate().afterValidate(uri, merged)`,
-   then — and only then — update that URI's store entry (§3.6 point 4 explains why this ordering).
-   `baseIssues` come from the language's `IResourceValidator` (`CachingResourceValidator`), which is a
+```java
+public interface IWorkspaceDerivedDiagnosticsProvider {
+    /** Prepare whatever whole-workspace state the sweep needs, once. */
+    Object beginSweep(ResourceSet resourceSet);
+
+    /** Diagnostics this provider contributes to one resource, given that state. */
+    List<Issue> computeDiagnostics(Resource resource, Object sweepState);
+}
+```
+
+Two phases rather than one method because the useful shape of the state is provider-specific — Rune's is
+`UsageSnapshot` (§3.5) — and computing it per resource is what makes the naive version quadratic. If a
+cleaner generic type parameter falls out during implementation, use it; the two-phase shape is the fixed
+part, not the `Object`.
+
+The service owns the store (§3.3), the sweep, the diff, and the republish. Providers are contributed via a
+Guice multibinder from the language module, so a second future consumer is an added binding and one class.
+
+### 3.2 The pass
+
+`RosettaWorkspaceManager` (already bound by `RosettaServerModule#bindWorkspaceManager`) overrides
+`afterBuild(List<IResourceDescription.Delta>)`, which is `protected` on `WorkspaceManager` (`:282`), and
+delegates to the service:
+
+1. For each `ProjectManager` from `getProjectManagers()` (`:381`), skip those whose `getProjectConfig()`
+   reports `isIndexOnly()` — that is where the flag comes from (`ProjectManager:133`), so part 1's
+   `getRequest().isIndexOnly()` guard survives the move.
+2. Call `beginSweep` once on that project's `getResourceSet()` (`:219`).
+3. Sweep every resource in it whose content is a `RosettaModel`; compute each one's diagnostics. Check
+   cancellation per resource, as the current `revalidate()` does.
+4. Diff each resource's new list against the store (§3.3). For each URI whose list changed, republish
+   `baseIssues + newDiagnostics`, then — and only then — update that URI's store entry (§3.8.4 explains the
+   ordering). `baseIssues` come from the language's `IResourceValidator` (`CachingResourceValidator`), a
    cache hit because the resource didn't change or was just validated. Do **not** unload anything.
+5. Prune store entries for URIs the deltas report deleted. `afterBuild` receives the deltas directly, so
+   this needs no inference.
 
-Why this publish channel is safe: `ProjectManager#newBuildRequest` wires `afterValidate` straight to the
-`issueAcceptor` → `publishDiagnostics` (verified in Xtext 2.38 sources, `ProjectManager.java:128-129`), and
-this very class already publishes generation errors through it (`generate(...)` catch blocks). LSP
-`publishDiagnostics` **replaces** the diagnostics for a URI, which is why every republish must carry the
+**The publish channel.** `WorkspaceManager` hands its `issueAcceptor` to each `ProjectManager` at
+initialize; that acceptor is `LanguageServerImpl#publishDiagnostics` (`:510`), which routes through
+`toDiagnostics:523` → `toDiagnostic:536` → `RosettaLanguageServerImpl#toDiagnostic:97`, where `UNUSED_CODES`
+become `Hint` + `DiagnosticTag.Unnecessary`. The service must publish through that acceptor, not through
+`getLanguageClient()` directly, or the tag mapping is lost.
+
+Reaching it needs a workaround: `WorkspaceManager.issueAcceptor` is private (`:78`) and
+`ProjectManager#getIssueAcceptor()` is protected (`:207`), so neither is visible from
+`com.regnosys.rosetta.ide.server`. `RosettaWorkspaceManager` already overrides
+`initialize(URI, issueAcceptor, CancelIndicator)`; override both public `initialize` overloads and capture
+the acceptor in a field of its own. Install the service's wrapper (§3.4) at that point — before
+`refreshWorkspaceConfig` runs, since that triggers the initial build.
+
+LSP `publishDiagnostics` **replaces** the diagnostics for a URI, which is why every republish must carry the
 base issues merged in, never hints alone.
 
-The pass runs inside `launch()`, i.e. inside the same `WriteRequest` as the build, so `RequestManager`
-ordering guarantees hold: by the time the build future completes, every publish is out, and no read request
-observes a half-published state. This is what keeps the existing LSP test harness working unchanged.
+### 3.3 The store
 
-### 3.2 The marker store
+A `@Singleton` on the server injector, e.g. `server/diagnostics/DerivedDiagnosticsStore`:
 
-The builder is instantiated **per build** — `RosettaServerModule#bindIncrementalBuilder$...` (line 85)
-registers it as the class Xtext's `IncrementalBuilder` gets from a `Provider` — so state cannot live on the
-builder. Add a small `@Singleton` store class (server injector; it reaches the builder by plain `@Inject`
-since the builder comes from that injector), e.g. `ide/build/UnusedMarkerStore`:
-
-- Keyed by resource `URI`. One language server serves one workspace, and URIs are absolute, so
-  multi-project sharing of the singleton is harmless.
+- Keyed by resource `URI`, then by provider. URIs are absolute, so one store across projects is harmless.
 - The value must support equality for the diff. Xtext `Issue` implementations do not implement `equals`,
-  so store an immutable record per marker — `(message, issueCode, offset, length)` is sufficient and
+  so store an immutable record per diagnostic — `(message, issueCode, offset, length)` is sufficient and
   stable — and compare lists. Keep the actual `Issue` objects only transiently for publishing.
-- Entries for deleted resources are removed during the pass (a resource in the deltas with no new
-  description / absent from the resource set). The client's diagnostics for deleted files are already
-  cleared by `ProjectManager`, so no republish is needed — just drop the entry.
+- Cleared on `initialize`, so a test server reusing an injector across cases cannot leak entries.
 
-### 3.3 Merging hints into the build's own publishes (anti-flicker)
+### 3.4 Merging into the build's own publishes (anti-flicker)
 
-During `doLaunch()`, the regular loop validates and publishes each built resource *without* hints (the
+During the build, the regular loop validates and publishes each built resource *without* hints (the
 validator no longer computes them). Left alone, an edited file would publish validation-only diagnostics
 and get its hints back milliseconds later — a per-keystroke blink of the faded rendering.
 
-Fix: at the start of `launch()`, wrap the request's `afterValidate` to append the store's *current* hints
-for that URI to whatever the build publishes — the exact wrapping pattern `resetBuildStatistics()` already
-uses on the same callback (`RosettaStatefulIncrementalBuilder.java:147-151`). The `BuildRequest` is
-per-build, so wraps do not accumulate across builds. Consequences, both accepted:
+Fix: wrap the issue acceptor **once**, at `initialize` (§3.2), so every publish through it has the store's
+*current* entries for that URI appended. One wrap for the life of the workspace manager — not part 1's
+per-build wrap of `BuildRequest.afterValidate` — so there is no accumulation question and no interaction to
+reason about with `resetBuildStatistics`, which wraps a different callback and is untouched by this plan.
+The wrap also covers the pass's own republishes, so §3.2 step 4 publishes base issues and lets the wrapper
+attach the rest; update the store entry first in that one direction only if the wrapper reads it, which is
+the ordering trap called out in §3.8.4 — resolve it by having the pass publish the merged list explicitly
+and the wrapper skip URIs the pass is currently republishing.
 
-- A built file's own hints are one pass stale *within* the build (e.g. deleting the last same-file call to
-  a function in the same file), corrected by the §3.1 republish in the same write request, ms later. The
-  diff criterion "newHints ≠ store entry" covers this automatically: for built files whose hints didn't
-  change, the mid-build publish was already correct and no republish happens.
-- If the statistics wrapper is also active, wrap order determines whether pass republishes are counted
-  as validations. Wrap hints innermost (closest to the original callback) and note that
-  `sourceFilesValidated` counting republishes is the same under-/over-count quirk part 1 already recorded
-  for its pass — improve the log line if touched, don't redesign it.
+Consequence, accepted: a built file's own hints are one pass stale *within* the build (e.g. deleting the
+last same-file call to a function in the same file), corrected by the §3.2 republish in the same write
+request, ms later. The diff criterion "new list ≠ store entry" covers this automatically: for built files
+whose hints didn't change, the mid-build publish was already correct and no republish happens.
 
-### 3.4 `UnusedElementHelper` restructure (the one behaviour-preserving change)
+### 3.5 `UnusedElementHelper` restructure (the one behaviour-preserving change)
 
 `isReferenced` currently loops every resource per candidate (candidates × resources hash probes — ~360k
 per full sweep on CDM, single-digit-to-low-double-digit ms). Restructure to the shape part 1 §4.5 already
 earmarked: build the union of the per-resource `outgoingReferences` sets **once per sweep** and probe it
-per candidate. Concretely: replace the public `isUnused(element)` with a two-step API, e.g.
+per candidate. Concretely: replace the public `isUnused(element)` with a two-step API —
 `UsageSnapshot snapshot(ResourceSet)` (unions the cached sets; walks only uncached/changed resources) and
 `boolean isUnused(RosettaRootElement, UsageSnapshot)`. The walk, the per-resource cache, `ElementId`,
-`isCandidate`, and every exemption are untouched. The only production caller is the relocated marker logic
-(§3.5); update any direct helper unit tests to the two-step call.
+`isCandidate`, and every exemption are untouched. The two steps map onto `beginSweep`/`computeDiagnostics`.
+The only production caller is the Rune provider (§3.6); update any direct helper unit tests.
 
-### 3.5 Relocations and deletions
+### 3.6 The Rune provider
+
+`UnusedElementResourceValidator`'s Rune-specific content — the `KINDS` table, `markerFor`, `fallbackNoun`,
+and the issue-construction loop — moves to a language-injector class implementing
+`IWorkspaceDerivedDiagnosticsProvider`, e.g. `rune-ide/.../validation/UnusedElementDiagnosticsProvider`.
+`markerFor` stays static and package-private; `UnusedElementMarkerTest` asserts on it directly. This class
+holds all the policy and none of the lifecycle.
+
+Getting it from the service: the service runs on the server injector, the provider on the language
+injector. Resolve per resource through the `IResourceServiceProvider` registry — the same lookup the
+builder's inherited `validate(Resource)` uses — to obtain both the provider and the `IResourceValidator`.
+Every `.rosetta` resource is the one language, but do the lookup per resource anyway rather than caching a
+single provider.
+
+### 3.7 Relocations and deletions
 
 | File | Change |
 |---|---|
 | `rune-ide/.../build/IncomingReferenceChanges.java` | **delete** (all ~204 lines) |
-| `rune-ide/.../build/RosettaStatefulIncrementalBuilder.java` | delete `revalidateResourcesWithChangedIncomingReferences` + `revalidate`; add the §3.1 pass, §3.3 wrap, store injection; rewrite class javadoc |
-| `rune-ide/.../validation/UnusedElementResourceValidator.java` | **delete**; its `KINDS` table, `markerFor` (keep static + package-private — `UnusedElementMarkerTest` asserts on it directly), `fallbackNoun` and the issue-construction loop move to a new language-injector class in the same package, e.g. `UnusedElementDiagnostics`, with a method like `List<Issue> computeHints(Resource, UsageSnapshot)` |
-| `rune-ide/.../RosettaIdeModule.java` | remove `bindIResourceValidator()` — `RosettaRuntimeModule:124-125` already binds `CachingResourceValidator`, so removal falls back to exactly the right validator |
-| `rune-ide/.../build/UnusedMarkerStore.java` | new, §3.2 |
-| `rune-lang/.../validation/UnusedElementHelper.java` | §3.4 only; update the class javadoc sentence that says it is consumed by `UnusedElementResourceValidator`, and the final paragraph of the `computeOutgoingReferences` javadoc (it currently says "even a redesign that computed markers after the build *would* keep this walk" — after this plan, it *does*) |
+| `rune-ide/.../build/RosettaStatefulIncrementalBuilder.java` | delete `revalidateResourcesWithChangedIncomingReferences` + `revalidate`; rewrite class javadoc. Nothing from this plan is added here — the class returns to its generation-error duties only |
+| `rune-ide/.../server/RosettaWorkspaceManager.java` | override both `initialize` overloads (capture acceptor, install wrapper, clear store) and `afterBuild` (§3.2) |
+| `rune-ide/.../server/diagnostics/IWorkspaceDerivedDiagnosticsProvider.java` | new, §3.1 |
+| `rune-ide/.../server/diagnostics/WorkspaceDerivedDiagnosticsService.java` | new, §3.1–§3.2 |
+| `rune-ide/.../server/diagnostics/DerivedDiagnosticsStore.java` | new, §3.3 |
+| `rune-ide/.../validation/UnusedElementResourceValidator.java` | **delete**; content moves to `UnusedElementDiagnosticsProvider` (§3.6) |
+| `rune-ide/.../RosettaIdeModule.java` | remove `bindIResourceValidator()` — `RosettaRuntimeModule:124-125` already binds `CachingResourceValidator`, so removal falls back to exactly the right validator; add the provider multibinding |
+| `rune-lang/.../validation/UnusedElementHelper.java` | §3.5 only; update the class javadoc sentence naming `UnusedElementResourceValidator` as its consumer, and the closing paragraph of the `computeOutgoingReferences` javadoc — it currently says "even a redesign that computed markers after the build *would* keep this walk"; after this plan it *does*, and the reason narrows to the same-file and positional-URI objections (§2) |
 
-Getting language services from the builder: the builder lives on the server injector, not the language
-injector. Resolve per resource through the same lookup the inherited `validate(Resource)` uses (the build
-context / `IResourceServiceProvider` registry) to obtain `UnusedElementDiagnostics` and the
-`IResourceValidator`. Every `.rosetta` resource is the one language, but do the lookup per resource anyway
-rather than caching a single provider.
-
-### 3.6 Edge cases and invariants
+### 3.8 Edge cases and invariants
 
 1. **Cold build / server restart.** Store is empty; every built file publishes hint-less first, then the
    pass republishes the marker-bearing files once (a few dozen on CDM). Accepted.
 2. **Non-model resources** (empty files, parse wrecks with no `RosettaModel` root): sweep skips them; if a
-   URI previously had hints and now has no model, its new hint list is empty → diff publishes the removal.
+   URI previously had hints and now has no model, its new list is empty → diff publishes the removal.
 3. **Builtins** never produce hints (`isInBuiltinResource`), so they never enter the store and are never
    republished — this preserves part 1 §4.3/§3.9 without any dedicated filter code.
 4. **Cancellation self-heals.** Update a URI's store entry only *after* its publish succeeds. A pass
    cancelled mid-way leaves the remaining entries un-updated, so the next completed build's diff finds them
-   unequal and republishes. This is strictly better than part 1, where a cancelled pass loses the triggers
-   permanently.
+   unequal and republishes. Cancellation *before* the pass skips `afterBuild` entirely — the same exposure
+   part 1 had, repaired the same way, and strictly better than part 1's permanently-lost triggers.
 5. **The publish path must not throw** (part 1's phase-3 lesson: a throw there surfaces as *missing*
    diagnostics). The generic `markerFor` fallback already covers unknown kinds; keep the pass free of
    other throw sources and keep the null-code guard in `RosettaLanguageServerImpl#toDiagnostic` as is.
 6. **Clustering caveat carries over unchanged** (part 1 phase 2 "Remaining caveats"): if clustering ever
    unloads resources mid-sweep, their call sites are invisible to the walk. Same exposure as part 1; not
-   reachable at tested scale; keep the note in the builder javadoc.
+   reachable at tested scale; keep the note in the service javadoc.
 7. **`didOpen`-triggered builds** mark the opened file dirty (part 1 §2.3); it gets built and the wrap
-   (§3.3) attaches current-store hints to its publish — no behaviour change from today.
+   (§3.4) attaches current-store hints to its publish — no behaviour change from today.
+8. **Single project, many source folders.** The sweep is per `ProjectManager` resource set. In the
+   supported deployment that is one project holding every workspace folder as a source folder, so
+   cross-folder references are in the same resource set and are seen. Record this in the service javadoc.
 
 ## 4. Verification
 
@@ -166,58 +243,73 @@ Capture test counts before and after in each module (CLAUDE.md rule). Current ba
 
 1. `mvn -o test -pl rune-ide -Dtest='UnusedElement*'` — all **67** green with assertions unchanged
    (60 validation + 2 staleness + 5 marker). The staleness pair is the acceptance gate for the whole plan.
-2. New tests (extend `UnusedElementValidationTest` / a small builder-level test):
+2. New tests:
    - deleting the file containing the only call site adds the marker to the declaring file; deleting the
      declaring file leaves no stale store entry (assert via a subsequent unrelated build not republishing).
    - an edited file's single `publishDiagnostics` contains both its validation issues and its unused hints
-     (guards the §3.3 merge — this is the assertion that would catch hint-clobbering regressions).
+     (guards the §3.4 merge — this is the assertion that would catch hint-clobbering regressions).
+   - **a declaration in one source folder referenced from another is not flagged** — the multi-source-folder
+     case the review asked for, and the only test that pins §3.8.8.
 3. Full `rune-ide` and `rune-integration-tests` suites; then full `mvn install` (checkstyle enforced).
    `rune-integration-tests` should be untouched — nothing here is a validator `@Check`.
 4. `EditLatencyBenchmark` on CDM (`-Drune.benchmark.model.dir=...`), A/B against the part-1 branch, medians
-   of 3, same five scenarios. Targets: keystroke ≤ 30 ms (the sweep must not be measurable after §3.4);
+   of 3, same five scenarios. Targets: keystroke ≤ 30 ms (the sweep must not be measurable after §3.5);
    reference-toggle at or below today's 44–48 ms (expect ~30); mass edit **materially** below 620 ms
    (expect ≤ ~300 ms — this case is the reason the plan exists); cold build within +100 ms.
 
 ## 5. Session plan
 
-Assessed 2026-08-02. The core code change is moderate (~6 files, well-specified above), but the long pole
-is verification: the 60-case LSP suite catches subtle publish-ordering mistakes, and the benchmark needs a
-CDM checkout the agent may not have. **Do not attempt the whole plan in one Sonnet session.** One
-strong-model session can plausibly do sessions 1+2 together if everything is green first pass; the split
-below is the safe default and each session lands independently verifiable.
+Reassessed 2026-08-13 after PR review. The generic SPI adds a layer to what was already a moderate change,
+and the long pole is still verification: the 60-case LSP suite catches subtle publish-ordering mistakes.
+**Do not attempt the whole plan in one session.** Each session lands independently verifiable.
 
-### Session 1 — the mechanism swap (Sonnet or Opus)
+### Session 1 — the mechanism swap (**Opus**)
 
-§3.4 helper restructure → `UnusedElementDiagnostics` relocation → store → pass + wrap → deletions +
-unbinding, in that order (each step compiles). **Acceptance:** `rune-lang` compiles with checkstyle;
-`mvn -o test -pl rune-ide -Dtest='UnusedElement*'` = 67/67 green, assertions unchanged. If the staleness
-tests fail, the likely causes in order: republish missing the base-issue merge (§3.1), diff comparing
-`Issue` objects instead of value records (§3.2), store updated before publish (§3.6.4).
+§3.5 helper restructure → §3.1 SPI + service + store → §3.6 provider relocation → §3.2 `afterBuild`
+override and acceptor capture → §3.4 wrap → deletions and unbinding, in that order (each step compiles).
+Opus rather than Sonnet because the publish-channel plumbing (protected/private acceptor, wrapper vs pass
+ordering in §3.4) is the part most likely to produce plausible-but-wrong code.
 
-### Session 2 — hardening and full verification (Sonnet or Opus)
+**Acceptance:** `rune-lang` compiles with checkstyle; `mvn -o test -pl rune-ide -Dtest='UnusedElement*'` =
+67/67 green, assertions unchanged. If the staleness tests fail, the likely causes in order: republish
+missing the base-issue merge (§3.2), diff comparing `Issue` objects instead of value records (§3.3), store
+updated before publish (§3.8.4), wrapper installed after `refreshWorkspaceConfig` (§3.2).
 
-The §4.2 new tests; full-suite runs and count capture; javadoc updates listed in §3.5; update this plan's
-status header and part 1's phase-2 section with a pointer ("superseded by part 2's post-build pass").
+### Session 2 — hardening and full verification (**Sonnet**)
+
+The §4.2 new tests; full-suite runs and count capture; the javadoc updates listed in §3.7; update this
+plan's status header and part 1's phase-2 section with a pointer ("superseded by part 2's post-build
+service"). Mechanical work against a design that session 1 has already proven.
+
 **Acceptance:** full `mvn install` green; both modules' counts recorded; no `rune-integration-tests` change.
 
-### Session 3 — benchmark (needs the user)
+### Session 3 — benchmark (**Sonnet**, needs the user)
 
-Requires a CDM checkout and `-Drune.benchmark.model.dir`; the agent should ask the user to provide the
-path (or run it) rather than skipping silently. A/B per §4.4, record the table here next to part 1's
-tables. If the keystroke row regresses past 30 ms, profile the sweep first — the union snapshot (§3.4) is
-the knob, and per-URI diff short-circuits are the second.
+Requires a CDM checkout and `-Drune.benchmark.model.dir`; ask the user for the path (or to run it) rather
+than skipping silently. A/B per §4.4, record the table here next to part 1's tables. If the keystroke row
+regresses past 30 ms, profile the sweep first — the union snapshot (§3.5) is the knob, and per-URI diff
+short-circuits are the second.
 
 ## 6. Risks
 
 - **Publish-path regressions are silent** — they manifest as missing or flickering diagnostics, not
   errors. The §4.2 merged-publish test and the staleness pair are the tripwires; run them after every
   change to the pass, not just at the end.
+- **Wrapper/pass double-attach.** §3.4's acceptor wrapper and §3.2's explicit merge can both add hints to
+  the same publish. Decide one owner per publish and assert it in the merged-publish test.
 - **`Issue` equality**: the diff silently never firing (always-equal records) or always firing
   (identity comparison) both produce plausible-looking behaviour locally; the staleness tests catch the
   former, the merged-publish test plus a publish-count assertion catch the latter.
-- **Wrap interactions**: `resetBuildStatistics` conditionally wraps the same callback; hint-merge must
-  compose with it in either order without double-counting. Covered by running the suite with
-  `ENABLE_INCREMENTAL_BUILDER_STATISTICS=true` once, manually.
-- **Store lifetime**: server-injector singleton means test servers sharing an injector across tests could
-  leak entries between cases; `AbstractRosettaLanguageServerValidationTest` creates a fresh server per
-  test class setup — verify, and clear the store on `initialize` if not.
+- **Store lifetime**: server-injector singleton means test servers sharing an injector could leak entries
+  between cases. §3.3 clears on `initialize`; confirm `AbstractRosettaLanguageServerValidationTest`'s
+  per-test `initializeContext` reaches it.
+
+## 7. Outstanding review items not covered here
+
+- **Per-kind issue codes.** The review asks why not a single `UNUSED_DECLARATION` for every kind. That is a
+  part-1 decision (`RosettaIssueCodes`, `UNUSED_CODES` is what the LSP gates on, so splitting a code out
+  later is non-breaking) and is independent of this plan either way. Resolve it on the PR, not here.
+- **PR split.** The review asks for #1299 to land as three pieces: generic infrastructure, Rune provider,
+  grammar-level suppression. Since this plan deletes `IncomingReferenceChanges` outright, landing part 1's
+  version of the infrastructure and then replacing it is wasted review effort — prefer folding this plan
+  into the PR before merge so the infrastructure lands once, in its final generic form.
