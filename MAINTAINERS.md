@@ -4,20 +4,20 @@ This file lists the maintainers of this repository.
 
 ## Current maintainers
 
-| GitHub Username | Name | Organization | Email |
-|----------------|------|--------------|-------|
-| @CDM-ReleaseManagement-AP | *please add name* | *please add organization* | *please add email* |
-| @CDM-ReleaseManagement-EC | *please add name* | *please add organization* | *please add email* |
-| @CDM-ReleaseManagement-LSG | *please add name* | *please add organization* | *please add email* |
-| @CDM-ReleaseManagement-OT | *please add name* | *please add organization* | *please add email* |
-| @JayasriR | *please add name* | *please add organization* | *please add email* |
-| @PayalKhanna | Payal Khanna | Regnosys | *please add email* |
-| @ReleaseManagement-BP | *please add name* | *please add organization* | *please add email* |
-| @SimonCockx | Simon Cockx | NovAda | *please add email* |
-| @davidalk | David Al-Kanani | *please add organization* | *please add email* |
-| @hugohills-regnosys | Hugo Hills | REGnosys | *please add email* |
-| @ja6a-regnosys | James Annesley | *please add organization* | *please add email* |
-| @minesh-s-patel | *please add name* | *please add organization* | *please add email* |
+| GitHub Username | Name | Organization | Email (optional) |
+|----------------|------|--------------|------------------|
+| @CDM-ReleaseManagement-AP | *please add name* | *please add organization* |  |
+| @CDM-ReleaseManagement-EC | *please add name* | *please add organization* |  |
+| @CDM-ReleaseManagement-LSG | *please add name* | *please add organization* |  |
+| @CDM-ReleaseManagement-OT | *please add name* | *please add organization* |  |
+| @JayasriR | *please add name* | *please add organization* |  |
+| @PayalKhanna | Payal Khanna | Regnosys |  |
+| @ReleaseManagement-BP | *please add name* | *please add organization* |  |
+| @SimonCockx | Simon Cockx | NovAda |  |
+| @davidalk | David Al-Kanani | *please add organization* |  |
+| @hugohills-regnosys | Hugo Hills | REGnosys |  |
+| @ja6a-regnosys | James Annesley | *please add organization* |  |
+| @minesh-s-patel | *please add name* | *please add organization* |  |
 
 For information about maintainer responsibilities and resources, see the [FINOS Maintainers Cheatsheet](https://community.finos.org/docs/finos-maintainers-cheatsheet).
 
