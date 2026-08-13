@@ -22,10 +22,13 @@ public class CsvUtil {
     }
     
     private boolean isSimpleAttribute(RAttribute attr) {
-        if (attr.isMulti()) {
+        RMetaAnnotatedType annotatedType = attr.getRMetaAnnotatedType();
+        if (annotatedType.hasAttributeMeta()) {
+            // e.g. [metadata scheme] generates a FieldWithMeta* wrapper, which a CSV cell can't
+            // represent in either direction.
             return false;
         }
-        RType baseType = typeSystem.stripFromTypeAliases(attr.getRMetaAnnotatedType().getRType());
+        RType baseType = typeSystem.stripFromTypeAliases(annotatedType.getRType());
         return !(baseType instanceof RDataType) && !(baseType instanceof RChoiceType);
     }
 }
