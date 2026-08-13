@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.validation.Issue;
@@ -97,6 +99,16 @@ public class DerivedDiagnosticsStore {
         List<Issue> result = new ArrayList<>();
         entry.derived().values().forEach(result::addAll);
         return result;
+    }
+
+    /**
+     * The resources currently carrying derived diagnostics, i.e. exactly those a sweep has amended.
+     */
+    public Set<URI> urisWithDerivedDiagnostics() {
+        return entries.entrySet().stream()
+                .filter(entry -> !entry.getValue().derived().isEmpty())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
     }
 
     /**

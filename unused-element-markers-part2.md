@@ -245,7 +245,17 @@ memoised per language for the duration of one sweep, so the snapshot is still bu
 ### 3.8 Edge cases and invariants
 
 1. **Cold build / server restart.** Store is empty; every built file publishes hint-less first, then the
-   pass republishes the marker-bearing files once (a few dozen on CDM). Accepted.
+   pass republishes the marker-bearing files once (207 functions + 54 other declarations on CDM — §4.5).
+   **Correction (review, 2026-08-13): those republishes were being discarded.** The workspace's first build
+   runs inside LSP `initialize`, before the client sends `initialized`, and
+   `LanguageServerImpl#publishDiagnostics:510` holds every publish behind that future — whose dependents run
+   in *reverse* registration order when it completes (verified). So a file published twice in that window —
+   once by the build, once by the sweep amending it — reached the client oldest-last and kept the build's
+   hint-less answer: **no markers at all after a cold start**, until each file was opened (a `didOpen` build
+   re-attaches them, which is why this never showed up in use). No test could see it: every other test goes
+   through `initializeContext`, which initializes against an empty directory and writes files afterwards.
+   Fixed by `RosettaLanguageServerImpl#initialized` republishing the store's derived half once `super` has
+   drained that queue; `UnusedElementColdStartTest` is the regression guard and fails without the fix.
 2. **Non-model resources** (empty files, parse wrecks with no `RosettaModel` root): sweep skips them; if a
    URI previously had hints and now has no model, its new list is empty → diff publishes the removal.
 3. **Builtins** never produce hints (`isInBuiltinResource`), so they never enter the store and are never
@@ -255,11 +265,18 @@ memoised per language for the duration of one sweep, so the snapshot is still bu
    unequal and republishes. Cancellation *before* the pass skips `afterBuild` entirely — the same exposure
    part 1 had, repaired the same way, and strictly better than part 1's permanently-lost triggers.
 5. **The publish path must not throw** (part 1's phase-3 lesson: a throw there surfaces as *missing*
-   diagnostics). The generic `markerFor` fallback already covers unknown kinds; keep the pass free of
-   other throw sources and keep the null-code guard in `RosettaLanguageServerImpl#toDiagnostic` as is.
-6. **Clustering caveat carries over unchanged** (part 1 phase 2 "Remaining caveats"): if clustering ever
-   unloads resources mid-sweep, their call sites are invisible to the walk. Same exposure as part 1; not
-   reachable at tested scale; keep the note in the service javadoc.
+   diagnostics). The generic `markerFor` fallback already covers unknown kinds, and the null-code guard in
+   `RosettaLanguageServerImpl#toDiagnostic` stays as is. **Corrected (review, 2026-08-13):** the SPI merely
+   *documented* "must not throw" and the service did not enforce it, so a provider that threw took the whole
+   build's write request down with it — a provider throwing on every resource makes `initialize` itself fail
+   (verified). `republishIfChanged` now catches per resource, logs, and leaves that resource's store entry
+   alone so the next build retries; with the catch in place the same throwing provider leaves ordinary
+   diagnostics untouched (`ChangeDetectionTest` and `GenerationErrorHandlingTest` stay green).
+6. **Clustering does not apply here.** `ProjectManager#doBuild:107` calls the two-argument
+   `IncrementalBuilder#build`, which uses `DisabledClusteringPolicy` (`IncrementalBuilder:483`), and nothing
+   rebinds `IncrementalBuilder`. `ClusteringStorageAwareResourceLoader#clearResourceSet` therefore never
+   runs, so a build never evicts resources from the project resource set and the sweep always sees the whole
+   workspace. Part 1's caveat is retired rather than carried forward; the service javadoc states the fact.
 7. **`didOpen`-triggered builds** mark the opened file dirty (part 1 §2.3); it gets built and the wrap
    (§3.4) attaches current-store hints to its publish — no behaviour change from today.
 8. **Single project, many source folders.** The sweep is per `ProjectManager` resource set. In the
@@ -271,16 +288,25 @@ memoised per language for the duration of one sweep, so the snapshot is still bu
 Capture test counts before and after in each module (CLAUDE.md rule). Part 1 recorded `rune-ide` 123 /
 0 skipped and `rune-integration-tests` 1491 / 21 skipped; both are stale — commits landed on the branch
 since. Measured after session 1 (2026-08-13): `rune-ide` 125 / 0 skipped, `rune-integration-tests`
-1504 / 21 skipped. **Measured after session 2 (2026-08-13): `rune-ide` 128 / 0 skipped,
-`rune-integration-tests` 1504 / 21 skipped — unchanged**, confirming session 2 touched nothing outside
-`rune-ide` (the +3 are exactly the new tests below).
+1504 / 21 skipped. Measured after session 2 (2026-08-13): `rune-ide` 128 / 0 skipped,
+`rune-integration-tests` 1504 / 21 skipped — unchanged, confirming session 2 touched nothing outside
+`rune-ide` (the +3 are exactly the new tests below). **Measured after the review pass (2026-08-13):
+`rune-ide` 129 / 0 skipped, `rune-integration-tests` 1504 / 21 skipped — full `mvn install` green with
+checkstyle enforced.**
 
 1. `mvn -o test -pl rune-ide -Dtest='UnusedElement*'` — **DONE.** All **70** green with the original 67's
    assertions unchanged (60 validation + 2 staleness + 5 marker), plus the 3 new tests below. The staleness
    pair is the acceptance gate for the whole plan.
 2. New tests — **DONE**, all added to `UnusedElementStalenessTest.java` except the third:
    - deleting the file containing the only call site adds the marker to the declaring file; deleting the
-     declaring file leaves no stale store entry (assert via a subsequent unrelated build not republishing).
+     declaring file leaves no stale store entry. **Correction (review, 2026-08-13):** the second half was
+     originally asserted as "a later unrelated build does not republish for the deleted URI", which cannot
+     fail — `republishIfChanged` is only reached from the sweep over `resourceSet.getResources()`, and a
+     deleted resource has left that set, so a leaked entry can never produce a publish. Verified by deleting
+     the prune line and watching the test stay green. It now injects `DerivedDiagnosticsStore` and asserts
+     `isPublished` directly — true before the delete (which also proves the URI is keyed the way the store
+     keys it, so the second assertion is not looking up the wrong key) and false after. Fails without the
+     prune.
      **Correction found while writing this test:** a watched-file deletion's own bookkeeping (the delta with
      `getNew() == null`) is not guaranteed to land in the build that reports the deletion — Xtext's clustering
      can carry it into the *next* build instead (§3.8.6's caveat, observed directly here rather than only in
@@ -302,12 +328,63 @@ since. Measured after session 1 (2026-08-13): `rune-ide` 125 / 0 skipped, `rune-
      `IMultiRootWorkspaceConfigFactory` bound through a `RosettaServerModule` subclass (the same pattern
      `GenerationErrorHandlingTest` uses to override a binding for one test). Verified the test is not vacuous
      by temporarily breaking the cross-folder call and confirming the marker then does appear.
+     **Correction (review, 2026-08-13):** the fixture is not what makes the assertion hold — the harness
+     supplies a single workspace folder, so Xtext's default factory produces one project spanning both
+     directories too, and the test stays green with the binding removed (verified). Kept as a statement of
+     the deployment shape; the javadoc no longer claims otherwise.
 3. Full `rune-ide` and `rune-integration-tests` suites; then full `mvn install` (checkstyle enforced) —
    **DONE, green.** `rune-integration-tests` untouched, confirmed by the unchanged 1504/21 count above.
 4. `EditLatencyBenchmark` on CDM (`-Drune.benchmark.model.dir=...`), A/B against the part-1 branch, medians
    of 3, same five scenarios. Targets: keystroke ≤ 30 ms (the sweep must not be measurable after §3.5);
    reference-toggle at or below today's 44–48 ms (expect ~30); mass edit **materially** below 620 ms
-   (expect ≤ ~300 ms — this case is the reason the plan exists); cold build within +100 ms. **Session 3.**
+   (expect ≤ ~300 ms — this case is the reason the plan exists); cold build within +100 ms. **Session 3 —
+   the A/B against part 1 is still outstanding; what the sweep itself costs is measured in §4.5.**
+
+### 4.5 What the sweep costs (measured 2026-08-13, CDM `master` @ dcaa995ee, 145 files)
+
+Not the §4.4 A/B — this is the branch measured against itself with the provider multibinding removed, which
+isolates the sweep from every other difference. Medians of 3, `EditLatencyBenchmark`, apply/revert.
+
+| scenario | sweep on | sweep off | sweep costs |
+|---|---|---|---|
+| cold initial build | 2757 ms | 2753 ms | ~0 |
+| edit changing no cross-file reference | 125 / 121 ms | 95 / 109 ms | ~+25 ms |
+| edit toggling a function call | 38 / 38 ms | 21 / 20 ms | ~+17 ms |
+| edit toggling a type or enum reference | 198 / 201 ms | 185 / 183 ms | ~+15 ms |
+| blanking out the widest-fan-out file | 258 / 329 ms | 238 / 295 ms | ~+25 ms |
+
+**Verdict: acceptable, shipped unoptimised.** The sweep adds 15–25 ms to an edit. That is below what anyone
+perceives, and typing is debounced before a build is triggered at all, so it is not paid per keystroke.
+Against the §4.4 targets the mass edit (258–329 ms vs part 1's 620 ms) and the reference toggle (38 ms vs
+44–48 ms) are met and the cold build is unchanged; only "the sweep must not be measurable" is missed, which
+is a statement about measurability rather than about anything a user would notice.
+
+Timing the sweep from the inside, per build:
+
+```
+total 18–37 ms   snapshot 15–34 ms (~87%)   per-resource compute + diff 2.4–3.4 ms (145 resources)
+```
+
+Within the sweep, the union snapshot of §3.5 is essentially the whole cost and the per-candidate half is
+free: probing 2 100 declarations against the snapshot and diffing 145 store entries costs under 3.5 ms and
+does not move between scenarios. The snapshot stays at 15–17 ms even on the cheapest edit, where only two
+files were rebuilt and so only two of the 145 cached reference sets had to be recomputed — that residue is
+the union itself, not the walk.
+
+Two properties to keep in view rather than act on:
+
+- It is a **fixed** toll. The snapshot rebuilds a whole-workspace `HashSet` whether one character changed or
+  a whole file did, so it is ~10% of the mass edit but ~45% of the cheapest edit (17 ms of 38 ms). Cost that
+  does not scale with the edit scales with the workspace instead.
+- Only **one** workspace size was measured. O(total references) is what the code's shape implies, not
+  something these numbers demonstrate; a second, larger model would be needed to claim a scaling factor.
+
+If a materially larger workspace ever makes this visible, the knob is already known: maintain the reference
+counts incrementally, keyed by `ElementId`, instead of rebuilding the set per build. Nothing else in the
+sweep is worth touching.
+
+Marker census on CDM, from the same run: `Function=207` (of 1304), `Type=20` (of 760), `Type alias=14` (of
+17), `Enumeration=11` (of 279), `Segment=5` (of 15), `Corpus=4` (of 32).
 
 ## 5. Session plan
 
@@ -367,12 +444,25 @@ javadoc-adjacent change is part 1's phase-2 pointer (§ above).
 findings recorded under §4.2's first new test. Both were surfaced by writing the test against the real
 language server rather than assumed from reading the code.
 
+### Review pass — 2026-08-13, after sessions 1 and 2
+
+Three defects fixed, two documentation claims corrected. Each fix was checked by breaking it again and
+confirming the guarding test fails:
+
+- **Cold-start markers were discarded.** §3.8.1. New `UnusedElementColdStartTest`.
+- **The deletion test's stale-entry assertion could not fail.** §4.2. Now asserts on the store.
+- **A throwing provider took down the build's write request.** §3.8.5. Contained in `republishIfChanged`.
+- **Clustering caveat retired** (§3.8.6) and the multi-source-folder fixture's javadoc corrected (§4.2).
+
+`rune-ide` 128 → **129 / 0 skipped** (the cold-start test), `rune-integration-tests` unchanged.
+
 ### Session 3 — benchmark (**Sonnet**, needs the user)
 
-Requires a CDM checkout and `-Drune.benchmark.model.dir`; ask the user for the path (or to run it) rather
-than skipping silently. A/B per §4.4, record the table here next to part 1's tables. If the keystroke row
-regresses past 30 ms, profile the sweep first — the union snapshot (§3.5) is the knob, and per-URI diff
-short-circuits are the second.
+Requires a CDM checkout and `-Drune.benchmark.model.dir`. **The sweep's own cost is now measured and
+accepted — §4.5.** What remains is the §4.4 A/B against the part-1 branch, to put numbers on the mass-edit
+case that motivated the plan; §4.5 measures this branch against itself. No optimisation is planned: the
+sweep adds 15–25 ms behind a typing debounce. If a larger workspace ever makes it visible, §4.5 names the
+one knob worth turning.
 
 ## 6. Risks
 

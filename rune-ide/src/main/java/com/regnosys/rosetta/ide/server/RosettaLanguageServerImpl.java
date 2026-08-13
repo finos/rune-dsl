@@ -60,7 +60,7 @@ import org.eclipse.xtext.validation.Issue;
 import com.regnosys.rosetta.formatting2.FormattingOptionsService;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsResolver;
 import com.regnosys.rosetta.ide.inlayhints.IInlayHintsService;
-import com.regnosys.rosetta.validation.RosettaIssueCodes;
+import com.regnosys.rosetta.ide.server.diagnostics.WorkspaceDerivedDiagnosticsService;
 import com.regnosys.rosetta.ide.overrides.IParentsService;
 import com.regnosys.rosetta.ide.overrides.ParentsParams;
 import com.regnosys.rosetta.ide.overrides.ParentsResult;
@@ -71,6 +71,7 @@ import com.regnosys.rosetta.ide.semantictokens.SemanticToken;
 import com.regnosys.rosetta.ide.util.CodeActionUtils;
 import com.regnosys.rosetta.config.file.RuneConfigurationFileProvider;
 import com.regnosys.rosetta.utils.RuneConfigurationHolder;
+import com.regnosys.rosetta.validation.RosettaIssueCodes;
 
 /**
  * TODO: contribute to Xtext.
@@ -80,6 +81,7 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl implements Ros
 	@Inject FormattingOptionsService formattingOptionsService;
 	@Inject CodeActionUtils codeActionUtils;
 	@Inject RuneConfigurationHolder runeConfigurationHolder;
+	@Inject WorkspaceDerivedDiagnosticsService derivedDiagnosticsService;
 
 	// The canonical config file names are owned by RuneConfigurationFileProvider; reuse them here
 	// rather than duplicating the literals.
@@ -114,6 +116,12 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl implements Ros
 	@Override
 	public void initialized(InitializedParams params) {
 		super.initialized(params);
+		// super's call above drains the publishes that were held back until now; this one has to land after
+		// them. Run as a write so it is serialised against builds like every other reader of the store.
+		getRequestManager().runWrite(() -> null, (cancelIndicator, ignored) -> {
+			derivedDiagnosticsService.republishDerivedDiagnostics();
+			return null;
+		});
 		registerConfigurationFileWatcher();
 	}
 

@@ -8,12 +8,14 @@ import org.eclipse.lsp4j.DiagnosticTag;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.FileChangeType;
 import org.eclipse.lsp4j.FileEvent;
-import org.eclipse.lsp4j.PublishDiagnosticsParams;
-import org.eclipse.xtext.xbase.lib.Pair;
+import org.eclipse.xtext.ide.server.UriExtensions;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import com.regnosys.rosetta.ide.server.diagnostics.DerivedDiagnosticsStore;
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTest;
+
+import jakarta.inject.Inject;
 
 /**
  * The "unused" editor marker must refresh when the last (or first) usage of an element changes in a
@@ -36,6 +38,11 @@ import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTes
 public class UnusedElementStalenessTest extends AbstractRosettaLanguageServerValidationTest {
 
 	private static final String UNUSED_F = "Function 'F' is never used";
+
+	@Inject
+	private DerivedDiagnosticsStore store;
+	@Inject
+	private UriExtensions uriExtensions;
 
 	@Test
 	void unusedMarkerIsRemovedWhenFirstCallSiteIsAddedInAnotherFile() {
@@ -104,9 +111,10 @@ public class UnusedElementStalenessTest extends AbstractRosettaLanguageServerVal
 	/**
 	 * Deleting the file with the only call site must add the marker to the declaring file, exactly like
 	 * editing that file to remove the call (the previous test) — deletion is just another way a build can
-	 * observe the last reference disappearing. Deleting the <em>declaring</em> file afterwards must leave no
-	 * stale entry in {@code DerivedDiagnosticsStore}: the deleted URI must not be published for again by a
-	 * later, unrelated build.
+	 * observe the last reference disappearing. Deleting the <em>declaring</em> file afterwards must drop it
+	 * from {@link DerivedDiagnosticsStore}, which is asserted on the store rather than on what the client is
+	 * told: a deleted resource leaves the project's resource set, so a leaked entry can never produce a
+	 * publish and no assertion over the notifications could ever catch it.
 	 */
 	@Test
 	void deletingTheOnlyCallSiteAddsTheMarkerAndDeletingTheDeclaringFileLeavesNoStaleEntry() {
@@ -141,22 +149,21 @@ public class UnusedElementStalenessTest extends AbstractRosettaLanguageServerVal
 
 		Assertions.assertEquals(List.of(UNUSED_F), unusedMarkerMessages(declURI),
 				"Expected 'F' to be marked unused once the file containing its only call site is deleted");
+		// Establishes that the URI below is keyed the way the store keys it, so the assertion after the
+		// delete is about the entry going away and not about looking up the wrong key.
+		Assertions.assertTrue(store.isPublished(uriExtensions.toUri(declURI)),
+				"Expected the declaring file to be recorded in the store while it exists");
 
 		// Delete the declaring file itself.
 		deleteWatchedFile("decl.rosetta", declURI);
 
-		// One unrelated build to let a delete's bookkeeping settle (Xtext may cluster the delete delta into
-		// the next build rather than the one that reported it), then a second, independent one: nothing
-		// after settling may republish for the now-deleted URI.
+		// One unrelated build to let a delete's bookkeeping settle: Xtext may carry the delete delta into the
+		// next build rather than the one that reported it.
 		makeChange(otherURI, 4, 8, "1", "2");
 		assertNoIssues();
 
-		long publishesForDeclAfterSettling = publishCountFor(declURI);
-		makeChange(otherURI, 4, 8, "2", "3");
-		assertNoIssues();
-
-		Assertions.assertEquals(publishesForDeclAfterSettling, publishCountFor(declURI),
-				"Expected no further publish for the deleted file's URI on a later, unrelated build");
+		Assertions.assertFalse(store.isPublished(uriExtensions.toUri(declURI)),
+				"Expected the deleted file's entry to be pruned from the store");
 	}
 
 	/**
@@ -217,15 +224,6 @@ public class UnusedElementStalenessTest extends AbstractRosettaLanguageServerVal
 		DidChangeWatchedFilesParams params = new DidChangeWatchedFilesParams();
 		params.setChanges(List.of(new FileEvent(uri, FileChangeType.Deleted)));
 		languageServer.didChangeWatchedFiles(params);
-	}
-
-	private long publishCountFor(String uri) {
-		return notifications.stream()
-				.map(Pair::getValue)
-				.filter(PublishDiagnosticsParams.class::isInstance)
-				.map(PublishDiagnosticsParams.class::cast)
-				.filter(p -> p.getUri().equals(uri))
-				.count();
 	}
 
 	/**

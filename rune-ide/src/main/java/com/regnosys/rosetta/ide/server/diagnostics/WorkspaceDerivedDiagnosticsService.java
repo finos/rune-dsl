@@ -34,6 +34,8 @@ import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.validation.Issue;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Binding;
 import com.google.inject.Injector;
@@ -57,11 +59,14 @@ import jakarta.inject.Singleton;
  * every workspace folder as a source folder, so a declaration in one folder referenced from another is in
  * the same resource set and is seen. Workspaces with genuinely separate projects are not supported.
  *
- * <p>Caveat inherited from the build itself: if clustering ever unloads resources mid-sweep, a provider
- * reading the live model cannot see them. Not reachable at the scale this has been measured at.
+ * <p>A provider may read the live model: {@code ProjectManager} builds with Xtext's default
+ * {@code DisabledClusteringPolicy}, so a build never evicts resources from the project's resource set and
+ * everything the workspace has loaded is still there to be swept.
  */
 @Singleton
 public class WorkspaceDerivedDiagnosticsService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkspaceDerivedDiagnosticsService.class);
+
     private static final Key<Set<IWorkspaceDerivedDiagnosticsProvider>> PROVIDERS_KEY =
             Key.get(new TypeLiteral<Set<IWorkspaceDerivedDiagnosticsProvider>>() {
             });
@@ -143,18 +148,49 @@ public class WorkspaceDerivedDiagnosticsService {
         URI uri = resource.getURI();
         Map<Class<?>, List<Issue>> computed = new LinkedHashMap<>();
         for (ProviderSweep sweep : sweeps) {
-            computed.put(sweep.providerType(), sweep.sweep().computeDiagnostics(resource));
+            try {
+                computed.put(sweep.providerType(), sweep.sweep().computeDiagnostics(resource));
+            } catch (Exception e) {
+                operationCanceledManager.propagateIfCancelException(e);
+                // Skip the whole resource rather than publish a partial answer, and leave its recorded
+                // entry alone so the next build retries it.
+                LOGGER.error("Computing derived diagnostics for {} failed", uri, e);
+                return;
+            }
         }
         if (!store.derivedDiffers(uri, computed)) {
             return;
         }
-        // Published straight through the unwrapped acceptor, so the wrapper cannot attach a second copy.
-        List<Issue> merged = new ArrayList<>(store.baseOf(uri));
-        computed.values().forEach(merged::addAll);
-        issueAcceptor.apply(uri, merged);
+        publish(uri, computed.values().stream().flatMap(List::stream).toList());
         // Only now: a sweep cut short leaves the resources it did not reach recorded as they were, so the
         // next completed build finds them unequal and republishes rather than leaving a marker stale.
         store.recordDerived(uri, computed);
+    }
+
+    /**
+     * Republishes every resource that currently carries derived diagnostics.
+     *
+     * <p>Needed once the client sends {@code initialized}: {@code LanguageServerImpl} holds each publish
+     * behind that notification, and a queue drained on completion runs its entries in reverse. The first
+     * build and the sweep correcting it both publish before it arrives, so a resource the sweep amended
+     * reaches the client oldest-last and keeps the build's unamended answer. Sending again once the queue
+     * has drained settles it.
+     */
+    public void republishDerivedDiagnostics() {
+        if (issueAcceptor == null) {
+            return;
+        }
+        store.urisWithDerivedDiagnostics().forEach(uri -> publish(uri, store.derivedOf(uri)));
+    }
+
+    /**
+     * Sends a resource's recorded base issues plus the given derived ones. Goes straight through the
+     * unwrapped acceptor, so the wrapper cannot attach a second copy of what is already in the list.
+     */
+    private void publish(URI uri, List<Issue> derived) {
+        List<Issue> merged = new ArrayList<>(store.baseOf(uri));
+        merged.addAll(derived);
+        issueAcceptor.apply(uri, merged);
     }
 
     private List<ProviderSweep> beginSweeps(IResourceServiceProvider language, ResourceSet resourceSet) {

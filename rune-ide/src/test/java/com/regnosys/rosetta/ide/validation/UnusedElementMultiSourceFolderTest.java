@@ -29,9 +29,10 @@ import jakarta.inject.Inject;
  * <p>The production factory that turns every workspace folder into one project's source folders
  * ({@code SingleProjectWorkspaceConfigFactory}) lives outside this repository, in {@code bsp-server}. Rather
  * than depend on that module, this test binds a small equivalent here: one {@link FileProjectConfig} rooted at
- * the test workspace root, with two source folders. Xtext's own default ({@code MultiRootWorkspaceConfigFactory})
- * would instead create one project <em>per</em> workspace folder, which is exactly the deployment shape this
- * plan does not support and does not want to test.
+ * the test workspace root, with an explicit source folder per directory. The test harness supplies a single
+ * workspace folder, so Xtext's own default would produce one project spanning both directories too and this
+ * test would pass without the binding — it is here to state the deployment shape the assertion is about, not
+ * to be the thing that makes it hold.
  */
 public class UnusedElementMultiSourceFolderTest extends AbstractRosettaLanguageServerValidationTest {
 
