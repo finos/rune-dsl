@@ -1,7 +1,7 @@
 # Plan part 2: a generic post-build diagnostics service, with unused-elements as its first provider
 
-Status: **SESSIONS 1 AND 2 DONE** (2026-08-13) — the mechanism swap and hardening have landed; session 3
-(benchmark) remains.
+Status: **COMPLETE** — sessions 1 and 2 (2026-08-13) landed the mechanism swap and the hardening; session 3
+(2026-08-14) measured the A/B against part 1 (§4.6) and found the mass-edit case cut in half.
 Prerequisite: everything in `unused-element-markers.md` (part 1), complete on
 branch `unused-functions-editor-only`. Part 1 is not released — it is still open as PR #1299 — so this work
 continues **on that same branch**, not a fresh one on top of it. That is also what §7 recommends: since this
@@ -337,8 +337,9 @@ checkstyle enforced.**
 4. `EditLatencyBenchmark` on CDM (`-Drune.benchmark.model.dir=...`), A/B against the part-1 branch, medians
    of 3, same five scenarios. Targets: keystroke ≤ 30 ms (the sweep must not be measurable after §3.5);
    reference-toggle at or below today's 44–48 ms (expect ~30); mass edit **materially** below 620 ms
-   (expect ≤ ~300 ms — this case is the reason the plan exists); cold build within +100 ms. **Session 3 —
-   the A/B against part 1 is still outstanding; what the sweep itself costs is measured in §4.5.**
+   (expect ≤ ~300 ms — this case is the reason the plan exists); cold build within +100 ms. **DONE —
+   §4.6.** Three of the four targets met; the "not measurable" one is missed by the same 15–25 ms §4.5
+   already accepted.
 
 ### 4.5 What the sweep costs (measured 2026-08-13, CDM `master` @ dcaa995ee, 145 files)
 
@@ -385,6 +386,39 @@ sweep is worth touching.
 
 Marker census on CDM, from the same run: `Function=207` (of 1304), `Type=20` (of 760), `Type alias=14` (of
 17), `Enumeration=11` (of 279), `Segment=5` (of 15), `Corpus=4` (of 32).
+
+### 4.6 The A/B against part 1 (measured 2026-08-14, CDM `master` @ 2c05b1931, 145 files)
+
+The §4.4 comparison. The part-1 side is the branch's part-1 tip (`6c8a90bf`) with the same `main` merge the
+part-2 side carries, built in a throwaway worktree, so the only difference between the two sides is this
+plan's work — `6c8a90bf` alone would have carried two unrelated `main` commits as noise. Two runs per side
+in alternating order; each cell is `apply / revert`, the harness's own median of 3, run 1 then run 2. The
+CDM checkout is one commit past §4.5's `dcaa995ee`, differing by four lines in one of the 145 files.
+
+| scenario | part 1 | part 2 | change |
+|---|---|---|---|
+| cold initial build | 2761 / 2700 ms | 2714 / 2870 ms | within run-to-run spread |
+| edit changing no cross-file reference | 109/110 · 103/106 ms | 121/116 · 125/120 ms | +15 ms |
+| edit toggling a function call | 27/30 · 26/29 ms | 36/36 · 38/39 ms | +9 ms |
+| edit toggling a type or enum reference | 181/180 · 180/179 ms | 205/192 · 193/198 ms | +15 ms |
+| blanking out the widest-fan-out file | 543/637 · 568/622 ms | 251/331 · 259/332 ms | **−290 ms (−48%)** |
+
+**The mass edit, which the plan exists for, is halved** and lands inside the ≤ ~300 ms target; the cold
+build is unchanged; the reference toggle at 36–39 ms is under the 44–48 ms target. Only "the sweep must not
+be measurable" is missed, by the same fixed 15–25 ms §4.5 measured and accepted.
+
+Two things the numbers say that §4.4 did not anticipate:
+
+- **Part 1's reference toggle re-measures at 26–30 ms, not the 44–48 ms the target was written against.**
+  So part 2 is ~9 ms *slower* on that scenario against a baseline measured on the same machine in the same
+  session, even though it is comfortably inside the target as stated. Same conclusion as §4.5 — this is the
+  snapshot toll, not a regression in the toggle path — but the target's headline figure was flattering.
+- **The mass edit publishes to 30 files where part 1 published to 40.** Part 1 revalidated the files whose
+  incoming references changed and republished each; the sweep amends only the files whose hints actually
+  changed. The other scenarios' fan-out is identical on both sides (2 and 11).
+
+The marker census is identical on both sides (`Function=207`, `Type=20`, `Type alias=14`, `Enumeration=11`,
+`Segment=5`, `Corpus=4`) — a behaviour-preservation check on the whole of CDM that the A/B gets for free.
 
 ## 5. Session plan
 
@@ -456,13 +490,15 @@ confirming the guarding test fails:
 
 `rune-ide` 128 → **129 / 0 skipped** (the cold-start test), `rune-integration-tests` unchanged.
 
-### Session 3 — benchmark (**Sonnet**, needs the user)
+### Session 3 — benchmark (**Sonnet**, needs the user) — **DONE 2026-08-14**
 
-Requires a CDM checkout and `-Drune.benchmark.model.dir`. **The sweep's own cost is now measured and
-accepted — §4.5.** What remains is the §4.4 A/B against the part-1 branch, to put numbers on the mass-edit
-case that motivated the plan; §4.5 measures this branch against itself. No optimisation is planned: the
-sweep adds 15–25 ms behind a typing debounce. If a larger workspace ever makes it visible, §4.5 names the
-one knob worth turning.
+The §4.4 A/B against part 1, on a CDM checkout via `-Drune.benchmark.model.dir`. **Results and method in
+§4.6.** The mass edit that motivated the plan drops from 543–637 ms to 251–332 ms; the other scenarios pay
+the 15–25 ms sweep toll §4.5 already measured against this branch itself, and the two measurements agree.
+No code changed this session, so no test counts moved.
+
+Nothing here changes the "ship unoptimised" call. If a larger workspace ever makes the sweep visible, §4.5
+names the one knob worth turning.
 
 ## 6. Risks
 
