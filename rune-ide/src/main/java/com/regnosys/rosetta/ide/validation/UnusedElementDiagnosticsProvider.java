@@ -68,6 +68,11 @@ public class UnusedElementDiagnosticsProvider implements IWorkspaceDerivedDiagno
      * element" rule self-maintaining when the grammar gains one, rather than turning it into a crash.
      *
      * <p>No two entries overlap in the type hierarchy, so the iteration order is not significant.
+     *
+     * <p>Only four entries differ from what {@link #fallbackNoun} derives: {@code FUNCTION} (so a
+     * {@code FunctionDispatch} reads as "Function", not "Function dispatch"), {@code DATA}, and the two
+     * {@code ROSETTA_EXTERNAL_*} ones. The rest are deliberate duplicates of what the fallback derives, so that
+     * renaming an {@code EClass} cannot quietly change a user-visible noun.
      */
     private static final List<KindDescriptor> KINDS = List.of(
             new KindDescriptor(SimplePackage.Literals.FUNCTION, "Function"),
@@ -105,6 +110,8 @@ public class UnusedElementDiagnosticsProvider implements IWorkspaceDerivedDiagno
             for (RosettaRootElement element : model.getElements()) {
                 if (element instanceof RosettaNamed named && unusedElementHelper.isUnused(element, snapshot)) {
                     FeatureBasedDiagnostic diagnostic = new FeatureBasedDiagnostic(
+                            // Not a choice: RosettaLanguageServerImpl#toDiagnostic renders every
+                            // UNUSED_DECLARATION as a Hint, whatever severity is set here.
                             Diagnostic.WARNING,
                             markerMessageFor(named),
                             element,

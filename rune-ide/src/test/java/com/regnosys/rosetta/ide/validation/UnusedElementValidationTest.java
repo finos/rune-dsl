@@ -25,8 +25,15 @@ import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTes
  * exactly the one behaviour under test. Only functions, types, enumerations, type aliases and schemas can be
  * annotated; the other kinds have no {@code Annotations} fragment in their grammar rule, so where such a
  * declaration is only scaffolding its marker is asserted rather than suppressed, with a comment saying so.
+ *
+ * <p>Every model whose subject is expected to carry <em>no</em> marker also declares a decoy — an unused
+ * {@code Dead} function — and asserts its marker. Without one, "the subject has no marker" would also be true
+ * of a build that produced no markers at all, so the assertion would survive the feature being deleted.
  */
 public class UnusedElementValidationTest extends AbstractRosettaLanguageServerValidationTest {
+
+	/** The marker every model's decoy declaration is expected to carry. */
+	private static final String UNUSED_DECOY = "Function 'Dead' is never used";
 
 	// ---------------------------------------------------------------- functions
 
@@ -50,6 +57,9 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 		Assertions.assertEquals(DiagnosticSeverity.Hint, diagnostic.getSeverity());
 		Assertions.assertTrue(diagnostic.getTags().contains(DiagnosticTag.Unnecessary),
 				"Expected the diagnostic to carry the Unnecessary tag so the editor greys it out");
+		Assertions.assertEquals("[2, 5] -> [2, 11]", toExpectation(diagnostic.getRange()),
+				"Expected the marker on the name token, so the editor greys out the name rather than the whole "
+						+ "declaration and its body");
 	}
 
 	@Test
@@ -81,10 +91,36 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 					[suppressUnused]
 					output: result int (1..1)
 					set result: 42
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
+	}
+
+	/**
+	 * The opt-out is that one annotation and not any annotation, so the model below carries a different one.
+	 * Without this, a check that merely counted annotations would pass every test in this class.
+	 */
+	@Test
+	void anAnnotationOtherThanSuppressUnusedDoesNotOptOut() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				annotation tagged: <"A test annotation.">
+
+				func Unused:
+					[tagged]
+					output: result int (1..1)
+					set result: 42
+				""");
+
+		assertNoIssues();
+		// `tagged` is used by `Unused`, so the only marker expected is the one on `Unused` itself.
+		Assertions.assertEquals(List.of("Function 'Unused' is never used"), unusedMarkers(uri));
 	}
 
 	/**
@@ -107,6 +143,65 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 
 		assertNoIssues();
 		Assertions.assertEquals(List.of("Function 'Countdown' is never used"), unusedMarkers(uri));
+	}
+
+	/**
+	 * A function with no body is reported by {@code FunctionValidator} instead — asserted below, so that
+	 * "reported separately" is a fact about this model rather than a claim in a comment. Marking it unused as
+	 * well would put two markers on the same declaration for the same reason.
+	 */
+	@Test
+	void functionWithNoBodyIsNotFlagged() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				func NoBody:
+					output: result int (1..1)
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
+				""");
+
+		assertNoErrors(uri);
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
+		Assertions.assertTrue(getDiagnostics().get(uri).stream()
+						.anyMatch(d -> d.getSeverity() == DiagnosticSeverity.Warning
+								&& d.getMessage().startsWith("A function should specify an implementation")),
+				"Expected the missing-implementation warning on 'NoBody' among: " + getDiagnostics().get(uri));
+	}
+
+	/**
+	 * A function extension is not an independent entry point: it is used exactly when the function it extends
+	 * is, which is judged on that declaration. Flagging one would be a false positive on a declaration a
+	 * modeller cannot delete.
+	 *
+	 * <p>The model deliberately carries one error. Extending a function requires the file to declare a
+	 * {@code scope}, which is an experimental feature enabled by a project configuration file this harness has
+	 * no way to supply; the {@code extends} reference resolves regardless, which is all this test needs.
+	 */
+	@Test
+	void functionExtensionIsNotFlagged() {
+		String uri = createModel("model.rosetta", """
+				namespace test
+
+				func Base:
+					[suppressUnused]
+					output: result int (1..1)
+					set result: 42
+
+				func Sub extends Base:
+					output: result int (1..1)
+					set result: 43
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
+				""");
+
+		Assertions.assertEquals(List.of("You can only extend a function in a file with a scope"),
+				errorMessages(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/**
@@ -142,17 +237,20 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 
 				func DayCountBasis(dcf: DayCountFractionEnum -> ACT_365L):
 					set basis: 365
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoErrors(uri);
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/**
 	 * And they stay unflagged when nothing calls the function either, since a case is used exactly when its
-	 * main declaration is. Nothing at all is reported here: the main declaration is separately exempt as a
-	 * function with no body. {@code Dead} is present so the assertion is not vacuous — it proves markers are
-	 * being produced for this model.
+	 * main declaration is. The main declaration is separately exempt as a function with no body, so the only
+	 * marker expected is the decoy's.
 	 */
 	@Test
 	void dispatchCasesOfAnUncalledFunctionAreNotFlagged() {
@@ -179,16 +277,19 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 				""");
 
 		assertNoErrors(uri);
-		Assertions.assertEquals(List.of("Function 'Dead' is never used"), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/**
-	 * [ingest XML] functions are called from outside the model (by the runtime), so they must not be
-	 * flagged as unused. This test also verifies that `XML` resolves without a linking error — if
-	 * basictypes.rosetta is not loaded properly, assertNoIssues() would fail with a Linking diagnostic.
+	 * Transform functions are called from outside the model (by the runtime), so they must not be flagged. The
+	 * exemption is "has a transform annotation" and never reads the keyword, so {@code [enrich]} and
+	 * {@code [projection]} take the same branch as the {@code [ingest XML]} below and are not tested separately.
+	 *
+	 * <p>This also verifies that {@code XML} resolves without a linking error — if basictypes.rosetta is not
+	 * loaded properly, {@code assertNoIssues()} would fail with a Linking diagnostic.
 	 */
 	@Test
-	void ingestAnnotatedFunctionIsNotMarkedAsUnused() {
+	void transformAnnotatedFunctionIsNotMarkedAsUnused() {
 		String uri = createModel("model.rosetta", """
 				namespace test
 
@@ -203,54 +304,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 					output:
 						result Foo (1..1)
 					set result: Foo { a: input }
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
-	}
-
-	@Test
-	void enrichAnnotatedFunctionIsNotMarkedAsUnused() {
-		String uri = createModel("model.rosetta", """
-				namespace test
-
-				type Foo:
-					[rootType]
-					a string (1..1)
-
-				func EnrichFoo:
-					[enrich]
-					inputs:
-						input Foo (1..1)
-					output:
-						result Foo (1..1)
-					set result: input
-				""");
-
-		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
-	}
-
-	@Test
-	void projectionAnnotatedFunctionIsNotMarkedAsUnused() {
-		String uri = createModel("model.rosetta", """
-				namespace test
-
-				type Foo:
-					[rootType]
-					a string (1..1)
-
-				func ProjectFoo:
-					[projection XML]
-					inputs:
-						input Foo (1..1)
-					output:
-						result string (1..1)
-					set result: input -> a
-				""");
-
-		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	// -------------------------------------------------------------------- types
@@ -286,10 +347,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 				type Holder:
 					[rootType]
 					u Used (1..1)
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/** {@code TypeCall.type} — function input and output types. */
@@ -309,10 +374,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 					inputs: source UsedInput (1..1)
 					output: result UsedOutput (1..1)
 					set result: UsedOutput { b: source -> a }
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/** {@code Data.superType} — {@code extends}. */
@@ -327,10 +396,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 				type Sub extends Base:
 					[rootType]
 					b string (1..1)
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/** {@code AsOperation.type} — {@code as Foo}. */
@@ -351,10 +424,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 					inputs: source Base (1..1)
 					output: result Sub (0..1)
 					set result: source as Sub
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/** {@code SwitchCaseGuard.referenceGuard} — a {@code switch} case naming a type. */
@@ -378,10 +455,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 						source switch
 							Sub then "sub",
 							default empty
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/** {@code RosettaQualifiableConfiguration.rosettaClass} — {@code isEvent root}. */
@@ -394,10 +475,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 
 				type Root:
 					a string (1..1)
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/**
@@ -417,10 +502,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 					[rootType]
 					ref string (1..1)
 						[metadata address "pointsTo"=Target->value]
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	@Test
@@ -431,10 +520,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 				type Entry:
 					[rootType]
 					a string (1..1)
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	@Test
@@ -445,10 +538,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 				type Published:
 					[suppressUnused]
 					a string (1..1)
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/**
@@ -501,10 +598,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 					[rootType]
 					Option
 					string
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	// ------------------------------------------------------------- enumerations
@@ -542,10 +643,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 				type Painted:
 					[rootType]
 					colour Colour (1..1)
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/** {@code RosettaEnumeration.parent} — {@code extends}. */
@@ -560,10 +665,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 				enum Extended extends Base:
 					[suppressUnused]
 					B
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/** {@code RosettaEnumValueReference.enumeration} — {@code Colour -> RED}. */
@@ -580,10 +689,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 					[suppressUnused]
 					output: result Colour (1..1)
 					set result: Colour -> RED
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/** {@code ToEnumOperation.enumeration} — {@code to-enum}. */
@@ -601,20 +714,29 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 					inputs: name string (1..1)
 					output: result Colour (0..1)
 					set result: name to-enum Colour
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/**
 	 * Container rollup: a {@code switch} case guard on an enum names an enum <em>value</em>, never the
-	 * enumeration itself. Without attributing each reference to the declaration containing its target, an
-	 * enum used only this way would be a false positive — which is also what would happen to the built-in
-	 * {@code SerializationFormat} enum, referenced only through its values by {@code schema} declarations.
+	 * enumeration itself, and that still counts as using the enumeration. Without attributing each reference to
+	 * the declaration containing its target, the built-in {@code SerializationFormat} enum — referenced only
+	 * through its values, by {@code schema} declarations — would be a false positive.
+	 *
+	 * <p>The model also names {@code Colour} as an attribute type, which is unavoidable: switching on an enum
+	 * needs an enum-typed expression, and every way of typing one is itself a reference to the enumeration. So
+	 * this pins that the guard does not <em>stop</em> the enumeration counting as used; the value-only shape it
+	 * generalises cannot be written for a user-declared enum.
 	 */
 	@Test
-	void enumerationUsedOnlyViaOneOfItsValuesIsNotFlagged() {
+	void enumerationUsedBySwitchCaseGuardOnOneOfItsValuesIsNotFlagged() {
 		String uri = createModel("model.rosetta", """
 				namespace test
 
@@ -634,10 +756,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 						palette -> preferred switch
 							RED then "red",
 							default empty
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	@Test
@@ -649,15 +775,25 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 					[suppressUnused]
 					A
 					B
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	// -------------------------------------------------------------------- rules
 
-	/** {@code RosettaReport.eligibilityRules} — the only shape that uses an eligibility rule. */
+	/**
+	 * {@code RosettaReport.eligibilityRules} — the only shape that uses an eligibility rule.
+	 *
+	 * <p>The report itself carries no marker either, and cannot: a {@code report} is the one root element with
+	 * no name, so there would be nowhere to put one. Nothing can reference a report, so without the naming rule
+	 * every report in every model would be flagged.
+	 */
 	@Test
 	void eligibilityRuleUsedByReportIsNotFlagged() {
 		String uri = createModel("model.rosetta", """
@@ -680,10 +816,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 				report Auth Doc in T+1
 					from Input when Eligible
 					with type Output
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	@Test
@@ -743,10 +883,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 
 				reporting rule Extract from Input:
 					extract a
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/** {@code RuleReferenceAnnotation.reportingRule} inside a {@code rule source}. */
@@ -776,7 +920,8 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 
 		assertNoIssues();
 		// `Overrides` itself is scaffolding no report references, and a rule source has no opt-out, so its
-		// own marker is expected here. What this test is about is that `Extract` does not get one.
+		// own marker is expected here — and doubles as this model's decoy. What this test is about is that
+		// `Extract` does not get one.
 		Assertions.assertEquals(List.of("Rule source 'Overrides' is never used"), unusedMarkers(uri));
 	}
 
@@ -803,10 +948,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 
 				reporting rule Inner from Input:
 					extract a
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/**
@@ -883,10 +1032,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 				type Trade:
 					[rootType]
 					notional Amount (1..1)
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/** A type alias's grammar rule now has {@code Annotations*}, so it is one of the suppressible kinds. */
@@ -897,10 +1050,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 
 				typeAlias Amount: number
 					[suppressUnused]
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	// -------------------------------------------------------------- annotations
@@ -935,10 +1092,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 					[rootType]
 					[tagged]
 					a string (1..1)
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/**
@@ -959,10 +1120,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 					[rootType]
 					[tagged key]
 					a string (1..1)
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/**
@@ -1027,10 +1192,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 					output:
 						result Foo (1..1)
 					set result: Foo { a: input }
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/** A schema's grammar rule does have {@code Annotations*}, so it is one of the suppressible kinds. */
@@ -1041,10 +1210,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 
 				schema fixml XML
 					[suppressUnused]
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	// ------------------------------------------------------------ rule sources
@@ -1115,10 +1288,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 					from Input when Eligible
 					with type Output
 					with source Overrides
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/** {@code RosettaExternalRuleSource.superSource} — {@code rule source Derived extends Base}. */
@@ -1160,7 +1337,8 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 
 		assertNoIssues();
 		// `Base` is used by `Derived`'s `extends`. `Derived` itself is used by nothing — non-transitively, so
-		// an unused rule source does not stop the source it extends counting as used.
+		// an unused rule source does not stop the source it extends counting as used. Its marker also serves
+		// as this model's decoy.
 		Assertions.assertEquals(List.of("Rule source 'Derived' is never used"), unusedMarkers(uri));
 	}
 
@@ -1200,15 +1378,20 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 					[rootType]
 					a string (1..1)
 						[docReference Auth Doc field "1.2" provision "As described."]
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/**
 	 * {@code RosettaCorpus.body} — a corpus naming its body. Also the clearest illustration of
-	 * non-transitivity: {@code Auth} counts as used even though the only thing using it is itself unused.
+	 * non-transitivity: {@code Auth} counts as used even though the only thing using it is itself unused. The
+	 * marker on {@code Doc} is this model's decoy.
 	 */
 	@Test
 	void bodyUsedByCorpusIsNotFlagged() {
@@ -1258,10 +1441,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 					[suppressUnused]
 					output: result number (1..1)
 					set result: Twice(21)
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	// ------------------------------------------------- built-in kinds and guards
@@ -1307,10 +1494,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 					[rootType]
 					price money (1..1)
 					window interval (1..1)
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/**
@@ -1324,43 +1515,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 				namespace test
 
 				metaType reference string
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
-	}
-
-	/**
-	 * A {@code report} is the one root element with no name, so it is not a candidate: there would be nowhere
-	 * to put the marker. Nothing can reference a report either, so without the naming rule every report in
-	 * every model would be flagged.
-	 */
-	@Test
-	void reportIsNeverFlagged() {
-		String uri = createModel("model.rosetta", """
-				namespace test
-
-				body Authority Auth
-				corpus Auth Doc
-
-				type Input:
-					[rootType]
-					a string (1..1)
-
-				type Output:
-					[rootType]
-					a string (1..1)
-
-				eligibility rule Eligible from Input:
-					True
-
-				report Auth Doc in T+1
-					from Input when Eligible
-					with type Output
-				""");
-
-		assertNoIssues();
-		Assertions.assertEquals(List.of(), unusedMarkers(uri));
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 	}
 
 	/**
@@ -1371,15 +1533,22 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 	 */
 	@Test
 	void builtinDeclarationsAreNeverFlagged() {
-		createModel("model.rosetta", """
+		String uri = createModel("model.rosetta", """
 				namespace test
 
 				type Foo:
 					[rootType]
 					a string (1..1)
+
+				func Dead:
+					output: result int (1..1)
+					set result: 42
 				""");
 
 		assertNoIssues();
+
+		// The decoy, so that "no marker on a builtin" is not also true of a build that produced none.
+		Assertions.assertEquals(List.of(UNUSED_DECOY), unusedMarkers(uri));
 
 		List<String> builtinMarkers = getDiagnostics().entrySet().stream()
 				.filter(e -> e.getKey().endsWith("basictypes.rosetta") || e.getKey().endsWith("annotations.rosetta"))
@@ -1426,11 +1595,14 @@ public class UnusedElementValidationTest extends AbstractRosettaLanguageServerVa
 	 * measure.
 	 */
 	private void assertNoErrors(String uri) {
-		List<String> errors = getDiagnostics().get(uri).stream()
+		Assertions.assertEquals(List.of(), errorMessages(uri));
+	}
+
+	private List<String> errorMessages(String uri) {
+		return getDiagnostics().get(uri).stream()
 				.filter(d -> d.getSeverity() == DiagnosticSeverity.Error)
 				.map(Diagnostic::getMessage)
 				.toList();
-		Assertions.assertEquals(List.of(), errors);
 	}
 
 	/**

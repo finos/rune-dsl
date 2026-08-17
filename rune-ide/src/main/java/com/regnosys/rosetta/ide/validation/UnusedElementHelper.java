@@ -27,9 +27,9 @@ import java.util.Set;
 /**
  * Detects declarations that are never referenced anywhere in the resource set.
  *
- * <p>Every <em>named</em> root element is a candidate — see {@link #isCandidate}. That is deliberately a rule
- * rather than a list of kinds, so a root element added to the grammar in future is covered by default instead
- * of being a silent omission.
+ * <p>Every <em>named</em> root element is a candidate, minus the exclusions in {@link #isCandidate}. That is
+ * deliberately a rule rather than a list of kinds, so a root element added to the grammar in future is covered
+ * by default instead of being a silent omission.
  *
  * <p>This is intentionally <em>not</em> a validator {@code @Check}: it is consumed only by
  * {@link UnusedElementDiagnosticsProvider}, so that the result surfaces as a faded marker in the editor
@@ -120,20 +120,20 @@ public class UnusedElementHelper {
     }
 
     /**
-     * Whether the marker applies to this declaration at all: every root element that carries a name does,
-     * with two exclusions that are matters of correctness rather than policy.
+     * Whether the marker applies to this declaration at all: every root element that carries a name does, with
+     * two exclusions that are matters of correctness rather than policy.
      *
-     * <p>The naming requirement excludes {@code RosettaReport}, the one root element with no name — there
-     * would be nothing to attach the marker to.
+     * <p>Carrying a name is not re-checked here, because both halves of it are already decided elsewhere.
+     * {@link UnusedElementDiagnosticsProvider} reports only on a {@link RosettaNamed}, which is what excludes
+     * {@code RosettaReport} — a report is not a named element in the grammar at all, and there would be nothing
+     * to attach the marker to. A declaration whose name failed to parse has no qualified name either, so
+     * {@link #idOf} returns {@code null} for it and {@link #isUnused} answers {@code false}.
      *
      * @see #isMetaType
      * @see #isInBuiltinResource
      */
     private boolean isCandidate(RosettaRootElement element, Resource resource) {
-        if (isMetaType(element) || isInBuiltinResource(resource)) {
-            return false;
-        }
-        return element instanceof RosettaNamed named && named.getName() != null;
+        return !isMetaType(element) && !isInBuiltinResource(resource);
     }
 
     /**
