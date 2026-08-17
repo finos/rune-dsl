@@ -15,8 +15,13 @@ import org.eclipse.xtext.testing.TextDocumentConfiguration;
 import org.eclipse.xtext.testing.TextDocumentPositionConfiguration;
 import org.junit.jupiter.api.Assertions;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +45,29 @@ public abstract class AbstractRosettaLanguageServerTest extends AbstractLanguage
 	@Override
 	protected Module getServerModule() {
 		return RosettaServerModule.create();
+	}
+
+	/**
+	 * Writes the file by renaming a complete one into place, so it is never observed empty.
+	 *
+	 * <p>{@code super} creates the file and then writes its contents, leaving it empty in between. The server
+	 * reads files from disk on its own threads, and a test writes files while it is still working — a
+	 * notification is fire-and-forget, so the build it triggers outlives the call. A build that read a file
+	 * inside that window parsed it as empty and reported a syntax error on a file no test wrote empty.
+	 */
+	@Override
+	public String writeFile(String path, CharSequence contents) {
+		File target = new File(root, path);
+		try {
+			Files.createDirectories(target.toPath().getParent());
+			Path complete = Files.createTempFile(target.toPath().getParent(), target.getName(), ".tmp");
+			Files.writeString(complete, contents.toString());
+			Files.move(complete, target.toPath(), StandardCopyOption.REPLACE_EXISTING,
+					StandardCopyOption.ATOMIC_MOVE);
+		} catch (IOException e) {
+			throw new UncheckedIOException("Failed to write " + target, e);
+		}
+		return getVirtualFile(path);
 	}
 
 	protected void assertNoIssues() {
