@@ -44,9 +44,7 @@ public class RosettaBuiltinsService {
 	 * <p>Matched on the file name rather than against {@link #basicTypesURI} / {@link #annotationsURI},
 	 * because the builtins reach a resource set under their physical location rather than their canonical
 	 * {@code classpath:} URI — and under more than one physical location when the same builtin is present in
-	 * several jars on the classpath. Both {@link #getModel} and
-	 * {@code RosettaNamesAreUniqueValidationHelper#isBuiltin} already work around the same thing; see the TODO
-	 * on the latter for the root fix.
+	 * several jars on the classpath. See the TODO in {@link #getModel} for the root fix.
 	 *
 	 * <p>Consequence of matching on the name alone: a model file of the user's own called
 	 * {@code annotations.rosetta} or {@code basictypes.rosetta} is treated as a builtin, so it is exempt from
@@ -65,10 +63,10 @@ public class RosettaBuiltinsService {
 	private RosettaModel getModel(ResourceSet resourceSet, URI uri) {
 		Resource resource = resourceSet.getResource(uri, false);
 		if (resource == null) { // TODO: this is a workaround for not having proper support for classpath uris in the Xtext language server
-			String[] pathParts = uri.path().split("/");
-			String uriFile = pathParts[pathParts.length - 1];
+			String fileName = uri.trimFragment().lastSegment();
 			resource = resourceSet.getResources().stream()
-				.filter(r -> r.getURI().path().endsWith(uriFile))
+				.filter(r -> isBuiltinResource(r.getURI())
+						&& fileName.equals(r.getURI().trimFragment().lastSegment()))
 				.findAny()
 				.orElseThrow();
 		}

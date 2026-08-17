@@ -27,5 +27,5 @@ annotation codeImplementation: <"Marks the function as statically implemented by
 annotation suppressWarnings:
     capitalisation boolean (0..1)
 
-annotation suppressUnused: <"Opt out of the 'never used' editor marker for a declaration that is not referenced anywhere in the model (e.g. part of a public API consumed by downstream models or generated code). Can be written on a function, type, enum, type alias or schema; other kinds of declaration get the marker but have nowhere to put an annotation.">
+annotation suppressUnused: <"Opt out of the 'never used' editor marker for a declaration that is not referenced anywhere in the model (e.g. part of a public API consumed by downstream models or generated code). Can be written on a function, type, choice, enum, type alias or schema; other kinds of declaration get the marker but have nowhere to put an annotation.">
 

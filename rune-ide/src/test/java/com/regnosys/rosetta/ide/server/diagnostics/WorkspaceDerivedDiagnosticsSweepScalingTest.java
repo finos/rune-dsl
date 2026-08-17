@@ -89,7 +89,7 @@ public class WorkspaceDerivedDiagnosticsSweepScalingTest extends AbstractRosetta
 	/** Counts how often the service asks a provider to prepare its whole-workspace state. */
 	public static class CountingProvider implements IWorkspaceDerivedDiagnosticsProvider {
 		@Override
-		public Sweep beginSweep(ResourceSet resourceSet) {
+		public Pass beginSweep(ResourceSet resourceSet) {
 			BEGIN_SWEEPS.incrementAndGet();
 			return resource -> List.<Issue>of();
 		}

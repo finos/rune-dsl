@@ -22,6 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.URI;
@@ -126,13 +127,7 @@ public class DerivedDiagnosticsStore {
      * next one repairs them.
      */
     public void recordDerived(URI uri, Map<Class<?>, List<Issue>> derived) {
-        Map<Class<?>, List<Issue>> nonEmpty = new LinkedHashMap<>();
-        derived.forEach((provider, issues) -> {
-            if (!issues.isEmpty()) {
-                nonEmpty.put(provider, List.copyOf(issues));
-            }
-        });
-        entries.merge(uri, new Entry(List.of(), nonEmpty),
+        entries.merge(uri, new Entry(List.of(), contributions(derived, List::copyOf)),
                 (existing, added) -> new Entry(existing.base(), added.derived()));
     }
 
@@ -145,14 +140,23 @@ public class DerivedDiagnosticsStore {
     }
 
     /**
-     * The comparable form of a per-provider map: providers contributing nothing are dropped, so "no entry"
-     * and "an empty contribution" compare equal.
+     * The comparable form of a per-provider map, so that lists of {@link Issue} — which have no
+     * {@code equals} — can be diffed.
      */
     private static Map<Class<?>, List<DiagnosticValue>> comparable(Map<Class<?>, List<Issue>> derived) {
-        Map<Class<?>, List<DiagnosticValue>> result = new HashMap<>();
+        return contributions(derived, issues -> issues.stream().map(DiagnosticValue::of).toList());
+    }
+
+    /**
+     * A per-provider map with the providers contributing nothing dropped, so that "no entry" and "an empty
+     * contribution" are the same thing both to record and to compare.
+     */
+    private static <T> Map<Class<?>, List<T>> contributions(Map<Class<?>, List<Issue>> derived,
+            Function<List<Issue>, List<T>> mapper) {
+        Map<Class<?>, List<T>> result = new LinkedHashMap<>();
         derived.forEach((provider, issues) -> {
             if (!issues.isEmpty()) {
-                result.put(provider, issues.stream().map(DiagnosticValue::of).toList());
+                result.put(provider, mapper.apply(issues));
             }
         });
         return result;

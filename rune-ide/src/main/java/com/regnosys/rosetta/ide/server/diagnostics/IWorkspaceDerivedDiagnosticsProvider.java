@@ -38,13 +38,17 @@ public interface IWorkspaceDerivedDiagnosticsProvider {
     /**
      * Prepares whatever whole-workspace state this provider needs and returns the per-resource step that
      * reads it. Called once per sweep, before any resource is visited.
+     *
+     * <p>Must not throw, for the same reason {@link Pass#computeDiagnostics} must not: a throw here surfaces
+     * as <em>missing</em> diagnostics rather than as a visible error, and this is the phase doing the
+     * expensive work.
      */
-    Sweep beginSweep(ResourceSet resourceSet);
+    Pass beginSweep(ResourceSet resourceSet);
 
     /**
      * One sweep's worth of prepared state, applied to each resource in turn. Not reused across sweeps.
      */
-    interface Sweep {
+    interface Pass {
         /**
          * The diagnostics this provider contributes to the given resource, empty if none. Must not throw:
          * these are published to the client, and a throw on that path surfaces as <em>missing</em>

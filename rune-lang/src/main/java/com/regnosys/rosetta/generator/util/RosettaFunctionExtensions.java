@@ -42,6 +42,17 @@ public class RosettaFunctionExtensions {
 		return function.getOperations().isEmpty() && !isDispatchingFunction(function) && !handleAsEnumFunction(function);
 	}
 
+	/**
+	 * A function that declares an output but sets nothing, so its implementation has to come from outside the
+	 * model. Shared by the {@code codeImplementation} warning and the "never used" editor marker, which have to
+	 * agree on what counts as one.
+	 */
+	public static boolean hasNoBody(Function function) {
+		return function.getOutput() != null
+				&& function.getOutput().getName() != null
+				&& function.getOperations().isEmpty();
+	}
+
 	public boolean handleAsEnumFunction(Function function) {
 		return function.getOperations().isEmpty() && !Iterables.isEmpty(getDispatchingFunctions(function));
 	}

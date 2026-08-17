@@ -112,6 +112,7 @@ public class WorkspaceDerivedDiagnosticsService {
         if (issueAcceptor == null) {
             return;
         }
+        // A delta with no new description is a resource that has gone; drop what was recorded for it.
         deltas.stream().filter(delta -> delta.getNew() == null).forEach(delta -> store.remove(delta.getUri()));
         for (ProjectManager projectManager : projectManagers) {
             // An index-only project is deliberately never validated, so it must not be published for either.
@@ -126,16 +127,20 @@ public class WorkspaceDerivedDiagnosticsService {
     }
 
     private void sweep(ResourceSet resourceSet, CancelIndicator cancelIndicator) {
-        Map<IResourceServiceProvider, List<ProviderSweep>> sweepsByLanguage = new IdentityHashMap<>();
+        // Keyed by the language's injector, which is a singleton. The IResourceServiceProvider is not — every
+        // XtextResource holds its own — so keying on that would miss for every resource and prepare a sweep
+        // per resource rather than per language, the very cost the two-phase provider SPI exists to avoid.
+        Map<Injector, List<ProviderSweep>> sweepsByLanguage = new IdentityHashMap<>();
         // Iterate a copy: a provider preparing its state may resolve a reference that demand-loads a
-        // resource. Anything loaded that way is swept by the next build.
+        // resource. Anything loaded that way is iterated by the next build, and published for only once
+        // something else has published for it.
         for (Resource resource : List.copyOf(resourceSet.getResources())) {
             operationCanceledManager.checkCanceled(cancelIndicator);
-            IResourceServiceProvider language = languageOf(resource);
-            if (language == null) {
+            Injector languageInjector = languageInjectorOf(resource);
+            if (languageInjector == null) {
                 continue;
             }
-            List<ProviderSweep> sweeps = sweepsByLanguage.computeIfAbsent(language,
+            List<ProviderSweep> sweeps = sweepsByLanguage.computeIfAbsent(languageInjector,
                     it -> beginSweeps(it, resourceSet));
             // A resource nothing has published for is not one to start publishing for here.
             if (!sweeps.isEmpty() && store.isPublished(resource.getURI())) {
@@ -147,9 +152,9 @@ public class WorkspaceDerivedDiagnosticsService {
     private void republishIfChanged(Resource resource, List<ProviderSweep> sweeps) {
         URI uri = resource.getURI();
         Map<Class<?>, List<Issue>> computed = new LinkedHashMap<>();
-        for (ProviderSweep sweep : sweeps) {
+        for (ProviderSweep providerSweep : sweeps) {
             try {
-                computed.put(sweep.providerType(), sweep.sweep().computeDiagnostics(resource));
+                computed.put(providerSweep.providerType(), providerSweep.pass().computeDiagnostics(resource));
             } catch (Exception e) {
                 operationCanceledManager.propagateIfCancelException(e);
                 // Skip the whole resource rather than publish a partial answer, and leave its recorded
@@ -171,7 +176,8 @@ public class WorkspaceDerivedDiagnosticsService {
      * Republishes every resource that currently carries derived diagnostics.
      *
      * <p>Needed once the client sends {@code initialized}: {@code LanguageServerImpl} holds each publish
-     * behind that notification, and a queue drained on completion runs its entries in reverse. The first
+     * behind that notification, and a queue drained on completion runs its entries in reverse as of JDK 21 —
+     * that is {@code CompletableFuture}'s dependent stack, which is implementation behaviour. The first
      * build and the sweep correcting it both publish before it arrives, so a resource the sweep amended
      * reaches the client oldest-last and keeps the build's unamended answer. Sending again once the queue
      * has drained settles it.
@@ -193,31 +199,39 @@ public class WorkspaceDerivedDiagnosticsService {
         issueAcceptor.apply(uri, merged);
     }
 
-    private List<ProviderSweep> beginSweeps(IResourceServiceProvider language, ResourceSet resourceSet) {
-        return providersOf(language).stream()
-                .map(provider -> new ProviderSweep(provider.getClass(), provider.beginSweep(resourceSet)))
-                .toList();
+    /**
+     * Prepares every provider of a language, skipping any that fails to prepare. A provider that throws here
+     * would otherwise escape into the build's write request and cost every provider every resource for this
+     * build, with nothing in the log to say derived diagnostics were dropped.
+     */
+    private List<ProviderSweep> beginSweeps(Injector languageInjector, ResourceSet resourceSet) {
+        List<ProviderSweep> sweeps = new ArrayList<>();
+        for (IWorkspaceDerivedDiagnosticsProvider provider : providersOf(languageInjector)) {
+            try {
+                sweeps.add(new ProviderSweep(provider.getClass(), provider.beginSweep(resourceSet)));
+            } catch (Exception e) {
+                operationCanceledManager.propagateIfCancelException(e);
+                LOGGER.error("Preparing derived diagnostics for {} failed", provider.getClass().getName(), e);
+            }
+        }
+        return sweeps;
     }
 
     /**
      * The providers a language contributes, empty if it contributes none. Resolved through the language's own
      * injector because {@link IResourceServiceProvider#get} cannot express a multibound set.
      */
-    private Set<IWorkspaceDerivedDiagnosticsProvider> providersOf(IResourceServiceProvider language) {
-        Injector languageInjector = language.get(Injector.class);
-        if (languageInjector == null) {
-            return Set.of();
-        }
+    private Set<IWorkspaceDerivedDiagnosticsProvider> providersOf(Injector languageInjector) {
         Binding<Set<IWorkspaceDerivedDiagnosticsProvider>> binding =
                 languageInjector.getExistingBinding(PROVIDERS_KEY);
         return binding == null ? Set.of() : binding.getProvider().get();
     }
 
-    private IResourceServiceProvider languageOf(Resource resource) {
-        if (resource instanceof XtextResource xtextResource) {
-            return xtextResource.getResourceServiceProvider();
-        }
-        return languagesRegistry.getResourceServiceProvider(resource.getURI());
+    private Injector languageInjectorOf(Resource resource) {
+        IResourceServiceProvider language = resource instanceof XtextResource xtextResource
+                ? xtextResource.getResourceServiceProvider()
+                : languagesRegistry.getResourceServiceProvider(resource.getURI());
+        return language == null ? null : language.get(Injector.class);
     }
 
     private Iterable<Issue> withRecordedDiagnostics(URI uri, Iterable<Issue> issues) {
@@ -232,8 +246,8 @@ public class WorkspaceDerivedDiagnosticsService {
     }
 
     /**
-     * One provider's prepared sweep, tagged with the provider type the store keys its entries by.
+     * One provider's prepared pass, tagged with the provider type the store keys its entries by.
      */
-    private record ProviderSweep(Class<?> providerType, IWorkspaceDerivedDiagnosticsProvider.Sweep sweep) {
+    private record ProviderSweep(Class<?> providerType, IWorkspaceDerivedDiagnosticsProvider.Pass pass) {
     }
 }

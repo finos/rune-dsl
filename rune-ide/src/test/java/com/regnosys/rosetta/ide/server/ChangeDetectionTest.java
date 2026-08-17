@@ -35,7 +35,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(typesURI, 3, 6, "int", "string");
 
 		// There should be a type error in func `Foo`
-		List<Diagnostic> issues = filterSevereDiagnostics(funcsURI);
+		List<Diagnostic> issues = nonHintDiagnostics(funcsURI);
 
 		Assertions.assertEquals(1, issues.size());
 		Assertions.assertEquals(
@@ -69,7 +69,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(typesURI, 3, 10, "(1..1)", "(0..*)");
 
 		// There should be a cardinality error in func `Foo`
-		List<Diagnostic> issues = filterSevereDiagnostics(funcsURI);
+		List<Diagnostic> issues = nonHintDiagnostics(funcsURI);
 
 		Assertions.assertEquals(1, issues.size());
 		Assertions.assertEquals("Expecting single cardinality. Cannot assign a list to a single value",
@@ -117,7 +117,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(typesURI, 2, 7, "foo", "bar");
 
 		// There should be a type error in func `Foo`
-		List<Diagnostic> issues = filterSevereDiagnostics(funcsURI);
+		List<Diagnostic> issues = nonHintDiagnostics(funcsURI);
 
 		Assertions.assertEquals(1, issues.size());
 		Assertions.assertEquals(
@@ -147,7 +147,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(ruleAURI, 2, 22, "string", "int");
 
 		// There should be a type error in rule B
-		List<Diagnostic> issues = filterSevereDiagnostics(ruleBURI);
+		List<Diagnostic> issues = nonHintDiagnostics(ruleBURI);
 		Assertions.assertEquals(1, issues.size());
 		Assertions.assertEquals(
 				"Expected type `int`, but got `string` instead. Rule `A` cannot be called with type `string`",
@@ -180,7 +180,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(ruleAURI, 3, 1, "42", "\"My string\"");
 
 		// There should be a type error in func Foo
-		List<Diagnostic> issues = filterSevereDiagnostics(funcURI);
+		List<Diagnostic> issues = nonHintDiagnostics(funcURI);
 
 		Assertions.assertEquals(1, issues.size());
 		Assertions.assertEquals(
@@ -251,7 +251,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		assertNoIssues();
 
 		makeChange(nsA, 2, 0, "", "break me");
-		List<Diagnostic> issues = filterSevereDiagnostics(nsB);
+		List<Diagnostic> issues = nonHintDiagnostics(nsB);
 
         assertIssues("""
                 Error [4, 25] -> [4, 28]: Couldn't resolve reference to RosettaType 'a.Y'.
@@ -288,7 +288,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		assertNoIssues();
 
 		makeChange(nsA, 2, 0, "", "break me");
-		List<Diagnostic> issues = filterSevereDiagnostics(nsB);
+		List<Diagnostic> issues = nonHintDiagnostics(nsB);
 
         assertIssues("""
                 Error [5, 25] -> [5, 30]: Couldn't resolve reference to RosettaSymbol 'a.SSS'.
@@ -319,7 +319,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		assertNoIssues();
 
 		makeChange(nsA, 2, 0, "", "break me");
-		List<Diagnostic> issues = filterSevereDiagnostics(nsB);
+		List<Diagnostic> issues = nonHintDiagnostics(nsB);
 
         assertIssues("""
                 Error [3, 25] -> [3, 28]: Couldn't resolve reference to RosettaSymbol 'a.Y'.
@@ -377,10 +377,11 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		Assertions.assertNotEquals(originalReportCode, newReportCode);
 	}
 
-	private List<Diagnostic> filterSevereDiagnostics(String funcsURI) {
-		return getDiagnostics().get(funcsURI)
+	/** Everything published for a resource bar the faded editor-only markers. */
+	private List<Diagnostic> nonHintDiagnostics(String uri) {
+		return getDiagnostics().get(uri)
 				.stream()
-				.filter(d -> !d.getSeverity().equals(DiagnosticSeverity.Hint))
+				.filter(d -> d.getSeverity() != DiagnosticSeverity.Hint)
 				.toList();
 	}
 }

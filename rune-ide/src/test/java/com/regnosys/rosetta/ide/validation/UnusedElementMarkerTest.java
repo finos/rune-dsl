@@ -2,18 +2,18 @@ package com.regnosys.rosetta.ide.validation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import com.regnosys.rosetta.rosetta.RosettaFactory;
+import com.regnosys.rosetta.rosetta.RosettaNamed;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
-import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.simple.SimplePackage;
 
@@ -24,7 +24,7 @@ import com.regnosys.rosetta.rosetta.simple.SimplePackage;
  * <p>This is the test that makes {@code UnusedElementHelper}'s "every named root element is a candidate" rule
  * safe to state. Candidacy is a rule, so a root element added to the grammar becomes a candidate with no code
  * change — and would then be passed to
- * {@link UnusedElementDiagnosticsProvider#markerMessageFor(RosettaRootElement)}, which must produce a usable
+ * {@link UnusedElementDiagnosticsProvider#markerMessageFor(RosettaNamed)}, which must produce a usable
  * message for it rather than throw. The failure mode of throwing there is unusually bad: it happens while
  * diagnostics are being computed for publication, so it surfaces as <em>fewer</em> diagnostics rather than as
  * a visible error.
@@ -36,6 +36,8 @@ import com.regnosys.rosetta.rosetta.simple.SimplePackage;
  * have no convenient concrete syntax and stays fast.
  */
 public class UnusedElementMarkerTest {
+	/** Named root elements {@code UnusedElementHelper} never treats as candidates, so no marker names them. */
+	private static final Set<EClass> EXCLUDED_FROM_CANDIDACY = Set.of(RosettaPackage.Literals.ROSETTA_META_TYPE);
 
 	@Test
 	void everyNamedRootElementGetsAUsableMarker() {
@@ -53,6 +55,22 @@ public class UnusedElementMarkerTest {
 					eClass.getName() + " produced the message \"" + message
 							+ "\", which does not start with a capital");
 		}
+	}
+
+	/**
+	 * The checks above are satisfied by a derived noun, so on their own a root element added to the grammar
+	 * would ship with a noun nobody chose. Every candidate kind has to have a {@code KINDS} entry.
+	 */
+	@Test
+	void everyCandidateKindHasANounSomeoneChose() {
+		List<String> withoutANoun = namedRootElementClasses().stream()
+				.filter(eClass -> !EXCLUDED_FROM_CANDIDACY.contains(eClass))
+				.filter(eClass -> !UnusedElementDiagnosticsProvider.hasChosenNoun(eClass))
+				.map(EClass::getName)
+				.toList();
+		Assertions.assertTrue(withoutANoun.isEmpty(),
+				"These kinds get a marker but no noun of their own, so they fall back to one derived from "
+						+ "their class name: " + withoutANoun + ". Add an entry for each to KINDS.");
 	}
 
 	@Test
@@ -107,10 +125,8 @@ public class UnusedElementMarkerTest {
 	}
 
 	private static String markerMessageFor(EClass eClass, String name) {
-		RosettaRootElement element = (RosettaRootElement) EcoreUtil.create(eClass);
-		EStructuralFeature nameFeature = eClass.getEStructuralFeature(
-				RosettaPackage.Literals.ROSETTA_NAMED__NAME.getName());
-		element.eSet(nameFeature, name);
+		RosettaNamed element = (RosettaNamed) EcoreUtil.create(eClass);
+		element.setName(name);
 		return UnusedElementDiagnosticsProvider.markerMessageFor(element);
 	}
 

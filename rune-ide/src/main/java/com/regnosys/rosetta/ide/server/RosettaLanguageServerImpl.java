@@ -95,6 +95,10 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl implements Ros
 		warmUpService.warmUp();
 	}
 
+	/**
+	 * Subclasses overriding this must call {@code super}: without it every unused-declaration marker turns
+	 * from a faded hint into a warning in the Problems panel, which is the opposite of the feature's intent.
+	 */
 	@Override
 	protected Diagnostic toDiagnostic(Issue issue) {
 		Diagnostic diagnostic = super.toDiagnostic(issue);
@@ -113,6 +117,10 @@ public class RosettaLanguageServerImpl extends LanguageServerImpl implements Ros
 		return super.initialize(params);
 	}
 
+	/**
+	 * Subclasses overriding this must call {@code super}: without it the republish that corrects the markers
+	 * the first build published too early never happens.
+	 */
 	@Override
 	public void initialized(InitializedParams params) {
 		super.initialized(params);

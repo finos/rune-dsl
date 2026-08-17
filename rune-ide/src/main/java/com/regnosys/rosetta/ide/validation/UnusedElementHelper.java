@@ -1,6 +1,7 @@
-package com.regnosys.rosetta.validation;
+package com.regnosys.rosetta.ide.validation;
 
 import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
+import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
 import com.regnosys.rosetta.rosetta.RosettaMetaType;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
@@ -30,10 +31,10 @@ import java.util.Set;
  * rather than a list of kinds, so a root element added to the grammar in future is covered by default instead
  * of being a silent omission.
  *
- * <p>This is intentionally <em>not</em> a validator {@code @Check}: it is consumed only by the
- * editor/LSP layer (see {@code UnusedElementDiagnosticsProvider} in {@code rune-ide}) so that the
- * result surfaces as a faded marker in the editor without polluting the validation issue stream that
- * batch builds and {@code ValidationTestHelper} tests assert against.
+ * <p>This is intentionally <em>not</em> a validator {@code @Check}: it is consumed only by
+ * {@link UnusedElementDiagnosticsProvider}, so that the result surfaces as a faded marker in the editor
+ * without polluting the validation issue stream that batch builds and {@code ValidationTestHelper} tests
+ * assert against.
  *
  * <p>Detection is purely syntactic and non-transitive: a declaration referenced only by another
  * unused declaration still counts as used, so peeling dead code takes one edit per layer.
@@ -50,7 +51,7 @@ public class UnusedElementHelper {
      * resource set per candidate.
      */
     private static final String OUTGOING_REFERENCES_CACHE_KEY =
-            "com.regnosys.rosetta.validation.UnusedElementHelper.outgoingReferences";
+            "com.regnosys.rosetta.ide.validation.UnusedElementHelper.outgoingReferences";
 
     private static final String SUPPRESS_UNUSED_ANNOTATION = "suppressUnused";
     private static final String ROOT_TYPE_ANNOTATION = "rootType";
@@ -62,7 +63,8 @@ public class UnusedElementHelper {
 
     /**
      * Identifies a referenced declaration. Deliberately <em>not</em> an {@link org.eclipse.emf.common.util.URI}:
-     * no {@code IFragmentProvider} is bound, so element URIs are EMF's positional fragments
+     * no custom {@code IFragmentProvider} is bound — the default one delegates straight to EMF's fallback —
+     * so element URIs are positional fragments
      * ({@code //@elements.3}) and inserting a declaration at the top of a file silently renumbers every
      * declaration below it. Since the sets below are cached per referencing resource and a purely
      * positional change produces no exported-name delta, the files referencing the renumbered ones are
@@ -135,12 +137,13 @@ public class UnusedElementHelper {
     }
 
     /**
-     * A {@code metaType} is named, but nothing in the grammar ever cross-references one, so the walk below
-     * could never see it as used and the marker would be permanent. Meta types are resolved by <em>name</em>
-     * against the index instead ({@code RosettaConfigExtension#findMetaTypes}, itself deprecated pending
-     * their removal from the model): a model writes {@code [metadata reference]}, whose
-     * {@code AnnotationRef.attribute} points at the {@code reference} attribute of the builtin
-     * {@code metadata} <em>annotation</em>, never at the {@code metaType reference string} declaration.
+     * A {@code metaType} is named, but {@code RosettaScopeProvider} filters meta types out of the symbol
+     * scopes a model resolves against ({@code RosettaScopeProvider:402}), so the walk below could never see
+     * one as used and the marker would be permanent. Meta types are resolved by <em>name</em> against the
+     * index instead ({@code RosettaConfigExtension#findMetaTypes}, itself deprecated pending their removal
+     * from the model): a model writes {@code [metadata reference]}, whose {@code AnnotationRef.attribute}
+     * points at the {@code reference} attribute of the builtin {@code metadata} <em>annotation</em>, never at
+     * the {@code metaType reference string} declaration.
      */
     private boolean isMetaType(RosettaRootElement element) {
         return element instanceof RosettaMetaType;
@@ -161,7 +164,7 @@ public class UnusedElementHelper {
      * Whether an otherwise unreferenced declaration should be left unmarked anyway.
      *
      * <p>{@code [suppressUnused]} is handled generically for anything {@code Annotated}, which in practice
-     * means a function, type, enumeration, type alias or schema. The other candidate kinds have no
+     * means a function, type, choice, enumeration, type alias or schema. The other candidate kinds have no
      * {@code Annotations} fragment in their grammar rule, so the annotation cannot be written on them and
      * their annotation list is always empty — that is accepted rather than worked around, so those kinds
      * have no opt-out.
@@ -182,11 +185,10 @@ public class UnusedElementHelper {
         if (function.getSuperFunction() != null) {
             return true;
         }
-        // A dispatch case is not referenceable at all: RosettaScopeProvider excludes FunctionDispatch from
-        // the scope callers resolve against, so nothing in the grammar can ever point at one and the walk
-        // below could never see it as used. It is used exactly when the main function of the same name is,
-        // which is judged on that declaration. Excluded for the same correctness reason as a metaType
-        // (see #isMetaType), not as a policy choice.
+        // A dispatch case is excluded from the symbol scope a model resolves against, so the walk below
+        // cannot see it as used and the marker would be permanent. It is used exactly when the main function
+        // of the same name is, which is judged on that declaration. Excluded for the same correctness reason
+        // as a metaType (see #isMetaType), not as a policy choice.
         if (function instanceof FunctionDispatch) {
             return true;
         }
@@ -195,9 +197,7 @@ public class UnusedElementHelper {
             return true;
         }
         // Functions with no body are reported separately (codeImplementation check); ignore here.
-        return function.getOutput() != null
-                && function.getOutput().getName() != null
-                && function.getOperations().isEmpty();
+        return RosettaFunctionExtensions.hasNoBody(function);
     }
 
     private boolean isAnnotatedWith(Annotated annotated, String annotationName) {
@@ -218,26 +218,10 @@ public class UnusedElementHelper {
      * Collects every declaration referenced from the given resource, by walking its live AST and following
      * each object's cross-references.
      *
-     * <p>The cross-reference index — read directly or through Xtext's {@code IReferenceFinder}, which wraps
-     * the same data — is not a viable alternative here, even though it does contain these references
-     * ({@code createReferenceDescriptions} is not overridden by {@code RosettaResourceDescriptionStrategy},
-     * so it descends into expressions and records calls just like any other cross-reference). Two things
-     * rule it out:
-     *
-     * <ul>
-     * <li><b>Same-file references are not indexed.</b>
-     * {@code DefaultResourceDescriptionStrategy.isResolvedAndExternal} only records references that cross a
-     * resource boundary, so an index-based check would still need this walk for the candidate's own file —
-     * two mechanisms instead of one. And {@code IResourceDescriptions} exposes no target-to-source reverse
-     * lookup, so the cross-file half would still scan every resource's outgoing references —
-     * {@code ReferenceFinder} does exactly that, on every call, with no caching.</li>
-     * <li><b>The index records raw positional URIs.</b> No {@code IFragmentProvider} is bound (see
-     * {@link ElementId} for why that matters), so recorded targets renumber whenever declarations move, and
-     * attributing a reference to the root element declaring its target would mean re-deriving
-     * {@link #declaringRootElement} in URI-fragment space over those fragile fragments.</li>
-     * </ul>
-     *
-     * <p>The live AST walk instead sees same-file and cross-file references uniformly, with one mechanism.
+     * <p>The walk sees same-file and cross-file references uniformly. The cross-reference index cannot:
+     * {@code DefaultResourceDescriptionStrategy.isResolvedAndExternal} records only references that cross a
+     * resource boundary, and every resource declares candidates, so an index-based check would degrade to
+     * this same walk for each candidate's own file — minus the per-resource cache.
      *
      * <p>Two properties make a single generic walk correct for every reference shape in the grammar, so
      * that a new grammar rule cannot silently reintroduce a false positive:

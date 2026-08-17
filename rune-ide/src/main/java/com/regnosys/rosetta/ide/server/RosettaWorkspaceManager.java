@@ -26,13 +26,6 @@ public class RosettaWorkspaceManager extends WorkspaceManager {
 	@Inject
 	private WorkspaceDerivedDiagnosticsService derivedDiagnosticsService;
 
-	/**
-	 * The cancel indicator of the build currently in progress. {@code afterBuild} is not handed one, and the
-	 * recompute it triggers must be interruptible; every build funnels through one of the two methods below,
-	 * and request handling is serialised, so a field is enough.
-	 */
-	private CancelIndicator buildCancelIndicator = CancelIndicator.NullImpl;
-
 	@Override
 	public void initialize(URI baseDir, Procedure2<? super URI, ? super Iterable<Issue>> issueAcceptor,
 			CancelIndicator cancelIndicator) {
@@ -53,35 +46,28 @@ public class RosettaWorkspaceManager extends WorkspaceManager {
 		super.initialize(workspaceFolders, derivedDiagnosticsService.install(issueAcceptor), cancelIndicator);
 	}
 
-	@Override
-	protected void afterBuild(List<IResourceDescription.Delta> deltas) {
-		super.afterBuild(deltas);
-		derivedDiagnosticsService.afterBuild(getProjectManagers(), deltas, buildCancelIndicator);
-	}
-
+	/**
+	 * Every build funnels through here or through {@link #refreshWorkspaceConfig}, which are also the two
+	 * places handed a cancel indicator — {@code afterBuild} is not, and the recompute has to be interruptible.
+	 */
 	@Override
 	public Buildable didChangeFiles(List<URI> dirtyFiles, List<URI> deletedFiles) {
 		Buildable buildable = super.didChangeFiles(dirtyFiles, deletedFiles);
 		return cancelIndicator -> {
-			CancelIndicator previous = buildCancelIndicator;
-			buildCancelIndicator = cancelIndicator;
-			try {
-				return buildable.build(cancelIndicator);
-			} finally {
-				buildCancelIndicator = previous;
-			}
+			List<IResourceDescription.Delta> deltas = buildable.build(cancelIndicator);
+			derivedDiagnosticsService.afterBuild(getProjectManagers(), deltas, cancelIndicator);
+			return deltas;
 		};
 	}
 
+	/**
+	 * The initial build of every newly configured project runs inside {@code super}, which keeps its deltas;
+	 * they are all additions, so there is nothing for the sweep to forget.
+	 */
 	@Override
 	protected void refreshWorkspaceConfig(CancelIndicator cancelIndicator) {
-		CancelIndicator previous = buildCancelIndicator;
-		buildCancelIndicator = cancelIndicator;
-		try {
-			super.refreshWorkspaceConfig(cancelIndicator);
-		} finally {
-			buildCancelIndicator = previous;
-		}
+		super.refreshWorkspaceConfig(cancelIndicator);
+		derivedDiagnosticsService.afterBuild(getProjectManagers(), List.of(), cancelIndicator);
 	}
 
 	/**
