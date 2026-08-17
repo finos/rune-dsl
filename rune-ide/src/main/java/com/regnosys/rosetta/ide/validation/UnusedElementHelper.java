@@ -92,6 +92,13 @@ public class UnusedElementHelper {
     /**
      * Unions the declarations each resource references. Per-resource results are cached, so a resource whose
      * contents did not change contributes without being walked again.
+     *
+     * <p>Covers every resource, including the dependency models that {@link UnusedElementDiagnosticsProvider}
+     * never reports on. That the two scopes differ is deliberate: reporting asks who can act on a marker, this
+     * asks who can see the declaration, and the second is the wider question. A model may re-declare one of its
+     * dependencies' namespaces with {@code override namespace}, at which point the dependency's own files —
+     * which reference that namespace — resolve into the re-declaring file. Narrowing this walk to the model's
+     * own files would mark every declaration in such a file unused unless the model happened to use it itself.
      */
     public UsageSnapshot snapshot(ResourceSet resourceSet) {
         Set<ElementId> referenced = new HashSet<>();
@@ -155,6 +162,11 @@ public class UnusedElementHelper {
      * {@code [suppressUnused]} regardless (the {@code calculation} type alias also declared there now could,
      * but this exclusion is checked first, so it never gets the chance to matter). Every builtin a given
      * model happens not to use would therefore be marked permanently.
+     *
+     * <p>A dependency model is read-only for the same reason but is not excluded here: it is excluded for every
+     * workspace-derived diagnostic at once, by
+     * {@code WorkspaceDerivedDiagnosticsService#isProjectSource}. This covers only the builtins that reach a
+     * workspace as its own files rather than from outside it.
      */
     private boolean isInBuiltinResource(Resource resource) {
         return RosettaBuiltinsService.isBuiltinResource(resource.getURI());

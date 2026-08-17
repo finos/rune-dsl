@@ -33,6 +33,7 @@ import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.validation.Issue;
+import org.eclipse.xtext.workspace.IProjectConfig;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +59,10 @@ import jakarta.inject.Singleton;
  * <p>The sweep is per project resource set. In the supported deployment that is a single project holding
  * every workspace folder as a source folder, so a declaration in one folder referenced from another is in
  * the same resource set and is seen. Workspaces with genuinely separate projects are not supported.
+ *
+ * <p>Only the project's own sources are reported on — see {@link #isProjectSource}. A provider still reads
+ * the whole resource set when it prepares, so a dependency's contribution to the answer is not lost; it is
+ * only never the subject of a diagnostic.
  *
  * <p>A provider may read the live model: {@code ProjectManager} builds with Xtext's default
  * {@code DisabledClusteringPolicy}, so a build never evicts resources from the project's resource set and
@@ -115,18 +120,19 @@ public class WorkspaceDerivedDiagnosticsService {
         // A delta with no new description is a resource that has gone; drop what was recorded for it.
         deltas.stream().filter(delta -> delta.getNew() == null).forEach(delta -> store.remove(delta.getUri()));
         for (ProjectManager projectManager : projectManagers) {
+            IProjectConfig projectConfig = projectManager.getProjectConfig();
             // An index-only project is deliberately never validated, so it must not be published for either.
-            if (projectManager.getProjectConfig().isIndexOnly()) {
+            if (projectConfig.isIndexOnly()) {
                 continue;
             }
             ResourceSet resourceSet = projectManager.getResourceSet();
             if (resourceSet != null) {
-                sweep(resourceSet, cancelIndicator);
+                sweep(projectConfig, resourceSet, cancelIndicator);
             }
         }
     }
 
-    private void sweep(ResourceSet resourceSet, CancelIndicator cancelIndicator) {
+    private void sweep(IProjectConfig projectConfig, ResourceSet resourceSet, CancelIndicator cancelIndicator) {
         // Keyed by the language's injector, which is a singleton. The IResourceServiceProvider is not — every
         // XtextResource holds its own — so keying on that would miss for every resource and prepare a sweep
         // per resource rather than per language, the very cost the two-phase provider SPI exists to avoid.
@@ -136,6 +142,9 @@ public class WorkspaceDerivedDiagnosticsService {
         // something else has published for it.
         for (Resource resource : List.copyOf(resourceSet.getResources())) {
             operationCanceledManager.checkCanceled(cancelIndicator);
+            if (!isProjectSource(projectConfig, resource)) {
+                continue;
+            }
             Injector languageInjector = languageInjectorOf(resource);
             if (languageInjector == null) {
                 continue;
@@ -147,6 +156,19 @@ public class WorkspaceDerivedDiagnosticsService {
                 republishIfChanged(resource, sweeps);
             }
         }
+    }
+
+    /**
+     * Whether the resource is one of the project's own sources, rather than a dependency the project reads.
+     *
+     * <p>A resource set holds both: resolving a reference demand-loads whatever declares the target, wherever it
+     * lives, and a resource outside every project ends up in Xtext's {@code __unknown_project}, which has no
+     * source folders at all. In the language server's deployment that is how a parent model reaches the
+     * workspace — its files are opened from where they are unpacked, outside the workspace folder — and its
+     * files are exactly the ones a modeller cannot edit or annotate.
+     */
+    private boolean isProjectSource(IProjectConfig projectConfig, Resource resource) {
+        return projectConfig.findSourceFolderContaining(resource.getURI()) != null;
     }
 
     private void republishIfChanged(Resource resource, List<ProviderSweep> sweeps) {

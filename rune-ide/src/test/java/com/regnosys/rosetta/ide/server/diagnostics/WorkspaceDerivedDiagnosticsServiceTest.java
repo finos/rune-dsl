@@ -2,7 +2,6 @@ package com.regnosys.rosetta.ide.server.diagnostics;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CancellationException;
 
 import org.eclipse.emf.common.util.URI;
@@ -20,9 +19,8 @@ import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.validation.Issue;
+import org.eclipse.xtext.workspace.FileProjectConfig;
 import org.eclipse.xtext.workspace.IProjectConfig;
-import org.eclipse.xtext.workspace.ISourceFolder;
-import org.eclipse.xtext.workspace.IWorkspaceConfig;
 import org.eclipse.xtext.xbase.lib.Procedures.Procedure2;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -42,6 +40,7 @@ import com.google.inject.multibindings.Multibinder;
  */
 class WorkspaceDerivedDiagnosticsServiceTest {
 	private static final URI URI_A = URI.createURI("file:/project/a.rosetta");
+	private static final URI URI_PARENT_MODEL = URI.createURI("file:/parent-models/cdm/cdm.rosetta");
 	private static final String BASE_ISSUE = "Unused import";
 	private static final CancelIndicator CANCELLED = () -> true;
 
@@ -53,6 +52,7 @@ class WorkspaceDerivedDiagnosticsServiceTest {
 	private DerivedDiagnosticsStore store;
 	private WorkspaceDerivedDiagnosticsService service;
 	private XtextResourceSet resourceSet;
+	private Injector languageInjector;
 	private Procedure2<? super URI, ? super Iterable<Issue>> buildAcceptor;
 	private boolean publishFails;
 
@@ -65,6 +65,23 @@ class WorkspaceDerivedDiagnosticsServiceTest {
 		Assertions.assertEquals(List.of(BASE_ISSUE, "Function 'F' is never used", "Type 'T' is never used"),
 				lastPublished(URI_A));
 		Assertions.assertEquals(2, store.derivedOf(URI_A).size());
+	}
+
+	/**
+	 * A parent model reaches the workspace as files opened from where they are unpacked, outside the workspace
+	 * folder, so they belong to no source folder. Nobody can edit or annotate them, so a diagnostic on one would
+	 * stay forever — on a large parent model, hundreds of them.
+	 */
+	@Test
+	void aResourceOutsideEverySourceFolderIsNeverReportedOn() {
+		start(new FirstProvider("Function 'F' is never used"));
+		addResource(URI_PARENT_MODEL);
+
+		build(CancelIndicator.NullImpl);
+
+		Assertions.assertEquals(List.of(BASE_ISSUE), lastPublished(URI_PARENT_MODEL));
+		Assertions.assertEquals(List.of(), store.derivedOf(URI_PARENT_MODEL));
+		Assertions.assertEquals(List.of(BASE_ISSUE, "Function 'F' is never used"), lastPublished(URI_A));
 	}
 
 	/**
@@ -195,11 +212,19 @@ class WorkspaceDerivedDiagnosticsServiceTest {
 		});
 
 		resourceSet = new XtextResourceSet();
-		XtextResource resource = new XtextResource(URI_A);
+		this.languageInjector = languageInjector;
+		addResource(URI_A);
+	}
+
+	/**
+	 * Adds a resource to the workspace and publishes a build issue for it, which is what makes the sweep
+	 * consider it at all.
+	 */
+	private void addResource(URI uri) {
+		XtextResource resource = new XtextResource(uri);
 		resource.setResourceServiceProvider(new LanguageStub(languageInjector));
 		resourceSet.getResources().add(resource);
-		// What a build publishes for the resource, and the reason the sweep considers it at all.
-		buildAcceptor.apply(URI_A, List.of(issue(BASE_ISSUE)));
+		buildAcceptor.apply(uri, List.of(issue(BASE_ISSUE)));
 	}
 
 	private void build(CancelIndicator cancelIndicator) {
@@ -314,30 +339,12 @@ class WorkspaceDerivedDiagnosticsServiceTest {
 		}
 	}
 
-	private static final IProjectConfig PROJECT_CONFIG = new IProjectConfig() {
-		@Override
-		public String getName() {
-			return "test";
-		}
+	/** Xtext's own project config, so that what counts as a project source is Xtext's answer and not a stub's. */
+	private static final IProjectConfig PROJECT_CONFIG = projectConfig();
 
-		@Override
-		public URI getPath() {
-			return URI.createURI("file:/project/");
-		}
-
-		@Override
-		public Set<? extends ISourceFolder> getSourceFolders() {
-			return Set.of();
-		}
-
-		@Override
-		public ISourceFolder findSourceFolderContaining(URI member) {
-			return null;
-		}
-
-		@Override
-		public IWorkspaceConfig getWorkspaceConfig() {
-			return null;
-		}
-	};
+	private static IProjectConfig projectConfig() {
+		FileProjectConfig config = new FileProjectConfig(URI.createURI("file:/project/"), "test");
+		config.addSourceFolder(".");
+		return config;
+	}
 }
