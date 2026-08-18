@@ -2,11 +2,11 @@ package com.regnosys.rosetta.validation.names;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
 import com.regnosys.rosetta.rosetta.simple.SimplePackage;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.resource.IEObjectDescription;
@@ -141,12 +141,7 @@ public class RosettaNamesAreUniqueValidationHelper extends NamesAreUniqueValidat
     }
 
     private boolean isBuiltin(IEObjectDescription description) {
-        URI uri = description.getEObjectURI();
-        if (uri == null) {
-            return false;
-        }
-        String resourceName = uri.trimFragment().lastSegment();
-        return "basictypes.rosetta".equals(resourceName) || "annotations.rosetta".equals(resourceName);
+        return RosettaBuiltinsService.isBuiltinResource(description.getEObjectURI());
     }
     
     private boolean isInOverriddenNamespace(IEObjectDescription description) {

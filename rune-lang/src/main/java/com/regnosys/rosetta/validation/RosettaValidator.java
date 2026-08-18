@@ -14,6 +14,7 @@ import com.regnosys.rosetta.validation.expression.ParseOperationValidator;
    	RosettaSimpleValidator.class,
    	ReportValidator.class,
    	TypeValidator.class,
+   	TypeAliasValidator.class,
    	AttributeValidator.class,
    	ParseOperationValidator.class,
    	EnumValidator.class,

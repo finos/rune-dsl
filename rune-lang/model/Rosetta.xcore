@@ -130,7 +130,7 @@ class RosettaParameter extends RosettaTyped, RosettaSymbol {
 /**********************************************************************
  * Data model
  */
-class RosettaTypeAlias extends RosettaRootElement, RosettaTypeWithConditions, RosettaTyped, RosettaDefinable, ParametrizedRosettaType {
+class RosettaTypeAlias extends RosettaRootElement, RosettaTypeWithConditions, RosettaTyped, RosettaDefinable, ParametrizedRosettaType, Annotated {
 }
 
 

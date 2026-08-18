@@ -282,7 +282,9 @@ RosettaLibraryFunction returns RosettaExternalFunction:
  */
 RosettaTypeAlias:
 	'typeAlias' RosettaNamed TypeParameters?
-	':' RosettaDefinable? RosettaTyped
+	':' RosettaDefinable?
+	RosettaTyped
+	Annotations*
 	conditions += Condition*
 ;
 

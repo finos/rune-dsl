@@ -11,6 +11,7 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilde
 import com.regnosys.rosetta.generator.java.types.RJavaEnum;
 import com.regnosys.rosetta.ide.RosettaIdeModule;
 import com.regnosys.rosetta.ide.RosettaIdeSetup;
+import com.regnosys.rosetta.ide.build.RosettaStatefulIncrementalBuilder;
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerValidationTest;
 import com.regnosys.rosetta.rosetta.expression.*;
 import com.regnosys.rosetta.types.REnumType;
@@ -52,13 +53,16 @@ public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerVa
                   set result: "myOutput"
                 """);
         
-        List<Diagnostic> issues = getDiagnostics().get(namespaceUri);
+        List<Diagnostic> issues = generationErrors(namespaceUri);
 
         Assertions.assertEquals(1, issues.size());
         Diagnostic diagnostic = issues.get(0);
         Assertions.assertEquals("Broken expression generator", diagnostic.getMessage());
         Assertions.assertEquals(DiagnosticSeverity.Error, diagnostic.getSeverity());
-        Assertions.assertEquals("com.regnosys.rosetta.ide.build.RosettaStatefulIncrementalBuilder.generationError", diagnostic.getCode().getLeft());
+        // The literal, not RosettaStatefulIncrementalBuilder.ISSUE_CODE: the code is client-visible, so moving
+        // or renaming that class must fail here rather than quietly change what the client sees.
+        Assertions.assertEquals("com.regnosys.rosetta.ide.build.RosettaStatefulIncrementalBuilder.generationError",
+                diagnostic.getCode().getLeft());
         Range range = diagnostic.getRange();
         Assertions.assertEquals(6, range.getStart().getLine());
         Assertions.assertEquals(14, range.getStart().getCharacter());
@@ -83,12 +87,23 @@ public class GenerationErrorHandlingTest extends AbstractRosettaLanguageServerVa
                   set result: MyEnum -> B
                 """);
 
-        List<Diagnostic> issues = getDiagnostics().get(namespaceUri);
+        List<Diagnostic> issues = generationErrors(namespaceUri);
 
         Assertions.assertEquals(2, issues.size());
         Assertions.assertTrue(issues.stream().allMatch(e -> e.getSeverity() == DiagnosticSeverity.Error));
         Assertions.assertTrue(issues.stream().anyMatch(e -> e.getMessage().equals("Broken expression generator")));
         Assertions.assertTrue(issues.stream().anyMatch(e -> e.getMessage().equals("Broken enum generator")));
+    }
+
+    /**
+     * The generation errors reported for a file. Filtered by issue code because the models below also attract
+     * unrelated markers — nothing calls {@code Foo}, so it is reported as unused.
+     */
+    private List<Diagnostic> generationErrors(String uri) {
+        return getDiagnostics().get(uri).stream()
+                .filter(diagnostic -> diagnostic.getCode() != null
+                        && RosettaStatefulIncrementalBuilder.ISSUE_CODE.equals(diagnostic.getCode().getLeft()))
+                .toList();
     }
 
     static class TestIdeSetup extends RosettaIdeSetup {

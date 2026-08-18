@@ -16,11 +16,13 @@ public abstract class AbstractRosettaLanguageServerValidationTest extends Abstra
 	public void beforeEach() {
 		versionMap = new HashMap<>();
 		initializeContext(new TextDocumentConfiguration());
+		awaitPendingWork();
 	}
 
 	protected String createModel(String fileName, String model) {
 		String uri = writeFile(fileName, model);
 		open(uri, model);
+		awaitPendingWork();
 		versionMap.put(uri, 1);
 		return uri;
 	}
@@ -37,7 +39,23 @@ public abstract class AbstractRosettaLanguageServerValidationTest extends Abstra
 				)
 		);
 		languageServer.didChange(params);
+		awaitPendingWork();
 		versionMap.put(uri, newVersion);
+	}
+
+	/**
+	 * Blocks until the server has finished everything queued so far.
+	 *
+	 * <p>An LSP notification is fire-and-forget, so {@code didOpen} and {@code didChange} return while the
+	 * build they trigger is still running — and that build reads files from disk, while {@code writeFile}
+	 * leaves a file empty between creating it and writing its contents. Without this barrier the next thing a
+	 * test writes races a build that is still reading, and the build sees a file that is empty or not there.
+	 * The symptom is a parse error on a file the test never wrote empty, on whichever file lost the race.
+	 */
+	private void awaitPendingWork() {
+		// Requests are queued on a single thread and run in order, so a read submitted now cannot start
+		// until everything submitted before it has finished.
+		languageServer.getRequestManager().runRead(cancelIndicator -> null).join();
 	}
 
 	protected void assertIssues(String expected, List<Diagnostic> actual) {
