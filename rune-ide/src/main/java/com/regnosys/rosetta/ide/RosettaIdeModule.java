@@ -4,7 +4,11 @@
  */
 package com.regnosys.rosetta.ide;
 
+import com.google.inject.Binder;
+import com.google.inject.multibindings.Multibinder;
+import com.regnosys.rosetta.ide.server.diagnostics.IWorkspaceDerivedDiagnosticsProvider;
 import com.regnosys.rosetta.ide.symbol.RosettaDocumentSymbolService;
+import com.regnosys.rosetta.ide.validation.UnusedElementDiagnosticsProvider;
 import org.eclipse.xtext.documentation.IEObjectDocumentationProvider;
 import org.eclipse.xtext.generator.IContextualOutputConfigurationProvider;
 import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalProvider;
@@ -143,5 +147,15 @@ public class RosettaIdeModule extends AbstractRosettaIdeModule {
     
     public Class<? extends DocumentSymbolService> bindDocumentSymbolService() {
         return RosettaDocumentSymbolService.class;
+    }
+
+    /**
+     * Editor-only: contribute the "unused declaration" markers. Bound here (the IDE injector) rather than in
+     * the runtime module so they appear in the language server only, and never as build/test validation
+     * issues.
+     */
+    public void configureWorkspaceDerivedDiagnosticsProviders(Binder binder) {
+        Multibinder.newSetBinder(binder, IWorkspaceDerivedDiagnosticsProvider.class)
+                .addBinding().to(UnusedElementDiagnosticsProvider.class);
     }
 }

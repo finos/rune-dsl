@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 /**
  * This class handles errors thrown during code generation and sends them back to the
  * client in the form of diagnostics.
- * 
+ *
  * It also supports turning on logging of build statistics by setting an environment variable to `true`.
  * If enabled, for each build, it will log:
  * 1. At the start of the build, which files are dirty.
@@ -57,7 +57,7 @@ public class RosettaStatefulIncrementalBuilder extends InternalStatefulIncrement
         }
         return doLaunch();
     }
-    
+
     protected IncrementalBuilder.Result doLaunch() {
         if (INCREMENTAL_BUILDER_STATISTICS_ENABLED) {
             resetBuildStatistics();
