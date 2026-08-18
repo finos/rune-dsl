@@ -15,8 +15,14 @@ import org.eclipse.xtext.testing.TextDocumentConfiguration;
 import org.eclipse.xtext.testing.TextDocumentPositionConfiguration;
 import org.junit.jupiter.api.Assertions;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +46,53 @@ public abstract class AbstractRosettaLanguageServerTest extends AbstractLanguage
 	@Override
 	protected Module getServerModule() {
 		return RosettaServerModule.create();
+	}
+
+	/**
+	 * Writes the file by renaming a complete one into place, so it is never observed empty.
+	 *
+	 * <p>{@code super} creates the file and then writes its contents, leaving it empty in between. The server
+	 * reads files from disk on its own threads, and a test writes files while it is still working — a
+	 * notification is fire-and-forget, so the build it triggers outlives the call. A build that read a file
+	 * inside that window parsed it as empty and reported a syntax error on a file no test wrote empty.
+	 */
+	@Override
+	public String writeFile(String path, CharSequence contents) {
+		Path target = new File(root, path).toPath();
+		try {
+			Files.createDirectories(target.getParent());
+			Path complete = Files.createTempFile(target.getParent(), target.getFileName().toString(), ".tmp");
+			Files.writeString(complete, contents.toString());
+			moveIntoPlace(complete, target);
+		} catch (IOException e) {
+			throw new UncheckedIOException("Failed to write " + target, e);
+		}
+		return getVirtualFile(path);
+	}
+
+	/**
+	 * Renames the written file over the target, waiting for the server to let go of it.
+	 *
+	 * <p>Windows refuses to replace a file another process holds open, and the server holds one open for as
+	 * long as it takes to read it — which is the same overlap this whole approach exists to survive.
+	 */
+	private void moveIntoPlace(Path complete, Path target) throws IOException {
+		for (int attemptsLeft = 100; ; attemptsLeft--) {
+			try {
+				Files.move(complete, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+				return;
+			} catch (AccessDeniedException e) {
+				if (attemptsLeft == 0) {
+					throw e;
+				}
+				try {
+					Thread.sleep(20);
+				} catch (InterruptedException interrupted) {
+					Thread.currentThread().interrupt();
+					throw e;
+				}
+			}
+		}
 	}
 
 	protected void assertNoIssues() {

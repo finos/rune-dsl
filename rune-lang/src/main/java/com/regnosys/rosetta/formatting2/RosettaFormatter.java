@@ -50,6 +50,7 @@ import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.TypeCallArgument;
 import com.regnosys.rosetta.rosetta.TypeParameter;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
+import com.regnosys.rosetta.rosetta.simple.Annotated;
 import com.regnosys.rosetta.rosetta.simple.Annotation;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
@@ -180,6 +181,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 		formattingUtil.formatInlineOrMultiline(document, ele,
 				doc -> {
 					doc.format(doc.prepend(ele.getTypeCall(), IHiddenRegionFormatter::oneSpace));
+					formatAnnotations(ele, doc);
 					ele.getConditions().forEach(cond -> {
 						doc.prepend(cond, f -> f.setNewLines(2));
 						doc.format(cond);
@@ -187,6 +189,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 				},
 				doc -> {
 					doc.format(doc.prepend(ele.getTypeCall(), IHiddenRegionFormatter::newLine));
+					formatAnnotations(ele, doc);
 					ele.getConditions().forEach(cond -> {
 						doc.prepend(cond, f -> f.setNewLines(2));
 						doc.format(cond);
@@ -230,10 +233,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 		document.prepend(regionFor(ele).assignment(grammarAccess.getSchemaAccess().getFormatAssignment_2()),
 				IHiddenRegionFormatter::oneSpace);
 		formattingUtil.indentInner(ele, document);
-		ele.getAnnotations().forEach(ann -> {
-			document.prepend(ann, IHiddenRegionFormatter::newLine);
-			document.format(ann);
-		});
+		formatAnnotations(ele, document);
 	}
 
 	private void format(RosettaExternalFunction ele, IFormattableDocument document) {
@@ -309,10 +309,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 			document.prepend(syn, IHiddenRegionFormatter::newLine);
 			document.format(syn);
 		});
-		ele.getAnnotations().forEach(ann -> {
-			document.prepend(ann, IHiddenRegionFormatter::newLine);
-			document.format(ann);
-		});
+		formatAnnotations(ele, document);
 		ele.getReferences().forEach(ref -> {
 			document.prepend(ref, IHiddenRegionFormatter::newLine);
 			document.format(ref);
@@ -367,10 +364,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 			document.prepend(ref, IHiddenRegionFormatter::newLine);
 			document.format(ref);
 		});
-		ele.getAnnotations().forEach(ann -> {
-			document.prepend(ann, IHiddenRegionFormatter::newLine);
-			document.format(ann);
-		});
+		formatAnnotations(ele, document);
 		ele.getSynonyms().forEach(syn -> {
 			document.prepend(syn, IHiddenRegionFormatter::newLine);
 			document.format(syn);
@@ -417,11 +411,15 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 		document.prepend(regionFor(ele).keyword(":"), IHiddenRegionFormatter::noSpace);
 		formatDefinition(ele, document);
 		formattingUtil.indentInner(ele, document);
+		formatAnnotations(ele, document);
+		document.format(document.prepend(ele.getExpression(), IHiddenRegionFormatter::newLine));
+	}
+
+	private void formatAnnotations(Annotated ele, IFormattableDocument document) {
 		ele.getAnnotations().forEach(ann -> {
 			document.prepend(ann, IHiddenRegionFormatter::newLine);
 			document.format(ann);
 		});
-		document.format(document.prepend(ele.getExpression(), IHiddenRegionFormatter::newLine));
 	}
 
 	private RosettaDefinable formatDefinition(RosettaDefinable ele, IFormattableDocument document) {
@@ -482,10 +480,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 			document.prepend(ref, IHiddenRegionFormatter::newLine);
 			document.format(ref);
 		});
-		ele.getAnnotations().forEach(ann -> {
-			document.prepend(ann, IHiddenRegionFormatter::newLine);
-			document.format(ann);
-		});
+		formatAnnotations(ele, document);
 
 		ISemanticRegion inputsKW = regionFor(ele).keyword(functionGrammarAccess.getInputsKeyword_6_0());
 		if (inputsKW != null) {

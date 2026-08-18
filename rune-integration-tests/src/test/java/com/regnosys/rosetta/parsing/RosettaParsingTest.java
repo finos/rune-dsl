@@ -256,6 +256,14 @@ public class RosettaParsingTest {
 	}
 	
 	@Test
+	void testTypeAliasWithSuppressUnusedAnnotation() {
+		assertNoIssues("""
+			typeAlias max4String: string(minLength: 1, maxLength: 4)
+				[suppressUnused]
+		""");
+	}
+
+	@Test
 	void testParametrizedBasicTypes() {
 		assertNoIssues("""
 			basicType pattern

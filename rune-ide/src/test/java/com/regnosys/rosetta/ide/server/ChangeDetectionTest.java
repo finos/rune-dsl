@@ -1,6 +1,7 @@
 package com.regnosys.rosetta.ide.server;
 
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +35,8 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(typesURI, 3, 6, "int", "string");
 
 		// There should be a type error in func `Foo`
-		List<Diagnostic> issues = getDiagnostics().get(funcsURI);
+		List<Diagnostic> issues = nonHintDiagnostics(funcsURI);
+
 		Assertions.assertEquals(1, issues.size());
 		Assertions.assertEquals(
 				"Expected type `int`, but got `string` instead. Cannot assign `string` to output `result`",
@@ -67,7 +69,8 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(typesURI, 3, 10, "(1..1)", "(0..*)");
 
 		// There should be a cardinality error in func `Foo`
-		List<Diagnostic> issues = getDiagnostics().get(funcsURI);
+		List<Diagnostic> issues = nonHintDiagnostics(funcsURI);
+
 		Assertions.assertEquals(1, issues.size());
 		Assertions.assertEquals("Expecting single cardinality. Cannot assign a list to a single value",
 				issues.get(0).getMessage());
@@ -114,7 +117,8 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(typesURI, 2, 7, "foo", "bar");
 
 		// There should be a type error in func `Foo`
-		List<Diagnostic> issues = getDiagnostics().get(funcsURI);
+		List<Diagnostic> issues = nonHintDiagnostics(funcsURI);
+
 		Assertions.assertEquals(1, issues.size());
 		Assertions.assertEquals(
 				"Expected type `foo.MyType`, but got `bar.MyType` instead. Cannot assign `bar.MyType` to output `result`",
@@ -143,7 +147,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(ruleAURI, 2, 22, "string", "int");
 
 		// There should be a type error in rule B
-		List<Diagnostic> issues = getDiagnostics().get(ruleBURI);
+		List<Diagnostic> issues = nonHintDiagnostics(ruleBURI);
 		Assertions.assertEquals(1, issues.size());
 		Assertions.assertEquals(
 				"Expected type `int`, but got `string` instead. Rule `A` cannot be called with type `string`",
@@ -176,13 +180,14 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		makeChange(ruleAURI, 3, 1, "42", "\"My string\"");
 
 		// There should be a type error in func Foo
-		List<Diagnostic> issues = getDiagnostics().get(funcURI);
+		List<Diagnostic> issues = nonHintDiagnostics(funcURI);
+
 		Assertions.assertEquals(1, issues.size());
 		Assertions.assertEquals(
 				"Expected type `int`, but got `string` instead. Cannot assign `string` to output `result`",
 				issues.get(0).getMessage());
 	}
-	
+
 	@Test
 	void testChangeInLabelShouldRegenerateLabelProviderForReport() {
 		createModel("ruleA.rosetta", """
@@ -206,7 +211,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 					attr string (1..1)
 						[label "My label"]
 				""");
-		
+
 		String labelProviderPath = "test/labels/BodyCorpusLabelProvider.java";
 
 		// There should be no issue.
@@ -217,7 +222,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 
 		// Change label to "My new label".
 		makeChange(typeURI, 4, 9, "\"My label\"", "\"My new label\"");
-		
+
 		// There should again be no issue.
 		assertNoIssues();
 		// The new label provider should be different.
@@ -246,7 +251,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		assertNoIssues();
 
 		makeChange(nsA, 2, 0, "", "break me");
-		List<Diagnostic> issues = getDiagnostics().get(nsB);
+		List<Diagnostic> issues = nonHintDiagnostics(nsB);
 
         assertIssues("""
                 Error [4, 25] -> [4, 28]: Couldn't resolve reference to RosettaType 'a.Y'.
@@ -255,11 +260,11 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 
 		makeChange(nsA, 2, 0, "break me", "");
 
-		// There should again be no issue. 
+		// There should again be no issue.
 		assertNoIssues();
 	}
 
-	
+
 	@Test
 	void testBreakingAndFixingOneFuncInNamespaceHasNoIssues() {
 		String nsA = createModel("a.rosetta", """
@@ -283,7 +288,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		assertNoIssues();
 
 		makeChange(nsA, 2, 0, "", "break me");
-		List<Diagnostic> issues = getDiagnostics().get(nsB);
+		List<Diagnostic> issues = nonHintDiagnostics(nsB);
 
         assertIssues("""
                 Error [5, 25] -> [5, 30]: Couldn't resolve reference to RosettaSymbol 'a.SSS'.
@@ -291,10 +296,10 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 
 		makeChange(nsA, 2, 0, "break me", "");
 
-		// There should again be no issue. 
+		// There should again be no issue.
 		assertNoIssues();
 	}
-	
+
 
 	@Test
 	void testBreakingAndFixingOneEnumInNamespaceHasNoIssues() {
@@ -314,7 +319,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 		assertNoIssues();
 
 		makeChange(nsA, 2, 0, "", "break me");
-		List<Diagnostic> issues = getDiagnostics().get(nsB);
+		List<Diagnostic> issues = nonHintDiagnostics(nsB);
 
         assertIssues("""
                 Error [3, 25] -> [3, 28]: Couldn't resolve reference to RosettaSymbol 'a.Y'.
@@ -323,10 +328,10 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 
 		makeChange(nsA, 2, 0, "break me", "");
 
-		// There should again be no issue. 
+		// There should again be no issue.
 		assertNoIssues();
 	}
-	
+
 	@Test
 	void testChangeInRuleReferenceShouldRegenerateReportFunction() {
 		createModel("ruleA.rosetta", """
@@ -352,7 +357,7 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 				type MyReport:
 					attr string (1..1)
 				""");
-		
+
 		String reportPath = "test/reports/BodyCorpusReportFunction.java";
 
 		// There should be no issue.
@@ -363,12 +368,20 @@ public class ChangeDetectionTest extends AbstractRosettaLanguageServerValidation
 
 		// Add a ruleReference to the `attr` attribute.
 		makeChange(typeURI, 3, 19, "", " [ruleReference FooAttr]");
-		
+
 		// There should again be no issue.
 		assertNoIssues();
 		// The new report function should be different.
 		String newReportCode = readGeneratedFile(reportPath);
 		Assertions.assertNotNull(newReportCode, "Report function does not exist at " + reportPath);
 		Assertions.assertNotEquals(originalReportCode, newReportCode);
+	}
+
+	/** Everything published for a resource bar the faded editor-only markers. */
+	private List<Diagnostic> nonHintDiagnostics(String uri) {
+		return getDiagnostics().get(uri)
+				.stream()
+				.filter(d -> d.getSeverity() != DiagnosticSeverity.Hint)
+				.toList();
 	}
 }

@@ -45,4 +45,10 @@ public interface RosettaIssueCodes {
 	static final String MISSING_MANDATORY_CONSTRUCTOR_ARGUMENT = PREFIX + "missingAttributes";
 
     static final String CHANGED_EXTENDED_FUNCTION_PARAMETERS = PREFIX + "changedExtendedFunctionParameters";
+
+	/**
+	 * A declaration of any kind that is never referenced. The language server renders this code as a faded
+	 * editor marker rather than a problem; which kind of declaration it was is carried by the message.
+	 */
+	static final String UNUSED_DECLARATION = PREFIX + "unusedDeclaration";
 }

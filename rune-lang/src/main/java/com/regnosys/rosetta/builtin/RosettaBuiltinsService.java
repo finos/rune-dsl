@@ -26,22 +26,47 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 
 public class RosettaBuiltinsService {
-	private final String[] basicTypesPath = new String[]{"model", "basictypes.rosetta"};
-	private final String[] annotationsPath = new String[]{"model", "annotations.rosetta"};
-	
+	public static final String BASIC_TYPES_FILE_NAME = "basictypes.rosetta";
+	public static final String ANNOTATIONS_FILE_NAME = "annotations.rosetta";
+
+	private final String[] basicTypesPath = new String[]{"model", BASIC_TYPES_FILE_NAME};
+	private final String[] annotationsPath = new String[]{"model", ANNOTATIONS_FILE_NAME};
+
 	public final URI basicTypesURI = URI.createHierarchicalURI("classpath", null, null, basicTypesPath, null, null);
 	public final URI annotationsURI = URI.createHierarchicalURI("classpath", null, null, annotationsPath, null, null);
+
 	public final URL basicTypesURL = Objects.requireNonNull(this.getClass().getResource(basicTypesURI.path()));
 	public final URL annotationsURL = Objects.requireNonNull(this.getClass().getResource(annotationsURI.path()));
-	
+
+	/**
+	 * Whether the given resource URI is one of the built-in models shipped in {@code rune-runtime}.
+	 *
+	 * <p>Matched on the file name rather than against {@link #basicTypesURI} / {@link #annotationsURI},
+	 * because the builtins reach a resource set under their physical location rather than their canonical
+	 * {@code classpath:} URI — and under more than one physical location when the same builtin is present in
+	 * several jars on the classpath. See the TODO in {@link #getModel} for the root fix.
+	 *
+	 * <p>Consequence of matching on the name alone: a model file of the user's own called
+	 * {@code annotations.rosetta} or {@code basictypes.rosetta} is treated as a builtin, so it is exempt from
+	 * the duplicate-name check and gets no "never used" markers. Fixing that means fixing the classpath-URI
+	 * support the TODO above refers to.
+	 */
+	public static boolean isBuiltinResource(URI uri) {
+		if (uri == null) {
+			return false;
+		}
+		String fileName = uri.trimFragment().lastSegment();
+		return BASIC_TYPES_FILE_NAME.equals(fileName) || ANNOTATIONS_FILE_NAME.equals(fileName);
+	}
+
 	// TODO: cache?
 	private RosettaModel getModel(ResourceSet resourceSet, URI uri) {
 		Resource resource = resourceSet.getResource(uri, false);
 		if (resource == null) { // TODO: this is a workaround for not having proper support for classpath uris in the Xtext language server
-			String[] pathParts = uri.path().split("/");
-			String uriFile = pathParts[pathParts.length - 1];
+			String fileName = uri.trimFragment().lastSegment();
 			resource = resourceSet.getResources().stream()
-				.filter(r -> r.getURI().path().endsWith(uriFile))
+				.filter(r -> isBuiltinResource(r.getURI())
+						&& fileName.equals(r.getURI().trimFragment().lastSegment()))
 				.findAny()
 				.orElseThrow();
 		}

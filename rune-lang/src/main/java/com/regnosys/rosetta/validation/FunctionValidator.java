@@ -89,7 +89,7 @@ public class FunctionValidator extends AbstractDeclarativeRosettaValidator {
             .map(aRef -> aRef.getAnnotation())
             .anyMatch(a -> "codeImplementation".equals(a.getName()));
             
-            if (function.getOperations().isEmpty() && !hasCodeImplementationAnnotation) {
+            if (RosettaFunctionExtensions.hasNoBody(function) && !hasCodeImplementationAnnotation) {
                 warning("A function should specify an implementation, or they should be annotated with codeImplementation", function, ROSETTA_NAMED__NAME);
             }
             
