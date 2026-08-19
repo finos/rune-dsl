@@ -95,6 +95,75 @@ public class SchemaValidationTest extends AbstractValidatorTest {
 	}
 
 	@Test
+	void testCsvLabelledSchemaFormatWarns() {
+		assertIssues("""
+				namespace test
+				version "1"
+
+				schema labelledCsvSchema CSV_LABELLED
+				""", """
+				WARNING (null) 'CSV_LABELLED is deprecated. Use CSV instead, with "headerStyle": "LABEL" in the CSV serialization configuration. The CSV format honours the whole configuration and resolves the label provider by the same rules.' at 4:26, length 12, on Schema
+				""");
+	}
+
+	@Test
+	void testCsvLabelledTransformFormatWarns() {
+		assertIssues("""
+				namespace test
+				version "1"
+
+				type Thing:
+					attr string (1..1)
+
+				func MyFunc:
+					[projection CSV_LABELLED]
+					inputs:
+						inp string (1..1)
+					output:
+						result Thing (1..1)
+
+					set result: Thing { attr: inp }
+				""", """
+				WARNING (null) 'CSV_LABELLED is deprecated. Use CSV instead, with "headerStyle": "LABEL" in the CSV serialization configuration. The CSV format honours the whole configuration and resolves the label provider by the same rules.' at 8:14, length 12, on TransformAnnotation
+				""");
+	}
+
+	@Test
+	void testAFunctionUsingACsvLabelledSchemaWarnsOnlyAtTheSchema() {
+		// The schema declaration is the one place the format is written, so it carries the single warning.
+		assertIssues("""
+				namespace test
+				version "1"
+
+				schema labelledCsvSchema CSV_LABELLED
+
+				type Thing:
+					attr string (1..1)
+
+				func MyFunc:
+					[projection labelledCsvSchema]
+					inputs:
+						inp string (1..1)
+					output:
+						result Thing (1..1)
+
+					set result: Thing { attr: inp }
+				""", """
+				WARNING (null) 'CSV_LABELLED is deprecated. Use CSV instead, with "headerStyle": "LABEL" in the CSV serialization configuration. The CSV format honours the whole configuration and resolves the label provider by the same rules.' at 4:26, length 12, on Schema
+				""");
+	}
+
+	@Test
+	void testCsvSchemaFormatDoesNotWarn() {
+		assertNoIssues("""
+				namespace test
+				version "1"
+
+				schema plainCsvSchema CSV
+				""");
+	}
+
+	@Test
 	void testExternalConfigOnNonSchemaIsAnError() {
 		assertIssues("""
 				namespace test
