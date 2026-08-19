@@ -18,6 +18,14 @@ public enum SerializationFormat {
     XML,
     /** Comma-separated values. Only valid for tabular types, i.e. types whose attributes are all single-cardinality basic types. */
     CSV,
-    /** Comma-separated values with a header row of human-readable labels. */
+    /**
+     * Comma-separated values with a header row of human-readable labels.
+     *
+     * @deprecated Use {@link #CSV} with {@code "headerStyle": "LABEL"} in the CSV serialization configuration.
+     *             This format reads no configuration at all, so any configuration declared alongside it is
+     *             ignored; {@code CSV} honours the whole configuration and resolves the label provider by the
+     *             same rules.
+     */
+    @Deprecated
     CSV_LABELLED
 }

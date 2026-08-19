@@ -181,6 +181,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
 
                    set result: Thing { attr: inp, complexAttr: Foo { } }
                 """, """
+                WARNING (null) 'CSV_LABELLED is deprecated. Use CSV instead, with "headerStyle": "LABEL" in the CSV serialization configuration. The CSV format honours the whole configuration and resolves the label provider by the same rules.' at 11:16, length 12, on TransformAnnotation
                 ERROR (null) 'The output of a CSV projection function must be a tabular type. Type `Thing` has non-simple attributes: `complexAttr`' at 15:15, length 5, on Attribute
                 """
         );
@@ -200,6 +201,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
                    inputs:
                        inp Thing (1..1)
                 """, """
+                WARNING (null) 'CSV_LABELLED is deprecated. Use CSV instead, with "headerStyle": "LABEL" in the CSV serialization configuration. The CSV format honours the whole configuration and resolves the label provider by the same rules.' at 11:12, length 12, on TransformAnnotation
                 ERROR (null) 'The input of a CSV ingest function must be a tabular type. Type `Thing` has non-simple attributes: `complexAttr`' at 13:12, length 5, on Attribute
                 """
         );
@@ -207,7 +209,8 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
 
     @Test
     void csvLabelledProjectionOverFlatTypeIsTabular() {
-        assertNoIssues("""
+        // The deprecation warning is the only issue: the tabular rule accepts this output.
+        assertIssues("""
                 type Thing:
                    attr string (1..1)
                    enumAttr Bar (1..1)
@@ -228,13 +231,16 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
                        result Thing (1..1)
 
                    set result: Thing { attr: inp, enumAttr: Bar -> VALUE1, aliasAttr: inp }
+                """, """
+                WARNING (null) 'CSV_LABELLED is deprecated. Use CSV instead, with "headerStyle": "LABEL" in the CSV serialization configuration. The CSV format honours the whole configuration and resolves the label provider by the same rules.' at 17:16, length 12, on TransformAnnotation
                 """
         );
     }
 
     @Test
     void csvLabelledProjectionOutputWithMultiCardinalitySimpleAttributeIsTabular() {
-        assertNoIssues("""
+        // The deprecation warning is the only issue: the tabular rule accepts a multi-cardinality simple attribute.
+        assertIssues("""
                 type Thing:
                    attr string (1..1)
                    stringList string (0..*)
@@ -247,6 +253,8 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
                        result Thing (1..1)
 
                    set result: Thing { attr: inp, stringList: empty }
+                """, """
+                WARNING (null) 'CSV_LABELLED is deprecated. Use CSV instead, with "headerStyle": "LABEL" in the CSV serialization configuration. The CSV format honours the whole configuration and resolves the label provider by the same rules.' at 9:16, length 12, on TransformAnnotation
                 """
         );
     }
@@ -262,6 +270,7 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
                    inputs:
                        inp Thing (0..*)
                 """, """
+                WARNING (null) 'CSV_LABELLED is deprecated. Use CSV instead, with "headerStyle": "LABEL" in the CSV serialization configuration. The CSV format honours the whole configuration and resolves the label provider by the same rules.' at 8:12, length 12, on TransformAnnotation
                 ERROR (null) 'The input of a CSV ingest function must be single cardinality' at 10:18, length 6, on Attribute
                 """
         );
