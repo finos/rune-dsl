@@ -6,16 +6,25 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.validation.Check;
 
 import com.regnosys.rosetta.config.RuneSchemaConfiguration;
+import com.regnosys.rosetta.rosetta.RosettaEnumValue;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
 import com.regnosys.rosetta.rosetta.Schema;
+import com.regnosys.rosetta.rosetta.SchemaOrFormat;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.SimplePackage;
+import com.regnosys.rosetta.rosetta.simple.TransformAnnotation;
 import com.regnosys.rosetta.utils.RuneConfigurationHolder;
 import com.regnosys.rosetta.utils.TransformAnnotationHelper;
+import com.rosetta.model.lib.transform.SerializationFormat;
 
 import jakarta.inject.Inject;
 
 public class SchemaValidator extends AbstractDeclarativeRosettaValidator {
+
+    private static final String CSV_LABELLED_DEPRECATED =
+            "CSV_LABELLED is deprecated. Use CSV instead, with \"headerStyle\": \"LABEL\" in the CSV serialization "
+            + "configuration. The CSV format honours the whole configuration and resolves the label provider by the "
+            + "same rules.";
 
     @Inject
     private RuneConfigurationHolder config;
@@ -55,5 +64,33 @@ public class SchemaValidator extends AbstractDeclarativeRosettaValidator {
                             + "', but the schema is not marked [externalConfig], so it will be ignored",
                     schema, RosettaPackage.Literals.ROSETTA_NAMED__NAME);
         }
+    }
+
+    /**
+     * The two places {@code CSV_LABELLED} can be written are a transform annotation's format and a
+     * {@code schema}'s format. Each is matched on the reference itself rather than on the resolved format, so a
+     * function using a {@code CSV_LABELLED} schema is flagged at the schema alone and not twice over.
+     */
+    @Check
+    public void checkCsvLabelledTransformFormatIsDeprecated(TransformAnnotation annotation) {
+        if (isCsvLabelled(annotation.getRef())) {
+            warning(CSV_LABELLED_DEPRECATED, annotation, SimplePackage.Literals.TRANSFORM_ANNOTATION__REF);
+        }
+    }
+
+    @Check
+    public void checkCsvLabelledSchemaFormatIsDeprecated(Schema schema) {
+        if (isCsvLabelled(schema.getFormat())) {
+            warning(CSV_LABELLED_DEPRECATED, schema, RosettaPackage.Literals.SCHEMA__FORMAT);
+        }
+    }
+
+    /**
+     * Both format references are scoped to the built-in {@code SerializationFormat} enum, so a resolved enum
+     * value named {@code CSV_LABELLED} can only be that format.
+     */
+    private boolean isCsvLabelled(SchemaOrFormat formatRef) {
+        return formatRef instanceof RosettaEnumValue format
+                && SerializationFormat.CSV_LABELLED.name().equals(format.getName());
     }
 }

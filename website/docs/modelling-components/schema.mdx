@@ -26,7 +26,7 @@ The format refers to a value of the built-in `SerializationFormat` enumeration:
 | `RUNE_JSON` | JSON, following the Rune-specific JSON standard. |
 | `XML` | XML, typically configured by an associated XML configuration file that maps the schema onto the Rune type. |
 | `CSV` | Comma-separated values. Only valid for tabular types, i.e. types whose attributes are all single-cardinality basic types. |
-| `CSV_LABELLED` | Comma-separated values with a header row of human-readable labels. |
+| `CSV_LABELLED` | **Deprecated.** Comma-separated values with a header row of human-readable labels. Use `CSV` with a `headerStyle` of `LABEL` in the CSV serialization configuration instead: `CSV_LABELLED` reads no serialization configuration, so any configuration declared alongside it is ignored, whereas `CSV` honours the whole configuration and resolves the label provider by the same rules. Using it reports a warning. |
 
 ## 2. Referencing a schema from a transform function
 
