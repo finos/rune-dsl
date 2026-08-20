@@ -1255,10 +1255,14 @@ repository:
           patterns:
           - include: '#comment'
         - name: meta.as-operation.rosetta
+          match: '{{wordStart}}as{{wordEnd}}(?!-)(?=\s*[''"])'
+          captures:
+            0: { name: keyword.operator.word.rosetta }
+        - name: meta.as-operation.rosetta
           begin: '{{wordStart}}as{{wordEnd}}(?!-)'
           beginCaptures:
             0: { name: keyword.operator.word.rosetta }
-          end: '{{qualifiedIdentifier}}'
+          end: '{{qualifiedIdentifier}}|{{rootEnd}}'
           endCaptures:
             0: { name: entity.name.type.rosetta }
           patterns:
