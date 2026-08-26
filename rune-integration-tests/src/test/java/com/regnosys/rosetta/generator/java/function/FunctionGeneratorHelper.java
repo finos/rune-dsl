@@ -6,6 +6,7 @@ import com.google.inject.Injector;
 import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope;
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass;
+import com.regnosys.rosetta.generator.java.util.FluentImportManager;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.regnosys.rosetta.tests.util.ModelHelper;
@@ -33,6 +34,8 @@ public class FunctionGeneratorHelper {
 
 	@Inject
 	private FunctionGenerator generator;
+	@Inject
+	private FluentImportManager importManager;
 	@Inject
 	private ModelHelper modelHelper;
 	@Inject
@@ -104,7 +107,7 @@ public class FunctionGeneratorHelper {
 		RGeneratedJavaClass<? extends RosettaFunction> typeRepresentation = generator.createTypeRepresentation(func);
 		JavaClassScope classScope = JavaClassScope.createAndRegisterIdentifier(typeRepresentation);
 		CodeRenderer classCode = generator.generateClass(func, typeRepresentation, "test", classScope);
-		String javaFileCode = generator.buildClass(typeRepresentation.getPackageName(), classCode, classScope.getFileScope());
+		String javaFileCode = importManager.buildClass(typeRepresentation.getPackageName(), classCode, classScope.getFileScope());
 		fsa.generateFile(typeRepresentation.getCanonicalName().withForwardSlashes() + ".java", javaFileCode);
 	}
 
