@@ -1,21 +1,23 @@
 package test.pojo.validation;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.rosetta.model.lib.expression.ComparisonResult;
-import com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.validation.ValidationResult;
 import com.rosetta.model.lib.validation.Validator;
 import java.util.List;
-import java.util.stream.Collectors;
 import test.pojo.Level1;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkCardinality;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.stream.Collectors.toList;
 
 public class Level1Validator implements Validator<Level1> {
     private List<ComparisonResult> getComparisonResults(Level1 o) {
         return Lists.<ComparisonResult>newArrayList(
-            ExpressionOperatorsNullSafe.checkCardinality("attr", (Integer) o.getAttr() != null ? 1 : 0, 0, 1)
+            checkCardinality("attr", (Integer) o.getAttr() != null ? 1 : 0, 0, 1)
         );
     }
 
@@ -24,11 +26,11 @@ public class Level1Validator implements Validator<Level1> {
         return getComparisonResults(o)
             .stream()
             .map(res -> {
-                if (!Strings.isNullOrEmpty(res.getError())) {
-                    return ValidationResult.failure("Level1", ValidationResult.ValidationType.CARDINALITY, "Level1", path, "", res.getError());
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("Level1", ValidationResult.ValidationType.CARDINALITY, "Level1", path, "", res.getError());
                 }
-                return ValidationResult.success("Level1", ValidationResult.ValidationType.CARDINALITY, "Level1", path, "");
+                return success("Level1", ValidationResult.ValidationType.CARDINALITY, "Level1", path, "");
             })
-            .collect(Collectors.toList());
+            .collect(toList());
     }
 }

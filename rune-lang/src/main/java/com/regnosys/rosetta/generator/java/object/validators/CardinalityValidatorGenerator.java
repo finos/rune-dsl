@@ -16,6 +16,7 @@
 
 package com.regnosys.rosetta.generator.java.object.validators;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -48,10 +49,24 @@ import jakarta.inject.Inject;
  * Generates a {@code Validator} that checks the cardinality of every bounded attribute of a type.
  */
 public class CardinalityValidatorGenerator extends FluentRObjectJavaClassGenerator<RDataType, RGeneratedJavaClass<?>> {
+	private static final Method IS_NULL_OR_EMPTY = staticMethod(Strings.class, "isNullOrEmpty", String.class);
+	private static final Method CHECK_CARDINALITY = staticMethod(ExpressionOperatorsNullSafe.class, "checkCardinality", String.class, int.class, int.class, int.class);
+	private static final Method VALIDATION_SUCCESS = staticMethod(ValidationResult.class, "success", String.class, ValidationResult.ValidationType.class, String.class, RosettaPath.class, String.class);
+	private static final Method VALIDATION_FAILURE = staticMethod(ValidationResult.class, "failure", String.class, ValidationResult.ValidationType.class, String.class, RosettaPath.class, String.class, String.class);
+	private static final Method COLLECTORS_TO_LIST = staticMethod(Collectors.class, "toList");
+
 	@Inject
 	private RObjectFactory rObjectFactory;
 	@Inject
 	private JavaTypeTranslator typeTranslator;
+
+	private static Method staticMethod(Class<?> owner, String name, Class<?>... parameterTypes) {
+		try {
+			return owner.getMethod(name, parameterTypes);
+		} catch (NoSuchMethodException e) {
+			throw new IllegalStateException(e);
+		}
+	}
 
 	@Override
 	protected Stream<? extends RDataType> streamObjects(RosettaModel model) {
@@ -100,13 +115,13 @@ public class CardinalityValidatorGenerator extends FluentRObjectJavaClassGenerat
 						out.writeln(".stream()");
 						out.writeln(".map(res -> {");
 						out.indented(() -> {
-							out.writeln("if (!", Strings.class, ".isNullOrEmpty(res.getError())) {");
-							out.indented(() -> out.writeln("return ", ValidationResult.class, ".failure(\"", rosettaName, "\", ", ValidationResult.ValidationType.class, ".CARDINALITY, \"", rosettaName, "\", path, \"\", res.getError());"));
+							out.writeln("if (!", IS_NULL_OR_EMPTY, "(res.getError())) {");
+							out.indented(() -> out.writeln("return ", VALIDATION_FAILURE, "(\"", rosettaName, "\", ", ValidationResult.ValidationType.class, ".CARDINALITY, \"", rosettaName, "\", path, \"\", res.getError());"));
 							out.writeln("}");
-							out.writeln("return ", ValidationResult.class, ".success(\"", rosettaName, "\", ", ValidationResult.ValidationType.class, ".CARDINALITY, \"", rosettaName, "\", path, \"\");");
+							out.writeln("return ", VALIDATION_SUCCESS, "(\"", rosettaName, "\", ", ValidationResult.ValidationType.class, ".CARDINALITY, \"", rosettaName, "\", path, \"\");");
 						});
 						out.writeln("})");
-						out.writeln(".collect(", Collectors.class, ".toList());");
+						out.writeln(".collect(", COLLECTORS_TO_LIST, "());");
 					});
 				});
 				out.writeln("}");
@@ -125,7 +140,7 @@ public class CardinalityValidatorGenerator extends FluentRObjectJavaClassGenerat
 		int max = attr.getCardinality().getMax().orElse(0);
 		// Casting is required to ensure types are output to ensure recompilation in Rosetta
 		return out -> {
-			out.write(ExpressionOperatorsNullSafe.class, ".checkCardinality(\"", attr.getName(), "\", (", prop.getType(), ") ", propertyValue);
+			out.write(CHECK_CARDINALITY, "(\"", attr.getName(), "\", (", prop.getType(), ") ", propertyValue);
 			if (attr.isMulti()) {
 				out.write(" == null ? 0 : ", propertyValue, ".size()");
 			} else {
