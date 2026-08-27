@@ -98,9 +98,12 @@ you are probably reimplementing instead of transcribing.
   temporary scaffolding for the migration period (legacy generators emit
   platform separators on Windows); remove it when the last Xtend generator is
   gone.
-- The bridges in `JavaExpression` (`CodeWriterTargetStringConcatenation`,
-  `TargetStringConcatenationCodeWriter`, the `StringConcatenationClient`
-  overload of `from`) and the legacy
-  `com.regnosys.rosetta.generator.TargetLanguageRepresentation` interface are
-  migration-only; the final cleanup deletes them together with the Xtend
-  machinery and adds a fluent debug writer for `JavaExpression.toString()`.
+- The migration-only bridges — `CodeWriterTargetStringConcatenation` and
+  `TargetStringConcatenationCodeWriter` (both standalone classes under
+  `generator/java/util/`, extracted out of `JavaExpression` in PR #1293),
+  `JavaExpression`'s legacy `StringConcatenationClient` overload of `from`,
+  and the legacy `com.regnosys.rosetta.generator.TargetLanguageRepresentation`
+  interface — exist only to let not-yet-migrated Xtend templates interop with
+  the fluent `CodeWriter` API. The final cleanup deletes them together with
+  the Xtend machinery and adds a fluent debug writer for
+  `JavaExpression.toString()`.

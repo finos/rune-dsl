@@ -96,7 +96,6 @@ Xtend can be dropped as a dependency, which also lets `rune-lang` move off Java 
 - [ ] generator/java/object/ModelObjectBoilerPlate
 - [ ] generator/java/object/ModelObjectBuilderGenerator
 - [ ] generator/java/object/ModelObjectGenerator
-- [ ] generator/java/object/validators/CardinalityValidatorGenerator
 - [ ] generator/java/object/validators/OnlyExistsValidatorGenerator
 - [ ] generator/java/object/validators/TypeFormatValidatorGenerator
 
