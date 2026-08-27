@@ -101,7 +101,7 @@ public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RData
 				.map(deepFeature -> createMethod(choiceType, deepFeature, recursiveDeepFeatures, classScope))
 				.toList();
 
-		return out -> renderClass(out, javaClass, classScope, dependencies, methods);
+		return renderClass(javaClass, classScope, dependencies, methods);
 	}
 
 	private Map<RAttribute, Map<RAttribute, Boolean>> computeRecursiveDeepFeatures(RDataType choiceType, Collection<RAttribute> deepFeatures, Set<JavaClass<?>> dependencies) {
@@ -172,19 +172,21 @@ public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RData
 		return expressionGenerator.attributeCall(attrVar, attrMetaType, actualFeature, needsToGoDownDeeper, deepFeatureType, scope);
 	}
 
-	private void renderClass(CodeWriter out, JavaClass<?> javaClass, JavaClassScope classScope, Set<JavaClass<?>> dependencies, List<DeepFeatureMethod> methods) {
-		out.writeln("public class ", javaClass, " {");
-		out.indented(() -> {
-			if (!dependencies.isEmpty()) {
-				renderDependencies(out, javaClass, classScope, dependencies);
-				out.newline();
-			}
-			for (DeepFeatureMethod method : methods) {
-				out.writeln("public ", method.returnType(), " ", method.name(), "(", method.inputParameter().getExpressionType(), " ", method.inputParameter(), ") ", method.body());
-				out.newline();
-			}
-		});
-		out.write("}");
+	private CodeRenderer renderClass(JavaClass<?> javaClass, JavaClassScope classScope, Set<JavaClass<?>> dependencies, List<DeepFeatureMethod> methods) {
+		return out -> {
+			out.writeln("public class ", javaClass, " {");
+			out.indented(() -> {
+				if (!dependencies.isEmpty()) {
+					renderDependencies(out, javaClass, classScope, dependencies);
+					out.newline();
+				}
+				for (DeepFeatureMethod method : methods) {
+					out.writeln("public ", method.returnType(), " ", method.name(), "(", method.inputParameter().getExpressionType(), " ", method.inputParameter(), ") ", method.body());
+					out.newline();
+				}
+			});
+			out.write("}");
+		};
 	}
 
 	private void renderDependencies(CodeWriter out, JavaClass<?> javaClass, JavaClassScope classScope, Set<JavaClass<?>> dependencies) {
