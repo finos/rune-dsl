@@ -129,26 +129,28 @@ class ModelMetaGeneratorTest {
 		assertEquals("""
 				package com.rosetta.test.model.validation;
 
-				import com.google.common.base.Strings;
 				import com.google.common.collect.Lists;
 				import com.rosetta.model.lib.expression.ComparisonResult;
-				import com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe;
 				import com.rosetta.model.lib.path.RosettaPath;
 				import com.rosetta.model.lib.validation.ValidationResult;
 				import com.rosetta.model.lib.validation.Validator;
 				import com.rosetta.test.model.Foo;
 				import java.math.BigDecimal;
 				import java.util.List;
-				import java.util.stream.Collectors;
 
+				import static com.google.common.base.Strings.isNullOrEmpty;
+				import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkCardinality;
+				import static com.rosetta.model.lib.validation.ValidationResult.failure;
+				import static com.rosetta.model.lib.validation.ValidationResult.success;
+				import static java.util.stream.Collectors.toList;
 
 				public class FooValidator implements Validator<Foo> {
 				    private List<ComparisonResult> getComparisonResults(Foo o) {
 				        return Lists.<ComparisonResult>newArrayList(
-				            ExpressionOperatorsNullSafe.checkCardinality("a", (List<String>) o.getA() == null ? 0 : o.getA().size(), 1, 2),
-				            ExpressionOperatorsNullSafe.checkCardinality("b", (BigDecimal) o.getB() != null ? 1 : 0, 1, 1),
-				            ExpressionOperatorsNullSafe.checkCardinality("c", (List<Integer>) o.getC() == null ? 0 : o.getC().size(), 1, 0),
-				            ExpressionOperatorsNullSafe.checkCardinality("d", (BigDecimal) o.getD() != null ? 1 : 0, 0, 1)
+				            checkCardinality("a", (List<String>) o.getA() == null ? 0 : o.getA().size(), 1, 2),
+				            checkCardinality("b", (BigDecimal) o.getB() != null ? 1 : 0, 1, 1),
+				            checkCardinality("c", (List<Integer>) o.getC() == null ? 0 : o.getC().size(), 1, 0),
+				            checkCardinality("d", (BigDecimal) o.getD() != null ? 1 : 0, 0, 1)
 				        );
 				    }
 
@@ -157,12 +159,12 @@ class ModelMetaGeneratorTest {
 				        return getComparisonResults(o)
 				            .stream()
 				            .map(res -> {
-				                if (!Strings.isNullOrEmpty(res.getError())) {
-				                    return ValidationResult.failure("Foo", ValidationResult.ValidationType.CARDINALITY, "Foo", path, "", res.getError());
+				                if (!isNullOrEmpty(res.getError())) {
+				                    return failure("Foo", ValidationResult.ValidationType.CARDINALITY, "Foo", path, "", res.getError());
 				                }
-				                return ValidationResult.success("Foo", ValidationResult.ValidationType.CARDINALITY, "Foo", path, "");
+				                return success("Foo", ValidationResult.ValidationType.CARDINALITY, "Foo", path, "");
 				            })
-				            .collect(Collectors.toList());
+				            .collect(toList());
 				    }
 				}
 				""",

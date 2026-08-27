@@ -1,22 +1,24 @@
 package test.pojo.validation;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.rosetta.model.lib.expression.ComparisonResult;
-import com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.validation.ValidationResult;
 import com.rosetta.model.lib.validation.Validator;
 import com.rosetta.model.metafields.ReferenceWithMetaString;
 import java.util.List;
-import java.util.stream.Collectors;
 import test.pojo.Baz;
 
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkCardinality;
+import static com.rosetta.model.lib.validation.ValidationResult.failure;
+import static com.rosetta.model.lib.validation.ValidationResult.success;
+import static java.util.stream.Collectors.toList;
 
 public class BazValidator implements Validator<Baz> {
     private List<ComparisonResult> getComparisonResults(Baz o) {
         return Lists.<ComparisonResult>newArrayList(
-            ExpressionOperatorsNullSafe.checkCardinality("baz", (ReferenceWithMetaString) o.getBaz() != null ? 1 : 0, 1, 1)
+            checkCardinality("baz", (ReferenceWithMetaString) o.getBaz() != null ? 1 : 0, 1, 1)
         );
     }
 
@@ -25,11 +27,11 @@ public class BazValidator implements Validator<Baz> {
         return getComparisonResults(o)
             .stream()
             .map(res -> {
-                if (!Strings.isNullOrEmpty(res.getError())) {
-                    return ValidationResult.failure("Baz", ValidationResult.ValidationType.CARDINALITY, "Baz", path, "", res.getError());
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("Baz", ValidationResult.ValidationType.CARDINALITY, "Baz", path, "", res.getError());
                 }
-                return ValidationResult.success("Baz", ValidationResult.ValidationType.CARDINALITY, "Baz", path, "");
+                return success("Baz", ValidationResult.ValidationType.CARDINALITY, "Baz", path, "");
             })
-            .collect(Collectors.toList());
+            .collect(toList());
     }
 }
