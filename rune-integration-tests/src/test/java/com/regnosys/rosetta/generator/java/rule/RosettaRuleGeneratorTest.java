@@ -149,7 +149,7 @@ public class RosettaRuleGeneratorTest {
         assertThat(reportJava, CoreMatchers.notNullValue());
         var expected = """
                 package com.rosetta.test.model.reports;
-                
+
                 import com.google.inject.ImplementedBy;
                 import com.rosetta.model.lib.annotations.RosettaReport;
                 import com.rosetta.model.lib.annotations.RuneLabelProvider;
@@ -160,15 +160,15 @@ public class RosettaRuleGeneratorTest {
                 import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
                 import java.util.Optional;
                 import javax.inject.Inject;
-                
-                
+
+
                 @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
                 @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
                 @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
                 public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
-                \t
+
                     @Inject protected ModelObjectValidator objectValidator;
-                \t
+
                     // RosettaFunction dependencies
                     //
                     @Inject protected BarBarOneRule barBarOneRule;
@@ -176,15 +176,15 @@ public class RosettaRuleGeneratorTest {
                     @Inject protected BarBazRule barBazRule;
                     @Inject protected BarQuuxRule barQuuxRule;
                     @Inject protected BarQuxListRule barQuxListRule;
-                
+
                     /**
-                    * @param input\s
-                    * @return output\s
-                    */
+                     * @param input
+                     * @return output
+                     */
                     @Override
                     public BarReport evaluate(Bar input) {
                         BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
-                \t\t
+
                         final BarReport output;
                         if (outputBuilder == null) {
                             output = null;
@@ -192,36 +192,30 @@ public class RosettaRuleGeneratorTest {
                             output = outputBuilder.build();
                             objectValidator.validate(BarReport.class, output);
                         }
-                \t\t
                         return output;
                     }
-                
+
                     protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
-                
+
                     public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
                         @Override
                         protected BarReport.BarReportBuilder doEvaluate(Bar input) {
                             BarReport.BarReportBuilder output = BarReport.builder();
                             return assignOutput(output, input);
                         }
-                \t\t
+
                         protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
                             output
                                 .setBarBarOne(barBarOneRule.evaluate(input));
-                \t\t\t
                             output
                                 .setBarBarTwo(barBarTwoRule.evaluate(input));
-                \t\t\t
                             output
                                 .getOrCreateBarBaz()
                                 .setBarBaz1(barBazRule.evaluate(input));
-                \t\t\t
                             output
                                 .setBarQuxList(barQuxListRule.evaluate(input));
-                \t\t\t
                             output
                                 .setBarQuux(barQuuxRule.evaluate(input));
-                \t\t\t
                             return Optional.ofNullable(output)
                                 .map(o -> o.prune())
                                 .orElse(null);
@@ -294,7 +288,7 @@ public class RosettaRuleGeneratorTest {
         assertThat(reportJava, CoreMatchers.notNullValue());
         var expected = """
                 package com.rosetta.test.model.reports;
-                
+
                 import com.google.inject.ImplementedBy;
                 import com.rosetta.model.lib.annotations.RosettaReport;
                 import com.rosetta.model.lib.annotations.RuneLabelProvider;
@@ -305,15 +299,15 @@ public class RosettaRuleGeneratorTest {
                 import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
                 import java.util.Optional;
                 import javax.inject.Inject;
-                
-                
+
+
                 @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
                 @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
                 @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
                 public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
-                \t
+
                     @Inject protected ModelObjectValidator objectValidator;
-                \t
+
                     // RosettaFunction dependencies
                     //
                     @Inject protected BarBarOneRule barBarOneRule;
@@ -321,15 +315,15 @@ public class RosettaRuleGeneratorTest {
                     @Inject protected BarBazRule barBazRule;
                     @Inject protected BarQuuxRule barQuuxRule;
                     @Inject protected BarQuxListRule barQuxListRule;
-                
+
                     /**
-                    * @param input\s
-                    * @return output\s
-                    */
+                     * @param input
+                     * @return output
+                     */
                     @Override
                     public BarReport evaluate(Bar input) {
                         BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
-                \t\t
+
                         final BarReport output;
                         if (outputBuilder == null) {
                             output = null;
@@ -337,36 +331,30 @@ public class RosettaRuleGeneratorTest {
                             output = outputBuilder.build();
                             objectValidator.validate(BarReport.class, output);
                         }
-                \t\t
                         return output;
                     }
-                
+
                     protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
-                
+
                     public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
                         @Override
                         protected BarReport.BarReportBuilder doEvaluate(Bar input) {
                             BarReport.BarReportBuilder output = BarReport.builder();
                             return assignOutput(output, input);
                         }
-                \t\t
+
                         protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
                             output
                                 .setBarBarOne(barBarOneRule.evaluate(input));
-                \t\t\t
                             output
                                 .setBarBarTwo(barBarTwoRule.evaluate(input));
-                \t\t\t
                             output
                                 .getOrCreateBarBaz()
                                 .setBarBaz1(barBazRule.evaluate(input));
-                \t\t\t
                             output
                                 .setBarQuxList(barQuxListRule.evaluate(input));
-                \t\t\t
                             output
                                 .setBarQuux(barQuuxRule.evaluate(input));
-                \t\t\t
                             return Optional.ofNullable(output)
                                 .map(o -> o.prune())
                                 .orElse(null);
@@ -432,7 +420,7 @@ public class RosettaRuleGeneratorTest {
         assertThat(reportJava, CoreMatchers.notNullValue());
         var expected = """
                 package com.rosetta.test.model.reports;
-                
+
                 import com.google.inject.ImplementedBy;
                 import com.rosetta.model.lib.annotations.RosettaReport;
                 import com.rosetta.model.lib.annotations.RuneLabelProvider;
@@ -443,30 +431,30 @@ public class RosettaRuleGeneratorTest {
                 import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
                 import java.util.Optional;
                 import javax.inject.Inject;
-                
-                
+
+
                 @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
                 @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
                 @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
                 public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
-                \t
+
                     @Inject protected ModelObjectValidator objectValidator;
-                \t
+
                     // RosettaFunction dependencies
                     //
                     @Inject protected BarBarTwoRule barBarTwoRule;
                     @Inject protected BarBazRule barBazRule;
                     @Inject protected BarQuxListRule barQuxListRule;
                     @Inject protected New_BarBarOneRule new_BarBarOneRule;
-                
+
                     /**
-                    * @param input\s
-                    * @return output\s
-                    */
+                     * @param input
+                     * @return output
+                     */
                     @Override
                     public BarReport evaluate(Bar input) {
                         BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
-                \t\t
+
                         final BarReport output;
                         if (outputBuilder == null) {
                             output = null;
@@ -474,33 +462,28 @@ public class RosettaRuleGeneratorTest {
                             output = outputBuilder.build();
                             objectValidator.validate(BarReport.class, output);
                         }
-                \t\t
                         return output;
                     }
-                
+
                     protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
-                
+
                     public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
                         @Override
                         protected BarReport.BarReportBuilder doEvaluate(Bar input) {
                             BarReport.BarReportBuilder output = BarReport.builder();
                             return assignOutput(output, input);
                         }
-                \t\t
+
                         protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
                             output
                                 .setBarBarOne(new_BarBarOneRule.evaluate(input));
-                \t\t\t
                             output
                                 .setBarBarTwo(barBarTwoRule.evaluate(input));
-                \t\t\t
                             output
                                 .getOrCreateBarBaz()
                                 .setBarBaz1(barBazRule.evaluate(input));
-                \t\t\t
                             output
                                 .setBarQuxList(barQuxListRule.evaluate(input));
-                \t\t\t
                             return Optional.ofNullable(output)
                                 .map(o -> o.prune())
                                 .orElse(null);
@@ -561,7 +544,7 @@ public class RosettaRuleGeneratorTest {
         assertThat(reportJava, CoreMatchers.notNullValue());
         var expected = """
                 package com.rosetta.test.model.reports;
-                
+
                 import com.google.inject.ImplementedBy;
                 import com.rosetta.model.lib.annotations.RosettaReport;
                 import com.rosetta.model.lib.annotations.RuneLabelProvider;
@@ -572,29 +555,29 @@ public class RosettaRuleGeneratorTest {
                 import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
                 import java.util.Optional;
                 import javax.inject.Inject;
-                
-                
+
+
                 @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
                 @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
                 @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
                 public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
-                \t
+
                     @Inject protected ModelObjectValidator objectValidator;
-                \t
+
                     // RosettaFunction dependencies
                     //
                     @Inject protected BarBarTwoRule barBarTwoRule;
                     @Inject protected BarBazRule barBazRule;
                     @Inject protected BarQuxListRule barQuxListRule;
-                
+
                     /**
-                    * @param input\s
-                    * @return output\s
-                    */
+                     * @param input
+                     * @return output
+                     */
                     @Override
                     public BarReport evaluate(Bar input) {
                         BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
-                \t\t
+
                         final BarReport output;
                         if (outputBuilder == null) {
                             output = null;
@@ -602,30 +585,26 @@ public class RosettaRuleGeneratorTest {
                             output = outputBuilder.build();
                             objectValidator.validate(BarReport.class, output);
                         }
-                \t\t
                         return output;
                     }
-                
+
                     protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
-                
+
                     public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
                         @Override
                         protected BarReport.BarReportBuilder doEvaluate(Bar input) {
                             BarReport.BarReportBuilder output = BarReport.builder();
                             return assignOutput(output, input);
                         }
-                \t\t
+
                         protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
                             output
                                 .setBarBarTwo(barBarTwoRule.evaluate(input));
-                \t\t\t
                             output
                                 .getOrCreateBarBaz()
                                 .setBarBaz1(barBazRule.evaluate(input));
-                \t\t\t
                             output
                                 .setBarQuxList(barQuxListRule.evaluate(input));
-                \t\t\t
                             return Optional.ofNullable(output)
                                 .map(o -> o.prune())
                                 .orElse(null);
@@ -698,7 +677,7 @@ public class RosettaRuleGeneratorTest {
         var expected =
         		"""
                 package com.rosetta.test.model.reports;
-                
+
                 import com.google.inject.ImplementedBy;
                 import com.rosetta.model.lib.annotations.RosettaReport;
                 import com.rosetta.model.lib.annotations.RuneLabelProvider;
@@ -709,27 +688,27 @@ public class RosettaRuleGeneratorTest {
                 import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
                 import java.util.Optional;
                 import javax.inject.Inject;
-                
-                
+
+
                 @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
                 @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
                 @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
                 public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
-                \t
+
                     @Inject protected ModelObjectValidator objectValidator;
-                \t
+
                     // RosettaFunction dependencies
                     //
                     @Inject protected BarToBazReportRule barToBazReportRule;
-                
+
                     /**
-                    * @param input\s
-                    * @return output\s
-                    */
+                     * @param input
+                     * @return output
+                     */
                     @Override
                     public BarReport evaluate(Bar input) {
                         BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
-                \t\t
+
                         final BarReport output;
                         if (outputBuilder == null) {
                             output = null;
@@ -737,23 +716,21 @@ public class RosettaRuleGeneratorTest {
                             output = outputBuilder.build();
                             objectValidator.validate(BarReport.class, output);
                         }
-                \t\t
                         return output;
                     }
-                
+
                     protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
-                
+
                     public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
                         @Override
                         protected BarReport.BarReportBuilder doEvaluate(Bar input) {
                             BarReport.BarReportBuilder output = BarReport.builder();
                             return assignOutput(output, input);
                         }
-                \t\t
+
                         protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
                             output
                                 .setBaz(barToBazReportRule.evaluate(input));
-                \t\t\t
                             return Optional.ofNullable(output)
                                 .map(o -> o.prune())
                                 .orElse(null);
@@ -806,7 +783,7 @@ public class RosettaRuleGeneratorTest {
         assertThat(reportJava, CoreMatchers.notNullValue());
         var expected = """
                 package com.rosetta.test.model.reports;
-                
+
                 import com.google.inject.ImplementedBy;
                 import com.rosetta.model.lib.annotations.RosettaReport;
                 import com.rosetta.model.lib.annotations.RuneLabelProvider;
@@ -817,23 +794,23 @@ public class RosettaRuleGeneratorTest {
                 import com.rosetta.test.model.labels.TEST_REGMiFIRLabelProvider;
                 import java.util.Optional;
                 import javax.inject.Inject;
-                
-                
+
+
                 @RosettaReport(namespace="com.rosetta.test.model", body="TEST_REG", corpusList={"MiFIR"})
                 @RuneLabelProvider(labelProvider=TEST_REGMiFIRLabelProvider.class)
                 @ImplementedBy(TEST_REGMiFIRReportFunction.TEST_REGMiFIRReportFunctionDefault.class)
                 public abstract class TEST_REGMiFIRReportFunction implements ReportFunction<Bar, BarReport> {
-                \t
+
                     @Inject protected ModelObjectValidator objectValidator;
-                
+
                     /**
-                    * @param input\s
-                    * @return output\s
-                    */
+                     * @param input
+                     * @return output
+                     */
                     @Override
                     public BarReport evaluate(Bar input) {
                         BarReport.BarReportBuilder outputBuilder = doEvaluate(input);
-                \t\t
+
                         final BarReport output;
                         if (outputBuilder == null) {
                             output = null;
@@ -841,19 +818,18 @@ public class RosettaRuleGeneratorTest {
                             output = outputBuilder.build();
                             objectValidator.validate(BarReport.class, output);
                         }
-                \t\t
                         return output;
                     }
-                
+
                     protected abstract BarReport.BarReportBuilder doEvaluate(Bar input);
-                
+
                     public static class TEST_REGMiFIRReportFunctionDefault extends TEST_REGMiFIRReportFunction {
                         @Override
                         protected BarReport.BarReportBuilder doEvaluate(Bar input) {
                             BarReport.BarReportBuilder output = BarReport.builder();
                             return assignOutput(output, input);
                         }
-                \t\t
+
                         protected BarReport.BarReportBuilder assignOutput(BarReport.BarReportBuilder output, Bar input) {
                             return Optional.ofNullable(output)
                                 .map(o -> o.prune())
@@ -893,46 +869,44 @@ public class RosettaRuleGeneratorTest {
         assertThat(ruleJava, CoreMatchers.notNullValue());
         var expected = """
                 package com.rosetta.test.model.reports;
-                
+
                 import com.google.inject.ImplementedBy;
                 import com.rosetta.model.lib.mapper.MapperS;
                 import com.rosetta.model.lib.reports.ReportFunction;
                 import com.rosetta.test.model.Bar;
                 import com.rosetta.test.model.Foo;
-                
-                
+
+
                 @ImplementedBy(Rule1Rule.Rule1RuleDefault.class)
                 public abstract class Rule1Rule implements ReportFunction<Foo, String> {
-                
-                	/**
-                	* @param input\s
-                	* @return output\s
-                	*/
-                	@Override
-                	public String evaluate(Foo input) {
-                		String output = doEvaluate(input);
-                \t\t
-                		return output;
-                	}
-                
-                	protected abstract String doEvaluate(Foo input);
-                
-                	public static class Rule1RuleDefault extends Rule1Rule {
-                		@Override
-                		protected String doEvaluate(Foo input) {
-                			String output = null;
-                			return assignOutput(output, input);
-                		}
-                \t\t
-                		protected String assignOutput(String output, Foo input) {
-                			final MapperS<Bar> thenArg = MapperS.of(input)
-                				.mapSingleToItem(item -> item.<Bar>map("getBar", foo -> foo.getBar()));
-                			output = thenArg
-                				.mapSingleToItem(item -> item.<String>map("getBaz", bar -> bar.getBaz())).get();
-                \t\t\t
-                			return output;
-                		}
-                	}
+
+                    /**
+                     * @param input
+                     * @return output
+                     */
+                    @Override
+                    public String evaluate(Foo input) {
+                        String output = doEvaluate(input);
+                        return output;
+                    }
+
+                    protected abstract String doEvaluate(Foo input);
+
+                    public static class Rule1RuleDefault extends Rule1Rule {
+                        @Override
+                        protected String doEvaluate(Foo input) {
+                            String output = null;
+                            return assignOutput(output, input);
+                        }
+
+                        protected String assignOutput(String output, Foo input) {
+                            final MapperS<Bar> thenArg = MapperS.of(input)
+                                .mapSingleToItem(item -> item.<Bar>map("getBar", foo -> foo.getBar()));
+                            output = thenArg
+                                .mapSingleToItem(item -> item.<String>map("getBaz", bar -> bar.getBaz())).get();
+                            return output;
+                        }
+                    }
                 }
                 """;
         assertJavaEquals(expected, ruleJava);
@@ -964,50 +938,48 @@ public class RosettaRuleGeneratorTest {
         assertThat(rule, CoreMatchers.notNullValue());
         var expected = """
                 package com.rosetta.test.model.reports;
-                
+
                 import com.google.inject.ImplementedBy;
                 import com.rosetta.model.lib.mapper.MapperS;
                 import com.rosetta.model.lib.reports.ReportFunction;
                 import com.rosetta.test.model.Bar;
                 import com.rosetta.test.model.Foo;
                 import javax.inject.Inject;
-                
-                
+
+
                 @ImplementedBy(Rule1Rule.Rule1RuleDefault.class)
                 public abstract class Rule1Rule implements ReportFunction<Foo, String> {
-                \t
-                	// RosettaFunction dependencies
-                	//
-                	@Inject protected Rule2Rule rule2Rule;
-                
-                	/**
-                	* @param input\s
-                	* @return output\s
-                	*/
-                	@Override
-                	public String evaluate(Foo input) {
-                		String output = doEvaluate(input);
-                \t\t
-                		return output;
-                	}
-                
-                	protected abstract String doEvaluate(Foo input);
-                
-                	public static class Rule1RuleDefault extends Rule1Rule {
-                		@Override
-                		protected String doEvaluate(Foo input) {
-                			String output = null;
-                			return assignOutput(output, input);
-                		}
-                \t\t
-                		protected String assignOutput(String output, Foo input) {
-                			final MapperS<Bar> thenArg = MapperS.of(rule2Rule.evaluate(input));
-                			output = thenArg
-                				.mapSingleToItem(item -> item.<String>map("getVal", bar -> bar.getVal())).get();
-                \t\t\t
-                			return output;
-                		}
-                	}
+
+                    // RosettaFunction dependencies
+                    //
+                    @Inject protected Rule2Rule rule2Rule;
+
+                    /**
+                     * @param input
+                     * @return output
+                     */
+                    @Override
+                    public String evaluate(Foo input) {
+                        String output = doEvaluate(input);
+                        return output;
+                    }
+
+                    protected abstract String doEvaluate(Foo input);
+
+                    public static class Rule1RuleDefault extends Rule1Rule {
+                        @Override
+                        protected String doEvaluate(Foo input) {
+                            String output = null;
+                            return assignOutput(output, input);
+                        }
+
+                        protected String assignOutput(String output, Foo input) {
+                            final MapperS<Bar> thenArg = MapperS.of(rule2Rule.evaluate(input));
+                            output = thenArg
+                                .mapSingleToItem(item -> item.<String>map("getVal", bar -> bar.getVal())).get();
+                            return output;
+                        }
+                    }
                 }
                 """;
         assertJavaEquals(expected, rule);
@@ -1031,7 +1003,7 @@ public class RosettaRuleGeneratorTest {
         assertThat(ruleJava, CoreMatchers.notNullValue());
         var expected = """
                 package com.rosetta.test.model.reports;
-                
+
                 import com.google.inject.ImplementedBy;
                 import com.rosetta.model.lib.expression.CardinalityOperator;
                 import com.rosetta.model.lib.functions.ModelObjectValidator;
@@ -1040,51 +1012,49 @@ public class RosettaRuleGeneratorTest {
                 import com.rosetta.test.model.Input;
                 import java.util.Optional;
                 import javax.inject.Inject;
-                
+
                 import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
-                
+
                 @ImplementedBy(SimpleRuleRule.SimpleRuleRuleDefault.class)
                 public abstract class SimpleRuleRule implements ReportFunction<Input, Input> {
-                \t
-                	@Inject protected ModelObjectValidator objectValidator;
-                
-                	/**
-                	* @param input\s
-                	* @return output\s
-                	*/
-                	@Override
-                	public Input evaluate(Input input) {
-                		Input.InputBuilder outputBuilder = doEvaluate(input);
-                \t\t
-                		final Input output;
-                		if (outputBuilder == null) {
-                			output = null;
-                		} else {
-                			output = outputBuilder.build();
-                			objectValidator.validate(Input.class, output);
-                		}
-                \t\t
-                		return output;
-                	}
-                
-                	protected abstract Input.InputBuilder doEvaluate(Input input);
-                
-                	public static class SimpleRuleRuleDefault extends SimpleRuleRule {
-                		@Override
-                		protected Input.InputBuilder doEvaluate(Input input) {
-                			Input.InputBuilder output = Input.builder();
-                			return assignOutput(output, input);
-                		}
-                \t\t
-                		protected Input.InputBuilder assignOutput(Input.InputBuilder output, Input input) {
-                			output = toBuilder(MapperS.of(input)
-                				.filterSingleNullSafe(item -> areEqual(item.<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("Hello"), CardinalityOperator.All).get()).get());
-                \t\t\t
-                			return Optional.ofNullable(output)
-                				.map(o -> o.prune())
-                				.orElse(null);
-                		}
-                	}
+
+                    @Inject protected ModelObjectValidator objectValidator;
+
+                    /**
+                     * @param input
+                     * @return output
+                     */
+                    @Override
+                    public Input evaluate(Input input) {
+                        Input.InputBuilder outputBuilder = doEvaluate(input);
+
+                        final Input output;
+                        if (outputBuilder == null) {
+                            output = null;
+                        } else {
+                            output = outputBuilder.build();
+                            objectValidator.validate(Input.class, output);
+                        }
+                        return output;
+                    }
+
+                    protected abstract Input.InputBuilder doEvaluate(Input input);
+
+                    public static class SimpleRuleRuleDefault extends SimpleRuleRule {
+                        @Override
+                        protected Input.InputBuilder doEvaluate(Input input) {
+                            Input.InputBuilder output = Input.builder();
+                            return assignOutput(output, input);
+                        }
+
+                        protected Input.InputBuilder assignOutput(Input.InputBuilder output, Input input) {
+                            output = toBuilder(MapperS.of(input)
+                                .filterSingleNullSafe(item -> areEqual(item.<String>map("getTraderef", _input -> _input.getTraderef()), MapperS.of("Hello"), CardinalityOperator.All).get()).get());
+                            return Optional.ofNullable(output)
+                                .map(o -> o.prune())
+                                .orElse(null);
+                        }
+                    }
                 }
                 """;
         assertJavaEquals(expected, ruleJava);
@@ -1146,45 +1116,43 @@ public class RosettaRuleGeneratorTest {
         assertThat(ruleJava, CoreMatchers.notNullValue());
         var expected = """
                 package com.rosetta.test.model.reports;
-                
+
                 import com.google.inject.ImplementedBy;
                 import com.rosetta.model.lib.expression.CardinalityOperator;
                 import com.rosetta.model.lib.mapper.MapperS;
                 import com.rosetta.model.lib.reports.ReportFunction;
                 import com.rosetta.test.model.Foo;
-                
+
                 import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
-                
+
                 @ImplementedBy(IsFixedFloatRule.IsFixedFloatRuleDefault.class)
                 public abstract class IsFixedFloatRule implements ReportFunction<Foo, Boolean> {
-                
-                	/**
-                	* @param input\s
-                	* @return output\s
-                	*/
-                	@Override
-                	public Boolean evaluate(Foo input) {
-                		Boolean output = doEvaluate(input);
-                \t\t
-                		return output;
-                	}
-                
-                	protected abstract Boolean doEvaluate(Foo input);
-                
-                	public static class IsFixedFloatRuleDefault extends IsFixedFloatRule {
-                		@Override
-                		protected Boolean doEvaluate(Foo input) {
-                			Boolean output = null;
-                			return assignOutput(output, input);
-                		}
-                \t\t
-                		protected Boolean assignOutput(Boolean output, Foo input) {
-                			output = MapperS.of(input)
-                				.mapSingleToItem(item -> areEqual(MapperS.of(item.<String>mapC("getFixed", foo -> foo.getFixed()).resultCount()), MapperS.of(12), CardinalityOperator.All).asMapper()).get();
-                \t\t\t
-                			return output;
-                		}
-                	}
+
+                    /**
+                     * @param input
+                     * @return output
+                     */
+                    @Override
+                    public Boolean evaluate(Foo input) {
+                        Boolean output = doEvaluate(input);
+                        return output;
+                    }
+
+                    protected abstract Boolean doEvaluate(Foo input);
+
+                    public static class IsFixedFloatRuleDefault extends IsFixedFloatRule {
+                        @Override
+                        protected Boolean doEvaluate(Foo input) {
+                            Boolean output = null;
+                            return assignOutput(output, input);
+                        }
+
+                        protected Boolean assignOutput(Boolean output, Foo input) {
+                            output = MapperS.of(input)
+                                .mapSingleToItem(item -> areEqual(MapperS.of(item.<String>mapC("getFixed", foo -> foo.getFixed()).resultCount()), MapperS.of(12), CardinalityOperator.All).asMapper()).get();
+                            return output;
+                        }
+                    }
                 }
                 """;
         codeGeneratorTestHelper.compileToClasses(code);
@@ -1539,41 +1507,39 @@ public class RosettaRuleGeneratorTest {
 
         var expectedRule = """
                 package com.rosetta.test.model.reports;
-                
+
                 import com.google.inject.ImplementedBy;
                 import com.rosetta.model.lib.reports.ReportFunction;
                 import com.rosetta.test.model.FooEnum;
-                
-                
+
+
                 @ImplementedBy(ReturnEnumValueRule.ReturnEnumValueRuleDefault.class)
                 public abstract class ReturnEnumValueRule implements ReportFunction<String, FooEnum> {
-                
-                	/**
-                	* @param input\s
-                	* @return output\s
-                	*/
-                	@Override
-                	public FooEnum evaluate(String input) {
-                		FooEnum output = doEvaluate(input);
-                \t\t
-                		return output;
-                	}
-                
-                	protected abstract FooEnum doEvaluate(String input);
-                
-                	public static class ReturnEnumValueRuleDefault extends ReturnEnumValueRule {
-                		@Override
-                		protected FooEnum doEvaluate(String input) {
-                			FooEnum output = null;
-                			return assignOutput(output, input);
-                		}
-                \t\t
-                		protected FooEnum assignOutput(FooEnum output, String input) {
-                			output = FooEnum.BAR;
-                \t\t\t
-                			return output;
-                		}
-                	}
+
+                    /**
+                     * @param input
+                     * @return output
+                     */
+                    @Override
+                    public FooEnum evaluate(String input) {
+                        FooEnum output = doEvaluate(input);
+                        return output;
+                    }
+
+                    protected abstract FooEnum doEvaluate(String input);
+
+                    public static class ReturnEnumValueRuleDefault extends ReturnEnumValueRule {
+                        @Override
+                        protected FooEnum doEvaluate(String input) {
+                            FooEnum output = null;
+                            return assignOutput(output, input);
+                        }
+
+                        protected FooEnum assignOutput(FooEnum output, String input) {
+                            output = FooEnum.BAR;
+                            return output;
+                        }
+                    }
                 }
                 """;
 

@@ -17,12 +17,12 @@
 package com.regnosys.rosetta.generator.java;
 
 import com.regnosys.rosetta.codegen.api.CodeRenderer;
-import com.regnosys.rosetta.codegen.support.StringCodeWriter;
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope;
-import com.regnosys.rosetta.generator.java.scoping.JavaFileScope;
+import com.regnosys.rosetta.generator.java.util.FluentImportManager;
 import com.regnosys.rosetta.generator.java.util.RecordingCodeWriter;
-import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaTypeDeclaration;
+
+import jakarta.inject.Inject;
 
 /**
  * Base class for generators that produce a Java class using the fluent
@@ -37,36 +37,14 @@ import com.rosetta.util.types.JavaTypeDeclaration;
  * while rendering.
  */
 public abstract class FluentJavaClassGenerator<T, C extends JavaTypeDeclaration<?>> extends JavaClassGenerator<T, C> {
+	@Inject
+	private FluentImportManager importManager;
+
 	protected abstract CodeRenderer generateClass(T object, C typeRepresentation, String version, JavaClassScope scope);
 
 	@Override
 	protected String generate(T object, C typeRepresentation, String version, JavaClassScope scope) {
 		CodeRenderer classCode = generateClass(object, typeRepresentation, version, scope);
-		return buildClass(typeRepresentation.getPackageName(), classCode, scope.getFileScope());
-	}
-
-	/**
-	 * Given the body of a Java class represented as a {@link CodeRenderer},
-	 * generate a full Java class file by adding imports and resolving identifiers.
-	 */
-	protected String buildClass(DottedPath packageName, CodeRenderer classCode, JavaFileScope fileScope) {
-		if (fileScope.isClosed()) {
-			throw new IllegalStateException("The top scope may not be closed, as imports will be added to it.");
-		}
-		RecordingCodeWriter recording = new RecordingCodeWriter(fileScope);
-		classCode.render(recording);
-
-		StringCodeWriter result = new StringCodeWriter();
-		result.writeln("package ", packageName, ";");
-		result.newline();
-		recording.getImports().forEach(imp -> result.writeln("import ", imp, ";"));
-		result.newline();
-		recording.getStaticImports().forEach(imp -> result.writeln("import static ", imp, ";"));
-		result.newline();
-		recording.replay(result);
-		if (!result.toString().endsWith("\n")) {
-			result.newline();
-		}
-		return result.toString();
+		return importManager.buildClass(typeRepresentation.getPackageName(), classCode, scope.getFileScope());
 	}
 }

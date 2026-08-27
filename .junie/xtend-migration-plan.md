@@ -89,7 +89,6 @@ Xtend can be dropped as a dependency, which also lets `rune-lang` move off Java 
 - [ ] generator/java/enums/EnumGenerator
 - [ ] generator/java/expression/ExpressionGenerator
 - [ ] generator/java/expression/TypeCoercionService
-- [ ] generator/java/function/FunctionGenerator
 - [ ] generator/java/function/LabelProviderGenerator
 - [ ] generator/java/object/JavaPackageInfoGenerator
 - [ ] generator/java/object/MetaFieldGenerator
@@ -100,8 +99,6 @@ Xtend can be dropped as a dependency, which also lets `rune-lang` move off Java 
 - [ ] generator/java/object/validators/CardinalityValidatorGenerator
 - [ ] generator/java/object/validators/OnlyExistsValidatorGenerator
 - [ ] generator/java/object/validators/TypeFormatValidatorGenerator
-- [ ] generator/java/reports/ReportGenerator
-- [ ] generator/java/reports/RuleGenerator
 
 ### rune-lang — generator utilities/helpers
 - [ ] generator/java/enums/EnumHelper
