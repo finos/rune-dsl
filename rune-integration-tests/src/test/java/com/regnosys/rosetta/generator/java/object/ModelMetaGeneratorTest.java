@@ -185,26 +185,26 @@ class ModelMetaGeneratorTest {
 
 				public class FooTypeFormatValidator implements Validator<Foo> {
 
-					private List<ComparisonResult> getComparisonResults(Foo o) {
-						return Lists.<ComparisonResult>newArrayList(
-								checkNumber("c", o.getC(), empty(), of(0), empty(), empty()),\s
-								checkNumber("d", o.getD(), empty(), empty(), of(new BigDecimal("-1")), empty()),\s
-								checkString("f", o.getF(), 0, of(5), empty())
-							);
-					}
+				    private List<ComparisonResult> getComparisonResults(Foo o) {
+				        return Lists.<ComparisonResult>newArrayList(
+				            checkNumber("c", o.getC(), empty(), of(0), empty(), empty()),
+				            checkNumber("d", o.getD(), empty(), empty(), of(new BigDecimal("-1")), empty()),
+				            checkString("f", o.getF(), 0, of(5), empty())
+				        );
+				    }
 
-					@Override
-					public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo o) {
-						return getComparisonResults(o)
-							.stream()
-							.map(res -> {
-								if (!isNullOrEmpty(res.getError())) {
-									return failure("Foo", ValidationResult.ValidationType.TYPE_FORMAT, "Foo", path, "", res.getError());
-								}
-								return success("Foo", ValidationResult.ValidationType.TYPE_FORMAT, "Foo", path, "");
-							})
-							.collect(toList());
-					}
+				    @Override
+				    public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo o) {
+				        return getComparisonResults(o)
+				            .stream()
+				            .map(res -> {
+				                if (!isNullOrEmpty(res.getError())) {
+				                    return failure("Foo", ValidationResult.ValidationType.TYPE_FORMAT, "Foo", path, "", res.getError());
+				                }
+				                return success("Foo", ValidationResult.ValidationType.TYPE_FORMAT, "Foo", path, "");
+				            })
+				            .collect(toList());
+				    }
 
 				}
 				""",

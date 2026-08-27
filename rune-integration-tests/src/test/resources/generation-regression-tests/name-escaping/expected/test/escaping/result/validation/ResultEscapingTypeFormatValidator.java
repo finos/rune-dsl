@@ -15,22 +15,22 @@ import static java.util.stream.Collectors.toList;
 
 public class ResultEscapingTypeFormatValidator implements Validator<ResultEscaping> {
 
-	private List<ComparisonResult> getComparisonResults(ResultEscaping o) {
-		return Lists.<ComparisonResult>newArrayList(
-			);
-	}
+    private List<ComparisonResult> getComparisonResults(ResultEscaping o) {
+        return Lists.<ComparisonResult>newArrayList(
+        );
+    }
 
-	@Override
-	public List<ValidationResult<?>> getValidationResults(RosettaPath path, ResultEscaping o) {
-		return getComparisonResults(o)
-			.stream()
-			.map(res -> {
-				if (!isNullOrEmpty(res.getError())) {
-					return failure("ResultEscaping", ValidationResult.ValidationType.TYPE_FORMAT, "ResultEscaping", path, "", res.getError());
-				}
-				return success("ResultEscaping", ValidationResult.ValidationType.TYPE_FORMAT, "ResultEscaping", path, "");
-			})
-			.collect(toList());
-	}
+    @Override
+    public List<ValidationResult<?>> getValidationResults(RosettaPath path, ResultEscaping o) {
+        return getComparisonResults(o)
+            .stream()
+            .map(res -> {
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("ResultEscaping", ValidationResult.ValidationType.TYPE_FORMAT, "ResultEscaping", path, "", res.getError());
+                }
+                return success("ResultEscaping", ValidationResult.ValidationType.TYPE_FORMAT, "ResultEscaping", path, "");
+            })
+            .collect(toList());
+    }
 
 }
