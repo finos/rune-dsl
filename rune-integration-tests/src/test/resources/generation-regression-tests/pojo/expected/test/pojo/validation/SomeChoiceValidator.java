@@ -17,25 +17,23 @@ import static com.rosetta.model.lib.validation.ValidationResult.success;
 import static java.util.stream.Collectors.toList;
 
 public class SomeChoiceValidator implements Validator<SomeChoice> {
+    private List<ComparisonResult> getComparisonResults(SomeChoice o) {
+        return Lists.<ComparisonResult>newArrayList(
+            checkCardinality("Foo", (Foo) o.getFoo() != null ? 1 : 0, 0, 1),
+            checkCardinality("Bar", (Bar) o.getBar() != null ? 1 : 0, 0, 1)
+        );
+    }
 
-	private List<ComparisonResult> getComparisonResults(SomeChoice o) {
-		return Lists.<ComparisonResult>newArrayList(
-				checkCardinality("Foo", (Foo) o.getFoo() != null ? 1 : 0, 0, 1), 
-				checkCardinality("Bar", (Bar) o.getBar() != null ? 1 : 0, 0, 1)
-			);
-	}
-
-	@Override
-	public List<ValidationResult<?>> getValidationResults(RosettaPath path, SomeChoice o) {
-		return getComparisonResults(o)
-			.stream()
-			.map(res -> {
-				if (!isNullOrEmpty(res.getError())) {
-					return failure("SomeChoice", ValidationResult.ValidationType.CARDINALITY, "SomeChoice", path, "", res.getError());
-				}
-				return success("SomeChoice", ValidationResult.ValidationType.CARDINALITY, "SomeChoice", path, "");
-			})
-			.collect(toList());
-	}
-
+    @Override
+    public List<ValidationResult<?>> getValidationResults(RosettaPath path, SomeChoice o) {
+        return getComparisonResults(o)
+            .stream()
+            .map(res -> {
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("SomeChoice", ValidationResult.ValidationType.CARDINALITY, "SomeChoice", path, "", res.getError());
+                }
+                return success("SomeChoice", ValidationResult.ValidationType.CARDINALITY, "SomeChoice", path, "");
+            })
+            .collect(toList());
+    }
 }
