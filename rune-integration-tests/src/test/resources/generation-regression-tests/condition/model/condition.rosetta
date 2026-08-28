@@ -1,0 +1,30 @@
+namespace test.condition
+
+type Simple:
+    val string (1..1)
+
+    condition NotForbidden:
+        val <> "forbidden"
+
+typeAlias Bounded(lowerBound int, upperBound int):
+    int
+
+    condition InRange:
+        item >= lowerBound and item <= upperBound
+
+type Range:
+    quantity Bounded(lowerBound: 0, upperBound: 100) (1..1)
+
+type WithDependency:
+    val string (1..1)
+
+    condition UsesFunction:
+        IsAllowed
+
+func IsAllowed:
+    inputs:
+        input WithDependency (1..1)
+    output:
+        result boolean (1..1)
+    set result:
+        input -> val <> "forbidden"
