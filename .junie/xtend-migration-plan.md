@@ -106,7 +106,7 @@ Xtend can be dropped as a dependency, which also lets `rune-lang` move off Java 
 ### rune-lang — generator utilities/helpers
 - [x] generator/java/enums/EnumHelper
 - [ ] generator/java/util/ImportManagerExtension
-- [ ] generator/java/util/ModelGeneratorUtil
+- [x] generator/java/util/ModelGeneratorUtil
 - [ ] generator/java/util/RecordJavaUtil
 - [x] generator/java/util/RosettaGrammarUtil
 
