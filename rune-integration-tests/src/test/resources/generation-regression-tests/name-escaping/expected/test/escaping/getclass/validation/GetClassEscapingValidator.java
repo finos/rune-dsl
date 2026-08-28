@@ -15,24 +15,22 @@ import static com.rosetta.model.lib.validation.ValidationResult.success;
 import static java.util.stream.Collectors.toList;
 
 public class GetClassEscapingValidator implements Validator<GetClassEscaping> {
+    private List<ComparisonResult> getComparisonResults(GetClassEscaping o) {
+        return Lists.<ComparisonResult>newArrayList(
+            checkCardinality("class", (Integer) o._getClass() != null ? 1 : 0, 1, 1)
+        );
+    }
 
-	private List<ComparisonResult> getComparisonResults(GetClassEscaping o) {
-		return Lists.<ComparisonResult>newArrayList(
-				checkCardinality("class", (Integer) o._getClass() != null ? 1 : 0, 1, 1)
-			);
-	}
-
-	@Override
-	public List<ValidationResult<?>> getValidationResults(RosettaPath path, GetClassEscaping o) {
-		return getComparisonResults(o)
-			.stream()
-			.map(res -> {
-				if (!isNullOrEmpty(res.getError())) {
-					return failure("GetClassEscaping", ValidationResult.ValidationType.CARDINALITY, "GetClassEscaping", path, "", res.getError());
-				}
-				return success("GetClassEscaping", ValidationResult.ValidationType.CARDINALITY, "GetClassEscaping", path, "");
-			})
-			.collect(toList());
-	}
-
+    @Override
+    public List<ValidationResult<?>> getValidationResults(RosettaPath path, GetClassEscaping o) {
+        return getComparisonResults(o)
+            .stream()
+            .map(res -> {
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("GetClassEscaping", ValidationResult.ValidationType.CARDINALITY, "GetClassEscaping", path, "", res.getError());
+                }
+                return success("GetClassEscaping", ValidationResult.ValidationType.CARDINALITY, "GetClassEscaping", path, "");
+            })
+            .collect(toList());
+    }
 }

@@ -138,29 +138,27 @@ class ModelMetaGeneratorTest {
 				import static java.util.stream.Collectors.toList;
 
 				public class FooValidator implements Validator<Foo> {
+				    private List<ComparisonResult> getComparisonResults(Foo o) {
+				        return Lists.<ComparisonResult>newArrayList(
+				            checkCardinality("a", (List<String>) o.getA() == null ? 0 : o.getA().size(), 1, 2),
+				            checkCardinality("b", (BigDecimal) o.getB() != null ? 1 : 0, 1, 1),
+				            checkCardinality("c", (List<Integer>) o.getC() == null ? 0 : o.getC().size(), 1, 0),
+				            checkCardinality("d", (BigDecimal) o.getD() != null ? 1 : 0, 0, 1)
+				        );
+				    }
 
-					private List<ComparisonResult> getComparisonResults(Foo o) {
-						return Lists.<ComparisonResult>newArrayList(
-								checkCardinality("a", (List<String>) o.getA() == null ? 0 : o.getA().size(), 1, 2),\s
-								checkCardinality("b", (BigDecimal) o.getB() != null ? 1 : 0, 1, 1),\s
-								checkCardinality("c", (List<Integer>) o.getC() == null ? 0 : o.getC().size(), 1, 0),\s
-								checkCardinality("d", (BigDecimal) o.getD() != null ? 1 : 0, 0, 1)
-							);
-					}
-
-					@Override
-					public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo o) {
-						return getComparisonResults(o)
-							.stream()
-							.map(res -> {
-								if (!isNullOrEmpty(res.getError())) {
-									return failure("Foo", ValidationResult.ValidationType.CARDINALITY, "Foo", path, "", res.getError());
-								}
-								return success("Foo", ValidationResult.ValidationType.CARDINALITY, "Foo", path, "");
-							})
-							.collect(toList());
-					}
-
+				    @Override
+				    public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo o) {
+				        return getComparisonResults(o)
+				            .stream()
+				            .map(res -> {
+				                if (!isNullOrEmpty(res.getError())) {
+				                    return failure("Foo", ValidationResult.ValidationType.CARDINALITY, "Foo", path, "", res.getError());
+				                }
+				                return success("Foo", ValidationResult.ValidationType.CARDINALITY, "Foo", path, "");
+				            })
+				            .collect(toList());
+				    }
 				}
 				""",
 				code.get("com.rosetta.test.model.validation.FooValidator"));
@@ -187,26 +185,26 @@ class ModelMetaGeneratorTest {
 
 				public class FooTypeFormatValidator implements Validator<Foo> {
 
-					private List<ComparisonResult> getComparisonResults(Foo o) {
-						return Lists.<ComparisonResult>newArrayList(
-								checkNumber("c", o.getC(), empty(), of(0), empty(), empty()),\s
-								checkNumber("d", o.getD(), empty(), empty(), of(new BigDecimal("-1")), empty()),\s
-								checkString("f", o.getF(), 0, of(5), empty())
-							);
-					}
+				    private List<ComparisonResult> getComparisonResults(Foo o) {
+				        return Lists.<ComparisonResult>newArrayList(
+				            checkNumber("c", o.getC(), empty(), of(0), empty(), empty()),
+				            checkNumber("d", o.getD(), empty(), empty(), of(new BigDecimal("-1")), empty()),
+				            checkString("f", o.getF(), 0, of(5), empty())
+				        );
+				    }
 
-					@Override
-					public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo o) {
-						return getComparisonResults(o)
-							.stream()
-							.map(res -> {
-								if (!isNullOrEmpty(res.getError())) {
-									return failure("Foo", ValidationResult.ValidationType.TYPE_FORMAT, "Foo", path, "", res.getError());
-								}
-								return success("Foo", ValidationResult.ValidationType.TYPE_FORMAT, "Foo", path, "");
-							})
-							.collect(toList());
-					}
+				    @Override
+				    public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo o) {
+				        return getComparisonResults(o)
+				            .stream()
+				            .map(res -> {
+				                if (!isNullOrEmpty(res.getError())) {
+				                    return failure("Foo", ValidationResult.ValidationType.TYPE_FORMAT, "Foo", path, "", res.getError());
+				                }
+				                return success("Foo", ValidationResult.ValidationType.TYPE_FORMAT, "Foo", path, "");
+				            })
+				            .collect(toList());
+				    }
 
 				}
 				""",

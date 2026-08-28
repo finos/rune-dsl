@@ -14,23 +14,21 @@ import static com.rosetta.model.lib.validation.ValidationResult.success;
 import static java.util.stream.Collectors.toList;
 
 public class FooValidator implements Validator<Foo> {
+    private List<ComparisonResult> getComparisonResults(Foo o) {
+        return Lists.<ComparisonResult>newArrayList(
+        );
+    }
 
-	private List<ComparisonResult> getComparisonResults(Foo o) {
-		return Lists.<ComparisonResult>newArrayList(
-			);
-	}
-
-	@Override
-	public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo o) {
-		return getComparisonResults(o)
-			.stream()
-			.map(res -> {
-				if (!isNullOrEmpty(res.getError())) {
-					return failure("Foo", ValidationResult.ValidationType.CARDINALITY, "Foo", path, "", res.getError());
-				}
-				return success("Foo", ValidationResult.ValidationType.CARDINALITY, "Foo", path, "");
-			})
-			.collect(toList());
-	}
-
+    @Override
+    public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo o) {
+        return getComparisonResults(o)
+            .stream()
+            .map(res -> {
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("Foo", ValidationResult.ValidationType.CARDINALITY, "Foo", path, "", res.getError());
+                }
+                return success("Foo", ValidationResult.ValidationType.CARDINALITY, "Foo", path, "");
+            })
+            .collect(toList());
+    }
 }

@@ -14,23 +14,21 @@ import static com.rosetta.model.lib.validation.ValidationResult.success;
 import static java.util.stream.Collectors.toList;
 
 public class GrandChildValidator implements Validator<GrandChild> {
+    private List<ComparisonResult> getComparisonResults(GrandChild o) {
+        return Lists.<ComparisonResult>newArrayList(
+        );
+    }
 
-	private List<ComparisonResult> getComparisonResults(GrandChild o) {
-		return Lists.<ComparisonResult>newArrayList(
-			);
-	}
-
-	@Override
-	public List<ValidationResult<?>> getValidationResults(RosettaPath path, GrandChild o) {
-		return getComparisonResults(o)
-			.stream()
-			.map(res -> {
-				if (!isNullOrEmpty(res.getError())) {
-					return failure("GrandChild", ValidationResult.ValidationType.CARDINALITY, "GrandChild", path, "", res.getError());
-				}
-				return success("GrandChild", ValidationResult.ValidationType.CARDINALITY, "GrandChild", path, "");
-			})
-			.collect(toList());
-	}
-
+    @Override
+    public List<ValidationResult<?>> getValidationResults(RosettaPath path, GrandChild o) {
+        return getComparisonResults(o)
+            .stream()
+            .map(res -> {
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("GrandChild", ValidationResult.ValidationType.CARDINALITY, "GrandChild", path, "", res.getError());
+                }
+                return success("GrandChild", ValidationResult.ValidationType.CARDINALITY, "GrandChild", path, "");
+            })
+            .collect(toList());
+    }
 }

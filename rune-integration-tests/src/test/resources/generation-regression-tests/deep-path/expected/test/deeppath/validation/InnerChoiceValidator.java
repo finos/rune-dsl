@@ -17,25 +17,23 @@ import static com.rosetta.model.lib.validation.ValidationResult.success;
 import static java.util.stream.Collectors.toList;
 
 public class InnerChoiceValidator implements Validator<InnerChoice> {
+    private List<ComparisonResult> getComparisonResults(InnerChoice o) {
+        return Lists.<ComparisonResult>newArrayList(
+            checkCardinality("Option1", (Option1) o.getOption1() != null ? 1 : 0, 0, 1),
+            checkCardinality("Option2", (Option2) o.getOption2() != null ? 1 : 0, 0, 1)
+        );
+    }
 
-	private List<ComparisonResult> getComparisonResults(InnerChoice o) {
-		return Lists.<ComparisonResult>newArrayList(
-				checkCardinality("Option1", (Option1) o.getOption1() != null ? 1 : 0, 0, 1), 
-				checkCardinality("Option2", (Option2) o.getOption2() != null ? 1 : 0, 0, 1)
-			);
-	}
-
-	@Override
-	public List<ValidationResult<?>> getValidationResults(RosettaPath path, InnerChoice o) {
-		return getComparisonResults(o)
-			.stream()
-			.map(res -> {
-				if (!isNullOrEmpty(res.getError())) {
-					return failure("InnerChoice", ValidationResult.ValidationType.CARDINALITY, "InnerChoice", path, "", res.getError());
-				}
-				return success("InnerChoice", ValidationResult.ValidationType.CARDINALITY, "InnerChoice", path, "");
-			})
-			.collect(toList());
-	}
-
+    @Override
+    public List<ValidationResult<?>> getValidationResults(RosettaPath path, InnerChoice o) {
+        return getComparisonResults(o)
+            .stream()
+            .map(res -> {
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("InnerChoice", ValidationResult.ValidationType.CARDINALITY, "InnerChoice", path, "", res.getError());
+                }
+                return success("InnerChoice", ValidationResult.ValidationType.CARDINALITY, "InnerChoice", path, "");
+            })
+            .collect(toList());
+    }
 }

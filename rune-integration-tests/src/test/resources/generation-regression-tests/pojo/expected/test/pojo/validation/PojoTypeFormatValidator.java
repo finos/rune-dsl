@@ -18,24 +18,24 @@ import static java.util.stream.Collectors.toList;
 
 public class PojoTypeFormatValidator implements Validator<Pojo> {
 
-	private List<ComparisonResult> getComparisonResults(Pojo o) {
-		return Lists.<ComparisonResult>newArrayList(
-				checkString("simpleAttr", o.getSimpleAttr(), 0, of(42), empty()), 
-				checkString("multiSimpleAttr", o.getMultiSimpleAttr(), 0, of(42), empty())
-			);
-	}
+    private List<ComparisonResult> getComparisonResults(Pojo o) {
+        return Lists.<ComparisonResult>newArrayList(
+            checkString("simpleAttr", o.getSimpleAttr(), 0, of(42), empty()),
+            checkString("multiSimpleAttr", o.getMultiSimpleAttr(), 0, of(42), empty())
+        );
+    }
 
-	@Override
-	public List<ValidationResult<?>> getValidationResults(RosettaPath path, Pojo o) {
-		return getComparisonResults(o)
-			.stream()
-			.map(res -> {
-				if (!isNullOrEmpty(res.getError())) {
-					return failure("Pojo", ValidationResult.ValidationType.TYPE_FORMAT, "Pojo", path, "", res.getError());
-				}
-				return success("Pojo", ValidationResult.ValidationType.TYPE_FORMAT, "Pojo", path, "");
-			})
-			.collect(toList());
-	}
+    @Override
+    public List<ValidationResult<?>> getValidationResults(RosettaPath path, Pojo o) {
+        return getComparisonResults(o)
+            .stream()
+            .map(res -> {
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("Pojo", ValidationResult.ValidationType.TYPE_FORMAT, "Pojo", path, "", res.getError());
+                }
+                return success("Pojo", ValidationResult.ValidationType.TYPE_FORMAT, "Pojo", path, "");
+            })
+            .collect(toList());
+    }
 
 }
