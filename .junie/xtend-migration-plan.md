@@ -86,7 +86,7 @@ Xtend can be dropped as a dependency, which also lets `rune-lang` move off Java 
 
 ### rune-lang — code generators
 - [ ] generator/java/condition/ConditionGenerator
-- [ ] generator/java/enums/EnumGenerator
+- [x] generator/java/enums/EnumGenerator
 - [ ] generator/java/expression/ExpressionGenerator
 - [ ] generator/java/expression/TypeCoercionService
 - [x] generator/java/function/FunctionGenerator
