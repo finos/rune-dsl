@@ -108,7 +108,7 @@ Xtend can be dropped as a dependency, which also lets `rune-lang` move off Java 
 - [ ] generator/java/util/ImportManagerExtension
 - [ ] generator/java/util/ModelGeneratorUtil
 - [ ] generator/java/util/RecordJavaUtil
-- [ ] generator/java/util/RosettaGrammarUtil
+- [x] generator/java/util/RosettaGrammarUtil
 
 ### rune-xcore-plugin-dependencies
 - [ ] xcore/generator/serializer/RosettaSerializerFragment
