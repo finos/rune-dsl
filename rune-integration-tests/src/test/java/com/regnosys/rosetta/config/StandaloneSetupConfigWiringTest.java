@@ -1,6 +1,8 @@
 package com.regnosys.rosetta.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -80,6 +82,49 @@ public class StandaloneSetupConfigWiringTest {
 			// so a schema marked [externalConfig] in a parent model still resolves its config path.
 			assertEquals("xml-config/parent-config.json",
 					config.findSchemaConfig("parentSchema").orElseThrow().getConfigPath());
+		}
+	}
+
+	@Test
+	void missingProjectConfigDoesNotUseDependencyGeneratorSettings(@TempDir Path tempDir) throws Exception {
+		Path dependencyRoot = Files.createDirectory(tempDir.resolve("dependency-classes"));
+		Files.writeString(dependencyRoot.resolve("rune-config.yml"),
+				"model:\n  name: Parent Model\ngenerators:\n  namespaces:\n  - parent.only\n"
+						+ "namespaceConfig:\n- id: parentSchema\n  namespace: parent.ns\n"
+						+ "  schemaConfig:\n    schema: parentSchema\n    configPath: xml-config/parent-config.json\n");
+
+		try (URLClassLoader dependencyClassLoader =
+				new URLClassLoader(new URL[] { dependencyRoot.toUri().toURL() }, null)) {
+			Injector injector = new CustomModuleSetup()
+					.setConfigFile(null)
+					.setClasspathClassLoader(dependencyClassLoader)
+					.createInjectorAndDoEMFRegistration();
+
+			RuneConfiguration config = injector.getInstance(RuneConfigurationHolder.class).get();
+
+			assertEquals("Just another Rosetta model", config.getModel().getName());
+			assertTrue(config.getGenerators().getNamespaces().isEmpty());
+			assertTrue(config.getGenerators().getNamespaceFilter().test("child.ns"));
+			assertEquals("xml-config/parent-config.json",
+					config.findSchemaConfig("parentSchema").orElseThrow().getConfigPath());
+		}
+	}
+
+	@Test
+	void unsetProjectConfigStillUsesClasspathDiscovery(@TempDir Path tempDir) throws Exception {
+		Files.writeString(tempDir.resolve("rune-config.yml"),
+				"model:\n  name: Classpath Model\ngenerators:\n  namespaces:\n  - classpath.only\n");
+
+		try (URLClassLoader classLoader = new URLClassLoader(new URL[] { tempDir.toUri().toURL() }, null)) {
+			Injector injector = new CustomModuleSetup()
+					.setClasspathClassLoader(classLoader)
+					.createInjectorAndDoEMFRegistration();
+
+			RuneConfiguration config = injector.getInstance(RuneConfigurationHolder.class).get();
+
+			assertEquals("Classpath Model", config.getModel().getName());
+			assertTrue(config.getGenerators().getNamespaceFilter().test("classpath.only"));
+			assertFalse(config.getGenerators().getNamespaceFilter().test("child.ns"));
 		}
 	}
 }

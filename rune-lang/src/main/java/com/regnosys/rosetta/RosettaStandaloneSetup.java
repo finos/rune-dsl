@@ -19,6 +19,7 @@ import org.eclipse.emf.ecore.EValidator;
 public class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
 
     private String configFile;
+    private boolean configFileSet;
     private ClassLoader classpathClassLoader;
 
     public static void doSetup() {
@@ -27,10 +28,13 @@ public class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
 
     /**
      * Points the setup at an explicit configuration file, instead of discovering the project's own
-     * config on the classpath. Applied by {@link #createInjectorAndDoEMFRegistration()}.
+     * config on the classpath. Passing {@code null} explicitly declares that the project has no
+     * config, while not calling this method leaves classpath discovery enabled. Applied by
+     * {@link #createInjectorAndDoEMFRegistration()}.
      */
     public RosettaStandaloneSetup setConfigFile(String configFile) {
         this.configFile = configFile;
+        this.configFileSet = true;
         return this;
     }
 
@@ -85,7 +89,7 @@ public class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
      * use, so this is still in time.
      */
     private void configureRuneConfigurationFileProvider(Injector injector) {
-        if (configFile == null && classpathClassLoader == null) {
+        if (!configFileSet && classpathClassLoader == null) {
             return;
         }
         RuneConfigurationFileProvider fileProvider = injector.getInstance(RuneConfigurationFileProvider.class);
@@ -96,7 +100,7 @@ public class RosettaStandaloneSetup extends RosettaStandaloneSetupGenerated {
                     + "configuration. Remove the non-singleton binding of "
                     + RuneConfigurationFileProvider.class.getName() + " from the runtime module.");
         }
-        if (configFile != null) {
+        if (configFileSet) {
             fileProvider.setConfigFile(configFile);
         }
         if (classpathClassLoader != null) {

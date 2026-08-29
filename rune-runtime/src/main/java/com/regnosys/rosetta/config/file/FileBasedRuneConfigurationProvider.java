@@ -44,11 +44,13 @@ public class FileBasedRuneConfigurationProvider implements Provider<RuneConfigur
 	protected RuneConfiguration readConfigFromFile() {
 		try {
 			URL primaryFile = fileProvider.get();
+			RuneConfiguration primary;
 			if (primaryFile == null) {
-				LOGGER.warn("No configuration file was found. Falling back to the default configuration.");
-				return null;
+				LOGGER.warn("No project configuration file was found. Falling back to the default configuration.");
+				primary = fallback.get();
+			} else {
+				primary = configurationService.read(primaryFile);
 			}
-			RuneConfiguration primary = configurationService.read(primaryFile);
 
 			// The model and generators come from the current project's config only.
 			// The namespace config is the union of all configs on the classpath (the current
@@ -57,7 +59,7 @@ public class FileBasedRuneConfigurationProvider implements Provider<RuneConfigur
 			Set<String> seenIds = new HashSet<>();
 			collectNamespaceConfig(primary, mergedNamespaceConfig, seenIds);
 			for (URL file : fileProvider.getResources()) {
-				if (file.equals(primaryFile)) {
+				if (primaryFile != null && file.equals(primaryFile)) {
 					continue;
 				}
 				collectNamespaceConfig(configurationService.read(file), mergedNamespaceConfig, seenIds);
