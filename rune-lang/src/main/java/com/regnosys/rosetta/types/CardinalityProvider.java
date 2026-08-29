@@ -217,7 +217,9 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
         return safeIsOutputListOfLists(expr, new HashMap<>());
     }
 	private boolean safeIsOutputListOfLists(RosettaExpression expr, Map<RosettaSymbol, Boolean> cycleTracker) {
-        if (expr instanceof FlattenOperation) {
+        if (expr == null) {
+            return false;
+        } else if (expr instanceof FlattenOperation) {
             return false;
         } else if (expr instanceof MapOperation) {
             MapOperation mapOperation = (MapOperation) expr;
@@ -250,6 +252,19 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
         } else if (expr instanceof CanHandleListOfLists) {
             CanHandleListOfLists listExpression = (CanHandleListOfLists) expr;
             return safeIsOutputListOfLists(listExpression.getArgument(), cycleTracker);
+        } else if (expr instanceof RosettaConditionalExpression) {
+            // A conditional yields a list of lists if any of its branches does.
+            RosettaConditionalExpression conditional = (RosettaConditionalExpression) expr;
+            return safeIsOutputListOfLists(conditional.getIfthen(), cycleTracker)
+                    || safeIsOutputListOfLists(conditional.getElsethen(), cycleTracker);
+        } else if (expr instanceof SwitchOperation) {
+            // A switch yields a list of lists if any of its cases does.
+            for (SwitchCaseOrDefault switchCase : ((SwitchOperation) expr).getCases()) {
+                if (safeIsOutputListOfLists(switchCase.getExpression(), cycleTracker)) {
+                    return true;
+                }
+            }
+            return false;
         }
         return false;
     }
