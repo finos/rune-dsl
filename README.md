@@ -8,15 +8,16 @@ weight: 1
 
 # Rune DSL
 
+> &#128161; Tip<br> 
+> Visit the [Rune Documentation website](https://rune.finos.org/) for a complete description of the features and capabilities of the Rune Domain Specific Language.
+
 [![FINOS - Incubating](https://cdn.jsdelivr.net/gh/finos/contrib-toolbox@master/images/badge-incubating.svg)](https://community.finos.org/docs/governance/Software-Projects/stages/incubating)
 
 **Continuous Integration:** [![Maven Central](https://img.shields.io/maven-central/v/com.regnosys.rosetta/com.regnosys.rosetta.parent.svg?maxAge=2592000)](https://search.maven.org/#artifactdetails%7Ccom.regnosys.rosetta%7Ccom.regnosys.rosetta.parent%7C2%7Cpom)
 
 *Rune DSL* is a Domain-Specific Language (DSL) that supports the modelling of operational processes for the financial markets' industry. Its purpose is to promote consistency and inter-operability between the various implementations of these processes.
 
-{{< notice info "Note" >}}
 In software engineering, a [domain model](https://olegchursin.medium.com/a-brief-introduction-to-domain-modeling-862a30b38353) is a conceptual model of a business domain that incorporates both *data* and *logic* (i.e. rules and processes).
-{{< /notice >}}
 
 The key idea behind the Rune DSL is that, whilst financial markets' operational infrastructure is largely electronified, many of its underlying IT systems tend to operate in silos.
 
@@ -49,17 +50,17 @@ The Rune DSL comprises 2 components, both open-source:
 
 The [Rune DSL repository](https://github.com/finos/rune-dsl/) contains the definition of the language. It is based on the [Eclipse Modelling Framework](https://www.eclipse.org/modeling/emf/).
 
-The language components available in the Rune DSL and their syntax are detailed in the [Rune Modelling Components](https://docs.rosetta-technology.io/rosetta/rune-dsl/rune-modelling-component/) section of the documentation.
+The language components available in the Rune DSL and their syntax are detailed in the [Rune Modelling Components](https://rune.finos.org/docs/modelling-components) section of the documentation.
 
 A [demonstration model](https://github.com/rosetta-models/demo), also available in open source, provides a set of working examples of those modelling components. Snippets extracted from this model are being used to support the DSL documentation.
 
 ### Code Generator
 
-Code generators remove the need for software developers to translate the model specifications into executable code while ensuring the inter-operability of different implementations. The Rune DSL repository provides one default code generator, for [Java](https://www.oracle.com/java/).
+Code generators remove the need for software developers to translate the model specifications into executable code while ensuring the inter-operability of different implementations. The Rune DSL repository provides one default code generator, for Java.
 
 To make models agnostic to the technology platform in which they are being implemented, other code generators have been provided in a variety of languages. A separate [code generator repository](https://github.com/REGnosys/rosetta-code-generators), also open source, allows the community to create and share code generators in potentially any software language.
 
-The [Code Generator documentation](https://docs.rosetta-technology.io/rosetta/rune-dsl/rosetta-code-generators/) details the available code generators, the code generation mechanism and how to write and test one.
+The [Code Generator documentation](https://rune.finos.org/docs/developers/code-generator) details the available code generators, the code generation mechanism and how to write and test one.
 
 ## Development setup
 
