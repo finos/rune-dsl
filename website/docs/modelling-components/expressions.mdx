@@ -755,6 +755,17 @@ If conversion fails – the result is empty.
 ### 5.1 Keyword clashes
 If a model name clashes with a Rune keyword, prefix it with the `^` operator. The `^` is not included in generated code or JSON.
 
+This works for any name, including each segment of a namespace, of an import and of a fully qualified reference:
+
+```haskell
+namespace ^type.vehicle
+
+import ^enum.tax.*
+
+type Vehicle:
+    band ^enum.tax.VehicleTaxBandEnum (1..1)
+```
+
 **Example**
 
 In this example, `^E` avoids conflict with the E notation from mathematics, which is supported by Rune.
