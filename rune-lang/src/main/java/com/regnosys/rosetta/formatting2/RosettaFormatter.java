@@ -390,7 +390,8 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 	 * {@code [metadata scheme]}, doc references, labels, rule references and transform annotations.
 	 * <p>
 	 * This iterates over the actual contents of {@code ele} rather than over a fixed list of features,
-	 * so an element that gains another kind of annotation is formatted without a change to this class.
+	 * so an element that gains one of the existing kinds of annotation is formatted without a change
+	 * here. A new kind of annotation still needs a clause in {@link #isAnnotation}.
 	 */
 	private void formatAnnotations(EObject ele, IFormattableDocument document) {
 		ele.eContents().stream()
@@ -402,9 +403,9 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 	}
 
 	private static boolean isAnnotation(EObject ele) {
+		// RosettaDocReference, LabelAnnotation and RuleReferenceAnnotation are all BuiltinAnnotations.
 		return ele instanceof AnnotationRef
 				|| ele instanceof BuiltinAnnotation
-				|| ele instanceof RosettaDocReference
 				|| ele instanceof TransformAnnotation;
 	}
 

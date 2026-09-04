@@ -825,7 +825,7 @@ public class RosettaFormattingTest {
 				type Foo:  [ test.annotations.myAnnotation ]
 					bar Bar (1..1)
 
-				func Ingest:  [ ingest  test.formats.MySchema ]
+				func Ingest:  [ ingest  test.formats.mySchema ]
 					output:
 						result Foo (1..1)
 				""", """
@@ -836,9 +836,73 @@ public class RosettaFormattingTest {
 					bar Bar (1..1)
 
 				func Ingest:
-					[ingest test.formats.MySchema]
+					[ingest test.formats.mySchema]
 					output:
 						result Foo (1..1)
+				""");
+	}
+
+	@Test
+	void testEmptyRuleReferenceAnnotationOnAttribute() {
+		formatAndAssert("""
+				namespace test
+
+				type Foo:
+					bar Bar (1..1)  [ ruleReference   empty ]
+				""", """
+				namespace test
+
+				type Foo:
+					bar Bar (1..1)
+						[ruleReference empty]
+				""");
+	}
+
+	@Test
+	void testAnnotationOnEnumDeclaration() {
+		formatAndAssert("""
+				namespace test
+
+				enum Foo:  [ deprecated ]
+					VALUE
+				""", """
+				namespace test
+
+				enum Foo:
+					[deprecated]
+					VALUE
+				""");
+	}
+
+	@Test
+	void testDocReferenceOnCondition() {
+		formatAndAssert("""
+				namespace test
+
+				body Authority ESMA
+				corpus Regulation "600/2014" MiFIR
+				segment article
+
+				type Foo:
+					bar string (1..1)
+
+					condition BarExists:  [docReference ESMA MiFIR article "1"]
+						bar exists
+				""", """
+				namespace test
+
+				body Authority ESMA
+
+				corpus Regulation "600/2014" MiFIR
+
+				segment article
+
+				type Foo:
+					bar string (1..1)
+
+					condition BarExists:
+						[docReference ESMA MiFIR article "1"]
+						bar exists
 				""");
 	}
 }

@@ -104,7 +104,7 @@ public class RosettaCrossReferencingTest {
 		String schemaModel = """
 			namespace test.formats
 			
-			schema MySchema XML
+			schema mySchema XML
 			""";
 		
 		String functionModel = """
@@ -114,7 +114,7 @@ public class RosettaCrossReferencingTest {
 				n int (1..1)
 			
 			func Ingest:
-				[ingest test.formats.MySchema]
+				[ingest test.formats.mySchema]
 				inputs:
 					input string (1..1)
 				output:

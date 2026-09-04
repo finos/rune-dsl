@@ -733,7 +733,9 @@ RosettaReport:
 ;
 
 RuleReferenceAnnotation:
-	'[' name='ruleReference' ('for' path=AnnotationPathExpression)? (reportingRule=[RosettaRule|QualifiedName] | empty?='empty') ']'	
+	// The action is necessary so that `[ruleReference empty]`, whose only assignments are keywords,
+	// gets a region in the formatter's region access - without it, the formatter cannot format it.
+	{RuleReferenceAnnotation} '[' name='ruleReference' ('for' path=AnnotationPathExpression)? (reportingRule=[RosettaRule|QualifiedName] | empty?='empty') ']'	
 ;
 
 RosettaRule:
