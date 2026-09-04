@@ -93,7 +93,7 @@ public class ResourceFormatterServiceTest {
 	@Test
 	void formatDocumentWithAnIncompleteImport() throws IOException {
 		// `import ` on its own, as it looks while it is being typed, names no namespace. The
-		// import block is rebuilt from the model, and there is no text to write back for it.
+		// import block is rebuilt from the model, so it has to survive having no name to write.
 		String content = "namespace test\n\nimport \nimport foo.^type.*\n\ntype Foo:\n";
 		ResourceSet resourceSet = resourceSetProvider.get();
 		Resource resource = resourceSet.createResource(URI.createURI("dummy:/incomplete-import.rosetta"));
@@ -105,6 +105,24 @@ public class ResourceFormatterServiceTest {
 		Assertions.assertEquals(1, formattedText.size());
 		Assertions.assertTrue(formattedText.get(0).contains("import foo.^type.*"),
 				"the complete import should survive: " + formattedText.get(0));
+		Assertions.assertTrue(formattedText.get(0).contains("import\n"),
+				"the line being typed should survive: " + formattedText.get(0));
+	}
+
+	@Test
+	void formatDocumentWhoseOnlyImportIsIncomplete() throws IOException {
+		// Nothing else holds the import block open, so this is where a lost line would show.
+		String content = "namespace test\n\nimport \n\ntype Foo:\n";
+		ResourceSet resourceSet = resourceSetProvider.get();
+		Resource resource = resourceSet.createResource(URI.createURI("dummy:/only-incomplete-import.rosetta"));
+		resource.load(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)), null);
+
+		List<String> formattedText = new ArrayList<>();
+		formatterService.formatCollection(List.of(resource), (r, formattedContent) -> formattedText.add(formattedContent));
+
+		Assertions.assertEquals(1, formattedText.size());
+		Assertions.assertTrue(formattedText.get(0).contains("import"),
+				"the line being typed should survive: " + formattedText.get(0));
 	}
 
 	@Test

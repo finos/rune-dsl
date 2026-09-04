@@ -114,22 +114,25 @@ public class ImportManagementService {
 		StringBuilder sortedImportsText = new StringBuilder();
 		String lineSeparator = detectLineSeparator(imports);
 		
-		// An import that names no namespace - `import ` on its own, as it looks while it is being
-		// typed - has no text to write back.
-		List<Import> namedImports = imports.stream().filter(imp -> imp.getImportedNamespace() != null).toList();
-
 		Import previousImport = null;
-		for (Import imp : namedImports) {
+		for (Import imp : imports) {
+			String importedNamespace = imp.getImportedNamespace();
+			if (importedNamespace == null) {
+				// `import ` on its own, as it looks while it is being typed. There is no name to
+				// write, and dropping the line would delete what the user is typing on.
+				sortedImportsText.append("import").append(lineSeparator);
+				continue;
+			}
 			// if previous import comes from a different top-level package, insert blank line
 			if (previousImport != null) {
 				String previousFirstSegment = previousImport.getImportedNamespace().split("\\.")[0];
-				String currentFirstSegment = imp.getImportedNamespace().split("\\.")[0];
+				String currentFirstSegment = importedNamespace.split("\\.")[0];
 				if (!previousFirstSegment.equals(currentFirstSegment)) {
 					sortedImportsText.append(lineSeparator);
 				}
 			}
 			// The model holds unescaped names, so escape them again on the way back into the document.
-			sortedImportsText.append("import ").append(nameEscaper.escapeImportedNamespace(imp.getImportedNamespace()));
+			sortedImportsText.append("import ").append(nameEscaper.escapeImportedNamespace(importedNamespace));
 			if (imp.getNamespaceAlias() != null) {
 				sortedImportsText.append(" as ").append(nameEscaper.escapeName(imp.getNamespaceAlias()));
 			}
