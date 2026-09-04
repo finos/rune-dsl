@@ -68,8 +68,9 @@ public class EscapableQualifiedNameValueConverter extends AbstractValueConverter
 		// -1 keeps a trailing empty segment, so a malformed name is rejected rather than truncated.
 		String[] segments = SEGMENT_SEPARATOR.split(name, -1);
 		return IntStream.range(0, segments.length)
-				// The grammar allows whitespace around a dot, e.g. a namespace wrapped over two
-				// lines, and the text handed to us still holds it. It is not part of the name.
+				// A name never contains whitespace, so this is a no-op on the way out. On the way
+				// in it matters: the grammar allows whitespace around a dot, e.g. a namespace
+				// wrapped over two lines, and the text handed to us still holds it.
 				.mapToObj(i -> isWildcard(segments[i].strip(), i, segments.length)
 						? WILDCARD
 						: mapper.apply(segments[i].strip()))
