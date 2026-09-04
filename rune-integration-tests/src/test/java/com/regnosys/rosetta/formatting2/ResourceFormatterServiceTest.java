@@ -94,7 +94,14 @@ public class ResourceFormatterServiceTest {
 	void formatDocumentWithAnIncompleteImport() throws IOException {
 		// `import ` on its own, as it looks while it is being typed, names no namespace. The
 		// import block is rebuilt from the model, so it has to survive having no name to write.
-		String content = "namespace test\n\nimport \nimport foo.^type.*\n\ntype Foo:\n";
+		String content = """
+				namespace test
+
+				import\s
+				import foo.^type.*
+
+				type Foo:
+				""";
 		ResourceSet resourceSet = resourceSetProvider.get();
 		Resource resource = resourceSet.createResource(URI.createURI("dummy:/incomplete-import.rosetta"));
 		resource.load(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)), null);
@@ -112,7 +119,13 @@ public class ResourceFormatterServiceTest {
 	@Test
 	void formatDocumentWhoseOnlyImportIsIncomplete() throws IOException {
 		// Nothing else holds the import block open, so this is where a lost line would show.
-		String content = "namespace test\n\nimport \n\ntype Foo:\n";
+		String content = """
+				namespace test
+
+				import\s
+
+				type Foo:
+				""";
 		ResourceSet resourceSet = resourceSetProvider.get();
 		Resource resource = resourceSet.createResource(URI.createURI("dummy:/only-incomplete-import.rosetta"));
 		resource.load(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)), null);
