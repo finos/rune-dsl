@@ -27,19 +27,29 @@ import org.eclipse.xtext.conversion.IValueConverter;
 import org.eclipse.xtext.conversion.ValueConverter;
 
 public class RosettaValueConverterService extends DefaultTerminalConverters {
-	@Inject private ValidIDConverter validIDValueConverter;
+	@Inject private RosettaNameEscaper nameEscaper;
 	@Inject private BigIntegerConverter bigIntegerConverter;
 	@Inject private BigDecimalConverter bigDecimalConverter;
 	@Inject private PATTERNValueConverter patternValueConverter;
 	
 	@ValueConverter(rule = "ValidID")
 	public IValueConverter<String> getValidIDConverter() {
-		return validIDValueConverter;
+		return nameEscaper.getValidIDConverter();
+	}
+	
+	@ValueConverter(rule = "TypeParameterValidID")
+	public IValueConverter<String> getTypeParameterValidIDConverter() {
+		return nameEscaper.getTypeParameterValidIDConverter();
 	}
 	
 	@ValueConverter(rule = "QualifiedName")
 	public IValueConverter<String> getQualifiedNameConverter() {
-		return validIDValueConverter;
+		return nameEscaper.getQualifiedNameConverter();
+	}
+	
+	@ValueConverter(rule = "QualifiedNameWithWildcard")
+	public IValueConverter<String> getQualifiedNameWithWildcardConverter() {
+		return nameEscaper.getQualifiedNameConverter();
 	}
 	
 	@ValueConverter(rule = "Integer")
