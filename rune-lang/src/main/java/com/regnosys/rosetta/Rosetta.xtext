@@ -56,7 +56,7 @@ fragment RuleReference*:
 // - docReference
 // - ruleReference
 AnnotationRef:
-	'[' annotation = [Annotation|ValidID] (attribute = [Attribute|ValidID] (qualifiers += AnnotationQualifier)*)? ']'
+	'[' annotation = [Annotation|QualifiedName] (attribute = [Attribute|ValidID] (qualifiers += AnnotationQualifier)*)? ']'
 ;
 
 AnnotationQualifier:
@@ -182,7 +182,7 @@ enum TransformKind:
 ;
 
 TransformAnnotation:
-	'[' kind=TransformKind (ref=[SchemaOrFormat|ValidID])? ']'
+	'[' kind=TransformKind (ref=[SchemaOrFormat|QualifiedName])? ']'
 ;
 
 

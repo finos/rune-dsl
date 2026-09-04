@@ -683,4 +683,162 @@ public class RosettaFormattingTest {
 					B
 				""");
 	}
+
+	@Test
+	void testLabelAnnotationOnAttribute() {
+		formatAndAssert("""
+				namespace test
+
+				type Foo:
+					bar Bar (1..1)  [  label  "My label"  ]  [ label for  baz -> qux   "Other label" ]
+				""", """
+				namespace test
+
+				type Foo:
+					bar Bar (1..1)
+						[label "My label"]
+						[label for baz -> qux "Other label"]
+				""");
+	}
+
+	@Test
+	void testRuleReferenceAnnotationOnAttribute() {
+		formatAndAssert("""
+				namespace test
+
+				type Foo:
+					bar Bar (1..1)  [ ruleReference   MyRule ]   [ruleReference  for baz ->> qux  empty]
+				""", """
+				namespace test
+
+				type Foo:
+					bar Bar (1..1)
+						[ruleReference MyRule]
+						[ruleReference for baz ->> qux empty]
+				""");
+	}
+
+	@Test
+	void testAnnotationsOnChoiceOption() {
+		formatAndAssert("""
+				namespace test
+
+				choice Foo:
+					Bar  [ label  "My label" ]
+					Qux
+				""", """
+				namespace test
+
+				choice Foo:
+					Bar
+						[label "My label"]
+					Qux
+				""");
+	}
+
+	@Test
+	void testTransformAnnotationsOnFunction() {
+		formatAndAssert("""
+				namespace test
+
+				func Foo:  [ ingest   FpML ]  [ enrich ]  [projection  XML]
+					output:
+						result Bar (1..1)
+				""", """
+				namespace test
+
+				func Foo:
+					[ingest FpML]
+					[enrich]
+					[projection XML]
+					output:
+						result Bar (1..1)
+				""");
+	}
+
+	@Test
+	void testRuleReferenceInRuleSource() {
+		formatAndAssert("""
+				namespace test
+
+				rule source TestSource {
+					Foo:
+						+ bar
+							[ ruleReference   MyRule ]
+				}
+				""", """
+				namespace test
+
+				rule source TestSource
+				{
+					Foo:
+						+ bar
+							[ruleReference MyRule]
+				}
+				""");
+	}
+
+	@Test
+	void testAnnotationRefWithQualifier() {
+		formatAndAssert("""
+				namespace test
+
+				type Foo:
+					bar Bar (1..1)  [ metadata  address   "pointsTo" = Bar -> baz ]
+				""", """
+				namespace test
+
+				type Foo:
+					bar Bar (1..1)
+						[metadata address "pointsTo"=Bar->baz]
+				""");
+	}
+
+	@Test
+	void testAnnotationsOnEnumValueAndChoice() {
+		formatAndAssert("""
+				namespace test
+
+				choice Foo:  [ deprecated ]
+					Bar
+
+				enum Baz:
+					VALUE  [ deprecated ]
+				""", """
+				namespace test
+
+				choice Foo:
+					[deprecated]
+					Bar
+
+				enum Baz:
+					VALUE
+						[deprecated]
+				""");
+	}
+
+	@Test
+	void testAnnotationsWithQualifiedNames() {
+		formatAndAssert("""
+				namespace test
+
+				type Foo:  [ test.annotations.myAnnotation ]
+					bar Bar (1..1)
+
+				func Ingest:  [ ingest  test.formats.MySchema ]
+					output:
+						result Foo (1..1)
+				""", """
+				namespace test
+
+				type Foo:
+					[test.annotations.myAnnotation]
+					bar Bar (1..1)
+
+				func Ingest:
+					[ingest test.formats.MySchema]
+					output:
+						result Foo (1..1)
+				""");
+	}
 }
