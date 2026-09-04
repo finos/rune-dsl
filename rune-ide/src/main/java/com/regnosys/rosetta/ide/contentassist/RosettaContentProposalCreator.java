@@ -31,8 +31,6 @@ import jakarta.inject.Inject;
  * by typing its caret first.
  */
 public class RosettaContentProposalCreator extends IdeContentProposalCreator {
-	private static final String ESCAPE = "^";
-
 	@Inject
 	private IPrefixMatcher prefixMatcher;
 	@Inject
@@ -43,7 +41,7 @@ public class RosettaContentProposalCreator extends IdeContentProposalCreator {
 		if (super.isValidProposal(proposal, prefix, context)) {
 			return true;
 		}
-		if (proposal == null || !proposal.contains(ESCAPE)) {
+		if (proposal == null || !nameEscaper.isEscaped(proposal)) {
 			return false;
 		}
 		// Compare the names the two stand for, and leave the rest of the judgement to `super` by

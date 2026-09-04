@@ -1,8 +1,8 @@
 package com.regnosys.rosetta.parsing;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashSet;
 import java.util.List;
@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
-import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.AbstractRule;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.GrammarUtil;
@@ -45,20 +44,18 @@ public class KeywordEscapingTest {
 	@Inject
 	private ModelHelper modelHelper;
 
+	// A single segment is covered for every rule by `testEveryRuleThatCanWriteANameEscapesKeywords`;
+	// these two are about the segments a qualified name is made of.
 	@Test
 	void testEveryNameSegmentIsUnescaped() {
-		assertEquals("type", valueConverter.toValue("^type", "ValidID", null));
 		assertEquals("foo.type.bar", valueConverter.toValue("^foo.^type.^bar", "QualifiedName", null));
 		assertEquals("foo.type.*", valueConverter.toValue("^foo.^type.*", "QualifiedNameWithWildcard", null));
-		assertEquals("min", valueConverter.toValue("^min", "TypeParameterValidID", null));
 	}
 
 	@Test
 	void testEveryNameSegmentIsEscaped() {
-		assertEquals("^type", valueConverter.toString("type", "ValidID"));
 		assertEquals("foo.^type.bar", valueConverter.toString("foo.type.bar", "QualifiedName"));
 		assertEquals("foo.^type.*", valueConverter.toString("foo.type.*", "QualifiedNameWithWildcard"));
-		assertEquals("^type", valueConverter.toString("type", "TypeParameterValidID"));
 	}
 
 	@Test
@@ -82,6 +79,7 @@ public class KeywordEscapingTest {
 		assertThrows(ValueConverterException.class, () -> valueConverter.toString("foo.*", "QualifiedName"));
 		assertThrows(ValueConverterException.class,
 				() -> valueConverter.toString("foo.*.bar", "QualifiedNameWithWildcard"));
+		assertThrows(ValueConverterException.class, () -> valueConverter.toString("*", "QualifiedNameWithWildcard"));
 	}
 
 	@Test
@@ -107,7 +105,7 @@ public class KeywordEscapingTest {
 
 	@Test
 	void testCanReferToAnEscapedNamespaceByItsQualifiedName() {
-		List<RosettaModel> models = modelHelper.parseRosettaWithNoErrors("""
+		modelHelper.parseRosettaWithNoIssues("""
 				namespace ^namespace.^type
 
 				type Foo:
@@ -116,12 +114,11 @@ public class KeywordEscapingTest {
 
 				type Bar extends ^namespace.^type.Foo:
 				""");
-		assertNoUnresolvedReferences(models.get(1));
 	}
 
 	@Test
 	void testCanImportAnEscapedNamespace() {
-		List<RosettaModel> models = modelHelper.parseRosettaWithNoErrors("""
+		List<RosettaModel> models = modelHelper.parseRosettaWithNoIssues("""
 				namespace ^namespace.^type
 
 				type Foo:
@@ -133,14 +130,13 @@ public class KeywordEscapingTest {
 				type Bar extends Foo:
 				""");
 		assertEquals("namespace.type.*", models.get(1).getImports().get(0).getImportedNamespace());
-		assertNoUnresolvedReferences(models.get(1));
 	}
 
 	@Test
 	void testCanReferToAnEscapedRuleFromARuleReference() {
 		// An annotation refers to a rule by qualified name, and `rule` is a keyword, so both the
 		// namespace and the rule's own name can need escaping.
-		List<RosettaModel> models = modelHelper.parseRosettaWithNoErrors("""
+		modelHelper.parseRosettaWithNoIssues("""
 				namespace my.^rule
 
 				reporting rule ^rule from string:
@@ -152,12 +148,11 @@ public class KeywordEscapingTest {
 					attr string (1..1)
 						[ruleReference my.^rule.^rule]
 				""");
-		assertNoUnresolvedReferences(models.get(1));
 	}
 
 	@Test
 	void testCanReferToEscapedDocumentElementsFromADocReference() {
-		List<RosettaModel> models = modelHelper.parseRosettaWithNoErrors("""
+		modelHelper.parseRosettaWithNoIssues("""
 				namespace my.^rule
 
 				body Authority ^body
@@ -170,17 +165,15 @@ public class KeywordEscapingTest {
 					[docReference my.^rule.^body my.^rule.^corpus my.^rule.^segment "x"]
 					attr string (1..1)
 				""");
-		assertNoUnresolvedReferences(models.get(1));
 	}
 
 	@Test
 	void testCanEscapeATypeParameter() {
-		RosettaModel model = modelHelper.parseRosettaWithNoIssues("""
+		modelHelper.parseRosettaWithNoIssues("""
 				namespace test
 
 				typeAlias SmallNumber: number(^min: 1, ^max: 10)
 				""");
-		assertNoUnresolvedReferences(model);
 	}
 
 	/**
@@ -192,13 +185,13 @@ public class KeywordEscapingTest {
 	 */
 	@Test
 	void testEveryRuleThatCanWriteANameEscapesKeywords() {
-		assertEquals(
-				Set.of("ValidID", "TypeParameterValidID", "QualifiedName", "QualifiedNameWithWildcard",
-						// Not a name: the trailing `ID` of `BigDecimal` is an exponent suffix.
-						"BigDecimal"),
-				rulesThatCanYieldAnIdentifier());
+		Set<String> nameRules = new HashSet<>(rulesThatCanYieldAnIdentifier());
+		// Not a name: the trailing `ID` of `BigDecimal` is an exponent suffix.
+		assertTrue(nameRules.remove("BigDecimal"));
+		assertEquals(Set.of("ValidID", "TypeParameterValidID", "QualifiedName", "QualifiedNameWithWildcard"),
+				nameRules);
 
-		for (String rule : List.of("ValidID", "TypeParameterValidID", "QualifiedName", "QualifiedNameWithWildcard")) {
+		for (String rule : nameRules) {
 			assertEquals("^type", valueConverter.toString("type", rule), rule + " must escape a keyword name");
 			assertEquals("type", valueConverter.toValue("^type", rule, null), rule + " must unescape a name");
 		}
@@ -223,11 +216,4 @@ public class KeywordEscapingTest {
 						|| called instanceof ParserRule && canYieldAnIdentifier(called, idRule, visited));
 	}
 
-	private static void assertNoUnresolvedReferences(RosettaModel model) {
-		EcoreUtil.resolveAll(model.eResource());
-		model.eResource().getAllContents().forEachRemaining(object ->
-				object.eCrossReferences().forEach(reference ->
-						assertFalse(reference.eIsProxy(),
-								"Unresolved reference from " + object.eClass().getName() + ": " + reference)));
-	}
 }
