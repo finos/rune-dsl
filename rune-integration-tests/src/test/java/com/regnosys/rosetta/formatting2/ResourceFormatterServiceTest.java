@@ -64,6 +64,12 @@ public class ResourceFormatterServiceTest {
 	}
 
 	@Test
+	void formatKeepsEscapedNamesEscaped() throws IOException, URISyntaxException {
+		testFormatting(List.of("formatting-test/input/escapedNames.rosetta"),
+				List.of("formatting-test/expected/escapedNames.rosetta"));
+	}
+
+	@Test
 	void formatSingleDocument() throws IOException, URISyntaxException {
 		testFormatting(List.of("formatting-test/input/typeAlias.rosetta"),
 				List.of("formatting-test/expected/typeAlias.rosetta"));

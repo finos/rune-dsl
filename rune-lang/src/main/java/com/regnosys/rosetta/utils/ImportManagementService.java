@@ -5,6 +5,7 @@ import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.Import;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
+import com.regnosys.rosetta.parsing.RosettaNameEscaper;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -27,6 +28,8 @@ public class ImportManagementService {
 	RosettaEcoreUtil rosettaEcoreUtil;
 	@Inject
 	IQualifiedNameProvider qualifiedNameProvider;
+	@Inject
+	RosettaNameEscaper nameEscaper;
 	
 	private Comparator<Import> importComparator = Comparator.comparing(Import::getImportedNamespace, Comparator.nullsLast(String::compareTo));
 
@@ -121,9 +124,10 @@ public class ImportManagementService {
 					sortedImportsText.append(lineSeparator);
 				}
 			}
-			sortedImportsText.append("import ").append(imp.getImportedNamespace());
+			// The model holds unescaped names, so escape them again on the way back into the document.
+			sortedImportsText.append("import ").append(nameEscaper.escapeQualifiedName(imp.getImportedNamespace()));
 			if (imp.getNamespaceAlias() != null) {
-				sortedImportsText.append(" as ").append(imp.getNamespaceAlias());
+				sortedImportsText.append(" as ").append(nameEscaper.escapeName(imp.getNamespaceAlias()));
 			}
 			sortedImportsText.append(lineSeparator);
 			
