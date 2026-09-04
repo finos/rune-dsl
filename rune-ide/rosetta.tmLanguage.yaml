@@ -585,8 +585,9 @@ repository:
         - include: '#comment'
         # The reference may be either a serialization-format enum value or a schema name,
         # so use a generic identifier scope rather than an enum-member-specific one.
+        # A schema may be referred to by its qualified name.
         - name: variable.other.rosetta
-          match: '{{identifier}}'
+          match: '{{qualifiedIdentifier}}'
 
       prefixAnnotationBody:
         name: meta.annotated.prefix.rosetta
@@ -678,7 +679,7 @@ repository:
 
       customAnnotationBody:
         name: meta.annotated.rosetta
-        begin: '{{identifier}}'
+        begin: '{{qualifiedIdentifier}}'
         beginCaptures:
           0: { name: variable.annotation.rosetta }
         end: (?=\])|{{sectionEnd}}
