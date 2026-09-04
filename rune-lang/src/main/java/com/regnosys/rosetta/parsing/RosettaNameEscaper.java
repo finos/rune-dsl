@@ -67,6 +67,14 @@ public class RosettaNameEscaper {
 		return qualifiedNameConverter.toString(qualifiedName);
 	}
 
+	/**
+	 * The name a dotted name written as Rune source stands for, e.g. {@code ^namespace.foo}
+	 * becomes {@code namespace.foo}.
+	 */
+	public String unescapeQualifiedName(String qualifiedName) {
+		return qualifiedNameConverter.toValue(qualifiedName, null);
+	}
+
 	EscapableIDValueConverter getValidIDConverter() {
 		return validIDConverter;
 	}

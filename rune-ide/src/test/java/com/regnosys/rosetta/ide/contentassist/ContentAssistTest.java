@@ -1,13 +1,82 @@
 package com.regnosys.rosetta.ide.contentassist;
 
 import com.regnosys.rosetta.ide.tests.AbstractRosettaLanguageServerTest;
+import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.xtext.testing.TestCompletionConfiguration;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Map;
 
 // TODO: fix completion
 public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
+    @Test
+    void testCompletionFindsAnEscapedNameOnceTheCaretIsTyped() {
+        // Xtext matches a proposal against what has been typed literally, so `^type` was offered
+        // for `ty` but not for `^ty` - typing the caret emptied the completion list.
+        assertProposes("namespace a\n\ntype ^type:\n\ntype Foo extends ^ty\n", 4, 20, "^type");
+    }
+
+    @Test
+    void testCompletionFindsAnEscapedNameWithoutTheCaret() {
+        assertProposes("namespace a\n\ntype ^type:\n\ntype Foo extends ty\n", 4, 19, "^type");
+    }
+
+    @Test
+    void testCompletionEscapesAnOverriddenAttributeName() {
+        assertProposes("namespace a\n\ntype Super:\n    ^type string (1..1)\n\ntype Sub extends Super:\n    override \n",
+                6, 13, "^type");
+    }
+
+    private void assertProposes(String model, int line, int column, String expected) {
+        testCompletion(it -> {
+            it.setModel(model);
+            it.setLine(line);
+            it.setColumn(column);
+            it.setAssertCompletionList(completions -> {
+                List<String> insertedText = completions.getItems().stream()
+                        .map(ContentAssistTest::insertedText)
+                        .toList();
+                Assertions.assertTrue(insertedText.contains(expected),
+                        "Expected a proposal inserting `" + expected + "`, but got " + insertedText);
+            });
+        });
+    }
+
+    @Test
+    void testCompletionEscapesAKeywordName() {
+        String model = """
+                namespace a
+                
+                type ^type:
+                
+                type Foo extends\s
+                """;
+
+        testCompletion(it -> {
+            it.setModel(model);
+            it.setLine(4);
+            it.setColumn(17);
+            it.setAssertCompletionList(completions -> {
+                List<String> insertedText = completions.getItems().stream()
+                        .map(ContentAssistTest::insertedText)
+                        .toList();
+                Assertions.assertTrue(insertedText.contains("^type"),
+                        "Expected a proposal inserting `^type`, but got " + insertedText);
+                Assertions.assertFalse(insertedText.contains("type"),
+                        "A proposal inserting the unescaped name `type` does not parse: " + insertedText);
+            });
+        });
+    }
+
+    private static String insertedText(CompletionItem item) {
+        if (item.getTextEdit() != null && item.getTextEdit().isLeft()) {
+            return item.getTextEdit().getLeft().getNewText();
+        }
+        return item.getInsertText() != null ? item.getInsertText() : item.getLabel();
+    }
+
     @Test
     void testSwitchOnComplexType() {
         String model = """
