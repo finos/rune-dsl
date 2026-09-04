@@ -49,7 +49,7 @@ public class RosettaValueConverterService extends DefaultTerminalConverters {
 	
 	@ValueConverter(rule = "QualifiedNameWithWildcard")
 	public IValueConverter<String> getQualifiedNameWithWildcardConverter() {
-		return nameEscaper.getQualifiedNameConverter();
+		return nameEscaper.getImportedNamespaceConverter();
 	}
 	
 	@ValueConverter(rule = "Integer")

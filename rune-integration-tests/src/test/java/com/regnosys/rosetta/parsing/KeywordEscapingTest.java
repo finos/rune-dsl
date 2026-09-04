@@ -78,6 +78,10 @@ public class KeywordEscapingTest {
 		// Nothing that reaches a value converter should end up in the document unchecked.
 		assertThrows(ValueConverterException.class, () -> valueConverter.toString("only-element", "ValidID"));
 		assertThrows(ValueConverterException.class, () -> valueConverter.toString("foo.only-element", "QualifiedName"));
+		// A wildcard is a name only at the end of an import.
+		assertThrows(ValueConverterException.class, () -> valueConverter.toString("foo.*", "QualifiedName"));
+		assertThrows(ValueConverterException.class,
+				() -> valueConverter.toString("foo.*.bar", "QualifiedNameWithWildcard"));
 	}
 
 	@Test

@@ -38,6 +38,7 @@ public class RosettaNameEscaper {
 	private final EscapableIDValueConverter validIDConverter;
 	private final EscapableIDValueConverter typeParameterValidIDConverter;
 	private final EscapableQualifiedNameValueConverter qualifiedNameConverter;
+	private final EscapableQualifiedNameValueConverter importedNamespaceConverter;
 
 	@Inject
 	public RosettaNameEscaper(RosettaGrammarAccess grammarAccess) {
@@ -45,7 +46,8 @@ public class RosettaNameEscaper {
 		this.validIDConverter = new EscapableIDValueConverter(grammar, grammarAccess.getValidIDRule());
 		this.typeParameterValidIDConverter =
 				new EscapableIDValueConverter(grammar, grammarAccess.getTypeParameterValidIDRule());
-		this.qualifiedNameConverter = new EscapableQualifiedNameValueConverter(validIDConverter);
+		this.qualifiedNameConverter = new EscapableQualifiedNameValueConverter(validIDConverter, false);
+		this.importedNamespaceConverter = new EscapableQualifiedNameValueConverter(validIDConverter, true);
 	}
 
 	/**
@@ -58,13 +60,24 @@ public class RosettaNameEscaper {
 	}
 
 	/**
-	 * Writes a dotted name as Rune source, e.g. {@code namespace.foo.*} becomes
-	 * {@code ^namespace.foo.*}. Each segment is escaped on its own; a trailing {@code *} is kept.
+	 * Writes a dotted name as Rune source, e.g. {@code namespace.foo} becomes
+	 * {@code ^namespace.foo}. Each segment is escaped on its own.
 	 *
 	 * @throws ValueConverterException if a segment cannot be written as a Rune identifier.
 	 */
 	public String escapeQualifiedName(String qualifiedName) {
 		return qualifiedNameConverter.toString(qualifiedName);
+	}
+
+	/**
+	 * Writes the namespace of an import as Rune source, e.g. {@code namespace.foo.*} becomes
+	 * {@code ^namespace.foo.*}. As {@link #escapeQualifiedName(String)}, except that the name may
+	 * end in a wildcard.
+	 *
+	 * @throws ValueConverterException if a segment cannot be written as a Rune identifier.
+	 */
+	public String escapeImportedNamespace(String importedNamespace) {
+		return importedNamespaceConverter.toString(importedNamespace);
 	}
 
 	/**
@@ -85,5 +98,9 @@ public class RosettaNameEscaper {
 
 	EscapableQualifiedNameValueConverter getQualifiedNameConverter() {
 		return qualifiedNameConverter;
+	}
+
+	EscapableQualifiedNameValueConverter getImportedNamespaceConverter() {
+		return importedNamespaceConverter;
 	}
 }

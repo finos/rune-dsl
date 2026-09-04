@@ -91,6 +91,23 @@ public class ResourceFormatterServiceTest {
 	}
 
 	@Test
+	void formatDocumentWithAnIncompleteImport() throws IOException {
+		// `import ` on its own, as it looks while it is being typed, names no namespace. The
+		// import block is rebuilt from the model, and there is no text to write back for it.
+		String content = "namespace test\n\nimport \nimport foo.^type.*\n\ntype Foo:\n";
+		ResourceSet resourceSet = resourceSetProvider.get();
+		Resource resource = resourceSet.createResource(URI.createURI("dummy:/incomplete-import.rosetta"));
+		resource.load(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)), null);
+
+		List<String> formattedText = new ArrayList<>();
+		formatterService.formatCollection(List.of(resource), (r, formattedContent) -> formattedText.add(formattedContent));
+
+		Assertions.assertEquals(1, formattedText.size());
+		Assertions.assertTrue(formattedText.get(0).contains("import foo.^type.*"),
+				"the complete import should survive: " + formattedText.get(0));
+	}
+
+	@Test
 	void formatDocumentKeepsItsOwnLineSeparator() throws IOException {
 		// A document written with CRLF line endings (e.g. by an editor on Windows)
 		// must be formatted with CRLF throughout, independent of the platform.

@@ -97,6 +97,11 @@ public class RosettaContentProposalProvider extends IdeContentProposalProvider {
 				if (data.getSuperType() != null) {
 					ecoreUtil.getAllAttributes(data.getSuperType())
 						.forEach((superAttr) -> {
+							// An attribute still being typed has no name to propose, and escaping
+							// one would throw rather than fail the completion quietly.
+							if (superAttr.getName() == null) {
+								return;
+							}
 							ContentAssistEntry proposal = getProposalCreator().createProposal(nameEscaper.escapeName(superAttr.getName()), context);
 							int priority = getProposalPriorities().getCrossRefPriority(EObjectDescription.create(superAttr.getName(), superAttr), proposal);
 							acceptor.accept(proposal, priority);

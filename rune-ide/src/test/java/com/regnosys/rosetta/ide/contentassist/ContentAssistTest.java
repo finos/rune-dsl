@@ -13,13 +13,13 @@ import java.util.Map;
 public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
     @Test
     void testCompletionFindsAnEscapedNameOnceTheCaretIsTyped() {
-        // Xtext matches a proposal against what has been typed literally, so `^type` was offered
-        // for `ty` but not for `^ty` - typing the caret emptied the completion list.
         assertProposes("namespace a\n\ntype ^type:\n\ntype Foo extends ^ty\n", 4, 20, "^type");
     }
 
     @Test
     void testCompletionFindsAnEscapedNameWithoutTheCaret() {
+        // Xtext matches a proposal against what has been typed literally, so `^type` is offered
+        // for `^ty` but not for `ty`. This is what `RosettaContentProposalCreator` fixes.
         assertProposes("namespace a\n\ntype ^type:\n\ntype Foo extends ty\n", 4, 19, "^type");
     }
 

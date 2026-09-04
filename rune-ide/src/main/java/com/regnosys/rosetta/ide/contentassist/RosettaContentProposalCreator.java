@@ -26,8 +26,9 @@ import jakarta.inject.Inject;
 
 /**
  * Matches an escaped name against what the user has typed so far, whether or not they have typed
- * the caret. Xtext compares the two literally, so a proposal of {@code ^type} was offered for
- * {@code ty} but not for {@code ^ty} - the moment the caret is typed, the completion list empties.
+ * the caret. Xtext compares the two literally, so a proposal of {@code ^type} is offered for
+ * {@code ^ty} but not for {@code ty} - without this class, an escaped name can only be completed
+ * by typing its caret first.
  */
 public class RosettaContentProposalCreator extends IdeContentProposalCreator {
 	private static final String ESCAPE = "^";
