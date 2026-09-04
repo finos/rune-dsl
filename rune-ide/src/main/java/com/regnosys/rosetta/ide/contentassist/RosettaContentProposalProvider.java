@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Predicate;
 import com.regnosys.rosetta.RosettaEcoreUtil;
+import com.regnosys.rosetta.parsing.RosettaNameEscaper;
 import com.regnosys.rosetta.rosetta.RosettaType;
 import com.regnosys.rosetta.rosetta.expression.AsOperation;
 import com.regnosys.rosetta.rosetta.expression.ExpressionPackage;
@@ -40,6 +41,8 @@ public class RosettaContentProposalProvider extends IdeContentProposalProvider {
 	private RosettaTypeProvider typeProvider;
 	@Inject
 	private TypeSystem typeSystem;
+	@Inject
+	private RosettaNameEscaper nameEscaper;
 
 	@Override
 	protected void _createProposals(RuleCall ruleCall, ContentAssistContext context, IIdeContentProposalAcceptor acceptor) {
@@ -94,7 +97,12 @@ public class RosettaContentProposalProvider extends IdeContentProposalProvider {
 				if (data.getSuperType() != null) {
 					ecoreUtil.getAllAttributes(data.getSuperType())
 						.forEach((superAttr) -> {
-							ContentAssistEntry proposal = getProposalCreator().createProposal(superAttr.getName(), context);
+							// An attribute still being typed has no name to propose, and escaping
+							// one would throw rather than fail the completion quietly.
+							if (superAttr.getName() == null) {
+								return;
+							}
+							ContentAssistEntry proposal = getProposalCreator().createProposal(nameEscaper.escapeName(superAttr.getName()), context);
 							int priority = getProposalPriorities().getCrossRefPriority(EObjectDescription.create(superAttr.getName(), superAttr), proposal);
 							acceptor.accept(proposal, priority);
 						});

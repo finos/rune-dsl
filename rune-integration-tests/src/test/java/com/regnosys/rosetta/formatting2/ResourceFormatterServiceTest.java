@@ -64,6 +64,12 @@ public class ResourceFormatterServiceTest {
 	}
 
 	@Test
+	void formatKeepsEscapedNamesEscaped() throws IOException, URISyntaxException {
+		testFormatting(List.of("formatting-test/input/escapedNames.rosetta"),
+				List.of("formatting-test/expected/escapedNames.rosetta"));
+	}
+
+	@Test
 	void formatSingleDocument() throws IOException, URISyntaxException {
 		testFormatting(List.of("formatting-test/input/typeAlias.rosetta"),
 				List.of("formatting-test/expected/typeAlias.rosetta"));
@@ -82,6 +88,54 @@ public class ResourceFormatterServiceTest {
 	void formatNestedConstructor() throws IOException, URISyntaxException {
 		testFormatting(List.of("formatting-test/input/nestedConstructor.rosetta"),
 				List.of("formatting-test/expected/nestedConstructor.rosetta"));
+	}
+
+	@Test
+	void formatDocumentWithAnIncompleteImport() throws IOException {
+		// `import ` on its own, as it looks while it is being typed, names no namespace. The
+		// import block is rebuilt from the model, so it has to survive having no name to write.
+		String content = """
+				namespace test
+
+				import\s
+				import foo.^type.*
+
+				type Foo:
+				""";
+		ResourceSet resourceSet = resourceSetProvider.get();
+		Resource resource = resourceSet.createResource(URI.createURI("dummy:/incomplete-import.rosetta"));
+		resource.load(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)), null);
+
+		List<String> formattedText = new ArrayList<>();
+		formatterService.formatCollection(List.of(resource), (r, formattedContent) -> formattedText.add(formattedContent));
+
+		Assertions.assertEquals(1, formattedText.size());
+		Assertions.assertTrue(formattedText.get(0).contains("import foo.^type.*"),
+				"the complete import should survive: " + formattedText.get(0));
+		Assertions.assertTrue(formattedText.get(0).contains("import\n"),
+				"the line being typed should survive: " + formattedText.get(0));
+	}
+
+	@Test
+	void formatDocumentWhoseOnlyImportIsIncomplete() throws IOException {
+		// Nothing else holds the import block open, so this is where a lost line would show.
+		String content = """
+				namespace test
+
+				import\s
+
+				type Foo:
+				""";
+		ResourceSet resourceSet = resourceSetProvider.get();
+		Resource resource = resourceSet.createResource(URI.createURI("dummy:/only-incomplete-import.rosetta"));
+		resource.load(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)), null);
+
+		List<String> formattedText = new ArrayList<>();
+		formatterService.formatCollection(List.of(resource), (r, formattedContent) -> formattedText.add(formattedContent));
+
+		Assertions.assertEquals(1, formattedText.size());
+		Assertions.assertTrue(formattedText.get(0).contains("import"),
+				"the line being typed should survive: " + formattedText.get(0));
 	}
 
 	@Test
