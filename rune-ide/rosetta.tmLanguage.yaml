@@ -626,7 +626,7 @@ repository:
           patterns:
           - include: '#comment'
           - include: '#annotationPath'
-          - begin: '{{identifier}}'
+          - begin: '{{qualifiedIdentifier}}'
             beginCaptures:
               0: { name: entity.name.document.body.rosetta }
             end: '{{docReferenceAnnotationSectionEnd}}'
@@ -634,7 +634,7 @@ repository:
             - include: '#comment'
             - include: '#string'
             - name: entity.name.document.rosetta # need semantic tokens to distinguish between corpus and segment
-              match: '{{identifier}}'
+              match: '{{qualifiedIdentifier}}'
         - name: keyword.other.rosetta
           match: '{{docReferenceAnnotationSection}}'
         - include: '#string'
@@ -649,7 +649,7 @@ repository:
         - include: '#comment'
         - include: '#annotationPath'
         - name: entity.name.rule.rosetta
-          match: '{{identifier}}'
+          match: '{{qualifiedIdentifier}}'
 
       labelAnnotationBody:
         name: meta.annotated.label.rosetta
