@@ -137,6 +137,43 @@ public class KeywordEscapingTest {
 	}
 
 	@Test
+	void testCanReferToAnEscapedRuleFromARuleReference() {
+		// An annotation refers to a rule by qualified name, and `rule` is a keyword, so both the
+		// namespace and the rule's own name can need escaping.
+		List<RosettaModel> models = modelHelper.parseRosettaWithNoErrors("""
+				namespace my.^rule
+
+				reporting rule ^rule from string:
+					item
+				""", """
+				namespace test
+
+				type Foo:
+					attr string (1..1)
+						[ruleReference my.^rule.^rule]
+				""");
+		assertNoUnresolvedReferences(models.get(1));
+	}
+
+	@Test
+	void testCanReferToEscapedDocumentElementsFromADocReference() {
+		List<RosettaModel> models = modelHelper.parseRosettaWithNoErrors("""
+				namespace my.^rule
+
+				body Authority ^body
+				corpus Regulation "cn" ^corpus
+				segment ^segment
+				""", """
+				namespace test
+
+				type Foo:
+					[docReference my.^rule.^body my.^rule.^corpus my.^rule.^segment "x"]
+					attr string (1..1)
+				""");
+		assertNoUnresolvedReferences(models.get(1));
+	}
+
+	@Test
 	void testCanEscapeATypeParameter() {
 		RosettaModel model = modelHelper.parseRosettaWithNoIssues("""
 				namespace test
