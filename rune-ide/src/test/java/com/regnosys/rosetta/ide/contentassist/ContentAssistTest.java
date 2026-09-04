@@ -13,20 +13,39 @@ import java.util.Map;
 public class ContentAssistTest extends AbstractRosettaLanguageServerTest {
     @Test
     void testCompletionFindsAnEscapedNameOnceTheCaretIsTyped() {
-        assertProposes("namespace a\n\ntype ^type:\n\ntype Foo extends ^ty\n", 4, 20, "^type");
+        assertProposes("""
+                namespace a
+
+                type ^type:
+
+                type Foo extends ^ty
+                """, 4, 20, "^type");
     }
 
     @Test
     void testCompletionFindsAnEscapedNameWithoutTheCaret() {
         // Xtext matches a proposal against what has been typed literally, so `^type` is offered
         // for `^ty` but not for `ty`. This is what `RosettaContentProposalCreator` fixes.
-        assertProposes("namespace a\n\ntype ^type:\n\ntype Foo extends ty\n", 4, 19, "^type");
+        assertProposes("""
+                namespace a
+
+                type ^type:
+
+                type Foo extends ty
+                """, 4, 19, "^type");
     }
 
     @Test
     void testCompletionEscapesAnOverriddenAttributeName() {
-        assertProposes("namespace a\n\ntype Super:\n    ^type string (1..1)\n\ntype Sub extends Super:\n    override \n",
-                6, 13, "^type");
+        assertProposes("""
+                namespace a
+
+                type Super:
+                    ^type string (1..1)
+
+                type Sub extends Super:
+                    override\s
+                """, 6, 13, "^type");
     }
 
     private void assertProposes(String model, int line, int column, String expected) {
