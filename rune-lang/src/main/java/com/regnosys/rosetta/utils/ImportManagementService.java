@@ -5,6 +5,7 @@ import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.Import;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
+import com.regnosys.rosetta.parsing.RosettaNameEscaper;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -27,6 +28,8 @@ public class ImportManagementService {
 	RosettaEcoreUtil rosettaEcoreUtil;
 	@Inject
 	IQualifiedNameProvider qualifiedNameProvider;
+	@Inject
+	RosettaNameEscaper nameEscaper;
 	
 	private Comparator<Import> importComparator = Comparator.comparing(Import::getImportedNamespace, Comparator.nullsLast(String::compareTo));
 
@@ -113,17 +116,25 @@ public class ImportManagementService {
 		
 		Import previousImport = null;
 		for (Import imp : imports) {
+			String importedNamespace = imp.getImportedNamespace();
+			if (importedNamespace == null) {
+				// `import ` on its own, as it looks while it is being typed. There is no name to
+				// write, and dropping the line would delete what the user is typing on.
+				sortedImportsText.append("import").append(lineSeparator);
+				continue;
+			}
 			// if previous import comes from a different top-level package, insert blank line
 			if (previousImport != null) {
 				String previousFirstSegment = previousImport.getImportedNamespace().split("\\.")[0];
-				String currentFirstSegment = imp.getImportedNamespace().split("\\.")[0];
+				String currentFirstSegment = importedNamespace.split("\\.")[0];
 				if (!previousFirstSegment.equals(currentFirstSegment)) {
 					sortedImportsText.append(lineSeparator);
 				}
 			}
-			sortedImportsText.append("import ").append(imp.getImportedNamespace());
+			// The model holds unescaped names, so escape them again on the way back into the document.
+			sortedImportsText.append("import ").append(nameEscaper.escapeImportedNamespace(importedNamespace));
 			if (imp.getNamespaceAlias() != null) {
-				sortedImportsText.append(" as ").append(imp.getNamespaceAlias());
+				sortedImportsText.append(" as ").append(nameEscaper.escapeName(imp.getNamespaceAlias()));
 			}
 			sortedImportsText.append(lineSeparator);
 			
