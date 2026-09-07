@@ -21,6 +21,7 @@ import java.util.List;
 import org.eclipse.xtext.AbstractRule;
 import org.eclipse.xtext.EcoreUtil2;
 import org.eclipse.xtext.Keyword;
+import org.eclipse.xtext.conversion.IValueConverter;
 import org.eclipse.xtext.conversion.ValueConverterException;
 import org.eclipse.xtext.conversion.impl.IDValueConverter;
 
@@ -79,32 +80,48 @@ public class RosettaNameEscaper {
 
 	/**
 	 * Writes a single name as Rune source, e.g. {@code type} becomes {@code ^type}.
-	 *
-	 * @throws ValueConverterException if the name cannot be written as a Rune identifier.
 	 */
 	public String escapeName(String name) {
-		return validIDConverter.toString(name);
+		return write(validIDConverter, name);
 	}
 
 	/**
 	 * Writes a dotted name as Rune source, e.g. {@code namespace.foo} becomes
 	 * {@code ^namespace.foo}. Each segment is escaped on its own.
-	 *
-	 * @throws ValueConverterException if a segment cannot be written as a Rune identifier.
 	 */
 	public String escapeQualifiedName(String qualifiedName) {
-		return qualifiedNameConverter.toString(qualifiedName);
+		return write(qualifiedNameConverter, qualifiedName);
 	}
 
 	/**
 	 * Writes the namespace of an import as Rune source, e.g. {@code namespace.foo.*} becomes
 	 * {@code ^namespace.foo.*}. As {@link #escapeQualifiedName(String)}, except that the name may
 	 * end in a wildcard.
-	 *
-	 * @throws ValueConverterException if a segment cannot be written as a Rune identifier.
 	 */
 	public String escapeImportedNamespace(String importedNamespace) {
-		return importedNamespaceConverter.toString(importedNamespace);
+		return write(importedNamespaceConverter, importedNamespace);
+	}
+
+	/**
+	 * Escapes a name for a caller writing it into a document, giving back a name that cannot be
+	 * written as Rune source unchanged rather than refusing it.
+	 *
+	 * <p>A name that cannot be written is not a bug to report: it is what a name looks like while
+	 * it is being typed. {@code import foo.} with the caret after the dot leaves an empty last
+	 * segment in the model, and every caller here runs on a document that is being edited -
+	 * organising imports, proposing a completion - so throwing takes down the whole edit and
+	 * deletes the line the user is working on. Writing the name back as it stands leaves it be.
+	 *
+	 * <p>This is why the escape methods are the ones to call by hand. The parser and the
+	 * serializer go to the converters directly, and there a name that cannot be written is a real
+	 * error: the serializer would otherwise emit source that does not parse back.
+	 */
+	private static String write(IValueConverter<String> converter, String name) {
+		try {
+			return converter.toString(name);
+		} catch (ValueConverterException e) {
+			return name;
+		}
 	}
 
 	/**

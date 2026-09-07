@@ -139,6 +139,34 @@ public class ResourceFormatterServiceTest {
 	}
 
 	@Test
+	void formatDocumentWithAHalfTypedImportedNamespace() throws IOException {
+		// `import foo.` as it looks with the caret after the dot: the model holds an empty last
+		// segment, which is not a name that can be written back. The import block is rebuilt from
+		// the model, so refusing to write it would abort the format for the whole document -
+		// taking the import beside it, and every other resource in the batch, with it.
+		String content = """
+				namespace test
+
+				import foo.
+				import bar.^type.*
+
+				type Foo:
+				""";
+		ResourceSet resourceSet = resourceSetProvider.get();
+		Resource resource = resourceSet.createResource(URI.createURI("dummy:/half-typed-import.rosetta"));
+		resource.load(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8)), null);
+
+		List<String> formattedText = new ArrayList<>();
+		formatterService.formatCollection(List.of(resource), (r, formattedContent) -> formattedText.add(formattedContent));
+
+		Assertions.assertEquals(1, formattedText.size());
+		Assertions.assertTrue(formattedText.get(0).contains("import foo."),
+				"the line being typed should survive: " + formattedText.get(0));
+		Assertions.assertTrue(formattedText.get(0).contains("import bar.^type.*"),
+				"the import beside it should survive: " + formattedText.get(0));
+	}
+
+	@Test
 	void formatDocumentKeepsItsOwnLineSeparator() throws IOException {
 		// A document written with CRLF line endings (e.g. by an editor on Windows)
 		// must be formatted with CRLF throughout, independent of the platform.

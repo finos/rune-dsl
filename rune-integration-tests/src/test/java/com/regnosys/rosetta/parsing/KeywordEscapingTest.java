@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -43,6 +44,8 @@ public class KeywordEscapingTest {
 	private RosettaGrammarAccess grammarAccess;
 	@Inject
 	private ModelHelper modelHelper;
+	@Inject
+	private RosettaNameEscaper nameEscaper;
 
 	// A single segment is covered for every rule by `testEveryRuleThatCanWriteANameEscapesKeywords`;
 	// these two are about the segments a qualified name is made of.
@@ -71,15 +74,27 @@ public class KeywordEscapingTest {
 	}
 
 	@Test
-	void testNameThatCannotBeWrittenIsRejected() {
-		// Nothing that reaches a value converter should end up in the document unchecked.
-		assertThrows(ValueConverterException.class, () -> valueConverter.toString("only-element", "ValidID"));
-		assertThrows(ValueConverterException.class, () -> valueConverter.toString("foo.only-element", "QualifiedName"));
+	void testNameThatCannotBeWrittenIsRejectedByAConverterAndLeftAloneByTheEscaper() {
+		// The two callers want opposite things from the same name, so each name is asserted
+		// against both. A converter feeds the serializer, which must not emit source that fails to
+		// parse back, so it refuses. An escaper feeds a document that is being edited, where a
+		// name that cannot be written is what a half-typed one looks like.
+		assertNotWritable("only-element", "ValidID", nameEscaper::escapeName);
+		assertNotWritable("foo.only-element", "QualifiedName", nameEscaper::escapeQualifiedName);
 		// A wildcard is a name only at the end of an import.
-		assertThrows(ValueConverterException.class, () -> valueConverter.toString("foo.*", "QualifiedName"));
-		assertThrows(ValueConverterException.class,
-				() -> valueConverter.toString("foo.*.bar", "QualifiedNameWithWildcard"));
-		assertThrows(ValueConverterException.class, () -> valueConverter.toString("*", "QualifiedNameWithWildcard"));
+		assertNotWritable("foo.*", "QualifiedName", nameEscaper::escapeQualifiedName);
+		assertNotWritable("foo.*.bar", "QualifiedNameWithWildcard", nameEscaper::escapeImportedNamespace);
+		assertNotWritable("*", "QualifiedNameWithWildcard", nameEscaper::escapeImportedNamespace);
+		// An empty segment, which is what `import foo.` leaves in the model while it is typed.
+		assertNotWritable("foo.", "QualifiedNameWithWildcard", nameEscaper::escapeImportedNamespace);
+		assertNotWritable("", "ValidID", nameEscaper::escapeName);
+	}
+
+	private void assertNotWritable(String name, String rule, UnaryOperator<String> escape) {
+		assertThrows(ValueConverterException.class, () -> valueConverter.toString(name, rule),
+				rule + " must refuse to write `" + name + "`");
+		assertEquals(name, escape.apply(name),
+				"escaping `" + name + "` must leave it alone rather than throw");
 	}
 
 	@Test

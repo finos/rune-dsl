@@ -17,13 +17,10 @@
 package com.regnosys.rosetta.ide.contentassist;
 
 import org.eclipse.xtext.CrossReference;
-import org.eclipse.xtext.conversion.ValueConverterException;
 import org.eclipse.xtext.ide.editor.contentassist.ContentAssistContext;
 import org.eclipse.xtext.ide.editor.contentassist.ContentAssistEntry;
 import org.eclipse.xtext.ide.editor.contentassist.IdeCrossrefProposalProvider;
 import org.eclipse.xtext.resource.IEObjectDescription;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.regnosys.rosetta.parsing.RosettaNameEscaper;
 
@@ -35,8 +32,6 @@ import jakarta.inject.Inject;
  * {@code type} has to insert {@code ^type}.
  */
 public class RosettaCrossrefProposalProvider extends IdeCrossrefProposalProvider {
-	private static final Logger LOGGER = LoggerFactory.getLogger(RosettaCrossrefProposalProvider.class);
-
 	@Inject
 	private RosettaNameEscaper nameEscaper;
 
@@ -45,20 +40,11 @@ public class RosettaCrossrefProposalProvider extends IdeCrossrefProposalProvider
 			ContentAssistContext context) {
 		// Same as `super`, except that the name is escaped before the proposal is created rather
 		// than after, so that it is the escaped name that is matched against what the user typed.
-		String name = escape(getQualifiedNameConverter().toString(candidate.getName()));
+		String name = nameEscaper.escapeQualifiedName(getQualifiedNameConverter().toString(candidate.getName()));
 		return getProposalCreator().createProposal(name, context, entry -> {
 			entry.setSource(candidate);
 			entry.setDescription(candidate.getEClass() != null ? candidate.getEClass().getName() : null);
 			entry.setKind(ContentAssistEntry.KIND_REFERENCE);
 		});
-	}
-
-	private String escape(String name) {
-		try {
-			return nameEscaper.escapeQualifiedName(name);
-		} catch (ValueConverterException e) {
-			LOGGER.warn("Cannot write '" + name + "' as a Rune name; proposing it unchanged.", e);
-			return name;
-		}
 	}
 }
