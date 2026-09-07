@@ -43,6 +43,7 @@ import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.RosettaScope;
 import com.regnosys.rosetta.rosetta.RosettaSegment;
 import com.regnosys.rosetta.rosetta.RosettaSynonym;
+import com.regnosys.rosetta.rosetta.RosettaSynonymBase;
 import com.regnosys.rosetta.rosetta.RosettaSynonymSource;
 import com.regnosys.rosetta.rosetta.Schema;
 import com.regnosys.rosetta.rosetta.RosettaTypeAlias;
@@ -50,18 +51,22 @@ import com.regnosys.rosetta.rosetta.TypeCall;
 import com.regnosys.rosetta.rosetta.TypeCallArgument;
 import com.regnosys.rosetta.rosetta.TypeParameter;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
-import com.regnosys.rosetta.rosetta.simple.Annotated;
 import com.regnosys.rosetta.rosetta.simple.Annotation;
+import com.regnosys.rosetta.rosetta.simple.AnnotationQualifier;
 import com.regnosys.rosetta.rosetta.simple.AnnotationRef;
 import com.regnosys.rosetta.rosetta.simple.Attribute;
+import com.regnosys.rosetta.rosetta.simple.BuiltinAnnotation;
 import com.regnosys.rosetta.rosetta.simple.Choice;
 import com.regnosys.rosetta.rosetta.simple.Condition;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.rosetta.simple.Function;
 import com.regnosys.rosetta.rosetta.simple.FunctionDispatch;
+import com.regnosys.rosetta.rosetta.simple.LabelAnnotation;
 import com.regnosys.rosetta.rosetta.simple.Operation;
+import com.regnosys.rosetta.rosetta.simple.RuleReferenceAnnotation;
 import com.regnosys.rosetta.rosetta.simple.Segment;
 import com.regnosys.rosetta.rosetta.simple.ShortcutDeclaration;
+import com.regnosys.rosetta.rosetta.simple.TransformAnnotation;
 import com.regnosys.rosetta.services.RosettaGrammarAccess;
 
 import jakarta.inject.Inject;
@@ -287,6 +292,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 		document.prepend(regionFor(ele).keyword(":"), IHiddenRegionFormatter::noSpace);
 		formattingUtil.indentInner(ele, document);
 		formatDefinition(ele, document);
+		formatAnnotations(ele, document);
 		Attribute firstAttribute = headOrNull(ele.getAttributes());
 		if (firstAttribute != null) {
 			document.format(document.prepend(firstAttribute, f -> f.setNewLines(1, 2, 2)));
@@ -305,15 +311,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 		document.prepend(regionFor(ele).keyword(":"), IHiddenRegionFormatter::noSpace);
 		formatDefinition(ele, document);
 		formattingUtil.indentInner(ele, document);
-		ele.getSynonyms().forEach(syn -> {
-			document.prepend(syn, IHiddenRegionFormatter::newLine);
-			document.format(syn);
-		});
 		formatAnnotations(ele, document);
-		ele.getReferences().forEach(ref -> {
-			document.prepend(ref, IHiddenRegionFormatter::newLine);
-			document.format(ref);
-		});
 		Attribute firstAttribute = headOrNull(ele.getAttributes());
 		if (firstAttribute != null) {
 			document.format(document.prepend(firstAttribute, f -> f.setNewLines(1, 2, 2)));
@@ -360,15 +358,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 		formattingUtil.indentInner(ele, document);
 		document.format(document.surround(ele.getTypeCall(), IHiddenRegionFormatter::oneSpace));
 		formatDefinition(ele, document);
-		ele.getReferences().forEach(ref -> {
-			document.prepend(ref, IHiddenRegionFormatter::newLine);
-			document.format(ref);
-		});
 		formatAnnotations(ele, document);
-		ele.getSynonyms().forEach(syn -> {
-			document.prepend(syn, IHiddenRegionFormatter::newLine);
-			document.format(syn);
-		});
 	}
 
 	private void format(TypeCall ele, IFormattableDocument document) {
@@ -394,6 +384,10 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 		document.prepend(regionFor(card).keyword(")"), IHiddenRegionFormatter::noSpace);
 	}
 
+	/**
+	 * Formats an annotation that always fits on one line, e.g. {@code [label for foo -> bar "My label"]}:
+	 * no space just inside the brackets, a single space between all other tokens.
+	 */
 	private EObject formatSingleLineAnnotation(EObject annotation, IFormattableDocument document) {
 		ISemanticRegion left = regionFor(annotation).keyword("[");
 		ISemanticRegion right = regionFor(annotation).keyword("]");
@@ -415,11 +409,32 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 		document.format(document.prepend(ele.getExpression(), IHiddenRegionFormatter::newLine));
 	}
 
-	private void formatAnnotations(Annotated ele, IFormattableDocument document) {
-		ele.getAnnotations().forEach(ann -> {
-			document.prepend(ann, IHiddenRegionFormatter::newLine);
-			document.format(ann);
-		});
+	/**
+	 * Formats every annotation of {@code ele} on a line of its own: annotation references such as
+	 * {@code [metadata scheme]}, doc references, labels, rule references, transform annotations and
+	 * synonyms.
+	 * <p>
+	 * This iterates over the actual contents of {@code ele} rather than over a fixed list of features,
+	 * so an element that gains one of the existing kinds of annotation is formatted without a change
+	 * here. A new kind of annotation still needs a clause in {@link #isAnnotation}.
+	 */
+	private void formatAnnotations(EObject ele, IFormattableDocument document) {
+		ele.eContents().stream()
+				.filter(RosettaFormatter::isAnnotation)
+				.forEach(annotation -> {
+					document.prepend(annotation, IHiddenRegionFormatter::newLine);
+					document.format(annotation);
+				});
+	}
+
+	private static boolean isAnnotation(EObject ele) {
+		// RosettaDocReference, LabelAnnotation and RuleReferenceAnnotation are all BuiltinAnnotations.
+		// RosettaSynonymBase covers RosettaSynonym, RosettaClassSynonym and RosettaEnumSynonym.
+		return ele instanceof AnnotationRef
+				|| ele instanceof BuiltinAnnotation
+				|| ele instanceof TransformAnnotation
+				|| ele instanceof RosettaSynonymBase
+				|| ele instanceof RosettaExternalSynonym;
 	}
 
 	private RosettaDefinable formatDefinition(RosettaDefinable ele, IFormattableDocument document) {
@@ -445,6 +460,27 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 		document.append(regionFor(ele).keyword(annotationRefGrammarAccess.getLeftSquareBracketKeyword_0()), NO_SPACE);
 		document.prepend(regionFor(ele).keyword(annotationRefGrammarAccess.getRightSquareBracketKeyword_3()), NO_SPACE);
 		document.prepend(regionFor(ele).assignment(annotationRefGrammarAccess.getAttributeAssignment_2_0()), ONE_SPACE);
+		ele.getQualifiers().forEach(qualifier -> {
+			document.prepend(qualifier, ONE_SPACE);
+			document.format(qualifier);
+		});
+	}
+
+	private void format(AnnotationQualifier ele, IFormattableDocument document) {
+		document.surround(regionFor(ele).keyword("="), NO_SPACE);
+		allRegionsFor(ele).keywords("->").forEach(arrow -> document.surround(arrow, NO_SPACE));
+	}
+
+	private void format(LabelAnnotation ele, IFormattableDocument document) {
+		formatSingleLineAnnotation(ele, document);
+	}
+
+	private void format(RuleReferenceAnnotation ele, IFormattableDocument document) {
+		formatSingleLineAnnotation(ele, document);
+	}
+
+	private void format(TransformAnnotation ele, IFormattableDocument document) {
+		formatSingleLineAnnotation(ele, document);
 	}
 
 	private void format(Function ele, IFormattableDocument document) {
@@ -476,10 +512,6 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 
 		formattingUtil.indentInner(ele, document);
 
-		ele.getReferences().forEach(ref -> {
-			document.prepend(ref, IHiddenRegionFormatter::newLine);
-			document.format(ref);
-		});
 		formatAnnotations(ele, document);
 
 		ISemanticRegion inputsKW = regionFor(ele).keyword(functionGrammarAccess.getInputsKeyword_6_0());
@@ -638,14 +670,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 		formatDefinition(ele, document);
 		formattingUtil.indentInner(ele, document);
 
-		ele.getReferences().forEach(ref -> {
-			document.prepend(ref, IHiddenRegionFormatter::newLine);
-			document.format(ref);
-		});
-		ele.getSynonyms().forEach(syn -> {
-			document.prepend(syn, IHiddenRegionFormatter::newLine);
-			document.format(syn);
-		});
+		formatAnnotations(ele, document);
 		RosettaEnumValue firstEnumValue = headOrNull(ele.getEnumValues());
 		if (firstEnumValue != null) {
 			document.format(document.prepend(firstEnumValue, f -> f.setNewLines(1, 2, 2)));
@@ -658,14 +683,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 
 	private void format(RosettaEnumValue rosettaEnumValue, IFormattableDocument document) {
 		formattingUtil.indentInner(formatDefinition(rosettaEnumValue, document), document);
-		rosettaEnumValue.getReferences().forEach(ref -> {
-			document.prepend(ref, IHiddenRegionFormatter::newLine);
-			document.format(ref);
-		});
-		rosettaEnumValue.getEnumSynonyms().forEach(syn -> {
-			document.prepend(syn, IHiddenRegionFormatter::newLine);
-			document.format(syn);
-		});
+		formatAnnotations(rosettaEnumValue, document);
 	}
 
 	private void format(RosettaEnumSynonym rosettaEnumSynonym, IFormattableDocument document) {
@@ -702,10 +720,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 
 		formattingUtil.indentInner(ele, document);
 
-		ele.getReferences().forEach(ref -> { // TODO: format references
-			document.prepend(ref, IHiddenRegionFormatter::newLine);
-			document.format(ref);
-		});
+		formatAnnotations(ele, document);
 
 		document.format(document.prepend(ele.getExpression(), IHiddenRegionFormatter::newLine));
 		if (ele.getIdentifier() != null) {
@@ -803,10 +818,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 						.feature(RosettaPackage.Literals.ROSETTA_EXTERNAL_REGULAR_ATTRIBUTE__OPERATOR),
 				IHiddenRegionFormatter::oneSpace);
 		formattingUtil.indentInner(externalRegularAttribute, document);
-		externalRegularAttribute.getExternalSynonyms().forEach(syn -> {
-			document.prepend(syn, IHiddenRegionFormatter::newLine);
-			document.format(syn);
-		});
+		formatAnnotations(externalRegularAttribute, document);
 	}
 
 	private void format(RosettaExternalEnumValue externalEnumValue, IFormattableDocument document) {
@@ -815,10 +827,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 						.feature(RosettaPackage.Literals.ROSETTA_EXTERNAL_ENUM_VALUE__OPERATOR),
 				IHiddenRegionFormatter::oneSpace);
 		formattingUtil.indentInner(externalEnumValue, document);
-		externalEnumValue.getExternalEnumSynonyms().forEach(syn -> {
-			document.prepend(syn, IHiddenRegionFormatter::newLine);
-			document.format(syn);
-		});
+		formatAnnotations(externalEnumValue, document);
 	}
 
 	private void indentedBraces(EObject eObject, IFormattableDocument document) {
