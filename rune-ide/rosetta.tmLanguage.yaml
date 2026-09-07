@@ -622,8 +622,9 @@ repository:
         - include: '#comment'
         # The reference may be either a serialization-format enum value or a schema name,
         # so use a generic identifier scope rather than an enum-member-specific one.
+        # A schema may be referred to by its qualified name.
         - name: variable.other.rosetta
-          match: '{{identifier}}'
+          match: '{{qualifiedIdentifier}}'
 
       prefixAnnotationBody:
         name: meta.annotated.prefix.rosetta
@@ -721,7 +722,7 @@ repository:
           patterns:
           - include: '#comment'
           - include: '#annotationPath'
-          - begin: '{{identifier}}'
+          - begin: '{{qualifiedIdentifier}}'
             beginCaptures:
               0: { name: entity.name.document.body.rosetta }
             end: '{{docReferenceAnnotationSectionEnd}}'
@@ -729,7 +730,7 @@ repository:
             - include: '#comment'
             - include: '#string'
             - name: entity.name.document.rosetta # need semantic tokens to distinguish between corpus and segment
-              match: '{{identifier}}'
+              match: '{{qualifiedIdentifier}}'
         - name: keyword.other.rosetta
           match: '{{docReferenceAnnotationSection}}'
         - include: '#string'
@@ -744,7 +745,7 @@ repository:
         - include: '#comment'
         - include: '#annotationPath'
         - name: entity.name.rule.rosetta
-          match: '{{identifier}}'
+          match: '{{qualifiedIdentifier}}'
 
       labelAnnotationBody:
         name: meta.annotated.label.rosetta
@@ -774,7 +775,7 @@ repository:
 
       customAnnotationBody:
         name: meta.annotated.rosetta
-        begin: '{{identifier}}'
+        begin: '{{qualifiedIdentifier}}'
         beginCaptures:
           0: { name: variable.annotation.rosetta }
         end: (?=\])|{{sectionEnd}}

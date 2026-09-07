@@ -98,4 +98,49 @@ public class RosettaCrossReferencingTest {
 		modelHelper.parseRosettaWithNoIssues(model1, model2);
 		modelHelper.parseRosettaWithNoIssues(model2, model1);
 	}
+
+	@Test
+	void testFullyQualifiedSchemaCanBeUsedInTransformAnnotation() {
+		String schemaModel = """
+			namespace test.formats
+			
+			schema mySchema XML
+			""";
+		
+		String functionModel = """
+			namespace test.foo
+			
+			type Bar:
+				n int (1..1)
+			
+			func Ingest:
+				[ingest test.formats.mySchema]
+				inputs:
+					input string (1..1)
+				output:
+					result Bar (1..1)
+				set result -> n: 1
+			""";
+		
+		modelHelper.parseRosettaWithNoIssues(schemaModel, functionModel);
+	}
+	
+	@Test
+	void testFullyQualifiedAnnotationCanBeUsedInAnnotationRef() {
+		String annotationModel = """
+			namespace test.annotations
+			
+			annotation myAnnotation: <"An annotation.">
+			""";
+		
+		String typeModel = """
+			namespace test.foo
+			
+			type A:
+				[test.annotations.myAnnotation]
+				n int (1..1)
+			""";
+		
+		modelHelper.parseRosettaWithNoIssues(annotationModel, typeModel);
+	}
 }
