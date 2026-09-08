@@ -3,7 +3,9 @@ package com.regnosys.rosetta.validation.names;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
+import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions;
 import com.regnosys.rosetta.rosetta.simple.*;
+import com.regnosys.rosetta.validation.RosettaIssueCodes;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.eclipse.emf.ecore.EClass;
@@ -11,6 +13,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -64,19 +67,42 @@ public class RosettaUniqueNamesConfig {
         
         // Check function symbols have a unique name
         addLocalCheck(RosettaPackage.eINSTANCE.getRosettaSymbol(), RosettaSymbol.class, this::getFunctionContainer, this::getFunctionSymbols, true);
+
+        // Check conditions in a type or function have a unique name. This is a warning rather than an error,
+        // because some existing production models already have duplicate condition names.
+        addLocalCheck(SimplePackage.eINSTANCE.getCondition(), Condition.class, this::getConditionContainer, this::getConditionSiblings, true,
+                DuplicationCluster.Severity.WARNING, RosettaIssueCodes.DUPLICATE_CONDITION_NAME);
     }
-    
+
     private Data getDirectDataContainer(Attribute attr) {
         return containerOfType(attr, Data.class);
     }
-    
+
     private Function getFunctionContainer(RosettaSymbol symbol) {
         return EcoreUtil2.getContainerOfType(symbol, Function.class);
     }
     private Iterable<RosettaSymbol> getFunctionSymbols(Function function) {
         return EcoreUtil2.getAllContentsOfType(function, RosettaSymbol.class);
     }
-    
+
+    private Object getConditionContainer(Condition condition) {
+        EObject container = condition.eContainer();
+        if (container instanceof Function function) {
+            return new ConditionListKey(function, condition.isPostCondition());
+        }
+        return container;
+    }
+    private Iterable<Condition> getConditionSiblings(Object container) {
+        if (container instanceof ConditionListKey key) {
+            return key.postCondition() ? key.function().getPostConditions() : key.function().getConditions();
+        }
+        if (container instanceof RosettaTypeWithConditions typeWithConditions) {
+            return typeWithConditions.getConditions();
+        }
+        return List.of();
+    }
+    private record ConditionListKey(Function function, boolean postCondition) {}
+
     private <T> T containerOfType(EObject eObject, Class<T> clazz) {
         EObject parent = eObject.eContainer();
         if (clazz.isInstance(parent)) {
@@ -93,9 +119,15 @@ public class RosettaUniqueNamesConfig {
     }
     
     protected void addGlobalCheck(EClass clusterType, boolean caseSensitive) {
-        duplicationClusters.put(clusterType, new DuplicationCluster(clusterType, scopes.global(), caseSensitive));
+        addGlobalCheck(clusterType, caseSensitive, DuplicationCluster.Severity.ERROR, null);
+    }
+    protected void addGlobalCheck(EClass clusterType, boolean caseSensitive, DuplicationCluster.Severity severity, String issueCode) {
+        duplicationClusters.put(clusterType, new DuplicationCluster(clusterType, scopes.global(), caseSensitive, severity, issueCode));
     }
     protected <Parent, Child extends RosettaNamed> void addLocalCheck(EClass clusterType, Class<Child> childClass, java.util.function.Function<Child, Parent> getParent, java.util.function.Function<Parent, Iterable<Child>> getChildren, boolean caseSensitive) {
-        duplicationClusters.put(clusterType, new DuplicationCluster(clusterType, scopes.local(childClass, getParent, getChildren), caseSensitive));
+        addLocalCheck(clusterType, childClass, getParent, getChildren, caseSensitive, DuplicationCluster.Severity.ERROR, null);
+    }
+    protected <Parent, Child extends RosettaNamed> void addLocalCheck(EClass clusterType, Class<Child> childClass, java.util.function.Function<Child, Parent> getParent, java.util.function.Function<Parent, Iterable<Child>> getChildren, boolean caseSensitive, DuplicationCluster.Severity severity, String issueCode) {
+        duplicationClusters.put(clusterType, new DuplicationCluster(clusterType, scopes.local(childClass, getParent, getChildren), caseSensitive, severity, issueCode));
     }
 }

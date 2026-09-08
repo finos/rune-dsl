@@ -46,4 +46,45 @@ public class ConditionValidatorTest extends AbstractValidatorTest {
 						x exists
 				""");
 	}
+
+	@Test
+	void shouldGenerateDuplicateConditionNameWarningForType() {
+		assertIssues("""
+				type Foo:
+					x string (0..1)
+					y string (0..1)
+
+					condition Bar:
+						x exists
+
+					condition Bar:
+						y exists
+				""", """
+				WARNING (RosettaIssueCodes.duplicateConditionName) 'Duplicate condition 'Bar' in type 'Foo'' at 8:12, length 3, on Condition
+				WARNING (RosettaIssueCodes.duplicateConditionName) 'Duplicate condition 'Bar' in type 'Foo'' at 11:12, length 3, on Condition
+				""");
+	}
+
+	@Test
+	void shouldGenerateDuplicateConditionNameWarningForFunction() {
+		assertIssues("""
+				func Foo:
+					inputs:
+						x string (0..1)
+					output:
+						result string (0..1)
+
+					condition Bar:
+						x exists
+
+					condition Bar:
+						x exists
+
+					set result:
+						x
+				""", """
+				WARNING (RosettaIssueCodes.duplicateConditionName) 'Duplicate condition 'Bar' in Function 'Foo'' at 10:12, length 3, on Condition
+				WARNING (RosettaIssueCodes.duplicateConditionName) 'Duplicate condition 'Bar' in Function 'Foo'' at 13:12, length 3, on Condition
+				""");
+	}
 }
