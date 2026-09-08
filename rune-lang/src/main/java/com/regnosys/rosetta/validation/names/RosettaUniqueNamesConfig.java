@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.validation.names;
 
+import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.RosettaNamed;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
 import com.regnosys.rosetta.rosetta.RosettaSymbol;
@@ -12,9 +13,12 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Configure which unique name checks to run.
@@ -22,11 +26,13 @@ import java.util.Map;
 @Singleton
 public class RosettaUniqueNamesConfig {
     private final ClusterScopes scopes;
+    private final RosettaEcoreUtil rosettaEcoreUtil;
     private final Map<EClass, DuplicationCluster> duplicationClusters = new HashMap<>();
-    
+
     @Inject
-    public RosettaUniqueNamesConfig(ClusterScopes scopes) {
+    public RosettaUniqueNamesConfig(ClusterScopes scopes, RosettaEcoreUtil rosettaEcoreUtil) {
         this.scopes = scopes;
+        this.rosettaEcoreUtil = rosettaEcoreUtil;
         initialize();
     }
     
@@ -68,8 +74,12 @@ public class RosettaUniqueNamesConfig {
         // Check function symbols have a unique name
         addLocalCheck(RosettaPackage.eINSTANCE.getRosettaSymbol(), RosettaSymbol.class, this::getFunctionContainer, this::getFunctionSymbols, true);
 
-        // Check conditions in a type or function have a unique name. This is a warning rather than an error,
-        // because some existing production models already have duplicate condition names.
+        // Check conditions in a type or function have a unique name. Conditions are inherited: the
+        // validation of a type runs the conditions of its super types as well, and a condition in a
+        // sub type does not override an equally named one in a super type - both are evaluated. So
+        // just like attributes, a condition name must also be unique across the type hierarchy.
+        // This is a warning rather than an error, because some existing production models already
+        // have duplicate condition names.
         addLocalCheck(SimplePackage.eINSTANCE.getCondition(), Condition.class, this::getConditionContainer, this::getConditionSiblings, true,
                 DuplicationCluster.Severity.WARNING, RosettaIssueCodes.DUPLICATE_CONDITION_NAME);
     }
@@ -86,6 +96,11 @@ public class RosettaUniqueNamesConfig {
     }
 
     private Object getConditionContainer(Condition condition) {
+        if (rosettaEcoreUtil.isConstraintCondition(condition)) {
+            // The name of a `one-of`/`choice` constraint is conventional boilerplate (it is even
+            // optional), not an identifier, so such conditions are excluded from this check.
+            return null;
+        }
         EObject container = condition.eContainer();
         if (container instanceof Function function) {
             return new ConditionListKey(function, condition.isPostCondition());
@@ -94,12 +109,32 @@ public class RosettaUniqueNamesConfig {
     }
     private Iterable<Condition> getConditionSiblings(Object container) {
         if (container instanceof ConditionListKey key) {
-            return key.postCondition() ? key.function().getPostConditions() : key.function().getConditions();
+            List<Condition> conditions = new ArrayList<>();
+            addCheckedConditions(conditions, key.postCondition() ? key.function().getPostConditions() : key.function().getConditions());
+            return conditions;
+        }
+        if (container instanceof Data data) {
+            // Include the conditions of all super types, so a condition cannot shadow an inherited one.
+            List<Condition> conditions = new ArrayList<>();
+            Set<Data> visited = new HashSet<>();
+            for (Data current = data; current != null && visited.add(current); current = current.getSuperType()) {
+                addCheckedConditions(conditions, current.getConditions());
+            }
+            return conditions;
         }
         if (container instanceof RosettaTypeWithConditions typeWithConditions) {
-            return typeWithConditions.getConditions();
+            List<Condition> conditions = new ArrayList<>();
+            addCheckedConditions(conditions, typeWithConditions.getConditions());
+            return conditions;
         }
         return List.of();
+    }
+    private void addCheckedConditions(List<Condition> result, List<Condition> candidates) {
+        for (Condition condition : candidates) {
+            if (!rosettaEcoreUtil.isConstraintCondition(condition)) {
+                result.add(condition);
+            }
+        }
     }
     private record ConditionListKey(Function function, boolean postCondition) {}
 

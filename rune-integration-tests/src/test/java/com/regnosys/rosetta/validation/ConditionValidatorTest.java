@@ -87,4 +87,60 @@ public class ConditionValidatorTest extends AbstractValidatorTest {
 				WARNING (RosettaIssueCodes.duplicateConditionName) 'Duplicate condition 'Bar' in Function 'Foo'' at 13:12, length 3, on Condition
 				""");
 	}
+
+	@Test
+	void shouldGenerateDuplicateConditionNameWarningWhenShadowingInheritedCondition() {
+		assertIssues("""
+				type Foo:
+					x string (0..1)
+
+					condition Bar:
+						x exists
+
+				type Sub extends Foo:
+					y string (0..1)
+
+					condition Bar:
+						y exists
+				""", """
+				WARNING (RosettaIssueCodes.duplicateConditionName) 'Duplicate condition 'Bar' in type 'Sub'' at 13:12, length 3, on Condition
+				""");
+	}
+
+	@Test
+	void shouldNotGenerateDuplicateConditionNameWarningForConstraintConditions() {
+		// The name of a `one-of`/`choice` constraint is conventional boilerplate, not an identifier.
+		assertNoIssues("""
+				type Foo:
+					x string (0..1)
+					y string (0..1)
+
+					condition Choice:
+						optional choice x, y
+
+				type Sub extends Foo:
+					z string (0..1)
+					w string (0..1)
+
+					condition Choice:
+						optional choice z, w
+				""");
+	}
+
+	@Test
+	void shouldNotGenerateDuplicateConditionNameWarningForUnrelatedTypes() {
+		assertNoIssues("""
+				type Foo:
+					x string (0..1)
+
+					condition Bar:
+						x exists
+
+				type Other:
+					y string (0..1)
+
+					condition Bar:
+						y exists
+				""");
+	}
 }
