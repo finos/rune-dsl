@@ -32,36 +32,20 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 /**
- * Triggers a non-eager, asynchronous {@link SerializerAnalysisWarmUp} for every
- * registered Xtext language that binds the Rosetta serializer.
+ * Starts a background {@link SerializerAnalysisWarmUp} for every registered language that binds the
+ * Rosetta serializer, when the language server is constructed.
  *
- * <p>This is invoked during construction of the language server so that the
- * cost of building the serializer analysis is paid in the background, rather
- * than during the first serializer request from a user.
- *
- * <p>The warm-up is <strong>disabled by default</strong> because building the
- * analysis is CPU intensive and slows down (or times out) unit tests that spin
- * up a language server, and {@code RosettaLanguageServerImpl} calls this during
- * language server construction. It can be enabled by setting the system
- * property or environment variable {@value #WARM_UP_ENABLED_VARIABLE_NAME} to
- * {@code true}.
- *
- * <p>This decides when the analysis is built, never whether serializing is safe.
- * {@link com.regnosys.rosetta.serializer.RosettaSerializer} builds it on demand
- * before any serialization either way, so leaving the flag off costs the first
- * serializer request a few seconds and nothing else.
+ * <p>Off by default, because building the analysis is CPU intensive and slows down or times out
+ * tests that spin up a language server. This decides only when the analysis is built, never whether
+ * serializing is safe: {@link RosettaSerializer} builds it on demand either way, so leaving it off
+ * costs the first serializer request a few seconds and nothing else.
  */
 @Singleton
 public class SerializerWarmUpService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(SerializerWarmUpService.class);
 
-	/**
-	 * Name of the system property or environment variable that enables the
-	 * background serializer warm-up at language server construction. Set it to
-	 * {@code true} to turn the warm-up on; it is off by default. It is a latency
-	 * setting, not a safety one.
-	 */
+	/** System property or environment variable that turns the warm-up on. A latency setting. */
 	public static final String WARM_UP_ENABLED_VARIABLE_NAME = "ENABLE_SERIALIZER_WARM_UP";
 
 	private final IResourceServiceProvider.Registry registry;
@@ -71,11 +55,7 @@ public class SerializerWarmUpService {
 		this.registry = registry;
 	}
 
-	/**
-	 * Returns whether the background serializer warm-up is enabled, based on the
-	 * {@value #WARM_UP_ENABLED_VARIABLE_NAME} system property or environment
-	 * variable. Defaults to {@code false}.
-	 */
+	/** Whether {@value #WARM_UP_ENABLED_VARIABLE_NAME} is set. Defaults to {@code false}. */
 	public boolean isWarmUpEnabled() {
 		return EnvironmentUtil.getBooleanOrDefault(WARM_UP_ENABLED_VARIABLE_NAME, false);
 	}
@@ -98,8 +78,7 @@ public class SerializerWarmUpService {
 	}
 
 	private void warmUp(IResourceServiceProvider provider) {
-		// Only languages that bind the Rosetta serializer are warmed up: for any other language the
-		// warm-up would build an analysis nothing here is going to serialise.
+		// Any other language's warm-up would build an analysis nothing here is going to serialise.
 		if (provider.get(ISerializer.class) instanceof RosettaSerializer) {
 			provider.get(SerializerAnalysisWarmUp.class).warmUpAsync();
 		}

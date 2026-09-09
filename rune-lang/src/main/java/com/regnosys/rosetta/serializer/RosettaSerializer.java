@@ -24,22 +24,14 @@ import jakarta.inject.Inject;
 
 /**
  * Makes serializing this language safe from several threads, by building the grammar analysis once
- * before the first serialization rather than racing to build it during them.
+ * before the first serialization rather than racing to build it during them — see
+ * {@link SerializerAnalysisWarmUp} for what is unsafe.
  *
- * <p>{@link Serializer#getIContext} is the one place every public entry point passes through before
- * it touches a sequencer — {@code serialize} in each of its overloads, {@code serializeToRegions},
- * and {@code serializeReplacement}. Warming up here therefore covers all of them, including
- * {@code serializeToRegions}, which is not on {@link org.eclipse.xtext.serializer.ISerializer} and
- * so cannot be covered by wrapping that interface. The two {@code protected serialize(context, …)}
- * overloads take a context rather than deriving one and do not pass through here; they are reachable
- * only from a subclass, which is why {@code SerializerAnalysisTest} pins that every public path
- * still reaches this method.
- *
- * <p>Why this rather than guarding Xtext's analysis providers one at a time: the providers are not
- * the only unsynchronized state on the path, and enumerating what is means keeping that enumeration
- * correct against every future Xtext. Sequencing the work instead — one thread builds, the rest wait,
- * and nothing serializes until it is built — closes the grammar-level hazards as a class, including
- * any Xtext adds later. {@link SerializerAnalysisWarmUp} explains what it builds and what is left.
+ * <p>{@link Serializer#getIContext} is the gate because it is the one place every public entry point
+ * passes through before touching a sequencer, including {@code serializeToRegions}, which is not on
+ * {@link org.eclipse.xtext.serializer.ISerializer} and so cannot be covered by wrapping it. Only the
+ * two {@code protected serialize(context, …)} overloads bypass it, and
+ * {@code SerializerAnalysisTest} pins that every public path still arrives here.
  */
 public class RosettaSerializer extends Serializer {
 

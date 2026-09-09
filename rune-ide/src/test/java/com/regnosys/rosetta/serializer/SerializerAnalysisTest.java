@@ -436,13 +436,14 @@ class SerializerAnalysisTest {
 		return (Map<Grammar, ?>) cache.get(injector.getInstance(boundInterface));
 	}
 
+	// The doubles below all pass five nulls to the real constructor. That is safe because each
+	// overrides the methods the test uses, and the constructor's arguments are only ever stored in
+	// fields those overrides never read.
 	private static class CountingWarmUp extends SerializerAnalysisWarmUp {
 		private final SerializerAnalysisWarmUp delegate;
 		private final AtomicInteger calls = new AtomicInteger();
 
 		CountingWarmUp(SerializerAnalysisWarmUp delegate) {
-			// Safe because every method used here is overridden below and delegates; the injected
-			// fields are never touched.
 			super(null, null, null, null, null);
 			this.delegate = delegate;
 		}
@@ -463,8 +464,6 @@ class SerializerAnalysisTest {
 		private boolean fail = true;
 
 		FailingWarmUp() {
-			// Safe because build() is overridden below and never touches the injected fields, which are
-			// the only thing the real constructor's arguments are used for.
 			super(null, null, null, null, null);
 		}
 
@@ -481,8 +480,6 @@ class SerializerAnalysisTest {
 		private volatile boolean reenteredAndReturned;
 
 		ReenteringWarmUp() {
-			// Safe because build() is overridden below and never touches the injected fields, which are
-			// the only thing the real constructor's arguments are used for.
 			super(null, null, null, null, null);
 		}
 
@@ -499,8 +496,6 @@ class SerializerAnalysisTest {
 		private final CountDownLatch release = new CountDownLatch(1);
 
 		BlockingWarmUp() {
-			// Safe because warmUp() is overridden below and never touches the injected fields, which
-			// are the only thing the real constructor's arguments are used for.
 			super(null, null, null, null, null);
 		}
 

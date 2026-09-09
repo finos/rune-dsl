@@ -36,31 +36,18 @@ import jakarta.inject.Singleton;
 
 /**
  * Builds the serializer's static analysis of the grammar once, on one thread, before anything is
- * allowed to serialize.
+ * allowed to serialize. Xtext builds it lazily during the first serialization, into state that is
+ * not thread safe. Callers need know none of this: {@link RosettaSerializer} calls
+ * {@link #ensureWarm()} on every serialization, and after the first that is one volatile read.
  *
- * <p>Xtext builds that analysis lazily during the first serialization and caches it in state that is
- * not thread safe. Two kinds of state, with different shapes:
- *
- * <p>Grammar-level state is the four per-grammar caches in the analysis providers, the shared
- * {@code GrammarElementDeclarationOrder} adapter on the grammar, and the context index inside each
- * {@link SerializationContextMap}. An injector has exactly one grammar, so each of these holds one
- * entry ever and any call that reaches it once closes it permanently. {@link #build()} closes all of
- * them by asking for the grammar constraints, which pull the other three providers in dependency
- * order.
- *
- * <p>Per-constraint state is {@code Constraint.getFeatures()}, {@code Constraint.getBody()} and
- * {@code FeatureInfo.getAssignments()}, computed per constraint on the serialize path, so a model
- * closes only the constraints it happens to reach. Each of the three assigns its container to the
- * field and only then fills it, so a second thread can be handed a container that is present but
- * empty — and {@code ContextFinder} treats an empty feature slot as "this constraint does not
- * apply", silently dropping a valid constraint and emitting different text rather than throwing.
- * {@link #forceConstraintState} closes those too, which is the one part the sequencing alone cannot
- * do.
- *
- * <p>Callers do not have to know any of this: {@link RosettaSerializer} calls {@link #ensureWarm()}
- * on every serialization, and after the first one that is a single volatile read. Warming up in
- * advance is a latency measure only — it moves several seconds off whichever request would otherwise
- * have paid them.
+ * <p>Grammar-level state — the four per-grammar provider caches, the
+ * {@code GrammarElementDeclarationOrder} adapter, and the context index inside each
+ * {@link SerializationContextMap} — holds one entry per injector, so {@link #build()} closes it
+ * permanently. Per-constraint state is computed as a model reaches each constraint, so
+ * {@link #forceConstraintState} has to walk them: {@code Constraint.getFeatures()} and
+ * {@code FeatureInfo.getAssignments()} assign their container and only then fill it, and
+ * {@code ContextFinder} reads an empty feature slot as "this constraint does not apply", dropping a
+ * valid constraint and emitting different text rather than throwing.
  */
 @Singleton
 public class SerializerAnalysisWarmUp {
@@ -82,19 +69,13 @@ public class SerializerAnalysisWarmUp {
 	private final ISyntacticSequencerPDAProvider syntacticPdaProvider;
 	private final IContextTypePDAProvider contextTypePdaProvider;
 
-	/**
-	 * Set before {@link #build()} runs, and read only under the monitor. The monitor is already
-	 * re-entrant, so this is not what lets the build thread back in; it is what stops it starting a
-	 * second {@code build()} when it comes back. Cleared again if {@code build()} throws.
-	 */
+	/** Set before {@link #build()} runs, read only under the monitor, cleared if it throws. */
 	private boolean warm;
 
 	/**
-	 * Set after {@link #build()} returns normally, and read without the monitor. A thread that sees
-	 * this set knows the analysis is finished rather than merely started, so it can skip the monitor
-	 * entirely. Being volatile is what makes the writes {@code build()} performed visible to it. A
-	 * failed build leaves it clear, so a failure costs the next caller a retry rather than opening the
-	 * gate onto a part-built analysis.
+	 * Set only after {@link #build()} returns normally, and read without the monitor: a thread seeing
+	 * it set knows the analysis is finished rather than merely started. Volatile so that the writes
+	 * {@code build()} made are visible to it.
 	 */
 	private volatile boolean published;
 
@@ -112,8 +93,7 @@ public class SerializerAnalysisWarmUp {
 	}
 
 	/**
-	 * Builds the analysis if it is not built, and returns once it is. Called before every
-	 * serialization; after the first it costs one volatile read.
+	 * Builds the analysis if it is not built, and returns once it is.
 	 */
 	public void ensureWarm() {
 		if (published) {
@@ -123,15 +103,14 @@ public class SerializerAnalysisWarmUp {
 			if (warm) {
 				return;
 			}
-			// Set before build(), not after. A monitor is re-entrant, so anything build() does that
-			// serializes comes back through here on the same thread and passes straight into the
-			// synchronized block; without the flag already set it would call build() again, and again.
+			// Before build(), not after: the monitor is re-entrant, so anything build() does that
+			// serializes walks back in here and would otherwise start a second build.
 			warm = true;
 			try {
 				build();
 			} catch (RuntimeException | Error e) {
-				// A failed build leaves the analysis part-filled. Clear the flag so the next caller
-				// builds again, and leave published clear so no thread takes the fast path past it.
+				// A failed build leaves the analysis part-filled, so the gate stays shut and the next
+				// caller retries.
 				warm = false;
 				throw e;
 			}
@@ -140,17 +119,8 @@ public class SerializerAnalysisWarmUp {
 	}
 
 	/**
-	 * Builds the analysis on the calling thread, returning once it is ready to be used from any
-	 * thread. A standalone consumer about to serialize from several threads can call this to pay the
-	 * cost up front, but does not have to: {@link #ensureWarm()} makes every serialization safe on its
-	 * own, so skipping this is slower on the first serialization and never less safe. It stays a
-	 * method of its own rather than folding into {@link #ensureWarm()} because {@link #warmUpAsync()}
-	 * needs a timed body, and the elapsed-time log is the only view of what an eager warm-up cost.
-	 * <p>
-	 * That consumer can hold one serializer and call it from all of those threads. Xtext's sequencers
-	 * keep mutable state for the length of one serialization, but {@code Serializer} takes them as
-	 * {@code Provider} fields and asks for a fresh set inside each call, and this grammar binds them
-	 * unscoped, so no sequencer is ever shared between two calls.
+	 * Builds the analysis on the calling thread, logging what it cost. Optional — {@link #ensureWarm()}
+	 * makes every serialization safe on its own — so this only moves the cost off the first one.
 	 */
 	public void warmUp() {
 		long started = System.nanoTime();
@@ -161,8 +131,8 @@ public class SerializerAnalysisWarmUp {
 
 	/**
 	 * Starts the warm-up on a background thread, at most once per injector, and returns the future of
-	 * that single run. Failures are logged rather than propagated: a failed warm-up costs time, not
-	 * correctness, because the gate builds the analysis on demand anyway.
+	 * that single run. Failures are logged rather than propagated, since the gate builds on demand
+	 * anyway.
 	 */
 	public synchronized CompletableFuture<Void> warmUpAsync() {
 		if (eagerWarmUp == null) {
@@ -180,20 +150,16 @@ public class SerializerAnalysisWarmUp {
 	}
 
 	/**
-	 * Asking for the grammar constraints fills all four provider caches: the constraints need the
-	 * semantic sequencer NFAs, which need the syntactic sequencer PDAs, which need the context type
-	 * PDAs. It also installs the {@code GrammarElementDeclarationOrder} adapter on the grammar, so the
-	 * later reads of it from the serialize path are cache hits that mutate nothing.
+	 * Asking for the grammar constraints fills all four provider caches — constraints need the
+	 * semantic NFAs, which need the syntactic PDAs, which need the context type PDAs — and installs
+	 * the {@code GrammarElementDeclarationOrder} adapter.
 	 *
-	 * <p>Each of the four analyses is then asked for one context. Filling the provider caches is not
-	 * the same as finishing the analyses: a {@link SerializationContextMap} indexes its contents on
-	 * the first {@code get()}. Two of the four are read that way during a serialization in 2.38.0 —
-	 * the syntactic sequencer PDAs from {@code AbstractSyntacticSequencer:337,352,442}, and the
-	 * constraints from {@code ContextFinder:250}. Of the other two, the semantic sequencer NFA map is
-	 * only ever iterated and never indexed by context, and the context type PDAs are indexed inside
-	 * {@code getConstraints} already. All four are asked anyway, so that a later Xtext moving one of
-	 * them onto the serialize path does not quietly reopen this. One ask per map is enough, because
-	 * the index is built for every context in a single pass.
+	 * <p>Each analysis is then asked for one context, which builds its whole index in one pass. Two of
+	 * the four indexes are read during a serialization in 2.38.0: the syntactic PDAs from
+	 * {@code AbstractSyntacticSequencer:337,352,442} and the constraints from {@code ContextFinder:250}.
+	 * The semantic NFA map is only ever iterated, and the context type PDAs are already indexed inside
+	 * {@code getConstraints} at {@code GrammarConstraintProvider:564}. All four are asked anyway, so a
+	 * later Xtext moving one onto the serialize path cannot quietly reopen this.
 	 */
 	// Overridable so a test can pin the re-entrancy ordering below; not an extension point.
 	protected void build() {
@@ -207,22 +173,15 @@ public class SerializerAnalysisWarmUp {
 	}
 
 	/**
-	 * Forces every constraint's body, features and assignments, and the context index of the map
-	 * holding them.
-	 *
-	 * <p>{@link IConstraint#getFeatures} is documented as leaving a null slot for a feature with no
-	 * assignment. In 2.38.0 the one implementation fills every slot, so this loop should not meet a
-	 * null — but the contract allows one, and {@code ContextFinder} reads the array expecting one, so
-	 * this skips rather than throws. Forcing is an optimisation of when work happens; it should not be
-	 * the thing that turns a tolerated null into a crash.
+	 * Forces every constraint's body, features and assignments. Skips a null feature rather than
+	 * throwing, because {@link IConstraint#getFeatures} permits a null slot for a feature with no
+	 * assignment even though 2.38.0's implementation fills every one.
 	 */
 	private static void forceConstraintState(SerializationContextMap<IConstraint> constraints) {
 		for (SerializationContextMap.Entry<IConstraint> entry : constraints.values()) {
 			IConstraint constraint = entry.getValue();
-			// getAssignments() reaches getBody() as well, but only for a constraint that has at least
-			// one feature. Asking directly is what makes it closed for all of them. Unlike the other
-			// two, getBody() assigns its field last, so what forcing it buys is the adapter it installs
-			// through GrammarElementDeclarationOrder.get and a field no serialize path has to publish.
+			// getAssignments() reaches getBody(), but only for a constraint with at least one feature.
+			// Asking directly closes it for the rest, and installs GrammarElementDeclarationOrder.
 			constraint.getBody();
 			for (IFeatureInfo feature : constraint.getFeatures()) {
 				if (feature != null) {
@@ -232,11 +191,7 @@ public class SerializerAnalysisWarmUp {
 		}
 	}
 
-	/**
-	 * Asks one analysis for one context, which builds its index for every context. An analysis with no
-	 * entries is left alone: there is no context to ask for, and an index that never receives an entry
-	 * cannot be read half-built.
-	 */
+	/** Asks one analysis for one context, which builds its index for every context. */
 	private static void indexByContext(SerializationContextMap<?> analysis) {
 		for (SerializationContextMap.Entry<?> entry : analysis.values()) {
 			for (ISerializationContext context : entry.getContexts()) {
