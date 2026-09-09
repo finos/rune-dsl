@@ -19,31 +19,37 @@ package com.regnosys.rosetta.ide.serializer;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.eclipse.xtext.IGrammarAccess;
 import org.eclipse.xtext.resource.IResourceServiceProvider;
-import org.eclipse.xtext.serializer.analysis.IContextTypePDAProvider;
+import org.eclipse.xtext.serializer.ISerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.regnosys.rosetta.serializer.RosettaContextTypePDAProvider;
+import com.regnosys.rosetta.serializer.RosettaSerializer;
+import com.regnosys.rosetta.serializer.SerializerAnalysisWarmUp;
 import com.regnosys.rosetta.utils.EnvironmentUtil;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 
 /**
- * Triggers a non-eager, asynchronous warm-up of the serializer
- * context-type PDA cache for every registered Xtext language.
+ * Triggers a non-eager, asynchronous {@link SerializerAnalysisWarmUp} for every
+ * registered Xtext language that binds the Rosetta serializer.
  *
  * <p>This is invoked during construction of the language server so that the
- * cost of building the PDAs is paid in the background, rather than during the
- * first serializer request from a user.
+ * cost of building the serializer analysis is paid in the background, rather
+ * than during the first serializer request from a user.
  *
  * <p>The warm-up is <strong>disabled by default</strong> because building the
- * PDAs is CPU intensive and slows down (or times out) unit tests that spin up
- * a language server. It can be enabled by setting the system
+ * analysis is CPU intensive and slows down (or times out) unit tests that spin
+ * up a language server, and {@code RosettaLanguageServerImpl} calls this during
+ * language server construction. It can be enabled by setting the system
  * property or environment variable {@value #WARM_UP_ENABLED_VARIABLE_NAME} to
  * {@code true}.
+ *
+ * <p>This decides when the analysis is built, never whether serializing is safe.
+ * {@link com.regnosys.rosetta.serializer.RosettaSerializer} builds it on demand
+ * before any serialization either way, so leaving the flag off costs the first
+ * serializer request a few seconds and nothing else.
  */
 @Singleton
 public class SerializerWarmUpService {
@@ -52,8 +58,9 @@ public class SerializerWarmUpService {
 
 	/**
 	 * Name of the system property or environment variable that enables the
-	 * background serializer warm-up. Set it to {@code true} to turn the
-	 * warm-up on; it is off by default.
+	 * background serializer warm-up at language server construction. Set it to
+	 * {@code true} to turn the warm-up on; it is off by default. It is a latency
+	 * setting, not a safety one.
 	 */
 	public static final String WARM_UP_ENABLED_VARIABLE_NAME = "ENABLE_SERIALIZER_WARM_UP";
 
@@ -91,10 +98,10 @@ public class SerializerWarmUpService {
 	}
 
 	private void warmUp(IResourceServiceProvider provider) {
-		IContextTypePDAProvider pdaProvider = provider.get(IContextTypePDAProvider.class);
-		IGrammarAccess grammarAccess = provider.get(IGrammarAccess.class);
-		if (pdaProvider instanceof RosettaContextTypePDAProvider && grammarAccess != null) {
-			((RosettaContextTypePDAProvider) pdaProvider).warmUpAsync(grammarAccess.getGrammar());
+		// Only languages that bind the Rosetta serializer are warmed up: for any other language the
+		// warm-up would build an analysis nothing here is going to serialise.
+		if (provider.get(ISerializer.class) instanceof RosettaSerializer) {
+			provider.get(SerializerAnalysisWarmUp.class).warmUpAsync();
 		}
 	}
 }
