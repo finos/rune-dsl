@@ -67,9 +67,10 @@ public class SerializerAnalysisWarmUp {
 
 	// TODO: fix this in Xtext and delete both this class and the gate in RosettaSerializer. The four
 	// per-grammar caches want ConcurrentHashMap.computeIfAbsent, GrammarElementDeclarationOrder.get
-	// wants synchronizing, and SerializationContextMap.get, Constraint.getFeatures,
-	// Constraint.getBody and FeatureInfo.getAssignments each want their value built into a local and
-	// assigned to the field afterwards rather than before. Upgrading will not do it for us: the same
+	// wants synchronizing, and SerializationContextMap.get, Constraint.getFeatures and
+	// FeatureInfo.getAssignments each want their value built into a local and assigned to the field
+	// afterwards rather than before. Constraint.getBody already does that, and wants only a safe
+	// publication of the field itself. Upgrading will not do it for us: the same
 	// unsynchronized publication is still there in 2.41.0, three minor versions on, and no upstream
 	// issue is open for it.
 
@@ -82,16 +83,18 @@ public class SerializerAnalysisWarmUp {
 	private final IContextTypePDAProvider contextTypePdaProvider;
 
 	/**
-	 * Set before {@link #build()} runs, and read only under the monitor. This is what makes the gate
-	 * re-entrant: anything {@code build()} itself does that serializes would otherwise deadlock on a
-	 * monitor its own thread already holds.
+	 * Set before {@link #build()} runs, and read only under the monitor. The monitor is already
+	 * re-entrant, so this is not what lets the build thread back in; it is what stops it starting a
+	 * second {@code build()} when it comes back. Cleared again if {@code build()} throws.
 	 */
 	private boolean warm;
 
 	/**
-	 * Set after {@link #build()} returns, and read without the monitor. A thread that sees this set
-	 * knows the analysis is finished rather than merely started, so it can skip the monitor entirely.
-	 * Being volatile is what makes the writes {@code build()} performed visible to it.
+	 * Set after {@link #build()} returns normally, and read without the monitor. A thread that sees
+	 * this set knows the analysis is finished rather than merely started, so it can skip the monitor
+	 * entirely. Being volatile is what makes the writes {@code build()} performed visible to it. A
+	 * failed build leaves it clear, so a failure costs the next caller a retry rather than opening the
+	 * gate onto a part-built analysis.
 	 */
 	private volatile boolean published;
 
@@ -126,9 +129,13 @@ public class SerializerAnalysisWarmUp {
 			warm = true;
 			try {
 				build();
-			} finally {
-				published = true;
+			} catch (RuntimeException | Error e) {
+				// A failed build leaves the analysis part-filled. Clear the flag so the next caller
+				// builds again, and leave published clear so no thread takes the fast path past it.
+				warm = false;
+				throw e;
 			}
+			published = true;
 		}
 	}
 
@@ -136,7 +143,9 @@ public class SerializerAnalysisWarmUp {
 	 * Builds the analysis on the calling thread, returning once it is ready to be used from any
 	 * thread. A standalone consumer about to serialize from several threads can call this to pay the
 	 * cost up front, but does not have to: {@link #ensureWarm()} makes every serialization safe on its
-	 * own, so skipping this is slower on the first serialization and never less safe.
+	 * own, so skipping this is slower on the first serialization and never less safe. It stays a
+	 * method of its own rather than folding into {@link #ensureWarm()} because {@link #warmUpAsync()}
+	 * needs a timed body, and the elapsed-time log is the only view of what an eager warm-up cost.
 	 * <p>
 	 * That consumer can hold one serializer and call it from all of those threads. Xtext's sequencers
 	 * keep mutable state for the length of one serialization, but {@code Serializer} takes them as
@@ -178,17 +187,17 @@ public class SerializerAnalysisWarmUp {
 	 *
 	 * <p>Each of the four analyses is then asked for one context. Filling the provider caches is not
 	 * the same as finishing the analyses: a {@link SerializationContextMap} indexes its contents on
-	 * the first {@code get()}, and for three of the four that first {@code get()} would otherwise
-	 * happen during a serialization rather than here — the syntactic sequencer looks its context up
-	 * per object, the semantic one per object too. Asking here is what puts them on this thread. One
-	 * ask per map is enough, because the index is built for every context in a single pass.
+	 * the first {@code get()}. Two of the four are read that way during a serialization in 2.38.0 —
+	 * the syntactic sequencer PDAs from {@code AbstractSyntacticSequencer:337,352,442}, and the
+	 * constraints from {@code ContextFinder:250}. Of the other two, the semantic sequencer NFA map is
+	 * only ever iterated and never indexed by context, and the context type PDAs are indexed inside
+	 * {@code getConstraints} already. All four are asked anyway, so that a later Xtext moving one of
+	 * them onto the serialize path does not quietly reopen this. One ask per map is enough, because
+	 * the index is built for every context in a single pass.
 	 */
 	// Overridable so a test can pin the re-entrancy ordering below; not an extension point.
 	protected void build() {
 		Grammar grammar = grammarAccess.getGrammar();
-		// getConstraints below already forces this one, by naming each constraint through
-		// findBestConstraintName, which reads the index at GrammarConstraintProvider:564. Asked for
-		// anyway, so that the gate does not depend on Xtext naming constraints that way.
 		indexByContext(contextTypePdaProvider.getContextTypePDAs(grammar));
 		indexByContext(syntacticPdaProvider.getSyntacticSequencerPDAs(grammar));
 		indexByContext(nfaProvider.getSemanticSequencerNFAs(grammar));
@@ -211,7 +220,9 @@ public class SerializerAnalysisWarmUp {
 		for (SerializationContextMap.Entry<IConstraint> entry : constraints.values()) {
 			IConstraint constraint = entry.getValue();
 			// getAssignments() reaches getBody() as well, but only for a constraint that has at least
-			// one feature. Asking directly is what makes it closed for all of them.
+			// one feature. Asking directly is what makes it closed for all of them. Unlike the other
+			// two, getBody() assigns its field last, so what forcing it buys is the adapter it installs
+			// through GrammarElementDeclarationOrder.get and a field no serialize path has to publish.
 			constraint.getBody();
 			for (IFeatureInfo feature : constraint.getFeatures()) {
 				if (feature != null) {

@@ -123,7 +123,7 @@ class SerializerWarmUpServiceTest {
 	}
 
 	/**
-	 * A language whose only interesting property is which constraint provider it binds, and which
+	 * A language whose only interesting property is which serializer it binds, and which
 	 * counts the warm-ups asked of it instead of running one.
 	 */
 	private static class CountingLanguage implements IResourceServiceProvider {

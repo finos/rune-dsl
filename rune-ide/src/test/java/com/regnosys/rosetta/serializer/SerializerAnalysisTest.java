@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -245,6 +246,28 @@ class SerializerAnalysisTest {
 	}
 
 	@Test
+	void aFailedBuildLeavesTheGateShut() {
+		// A build that throws leaves the analysis part-filled, so the gate has to stay shut: publishing
+		// on the way out would send every later thread down the fast path onto exactly the state this
+		// class exists to prevent, and warmUpAsync logs rather than rethrows, so nothing would say so.
+		FailingWarmUp warmUp = new FailingWarmUp();
+
+		assertThrows(IllegalStateException.class, warmUp::ensureWarm);
+		assertEquals(1, warmUp.builds.get());
+
+		assertThrows(IllegalStateException.class, warmUp::ensureWarm,
+				"The gate opened after a failed build instead of building again.");
+		assertEquals(2, warmUp.builds.get(), "The second call skipped the build.");
+
+		// And it still closes once a build succeeds.
+		warmUp.fail = false;
+		warmUp.ensureWarm();
+		assertEquals(3, warmUp.builds.get());
+		warmUp.ensureWarm();
+		assertEquals(3, warmUp.builds.get(), "The gate stayed open after a successful build.");
+	}
+
+	@Test
 	void theGateLetsTheBuildItselfSerialize() throws Exception {
 		// The gate marks itself warm before it builds, so anything the build does that serializes
 		// re-enters and returns. The monitor is re-entrant and never blocks the build thread; what the
@@ -435,6 +458,25 @@ class SerializerAnalysisTest {
 	 * A warm-up whose build serializes, which is the case the {@code warm}-before-{@code build()}
 	 * ordering exists for.
 	 */
+	private static class FailingWarmUp extends SerializerAnalysisWarmUp {
+		private final AtomicInteger builds = new AtomicInteger();
+		private boolean fail = true;
+
+		FailingWarmUp() {
+			// Safe because build() is overridden below and never touches the injected fields, which are
+			// the only thing the real constructor's arguments are used for.
+			super(null, null, null, null, null);
+		}
+
+		@Override
+		protected void build() {
+			builds.incrementAndGet();
+			if (fail) {
+				throw new IllegalStateException("Deliberate build failure.");
+			}
+		}
+	}
+
 	private static class ReenteringWarmUp extends SerializerAnalysisWarmUp {
 		private volatile boolean reenteredAndReturned;
 

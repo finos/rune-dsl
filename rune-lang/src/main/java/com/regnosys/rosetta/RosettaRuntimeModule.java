@@ -140,10 +140,13 @@ public class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 	// once, on one thread, before the first serialization — see SerializerAnalysisWarmUp for what is
 	// unsafe and why sequencing the work closes it rather than guarding each cache.
 	//
-	// Bound under both the interface and the concrete Xtext class. An unbound concrete class would get
-	// a just-in-time instance with no gate in it, and injecting the concrete class is not exotic: it
-	// is the only way to reach serializeToRegions and serializeReplacement, which ISerializer does not
-	// declare. XtextResourceFormatter injects it for exactly that reason.
+	// Bound under both the interface and the concrete Xtext class. configureSerializer is the binding
+	// that does the work: AbstractRosettaRuntimeModule:105 already points ISerializer at the concrete
+	// Serializer, so without it the concrete class gets a just-in-time instance with no gate, and
+	// injecting the concrete class is not exotic — it is the only way to reach serializeToRegions and
+	// serializeReplacement, which ISerializer does not declare, and XtextResourceFormatter injects it
+	// for exactly that reason. The override below is belt and braces over the generated binding, kept
+	// so that a future edit to it cannot quietly hand out an ungated serializer.
 	@Override
 	public Class<? extends ISerializer> bindISerializer() {
 		return RosettaSerializer.class;
