@@ -21,12 +21,12 @@ For each row, check the box that applies to your change..
 | Add new syntax? | Yes / No | Yes / No |
 | Impact Java code generators? | Yes / No | Yes / No |
 | Impact Python code generators? | Yes / No | Yes / No |
-| Not backwards compatible? | Yes / No | Yes / No |
+| Backwards incompatible? | Yes / No | Yes / No |
 
 ## CDM Working Group Approval
 
 Working Group approval is required where a row above is checked "Affects the CDM":
 
-- [ ] **Steering WG** review completed — required if this change is **not** backwards compatible
+- [ ] **Steering WG** review completed — required if this change is backwards incompatible
 - [ ] **CRWG** review completed — required if this change requires model changes (due to validation changes) and/or adds new syntax
 - [ ] **TAWG** review completed — required if this change adds new syntax, and/or impacts code generators
