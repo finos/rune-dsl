@@ -11,7 +11,7 @@ Please delete options that are not relevant.
 
 ## DSL Impact Summary
 
-This section helps the CDM governance working groups (CRWG, TAWG, Steering WG) see at a glance whether this change needs their review, and lets you flag a change as scoped to private models only.
+This section helps the CDM governance working groups (CRWG, TAWG, Steering WG) see at a glance whether this change needs their review, and lets you flag a change as scoped to extension models only.
 
 For each row, check the box that applies to your change..
 
@@ -21,13 +21,11 @@ For each row, check the box that applies to your change..
 | Add new syntax? | [ ] | [ ] |
 | Impact Java code generators? | [ ] | [ ] |
 | Impact Python code generators? | [ ] | [ ] |
-| Backwards incompatible? | [ ] | [ ] |
-
-If every "Affects the CDM" answer above is `No` or `N/A`, the working group checkboxes below can be skipped.
+| Not backwards compatible? | [ ] | [ ] |
 
 ## CDM Working Group Approval
 
-Required only where a row above marks "Affects the CDM" as `Yes`.
+Working Group approval is required where a row above is checked "Affects the CDM":
 
 - [ ] **Steering WG** review completed — required if this change is **not** backwards compatible
 - [ ] **CRWG** review completed — required if this change requires model changes (due to validation changes) and/or adds new syntax
