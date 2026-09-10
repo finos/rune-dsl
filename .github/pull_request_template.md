@@ -11,11 +11,11 @@ Please delete options that are not relevant.
 
 ## DSL Impact Summary
 
-This section helps the CDM governance working groups (CRWG, TAWG, Steering WG) see at a glance whether this change needs their review, and lets you flag a change as scoped to extension models only.
+This section helps the CDM governance working groups (CRWG, TAWG, Steering WG) see at a glance whether this change needs their review, and lets you flag a change as scoped to extension models.
 
 For each row, check the box that applies to your change..
 
-| DSL Impact | Affects the CDM | Affects extension models only |
+| DSL Impact | Affects the CDM | Affects extension models |
 |---|---|---|
 | Validation changes (warnings/errors)? | Yes / No | Yes / No |
 | Add new syntax? | Yes / No | Yes / No |
