@@ -17,11 +17,11 @@ For each row, check the box that applies to your change..
 
 | DSL Impact | Affects the CDM | Affects extension models only |
 |---|---|---|
-| Validation changes (warnings/errors)? | [ ] | [ ] |
-| Add new syntax? | [ ] | [ ] |
-| Impact Java code generators? | [ ] | [ ] |
-| Impact Python code generators? | [ ] | [ ] |
-| Not backwards compatible? | [ ] | [ ] |
+| Validation changes (warnings/errors)? | Yes / No | Yes / No |
+| Add new syntax? | Yes / No | Yes / No |
+| Impact Java code generators? | Yes / No | Yes / No |
+| Impact Python code generators? | Yes / No | Yes / No |
+| Not backwards compatible? | Yes / No | Yes / No |
 
 ## CDM Working Group Approval
 
