@@ -303,6 +303,40 @@ class RuneConfigurationServiceTest {
 		assertTrue(failure.getMessage().contains(file.toString()), failure.getMessage());
 	}
 
+	@Test
+	void aConfigurationWithNoModelSectionSaysSoRatherThanNull(@TempDir Path dir) throws IOException {
+		// Jackson wraps the required-field NullPointerException, which carries no message of its own,
+		// so reading the cause alone would end the message in ": null".
+		Path file = write(dir, "rune-config.yml", "namespaceConfig: []\n");
+
+		IOException failure = assertThrows(IOException.class, () -> service.readIfPresent(file));
+
+		assertTrue(failure.getMessage().contains(file.toString()), failure.getMessage());
+		assertFalse(failure.getMessage().endsWith("null"), failure.getMessage());
+		assertTrue(failure.getMessage().contains("`model` section"), failure.getMessage());
+	}
+
+	@Test
+	void everyGeneratorSettingSurvivesARoundTrip() throws IOException {
+		// doNotPrune is the one that did not: a project that let a tool rewrite its configuration lost
+		// every entry it had pinned there.
+		String yaml = "model:\n  name: DEMO\n"
+				+ "generators:\n"
+				+ "  namespaces:\n"
+				+ "    - demo.*\n"
+				+ "  doNotPrune:\n"
+				+ "    - type: demo.Party\n"
+				+ "      attribute: details\n";
+
+		RuneConfiguration read = service.readString(yaml);
+		RuneConfiguration reread = service.readString(service.writeString(read));
+
+		assertEquals(Collections.singletonList("demo.*"), reread.getGenerators().getNamespaces());
+		assertEquals(1, reread.getGenerators().doNotPrune().size());
+		assertEquals("demo.Party", reread.getGenerators().doNotPrune().get(0).getType());
+		assertEquals("details", reread.getGenerators().doNotPrune().get(0).getAttribute());
+	}
+
 	private static Path write(Path dir, String name, String content) throws IOException {
 		Path file = dir.resolve(name);
 		Files.write(file, content.getBytes(StandardCharsets.UTF_8));

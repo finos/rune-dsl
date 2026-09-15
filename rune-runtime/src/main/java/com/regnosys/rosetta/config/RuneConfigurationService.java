@@ -122,9 +122,18 @@ public class RuneConfigurationService {
 	 * What a failure is worth telling the caller: the message of the cause where there is one, because
 	 * the wrapper's own message is usually the stack of types it came through rather than what went
 	 * wrong.
+	 * <p>
+	 * A cause carries no message often enough to matter -- a bare {@code NullPointerException} from a
+	 * required field, which is what a configuration missing a section reaches this as -- and the
+	 * wrapper is then the one that says something. Falling through to the type name is the last
+	 * resort; what it replaces is a message ending in "null".
 	 */
 	public static String reason(Throwable failure) {
-		return failure.getCause() == null ? failure.getMessage() : failure.getCause().getMessage();
+		Throwable cause = failure.getCause();
+		if (cause != null && cause.getMessage() != null) {
+			return cause.getMessage();
+		}
+		return failure.getMessage() != null ? failure.getMessage() : failure.toString();
 	}
 
 	/**
