@@ -3,15 +3,21 @@ package com.regnosys.rosetta.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Optional;
 
 import com.rosetta.model.lib.transform.SerializationFormat;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class RuneConfigurationServiceTest {
 
@@ -221,4 +227,65 @@ class RuneConfigurationServiceTest {
 		String out = service.writeString(config);
 		assertFalse(out.contains("defaultSerialisationFormat"), out);
 	}
+
+	// --- readIfPresent -----------------------------------------------------------------------------
+
+	@Test
+	void aFileThatIsNotThereIsAbsentRatherThanAFailure(@TempDir Path dir) throws IOException {
+		assertFalse(service.readIfPresent(dir.resolve("rune-config.yml")).isPresent());
+		assertFalse(service.readIfPresent(null).isPresent());
+	}
+
+	@Test
+	void anEmptyOrCommentOnlyFileIsAbsent(@TempDir Path dir) throws IOException {
+		// How a project asks for a configuration to be created: the file is there to be written into,
+		// and read() cannot tell it apart from a truncated one.
+		assertFalse(service.readIfPresent(write(dir, "empty.yml", "")).isPresent());
+		assertFalse(service.readIfPresent(write(dir, "blank.yml", "\n  \n\n")).isPresent());
+		assertFalse(service.readIfPresent(write(dir, "comments.yml", "# nothing yet\n#   still nothing\n")).isPresent());
+	}
+
+	@Test
+	void aFileWithAConfigurationIsRead(@TempDir Path dir) throws IOException {
+		Optional<RuneConfiguration> read = service.readIfPresent(write(dir, "rune-config.yml", CONFIG));
+
+		assertTrue(read.isPresent());
+		assertEquals("DEMO", read.get().getModel().getName());
+	}
+
+	@Test
+	void aFileThatWillNotParseFailsNamingIt(@TempDir Path dir) throws IOException {
+		Path file = write(dir, "rune-config.yml", "model:\n\tname: tabs are not YAML\n");
+
+		IOException failure = assertThrows(IOException.class, () -> service.readIfPresent(file));
+
+		assertTrue(failure.getMessage().contains(file.toString()), failure.getMessage());
+	}
+
+	@Test
+	void aFileThatIsNotTextFailsNamingIt(@TempDir Path dir) throws IOException {
+		Path file = dir.resolve("rune-config.yml");
+		Files.write(file, new byte[] {(byte) 0xC3, (byte) 0x28});
+
+		IOException failure = assertThrows(IOException.class, () -> service.readIfPresent(file));
+
+		assertTrue(failure.getMessage().contains(file.toString()), failure.getMessage());
+	}
+
+	@Test
+	void aConfigurationThatCannotBeWrittenFailsNamingTheFile(@TempDir Path dir) throws IOException {
+		Path file = dir.resolve("rune-config.yml");
+		Files.createDirectory(file);
+
+		IOException failure = assertThrows(IOException.class, () -> service.write(file, service.readString(CONFIG)));
+
+		assertTrue(failure.getMessage().contains(file.toString()), failure.getMessage());
+	}
+
+	private static Path write(Path dir, String name, String content) throws IOException {
+		Path file = dir.resolve(name);
+		Files.write(file, content.getBytes(StandardCharsets.UTF_8));
+		return file;
+	}
+
 }
