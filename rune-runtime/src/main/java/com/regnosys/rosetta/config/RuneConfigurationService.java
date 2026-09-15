@@ -9,6 +9,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -26,6 +27,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
  * properties are not preserved &mdash; they are dropped on read.
  */
 public class RuneConfigurationService {
+
+	private static final String BYTE_ORDER_MARK = "\uFEFF";
 
 	private final ObjectMapper mapper;
 
@@ -75,30 +78,53 @@ public class RuneConfigurationService {
 	 * cannot make it, because a file with nothing in it fails the same way a truncated one does, and
 	 * an empty file is how a project asks for a configuration to be created rather than a corruption
 	 * to be reported. Anything else that will not parse still throws, and the message names the file.
+	 *
+	 * @param path the file to read; must not be null, so that a caller that has no configuration path
+	 *             to offer says so rather than having one silently read as "there is no file"
 	 */
 	public Optional<RuneConfiguration> readIfPresent(Path path) throws IOException {
-		if (path == null || !Files.isRegularFile(path)) {
-			return Optional.empty();
-		}
-		if (!holdsContent(path)) {
+		Objects.requireNonNull(path, "A configuration to read has to be a path, not null.");
+		if (!Files.isRegularFile(path) || !holdsContent(path)) {
 			return Optional.empty();
 		}
 		try {
 			return Optional.ofNullable(mapper.readValue(path.toFile(), RuneConfiguration.class));
 		} catch (IOException e) {
-			String reason = e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
-			throw new IOException("Cannot read the Rune configuration at " + path + ": " + reason, e);
+			throw new IOException("Cannot read the Rune configuration at " + path + ": " + reason(e), e);
 		}
 	}
 
 	private static boolean holdsContent(Path path) throws IOException {
 		try (Stream<String> lines = Files.lines(path)) {
-			return lines.map(String::trim).anyMatch(line -> !line.isEmpty() && !line.startsWith("#"));
+			return lines.map(RuneConfigurationService::withoutByteOrderMark)
+					.anyMatch(line -> !line.isEmpty() && !line.startsWith("#"));
 		} catch (UncheckedIOException e) {
 			// A file that is not text at all: Files.lines fails on the first malformed byte, and the
 			// caller asked whether this is a configuration, which it is not.
-			throw new IOException("Cannot read the Rune configuration at " + path + ": " + e.getCause().getMessage(), e);
+			throw new IOException("Cannot read the Rune configuration at " + path + ": " + reason(e), e);
 		}
+	}
+
+	/**
+	 * One line with nothing on it that carries meaning: no surrounding blanks, and no byte order mark.
+	 * <p>
+	 * Only the first line of a file can carry a mark, and several Windows editors write one. Left in,
+	 * it makes a file of nothing but comments look like a file with content, and the read that follows
+	 * then fails with "No content to map due to end-of-input" over a file the caller has just created
+	 * for this to write into.
+	 */
+	private static String withoutByteOrderMark(String line) {
+		String trimmed = line.trim();
+		return trimmed.startsWith(BYTE_ORDER_MARK) ? trimmed.substring(1).trim() : trimmed;
+	}
+
+	/**
+	 * What a failure is worth telling the caller: the message of the cause where there is one, because
+	 * the wrapper's own message is usually the stack of types it came through rather than what went
+	 * wrong.
+	 */
+	public static String reason(Throwable failure) {
+		return failure.getCause() == null ? failure.getMessage() : failure.getCause().getMessage();
 	}
 
 	/**
@@ -113,8 +139,7 @@ public class RuneConfigurationService {
 		try {
 			Files.write(path, yaml);
 		} catch (IOException e) {
-			String reason = e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
-			throw new IOException("Cannot write the Rune configuration at " + path + ": " + reason, e);
+			throw new IOException("Cannot write the Rune configuration at " + path + ": " + reason(e), e);
 		}
 	}
 

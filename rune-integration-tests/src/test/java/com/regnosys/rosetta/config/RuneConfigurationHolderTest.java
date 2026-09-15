@@ -2,6 +2,7 @@ package com.regnosys.rosetta.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
@@ -101,6 +102,34 @@ public class RuneConfigurationHolderTest {
 		// Two tools overlaying at once are each validating their own work; neither should be able to
 		// validate against the other's configuration.
 		assertEquals("Base", seenElsewhere.get());
+	}
+
+	@Test
+	public void closingAnOverlayOutOfOrderIsRejected() {
+		RuneConfigurationHolder holder = holderOver(new AtomicReference<>(configNamed("Base")));
+		RuneConfigurationHolder.Scope outer =
+				holder.overlay(config -> configNamed(config.getModel().getName() + "+outer"));
+		RuneConfigurationHolder.Scope inner =
+				holder.overlay(config -> configNamed(config.getModel().getName() + "+inner"));
+
+		// Closing the outer one first would restore Base over the inner overlay that is still open.
+		assertThrows(IllegalStateException.class, outer::close);
+
+		inner.close();
+		outer.close();
+		assertEquals("Base", holder.get().getModel().getName());
+	}
+
+	@Test
+	public void closingAnOverlayTwiceIsRejected() {
+		RuneConfigurationHolder holder = holderOver(new AtomicReference<>(configNamed("Base")));
+		RuneConfigurationHolder.Scope scope = holder.overlay(config -> configNamed("Overlaid"));
+		scope.close();
+
+		// On a pooled thread a second close would put the overlay back for whatever runs there next.
+		assertThrows(IllegalStateException.class, scope::close);
+
+		assertEquals("Base", holder.get().getModel().getName());
 	}
 
 	@Test

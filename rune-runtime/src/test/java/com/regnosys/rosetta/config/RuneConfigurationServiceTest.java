@@ -233,7 +233,28 @@ class RuneConfigurationServiceTest {
 	@Test
 	void aFileThatIsNotThereIsAbsentRatherThanAFailure(@TempDir Path dir) throws IOException {
 		assertFalse(service.readIfPresent(dir.resolve("rune-config.yml")).isPresent());
-		assertFalse(service.readIfPresent(null).isPresent());
+	}
+
+	@Test
+	void noPathAtAllIsACallerMistakeRatherThanAnAbsentFile() {
+		// Reading null as "there is no configuration" would hide a caller that never resolved one.
+		assertThrows(NullPointerException.class, () -> service.readIfPresent(null));
+	}
+
+	@Test
+	void aByteOrderMarkIsNotContent(@TempDir Path dir) throws IOException {
+		// Several Windows editors write one. Counted as content, a comment-only file would then be
+		// read, and fail with "No content to map due to end-of-input".
+		assertFalse(service.readIfPresent(write(dir, "bom-blank.yml", "\uFEFF\n")).isPresent());
+		assertFalse(service.readIfPresent(write(dir, "bom-comments.yml", "\uFEFF# nothing yet\n")).isPresent());
+	}
+
+	@Test
+	void aFileWithAByteOrderMarkAndAConfigurationIsRead(@TempDir Path dir) throws IOException {
+		Optional<RuneConfiguration> read = service.readIfPresent(write(dir, "rune-config.yml", "\uFEFF" + CONFIG));
+
+		assertTrue(read.isPresent());
+		assertEquals("DEMO", read.get().getModel().getName());
 	}
 
 	@Test

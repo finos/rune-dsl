@@ -78,9 +78,9 @@ public class FileBasedRuneConfigurationProvider implements Provider<RuneConfigur
 		try {
 			return configurationService.read(file);
 		} catch (IOException e) {
-			String reason = e.getCause() == null ? e.getMessage() : e.getCause().getMessage();
 			throw new FileBasedRuneConfigurationRuntimeException(
-					"Cannot read the Rune configuration at " + file + ": " + reason, file, e);
+					"Cannot read the Rune configuration at " + file + ": " + RuneConfigurationService.reason(e),
+					file, e);
 		}
 	}
 
