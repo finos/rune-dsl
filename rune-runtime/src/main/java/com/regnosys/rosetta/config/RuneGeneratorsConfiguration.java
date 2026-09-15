@@ -34,6 +34,10 @@ public class RuneGeneratorsConfiguration {
 		return namespaces;
 	}
 
+	// Named without the `get` prefix, so Jackson does not find it on its own: without this it is read
+	// from a file and dropped on the way back out, and a project that rewrote its configuration lost
+	// every entry.
+	@JsonProperty("doNotPrune")
 	public List<RuneAttributeReference> doNotPrune() {
 		return doNotPrune;
 	}
