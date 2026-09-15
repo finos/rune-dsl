@@ -38,7 +38,6 @@ class FileBasedRuneConfigurationProviderTest {
 				assertThrows(FileBasedRuneConfigurationRuntimeException.class, provider::get);
 
 		assertTrue(failure.getMessage().contains(file.toUri().toURL().toString()), failure.getMessage());
-		assertEquals(file.toUri().toURL(), failure.getFile());
 	}
 
 	@Test
@@ -53,7 +52,7 @@ class FileBasedRuneConfigurationProviderTest {
 		FileBasedRuneConfigurationRuntimeException failure =
 				assertThrows(FileBasedRuneConfigurationRuntimeException.class, provider::get);
 
-		assertEquals(dependency.toUri().toURL(), failure.getFile());
+		assertTrue(failure.getMessage().contains(dependency.toUri().toURL().toString()), failure.getMessage());
 	}
 
 	private static FileBasedRuneConfigurationProvider providerOver(Path configFile, Path... classpath)

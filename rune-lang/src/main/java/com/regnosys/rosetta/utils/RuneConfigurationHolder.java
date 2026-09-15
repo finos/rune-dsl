@@ -10,7 +10,6 @@ import jakarta.inject.Singleton;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.UnaryOperator;
 
 /**
  * Holds the current {@link RuneConfiguration}, loaded from {@code rune-config.yml}.
@@ -22,17 +21,16 @@ import java.util.function.UnaryOperator;
  * is simply loaded once.
  * <p>
  * A tool that generates a model and validates it before anything has been written to disk can add to
- * the configuration for the duration of that work with {@link #overlay}, without touching the file
- * or what any other thread sees.
+ * the configuration for the duration of that work with {@link #overlayNamespaceConfigs}, without
+ * touching the file or what any other thread sees.
  */
 @Singleton
 public class RuneConfigurationHolder implements Provider<RuneConfiguration>, javax.inject.Provider<RuneConfiguration> {
 	private final FileBasedRuneConfigurationProvider source;
 	private volatile RuneConfiguration current;
 
-	// Per-thread rather than shared: two tools overlaying at once are each validating their own work,
-	// and neither should see the other's. Nothing is published to the loaded configuration, so a
-	// thread that never overlays is unaffected by one that does.
+	// Per-thread: two tools overlaying at once are each validating their own work, and neither should
+	// see the other's.
 	private final ThreadLocal<Scope> overlay = new ThreadLocal<>();
 
 	@Inject
@@ -70,94 +68,48 @@ public class RuneConfigurationHolder implements Provider<RuneConfiguration>, jav
 	}
 
 	/**
-	 * Applies {@code extra} to what {@link #get()} returns, on the calling thread only, until the
-	 * returned scope is closed. Meant for a try-with-resources around work whose configuration is not
-	 * on disk yet:
-	 *
-	 * <pre>
-	 * try (RuneConfigurationHolder.Scope scope = holder.overlay(config -&gt; config.toBuilder()
-	 *         .addNamespaceConfig(generated)
-	 *         .build())) {
-	 *     validate(generatedModel);
-	 * }
-	 * </pre>
-	 *
-	 * The function runs on each {@link #get()} rather than once, so a {@link #reload()} inside the
-	 * scope is picked up and still carries the overlay.
+	 * Adds {@code entries} to the configured namespaces, on the calling thread only, until the returned
+	 * scope is closed. Each entry is upserted by its id, and every other configured namespace still
+	 * applies.
 	 * <p>
-	 * One at a time: opening a second overlay on a thread that already has one throws. Two at once
-	 * means either a scope that was never closed, or work that has re-entered itself, and the second
-	 * one would then validate against entries belonging to the first. Neither is worth serving
-	 * quietly, and nothing has yet wanted to compose two.
-	 * <p>
-	 * The overlay follows the thread, not the work: anything the scope hands to another thread or to
-	 * a pool sees the configuration without it.
+	 * A {@link #reload()} inside the scope keeps the entries; work handed to another thread does not
+	 * see them; and a second overlay on this thread throws, because it would see this one's entries.
 	 *
-	 * @param extra applied to the loaded configuration; must not be null
-	 * @return the scope to close, which is what takes the overlay away again
+	 * @param entries the namespace configurations to add; must not be null
+	 * @return the scope to close, which is what takes the entries away again
 	 * @throws IllegalStateException if this thread already has an overlay open
 	 */
-	public Scope overlay(UnaryOperator<RuneConfiguration> extra) {
-		Objects.requireNonNull(extra, "An overlay must be a function of the loaded configuration, not null.");
-		Scope open = overlay.get();
-		if (open != null) {
+	public Scope overlayNamespaceConfigs(List<RuneNamespaceConfiguration> entries) {
+		Objects.requireNonNull(entries, "Namespace configurations to overlay must be a list, not null.");
+		if (overlay.get() != null) {
 			throw new IllegalStateException(
-					"This thread already has a configuration overlay open, and a second one would see the"
-							+ " first one's entries. Close the open scope before opening another; if that scope"
-							+ " should have ended already, it is the one that needs fixing.");
+					"This thread already has a configuration overlay open. Close it before opening another.");
 		}
-		Scope scope = new Scope(extra);
+		Scope scope = new Scope(List.copyOf(entries));
 		overlay.set(scope);
 		return scope;
 	}
 
-	/**
-	 * Adds {@code extra} to the configured namespaces, on the calling thread only, until the returned
-	 * scope is closed. The common {@link #overlay}: a generator that has just produced a namespace has
-	 * to validate the model against a configuration for it before that configuration is written
-	 * anywhere.
-	 * <p>
-	 * Each entry is upserted by its id, so it replaces a configured entry of the same name rather than
-	 * competing with it, and every other configured namespace still applies.
-	 *
-	 * @param extra the namespace configurations to add; must not be null
-	 * @return the scope to close, which is what takes the entries away again
-	 */
-	public Scope overlayNamespaceConfigs(List<RuneNamespaceConfiguration> extra) {
-		Objects.requireNonNull(extra, "Namespace configurations to overlay must be a list, not null.");
-		List<RuneNamespaceConfiguration> entries = List.copyOf(extra);
-		return overlay(config -> {
-			RuneConfiguration.Builder builder = config.toBuilder();
-			entries.forEach(builder::addNamespaceConfig);
-			return builder.build();
-		});
-	}
-
-	/**
-	 * One {@link #overlay} in force, closed when the work it covers is over.
-	 * <p>
-	 * Closing a scope that is not the one in force throws rather than clearing the thread. The scope
-	 * that is in force belongs to work that is still running, and taking its overlay away would leave
-	 * it validating against a configuration it never asked for, a long way from the close that did it.
-	 */
+	/** One {@link #overlayNamespaceConfigs} in force, closed when the work it covers is over. */
 	public final class Scope implements AutoCloseable {
-		private final UnaryOperator<RuneConfiguration> extra;
+		private final List<RuneNamespaceConfiguration> entries;
 
-		private Scope(UnaryOperator<RuneConfiguration> extra) {
-			this.extra = extra;
+		private Scope(List<RuneNamespaceConfiguration> entries) {
+			this.entries = entries;
 		}
 
 		private RuneConfiguration applyTo(RuneConfiguration config) {
-			return extra.apply(config);
+			RuneConfiguration.Builder builder = config.toBuilder();
+			entries.forEach(builder::addNamespaceConfig);
+			return builder.build();
 		}
 
+		/** Closing a spent scope throws rather than taking away an overlay that belongs to other work. */
 		@Override
 		public void close() {
 			if (overlay.get() != this) {
-				throw new IllegalStateException(
-						"This configuration overlay is not the one in force on this thread, so closing it would"
-								+ " take away an overlay that belongs to something else. A scope is closed once:"
-								+ " use try-with-resources.");
+				throw new IllegalStateException("This configuration overlay is not the one in force on this"
+						+ " thread. A scope is closed once: use try-with-resources.");
 			}
 			overlay.remove();
 		}

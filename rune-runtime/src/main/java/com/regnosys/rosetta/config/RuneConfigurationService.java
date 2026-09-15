@@ -72,15 +72,12 @@ public class RuneConfigurationService {
 
 	/**
 	 * The configuration at {@code path}, or empty where there is none to read: no file, or a file
-	 * holding only blank lines and comments.
-	 * <p>
-	 * A tool that updates a project's {@code rune-config.yml} needs that distinction. {@code read}
-	 * cannot make it, because a file with nothing in it fails the same way a truncated one does, and
-	 * an empty file is how a project asks for a configuration to be created rather than a corruption
-	 * to be reported. Anything else that will not parse still throws, and the message names the file.
+	 * holding only blank lines and comments. An empty file is how a project asks a tool to create its
+	 * configuration, which {@code read} cannot tell apart from a truncated one. Anything else that
+	 * will not parse still throws, naming the file.
 	 *
-	 * @param path the file to read; must not be null, so that a caller that has no configuration path
-	 *             to offer says so rather than having one silently read as "there is no file"
+	 * @param path the file to read; must not be null, so that a caller with no configuration path to
+	 *             offer says so rather than having one read as "there is no file"
 	 */
 	public Optional<RuneConfiguration> readIfPresent(Path path) throws IOException {
 		Objects.requireNonNull(path, "A configuration to read has to be a path, not null.");
@@ -99,34 +96,21 @@ public class RuneConfigurationService {
 			return lines.map(RuneConfigurationService::withoutByteOrderMark)
 					.anyMatch(line -> !line.isEmpty() && !line.startsWith("#"));
 		} catch (UncheckedIOException e) {
-			// A file that is not text at all: Files.lines fails on the first malformed byte, and the
-			// caller asked whether this is a configuration, which it is not.
+			// A file that is not text at all: Files.lines fails on the first byte it cannot decode.
 			throw new IOException("Cannot read the Rune configuration at " + path + ": " + reason(e), e);
 		}
 	}
 
-	/**
-	 * One line with nothing on it that carries meaning: no surrounding blanks, and no byte order mark.
-	 * <p>
-	 * Only the first line of a file can carry a mark, and several Windows editors write one. Left in,
-	 * it makes a file of nothing but comments look like a file with content, and the read that follows
-	 * then fails with "No content to map due to end-of-input" over a file the caller has just created
-	 * for this to write into.
-	 */
+	/** Several Windows editors write a mark, and left in it makes a comment-only file look like content. */
 	private static String withoutByteOrderMark(String line) {
 		String trimmed = line.trim();
 		return trimmed.startsWith(BYTE_ORDER_MARK) ? trimmed.substring(1).trim() : trimmed;
 	}
 
 	/**
-	 * What a failure is worth telling the caller: the message of the cause where there is one, because
-	 * the wrapper's own message is usually the stack of types it came through rather than what went
-	 * wrong.
-	 * <p>
-	 * A cause carries no message often enough to matter -- a bare {@code NullPointerException} from a
-	 * required field, which is what a configuration missing a section reaches this as -- and the
-	 * wrapper is then the one that says something. Falling through to the type name is the last
-	 * resort; what it replaces is a message ending in "null".
+	 * What a failure is worth telling the caller: its cause's message, which says what went wrong,
+	 * falling back to the wrapper's where the cause has none -- a bare {@code NullPointerException}
+	 * from a required field arrives that way -- and to the type name rather than to "null".
 	 */
 	public static String reason(Throwable failure) {
 		Throwable cause = failure.getCause();
@@ -139,8 +123,7 @@ public class RuneConfigurationService {
 	/**
 	 * Writes {@code configuration} to {@code path}, creating the file or replacing what is there.
 	 * <p>
-	 * A failure names the file. The path is the caller's and is the only thing it can fix, and what
-	 * the file system reports on its own -- "Is a directory", "Permission denied" -- identifies
+	 * A failure names the file: the path is the caller's, and "Is a directory" on its own identifies
 	 * nothing.
 	 */
 	public void write(Path path, RuneConfiguration configuration) throws IOException {

@@ -12,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Optional;
 
 import com.rosetta.model.lib.transform.SerializationFormat;
 
@@ -231,11 +230,6 @@ class RuneConfigurationServiceTest {
 	// --- readIfPresent -----------------------------------------------------------------------------
 
 	@Test
-	void aFileThatIsNotThereIsAbsentRatherThanAFailure(@TempDir Path dir) throws IOException {
-		assertFalse(service.readIfPresent(dir.resolve("rune-config.yml")).isPresent());
-	}
-
-	@Test
 	void noPathAtAllIsACallerMistakeRatherThanAnAbsentFile() {
 		// Reading null as "there is no configuration" would hide a caller that never resolved one.
 		assertThrows(NullPointerException.class, () -> service.readIfPresent(null));
@@ -250,17 +244,10 @@ class RuneConfigurationServiceTest {
 	}
 
 	@Test
-	void aFileWithAByteOrderMarkAndAConfigurationIsRead(@TempDir Path dir) throws IOException {
-		Optional<RuneConfiguration> read = service.readIfPresent(write(dir, "rune-config.yml", "\uFEFF" + CONFIG));
-
-		assertTrue(read.isPresent());
-		assertEquals("DEMO", read.get().getModel().getName());
-	}
-
-	@Test
-	void anEmptyOrCommentOnlyFileIsAbsent(@TempDir Path dir) throws IOException {
+	void aFileWithNothingToReadIsAbsent(@TempDir Path dir) throws IOException {
 		// How a project asks for a configuration to be created: the file is there to be written into,
 		// and read() cannot tell it apart from a truncated one.
+		assertFalse(service.readIfPresent(dir.resolve("missing.yml")).isPresent());
 		assertFalse(service.readIfPresent(write(dir, "empty.yml", "")).isPresent());
 		assertFalse(service.readIfPresent(write(dir, "blank.yml", "\n  \n\n")).isPresent());
 		assertFalse(service.readIfPresent(write(dir, "comments.yml", "# nothing yet\n#   still nothing\n")).isPresent());
@@ -268,10 +255,9 @@ class RuneConfigurationServiceTest {
 
 	@Test
 	void aFileWithAConfigurationIsRead(@TempDir Path dir) throws IOException {
-		Optional<RuneConfiguration> read = service.readIfPresent(write(dir, "rune-config.yml", CONFIG));
-
-		assertTrue(read.isPresent());
-		assertEquals("DEMO", read.get().getModel().getName());
+		assertEquals("DEMO", service.readIfPresent(write(dir, "plain.yml", CONFIG)).get().getModel().getName());
+		// A mark in front of real content is Jackson's to handle, and it does.
+		assertEquals("DEMO", service.readIfPresent(write(dir, "bom.yml", "\uFEFF" + CONFIG)).get().getModel().getName());
 	}
 
 	@Test

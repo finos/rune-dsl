@@ -70,17 +70,15 @@ public class FileBasedRuneConfigurationProvider implements Provider<RuneConfigur
 	}
 
 	/**
-	 * One file, read on its own so that a failure names it. A classpath run reads the project's own
-	 * configuration and every dependency's, and "unable to parse the configuration" over the lot of
-	 * them leaves the reader to work out which file it meant.
+	 * One file, read on its own so that a failure names it: a run reads the project's configuration and
+	 * every dependency's, and one error over the lot leaves the reader to work out which was meant.
 	 */
 	private RuneConfiguration read(URL file) {
 		try {
 			return configurationService.read(file);
 		} catch (IOException e) {
 			throw new FileBasedRuneConfigurationRuntimeException(
-					"Cannot read the Rune configuration at " + file + ": " + RuneConfigurationService.reason(e),
-					file, e);
+					"Cannot read the Rune configuration at " + file + ": " + RuneConfigurationService.reason(e), e);
 		}
 	}
 
