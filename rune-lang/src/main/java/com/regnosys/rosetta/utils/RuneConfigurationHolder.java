@@ -83,20 +83,30 @@ public class RuneConfigurationHolder implements Provider<RuneConfiguration>, jav
 	 * </pre>
 	 *
 	 * The function runs on each {@link #get()} rather than once, so a {@link #reload()} inside the
-	 * scope is picked up and still carries the overlay. Overlays nest: an inner one sees the outer
-	 * one's result, and closing restores exactly what was in place before. Each scope has to be the
-	 * one in force when it is closed, which try-with-resources gives you; closing out of order, or
-	 * twice, throws rather than leaving an overlay on the thread for whatever runs there next.
+	 * scope is picked up and still carries the overlay.
+	 * <p>
+	 * One at a time: opening a second overlay on a thread that already has one throws. Two at once
+	 * means either a scope that was never closed, or work that has re-entered itself, and the second
+	 * one would then validate against entries belonging to the first. Neither is worth serving
+	 * quietly, and nothing has yet wanted to compose two.
 	 * <p>
 	 * The overlay follows the thread, not the work: anything the scope hands to another thread or to
 	 * a pool sees the configuration without it.
 	 *
 	 * @param extra applied to the loaded configuration; must not be null
 	 * @return the scope to close, which is what takes the overlay away again
+	 * @throws IllegalStateException if this thread already has an overlay open
 	 */
 	public Scope overlay(UnaryOperator<RuneConfiguration> extra) {
 		Objects.requireNonNull(extra, "An overlay must be a function of the loaded configuration, not null.");
-		Scope scope = new Scope(extra, overlay.get());
+		Scope open = overlay.get();
+		if (open != null) {
+			throw new IllegalStateException(
+					"This thread already has a configuration overlay open, and a second one would see the"
+							+ " first one's entries. Close the open scope before opening another; if that scope"
+							+ " should have ended already, it is the one that needs fixing.");
+		}
+		Scope scope = new Scope(extra);
 		overlay.set(scope);
 		return scope;
 	}
@@ -126,23 +136,19 @@ public class RuneConfigurationHolder implements Provider<RuneConfiguration>, jav
 	/**
 	 * One {@link #overlay} in force, closed when the work it covers is over.
 	 * <p>
-	 * A close only takes this overlay off the thread when this scope is still the one in force. The
-	 * alternative is to restore what it displaced anyway, which on an out-of-order or repeated close
-	 * puts back a configuration that a still-open scope has moved on from, or leaves an overlay on a
-	 * pooled thread for unrelated work to pick up. Neither shows up where it was caused.
+	 * Closing a scope that is not the one in force throws rather than clearing the thread. The scope
+	 * that is in force belongs to work that is still running, and taking its overlay away would leave
+	 * it validating against a configuration it never asked for, a long way from the close that did it.
 	 */
 	public final class Scope implements AutoCloseable {
 		private final UnaryOperator<RuneConfiguration> extra;
-		private final Scope enclosing;
 
-		private Scope(UnaryOperator<RuneConfiguration> extra, Scope enclosing) {
+		private Scope(UnaryOperator<RuneConfiguration> extra) {
 			this.extra = extra;
-			this.enclosing = enclosing;
 		}
 
-		/** The enclosing overlays first, then this one, so an inner overlay sees the outer one's result. */
 		private RuneConfiguration applyTo(RuneConfiguration config) {
-			return extra.apply(enclosing == null ? config : enclosing.applyTo(config));
+			return extra.apply(config);
 		}
 
 		@Override
@@ -150,14 +156,10 @@ public class RuneConfigurationHolder implements Provider<RuneConfiguration>, jav
 			if (overlay.get() != this) {
 				throw new IllegalStateException(
 						"This configuration overlay is not the one in force on this thread, so closing it would"
-								+ " restore the wrong configuration. A scope is closed once, and before any scope"
-								+ " opened after it: use try-with-resources.");
+								+ " take away an overlay that belongs to something else. A scope is closed once:"
+								+ " use try-with-resources.");
 			}
-			if (enclosing == null) {
-				overlay.remove();
-			} else {
-				overlay.set(enclosing);
-			}
+			overlay.remove();
 		}
 	}
 

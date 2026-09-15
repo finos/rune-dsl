@@ -71,19 +71,29 @@ public class RuneConfigurationHolderTest {
 	}
 
 	@Test
-	public void overlaysNestAndUnwindInOrder() {
+	public void aSecondOverlayOnOneThreadIsRejected() {
 		RuneConfigurationHolder holder = holderOver(new AtomicReference<>(configNamed("Base")));
 
-		try (RuneConfigurationHolder.Scope outer =
-				holder.overlay(config -> configNamed(config.getModel().getName() + "+outer"))) {
-			assertEquals("Base+outer", holder.get().getModel().getName());
+		try (RuneConfigurationHolder.Scope open =
+				holder.overlay(config -> configNamed(config.getModel().getName() + "+open"))) {
+			// A second overlay means a scope that was never closed, or work that has re-entered
+			// itself; either way the second would see the first one's entries.
+			assertThrows(IllegalStateException.class,
+					() -> holder.overlay(config -> configNamed("second")));
 
-			try (RuneConfigurationHolder.Scope inner =
-					holder.overlay(config -> configNamed(config.getModel().getName() + "+inner"))) {
-				assertEquals("Base+outer+inner", holder.get().getModel().getName());
-			}
+			assertEquals("Base+open", holder.get().getModel().getName());
+		}
 
-			assertEquals("Base+outer", holder.get().getModel().getName());
+		assertEquals("Base", holder.get().getModel().getName());
+	}
+
+	@Test
+	public void anOverlayCanBeOpenedAgainOnceTheFirstHasClosed() {
+		RuneConfigurationHolder holder = holderOver(new AtomicReference<>(configNamed("Base")));
+
+		holder.overlay(config -> configNamed("First")).close();
+		try (RuneConfigurationHolder.Scope second = holder.overlay(config -> configNamed("Second"))) {
+			assertEquals("Second", holder.get().getModel().getName());
 		}
 
 		assertEquals("Base", holder.get().getModel().getName());
@@ -103,22 +113,6 @@ public class RuneConfigurationHolderTest {
 		// Two tools overlaying at once are each validating their own work; neither should be able to
 		// validate against the other's configuration.
 		assertEquals("Base", seenElsewhere.get());
-	}
-
-	@Test
-	public void closingAnOverlayOutOfOrderIsRejected() {
-		RuneConfigurationHolder holder = holderOver(new AtomicReference<>(configNamed("Base")));
-		RuneConfigurationHolder.Scope outer =
-				holder.overlay(config -> configNamed(config.getModel().getName() + "+outer"));
-		RuneConfigurationHolder.Scope inner =
-				holder.overlay(config -> configNamed(config.getModel().getName() + "+inner"));
-
-		// Closing the outer one first would restore Base over the inner overlay that is still open.
-		assertThrows(IllegalStateException.class, outer::close);
-
-		inner.close();
-		outer.close();
-		assertEquals("Base", holder.get().getModel().getName());
 	}
 
 	@Test
