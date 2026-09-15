@@ -30,7 +30,7 @@ public class RuneConfiguration {
 			@JsonProperty("dependencies") List<RuneDependencyConfiguration> dependencies,
 			@JsonProperty("generators") RuneGeneratorsConfiguration generators,
 			@JsonProperty("namespaceConfig") List<RuneNamespaceConfiguration> namespaceConfig) {
-		Objects.requireNonNull(model);
+		Objects.requireNonNull(model, "A Rune configuration needs a `model` section naming the model.");
 		this.model = model;
 		this.dependencies = dependencies == null ? Collections.emptyList() : dependencies;
 		this.generators = generators == null ? new RuneGeneratorsConfiguration() : generators;
