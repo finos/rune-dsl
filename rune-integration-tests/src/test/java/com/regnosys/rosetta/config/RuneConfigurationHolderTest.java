@@ -33,6 +33,19 @@ public class RuneConfigurationHolderTest {
 	}
 
 	@Test
+	public void anOverlayAppliesAnyChangeAndGoesWhenTheScopeCloses() {
+		RuneConfigurationHolder holder = holderOver(new AtomicReference<>(configNamed("Base")));
+
+		try (RuneConfigurationHolder.Scope scope = holder.overlay(config -> config.toBuilder()
+				.model(new RuneModelConfiguration("Overlaid", Collections.emptyList()))
+				.build())) {
+			assertEquals("Overlaid", holder.get().getModel().getName());
+		}
+
+		assertEquals("Base", holder.get().getModel().getName());
+	}
+
+	@Test
 	public void overlaidEntriesAreUpsertedAndGoWhenTheScopeCloses() {
 		RuneConfiguration configured = configNamed("Base", schema("kept", "kept.json"));
 		RuneConfigurationHolder holder = holderOver(new AtomicReference<>(configured));
