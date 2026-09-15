@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.UnaryOperator;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
@@ -129,6 +130,23 @@ public class RuneConfigurationHolderTest {
 		// On a pooled thread a second close would put the overlay back for whatever runs there next.
 		assertThrows(IllegalStateException.class, scope::close);
 
+		assertEquals("Base", holder.get().getModel().getName());
+	}
+
+	@Test
+	public void closingAnOverlayTwiceIsRejectedWhenTheSameFunctionIsOverlaidAgain() {
+		RuneConfigurationHolder holder = holderOver(new AtomicReference<>(configNamed("Base")));
+		UnaryOperator<RuneConfiguration> reused = config -> configNamed("Overlaid");
+
+		RuneConfigurationHolder.Scope first = holder.overlay(reused);
+		first.close();
+		RuneConfigurationHolder.Scope second = holder.overlay(reused);
+
+		// Two scopes over one function: closing the spent one must not take the live one's overlay away.
+		assertThrows(IllegalStateException.class, first::close);
+		assertEquals("Overlaid", holder.get().getModel().getName());
+
+		second.close();
 		assertEquals("Base", holder.get().getModel().getName());
 	}
 

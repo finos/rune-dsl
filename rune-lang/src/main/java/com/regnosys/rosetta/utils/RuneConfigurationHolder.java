@@ -33,7 +33,7 @@ public class RuneConfigurationHolder implements Provider<RuneConfiguration>, jav
 	// Per-thread rather than shared: two tools overlaying at once are each validating their own work,
 	// and neither should see the other's. Nothing is published to the loaded configuration, so a
 	// thread that never overlays is unaffected by one that does.
-	private final ThreadLocal<UnaryOperator<RuneConfiguration>> overlay = new ThreadLocal<>();
+	private final ThreadLocal<Scope> overlay = new ThreadLocal<>();
 
 	@Inject
 	public RuneConfigurationHolder(FileBasedRuneConfigurationProvider source) {
@@ -43,8 +43,8 @@ public class RuneConfigurationHolder implements Provider<RuneConfiguration>, jav
 	@Override
 	public RuneConfiguration get() {
 		RuneConfiguration config = loaded();
-		UnaryOperator<RuneConfiguration> active = overlay.get();
-		return active == null ? config : active.apply(config);
+		Scope active = overlay.get();
+		return active == null ? config : active.applyTo(config);
 	}
 
 	private RuneConfiguration loaded() {
@@ -96,44 +96,9 @@ public class RuneConfigurationHolder implements Provider<RuneConfiguration>, jav
 	 */
 	public Scope overlay(UnaryOperator<RuneConfiguration> extra) {
 		Objects.requireNonNull(extra, "An overlay must be a function of the loaded configuration, not null.");
-		UnaryOperator<RuneConfiguration> previous = overlay.get();
-		UnaryOperator<RuneConfiguration> combined =
-				previous == null ? extra : config -> extra.apply(previous.apply(config));
-		overlay.set(combined);
-		return new NestedScope(previous, combined);
-	}
-
-	/**
-	 * One overlay, which takes itself off the thread when it closes.
-	 * <p>
-	 * A close only restores what this scope displaced when this scope is still the one in force. The
-	 * alternative is to restore anyway, which on an out-of-order or repeated close puts back a
-	 * configuration that some still-open scope has moved on from, or leaves an overlay on a pooled
-	 * thread to be picked up by unrelated work. Neither shows up where it was caused.
-	 */
-	private final class NestedScope implements Scope {
-		private final UnaryOperator<RuneConfiguration> previous;
-		private final UnaryOperator<RuneConfiguration> mine;
-
-		private NestedScope(UnaryOperator<RuneConfiguration> previous, UnaryOperator<RuneConfiguration> mine) {
-			this.previous = previous;
-			this.mine = mine;
-		}
-
-		@Override
-		public void close() {
-			if (overlay.get() != mine) {
-				throw new IllegalStateException(
-						"This configuration overlay is not the one in force on this thread, so closing it would"
-								+ " restore the wrong configuration. A scope is closed once, and before any scope"
-								+ " opened after it: use try-with-resources.");
-			}
-			if (previous == null) {
-				overlay.remove();
-			} else {
-				overlay.set(previous);
-			}
-		}
+		Scope scope = new Scope(extra, overlay.get());
+		overlay.set(scope);
+		return scope;
 	}
 
 	/**
@@ -158,10 +123,42 @@ public class RuneConfigurationHolder implements Provider<RuneConfiguration>, jav
 		});
 	}
 
-	/** One {@link #overlay} in force, closed when the work it covers is over. */
-	public interface Scope extends AutoCloseable {
+	/**
+	 * One {@link #overlay} in force, closed when the work it covers is over.
+	 * <p>
+	 * A close only takes this overlay off the thread when this scope is still the one in force. The
+	 * alternative is to restore what it displaced anyway, which on an out-of-order or repeated close
+	 * puts back a configuration that a still-open scope has moved on from, or leaves an overlay on a
+	 * pooled thread for unrelated work to pick up. Neither shows up where it was caused.
+	 */
+	public final class Scope implements AutoCloseable {
+		private final UnaryOperator<RuneConfiguration> extra;
+		private final Scope enclosing;
+
+		private Scope(UnaryOperator<RuneConfiguration> extra, Scope enclosing) {
+			this.extra = extra;
+			this.enclosing = enclosing;
+		}
+
+		/** The enclosing overlays first, then this one, so an inner overlay sees the outer one's result. */
+		private RuneConfiguration applyTo(RuneConfiguration config) {
+			return extra.apply(enclosing == null ? config : enclosing.applyTo(config));
+		}
+
 		@Override
-		void close();
+		public void close() {
+			if (overlay.get() != this) {
+				throw new IllegalStateException(
+						"This configuration overlay is not the one in force on this thread, so closing it would"
+								+ " restore the wrong configuration. A scope is closed once, and before any scope"
+								+ " opened after it: use try-with-resources.");
+			}
+			if (enclosing == null) {
+				overlay.remove();
+			} else {
+				overlay.set(enclosing);
+			}
+		}
 	}
 
 	/**
