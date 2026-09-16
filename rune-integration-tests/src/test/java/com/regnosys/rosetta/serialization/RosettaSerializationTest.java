@@ -14,6 +14,11 @@ import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import com.regnosys.rosetta.builtin.RosettaBuiltinsService;
+import com.regnosys.rosetta.rosetta.RosettaEnumValue;
+import com.regnosys.rosetta.rosetta.RosettaEnumeration;
+import com.regnosys.rosetta.rosetta.RosettaFactory;
+import com.regnosys.rosetta.rosetta.Schema;
 import com.regnosys.rosetta.rosetta.expression.ExpressionFactory;
 import com.regnosys.rosetta.rosetta.expression.LogicalOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaAbsentExpression;
@@ -38,6 +43,40 @@ public class RosettaSerializationTest {
 
 	@Inject
 	private Serializer serializer;
+
+	@Inject
+	private RosettaBuiltinsService builtins;
+
+	@Test
+	void serializesDocumentationOfASchemaBuiltInMemory() {
+		// A model import builds the schema declaration programmatically and serializes the model, so
+		// the documentation has to survive a serialization that has no node model to copy text from.
+		RosettaTestModel testModel = modelService.toTestModel("""
+			namespace test
+
+			type Foo:
+				foo string (0..1)
+			""");
+		RosettaEnumValue xml = builtins.getBasicTypesModel(testModel.getResourceSet()).getElements().stream()
+				.filter(RosettaEnumeration.class::isInstance)
+				.map(RosettaEnumeration.class::cast)
+				.filter(e -> "SerializationFormat".equals(e.getName()))
+				.flatMap(e -> e.getEnumValues().stream())
+				.filter(v -> "XML".equals(v.getName()))
+				.findFirst()
+				.orElseThrow();
+
+		Schema schema = RosettaFactory.eINSTANCE.createSchema();
+		schema.setName("fixml");
+		schema.setFormat(xml);
+		schema.setDefinition("A named serialization schema.");
+		testModel.getModel().getElements().add(schema);
+
+		String serialized = serializer.serialize(testModel.getModel());
+
+		assertTrue(serialized.contains("schema fixml XML <\"A named serialization schema.\">"),
+				"Expected the schema documentation in the serialized model, but got:\n" + serialized);
+	}
 
 	@Test
 	void serializesImplicitAttributeSymbolReferenceWithLocalName() {

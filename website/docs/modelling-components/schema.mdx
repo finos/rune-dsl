@@ -28,7 +28,23 @@ The format refers to a value of the built-in `SerializationFormat` enumeration:
 | `CSV` | Comma-separated values. Only valid for tabular types, i.e. types whose attributes are all single-cardinality basic types. |
 | `CSV_LABELLED` | **Deprecated.** Comma-separated values with a header row of human-readable labels. Use `CSV` with a `headerStyle` of `LABEL` in the CSV serialization configuration instead: `CSV_LABELLED` reads no serialization configuration, so any configuration declared alongside it is ignored, whereas `CSV` honours the whole configuration and resolves the label provider by the same rules. Using it reports a warning. |
 
-## 2. Referencing a schema from a transform function
+## 2. Documenting a schema
+
+A schema can carry an optional description, in angle brackets after the format, as any other model
+element does:
+
+```
+schema fixml XML <"FIXML 5.0 SP2, as published by the FIX Trading Community.">
+```
+
+The description sits before any annotations:
+
+```
+schema fixml XML <"FIXML 5.0 SP2, as published by the FIX Trading Community.">
+    [externalConfig]
+```
+
+## 3. Referencing a schema from a transform function
 
 Transform functions (`ingest`, `projection`, `enrich`) declare the format they read or write
 through a transform annotation. The annotation can reference either a bare format or a schema:
@@ -47,11 +63,11 @@ Referencing a schema by name (`[ingest fixml]`) is equivalent to referencing its
 external configuration (see below). A schema is indexed like any other named model element, so it
 can be referenced from models that depend on the one declaring it.
 
-## 3. Annotations on a schema
+## 4. Annotations on a schema
 
 A schema can carry annotations.
 
-### 3.1 `[externalConfig]`
+### 4.1 `[externalConfig]`
 
 The `[externalConfig]` annotation may only be applied to a schema. It signifies that the schema
 has an externally-configured serialization configuration — typically the path to an XML
@@ -75,7 +91,7 @@ Validation keeps the marker and the external configuration in sync:
   `[externalConfig]` produces a **warning**, because the configuration would otherwise be silently
   ignored.
 
-### 3.2 `[deprecated]`
+### 4.2 `[deprecated]`
 
 A schema can be marked `[deprecated]` to signal that it will be removed or replaced. Referencing a
 deprecated schema produces a deprecation warning, consistent with deprecating other model elements
