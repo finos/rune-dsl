@@ -881,6 +881,7 @@ repository:
           end: '{{rootEnd}}'
           patterns:
           - include: '#comment'
+          - include: '#documentation'
           - include: '#annotation'
           - name: variable.other.enummember.rosetta
             match: '{{identifier}}'
