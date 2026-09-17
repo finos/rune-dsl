@@ -3,11 +3,15 @@ package com.regnosys.rosetta.config;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -23,6 +27,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
  * properties are not preserved &mdash; they are dropped on read.
  */
 public class RuneConfigurationService {
+
+	private static final String BYTE_ORDER_MARK = "\uFEFF";
 
 	private final ObjectMapper mapper;
 
@@ -64,8 +70,69 @@ public class RuneConfigurationService {
 		return mapper.readValue(yaml, RuneConfiguration.class);
 	}
 
+	/**
+	 * The configuration at {@code path}, or empty where there is none to read: no file, or a file
+	 * holding only blank lines and comments. An empty file is how a project asks a tool to create its
+	 * configuration, which {@code read} cannot tell apart from a truncated one. Anything else that
+	 * will not parse still throws, naming the file.
+	 *
+	 * @param path the file to read; must not be null, so that a caller with no configuration path to
+	 *             offer says so rather than having one read as "there is no file"
+	 */
+	public Optional<RuneConfiguration> readIfPresent(Path path) throws IOException {
+		Objects.requireNonNull(path, "A configuration to read has to be a path, not null.");
+		if (!Files.isRegularFile(path) || !holdsContent(path)) {
+			return Optional.empty();
+		}
+		try {
+			return Optional.ofNullable(mapper.readValue(path.toFile(), RuneConfiguration.class));
+		} catch (IOException e) {
+			throw new IOException("Cannot read the Rune configuration at " + path + ": " + reason(e), e);
+		}
+	}
+
+	private static boolean holdsContent(Path path) throws IOException {
+		try (Stream<String> lines = Files.lines(path)) {
+			return lines.map(RuneConfigurationService::withoutByteOrderMark)
+					.anyMatch(line -> !line.isEmpty() && !line.startsWith("#"));
+		} catch (UncheckedIOException e) {
+			// A file that is not text at all: Files.lines fails on the first byte it cannot decode.
+			throw new IOException("Cannot read the Rune configuration at " + path + ": " + reason(e), e);
+		}
+	}
+
+	/** Several Windows editors write a mark, and left in it makes a comment-only file look like content. */
+	private static String withoutByteOrderMark(String line) {
+		String trimmed = line.trim();
+		return trimmed.startsWith(BYTE_ORDER_MARK) ? trimmed.substring(1).trim() : trimmed;
+	}
+
+	/**
+	 * What a failure is worth telling the caller: its cause's message, which says what went wrong,
+	 * falling back to the wrapper's where the cause has none -- a bare {@code NullPointerException}
+	 * from a required field arrives that way -- and to the type name rather than to "null".
+	 */
+	public static String reason(Throwable failure) {
+		Throwable cause = failure.getCause();
+		if (cause != null && cause.getMessage() != null) {
+			return cause.getMessage();
+		}
+		return failure.getMessage() != null ? failure.getMessage() : failure.toString();
+	}
+
+	/**
+	 * Writes {@code configuration} to {@code path}, creating the file or replacing what is there.
+	 * <p>
+	 * A failure names the file: the path is the caller's, and "Is a directory" on its own identifies
+	 * nothing.
+	 */
 	public void write(Path path, RuneConfiguration configuration) throws IOException {
-		Files.write(path, writeString(configuration).getBytes(StandardCharsets.UTF_8));
+		byte[] yaml = writeString(configuration).getBytes(StandardCharsets.UTF_8);
+		try {
+			Files.write(path, yaml);
+		} catch (IOException e) {
+			throw new IOException("Cannot write the Rune configuration at " + path + ": " + reason(e), e);
+		}
 	}
 
 	public void write(Writer writer, RuneConfiguration configuration) throws IOException {
