@@ -177,6 +177,39 @@ public class RosettaFormattingTest {
 	}
 
 	@Test
+	void testFormatSchemaWithDocumentation() {
+		formatAndAssert("""
+				namespace test
+				version "1"
+
+
+				schema   fixml   XML    <"A named serialization schema.">
+				""", """
+				namespace test
+				version "1"
+
+				schema fixml XML <"A named serialization schema.">
+				""");
+	}
+
+	@Test
+	void testFormatSchemaWithDocumentationAndAnnotation() {
+		formatAndAssert("""
+				namespace test
+				version "1"
+
+
+				schema   fixml   XML   <"A named serialization schema.">   [deprecated]
+				""", """
+				namespace test
+				version "1"
+
+				schema fixml XML <"A named serialization schema.">
+					[deprecated]
+				""");
+	}
+
+	@Test
 	void testFormatTypeAliasWithDocumentation() {
 		formatAndAssert("""
 				namespace test

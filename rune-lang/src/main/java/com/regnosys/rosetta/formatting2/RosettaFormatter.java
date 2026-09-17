@@ -237,6 +237,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 				IHiddenRegionFormatter::oneSpace);
 		document.prepend(regionFor(ele).assignment(grammarAccess.getSchemaAccess().getFormatAssignment_2()),
 				IHiddenRegionFormatter::oneSpace);
+		formatDefinition(ele, document);
 		formattingUtil.indentInner(ele, document);
 		formatAnnotations(ele, document);
 	}

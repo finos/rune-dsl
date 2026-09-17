@@ -181,7 +181,7 @@ RosettaRootElement:
 ;
 
 Schema:
-	'schema' RosettaNamed format=[RosettaEnumValue|ValidID]
+	'schema' RosettaNamed format=[RosettaEnumValue|ValidID] RosettaDefinable?
 	Annotations*
 ;
 
