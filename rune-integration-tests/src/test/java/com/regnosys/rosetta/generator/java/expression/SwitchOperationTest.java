@@ -23,28 +23,79 @@ public class SwitchOperationTest {
     private JavaTypeUtil typeUtil;
 
     @Test
+    void switchOnTypesWithSameSimpleNameInDifferentNamespaces() {
+        var commonModel = """
+                namespace common
+
+                type Product:
+        """;
+
+        var ns1Model = """
+                namespace ns1
+                import common.*
+
+                type CommodityOption extends Product:
+                    a int (1..1)
+        """;
+
+        var ns2Model = """
+                namespace ns2
+                import common.*
+
+                type CommodityOption extends Product:
+                    b int (1..1)
+        """;
+
+        var mainModel = """
+                import common.*
+                import ns1.*
+                import ns2.*
+
+                func MyFunc:
+                    inputs:
+                        product Product (1..1)
+                    output:
+                        result int (0..1)
+
+                    set result:
+                        product switch
+                            ns1.CommodityOption then a,
+                            ns2.CommodityOption then b,
+                            default -1
+        """;
+
+        var model = modelService.toJavaTestModel(mainModel, commonModel, ns1Model, ns2Model).compile();
+
+        var resultNs1 = model.evaluateExpression(Integer.class, "MyFunc(ns1.CommodityOption { a: 1 })");
+        assertEquals(1, resultNs1);
+
+        var resultNs2 = model.evaluateExpression(Integer.class, "MyFunc(ns2.CommodityOption { b: 2 })");
+        assertEquals(2, resultNs2);
+    }
+
+    @Test
     void switchOnTypesInAnotherNamespace() {
         var model1 = """
                 namespace other
-        
+
                 type Baz:
-        
+
                 type Foo extends Baz:
                     someBoolean boolean (0..1)
-        
+
                  type Bar extends Baz:
                     someBoolean boolean (0..1)
         """;
 
         var model2 = """
                 import other.* as other
-        
+
                 func MyFunc:
                     inputs:
                         baz other.Baz (1..1)
                     output:
                         result string (0..1)
-        
+
                     set result:
                         baz switch
                             other.Foo then "Foo",
