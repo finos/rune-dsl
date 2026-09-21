@@ -1426,7 +1426,7 @@ class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBuilder, 
 				val itemVar = context.scope.createIdentifier(switchCase.expression.implicitVarInContext, caseType.name.toFirstLower)
 				val castExpression = JavaExpression.from('''(«caseJavaType») «switchArg»''', caseJavaType)
 				new JavaIfThenElseBuilder(
-					JavaExpression.from('''«switchArg» instanceof «caseType»''', JavaPrimitiveType.BOOLEAN),
+					JavaExpression.from('''«switchArg» instanceof «caseJavaType»''', JavaPrimitiveType.BOOLEAN),
 					new JavaLocalVariableDeclarationStatement(true, caseJavaType, itemVar, castExpression)
 								.append(switchCase.expression.javaCode(context)),
 					acc,
