@@ -28,3 +28,10 @@ func IsAllowed:
         result boolean (1..1)
     set result:
         input -> val <> "forbidden"
+
+type SpansSeveralLines:
+    val string (1..1)
+
+    condition NotAMultiLineText:
+        val <> "first line
+second line"

@@ -92,7 +92,7 @@ public class ConditionGenerator extends FluentJavaClassGenerator<Condition, Java
 
 	@Override
 	protected CodeRenderer generateClass(Condition condition, JavaConditionInterface conditionClass, String version, JavaClassScope classScope) {
-		String definition = RosettaGrammarUtil.quote(RosettaGrammarUtil.extractNodeText(condition, SimplePackage.Literals.CONDITION__EXPRESSION));
+		String definition = RosettaGrammarUtil.quoteForCodeWriter(RosettaGrammarUtil.extractNodeText(condition, SimplePackage.Literals.CONDITION__EXPRESSION));
 		List<JavaClass<?>> deps = dependencyProvider.javaDependencies(condition.getExpression());
 		ImplicitVariableRepresentation implicitVarRepr = identifierRepresentationService.getImplicitVarInContext(condition.getExpression());
 		String instanceVarName = StringUtils.uncapitalize(conditionClass.getInstanceType().getName());
@@ -141,7 +141,10 @@ public class ConditionGenerator extends FluentJavaClassGenerator<Condition, Java
 			out.indented(() -> {
 				out.newline();
 				out.writeln("String NAME = \"", conditionClass.getSimpleName(), "\";");
-				out.writeln("String DEFINITION = ", definition, ";");
+				out.write("String DEFINITION = ");
+				// A definition spanning several lines continues one level deeper
+				out.indented(() -> out.write(definition));
+				out.writeln(";");
 				if (!conditionClass.implementsValidatorInterface()) {
 					out.write(List.class, "<", ValidationResult.class, "<?>> getValidationResults(", RosettaPath.class, " ", pathId, ", ", conditionClass.getInstanceClass(), " ", instanceId);
 					for (TypeParameter param : params.keySet()) {
