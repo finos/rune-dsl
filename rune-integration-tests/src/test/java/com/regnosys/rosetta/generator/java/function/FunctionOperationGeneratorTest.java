@@ -112,7 +112,8 @@ public class FunctionOperationGeneratorTest {
                                 return MapperS.of(in2).<Integer>map("getFrequency", period -> period.getFrequency());
                             }
                         }
-                    }}
+                    }
+                }
                 """,
             generated
         );
@@ -753,7 +754,8 @@ public class FunctionOperationGeneratorTest {
                                 return arg1;
                             }
                         }
-                    }}
+                    }
+                }
                 """,
             generated);
 
