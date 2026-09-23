@@ -113,4 +113,96 @@ public class AbstractCodeWriterTest {
         crlf.write("World");
         assertEquals("Hello\r\nWorld", crlf.toString());
     }
+
+    @Test
+    void testMultiLineTextWithoutIndent() {
+        out.write("First\nSecond\nThird");
+        assertEquals("First\nSecond\nThird", out.toString());
+    }
+
+    @Test
+    void testMultiLineTextIsIndentedOnEveryLine() {
+        out.indent();
+        out.indent();
+        out.write("/**\n * Doc\n */\n");
+        assertEquals("        /**\n         * Doc\n         */\n", out.toString());
+    }
+
+    @Test
+    void testEmptyLinesInMultiLineTextStayEmpty() {
+        out.indent();
+        out.write("First\n\nSecond\n\n");
+        assertEquals("    First\n\n    Second\n\n", out.toString());
+    }
+
+    @Test
+    void testCarriageReturnBeforeLineFeedIsDropped() {
+        out.indent();
+        out.write("First\r\nSecond\r\n\r\nThird");
+        assertEquals("    First\n    Second\n\n    Third", out.toString());
+    }
+
+    @Test
+    void testLineBreaksUseConfiguredNewline() {
+        StringCodeWriter crlf = new StringCodeWriter(CodeWriterConfig.builder().newline("\r\n").build());
+        crlf.indent();
+        crlf.write("First\nSecond\r\nThird");
+        assertEquals("    First\r\n    Second\r\n    Third", crlf.toString());
+    }
+
+    @Test
+    void testTextEndingWithLineFeedEndsTheLine() {
+        out.indent();
+        out.write("First\n");
+        out.write("Second");
+        assertEquals("    First\n    Second", out.toString());
+    }
+
+    @Test
+    void testTextStartingWithLineFeedEndsTheCurrentLine() {
+        out.indent();
+        out.write("First");
+        out.write("\nSecond");
+        assertEquals("    First\n    Second", out.toString());
+    }
+
+    @Test
+    void testTextAfterLastLineFeedLeavesWriterMidLine() {
+        out.indent();
+        out.write("First\nSecond");
+        out.write(" continued");
+        out.newline();
+        out.write("Third");
+        assertEquals("    First\n    Second continued\n    Third", out.toString());
+    }
+
+    @Test
+    void testMultiLineTextAfterMidLineWriteContinuesTheLine() {
+        out.indent();
+        out.write("int x = ");
+        out.write("1 +\n2;");
+        assertEquals("    int x = 1 +\n    2;", out.toString());
+    }
+
+    @Test
+    void testMultiLineTextInsideIndented() {
+        out.writeln("{");
+        out.indented(() -> out.write("First\n\nSecond\n"));
+        out.write("}");
+        assertEquals("{\n    First\n\n    Second\n}", out.toString());
+    }
+
+    @Test
+    void testTextOfOnlyLineFeeds() {
+        out.indent();
+        out.write("\n\n");
+        assertEquals("\n\n", out.toString());
+    }
+
+    @Test
+    void testMultiLineToStringOfNonStringObject() {
+        out.indent();
+        out.write(new StringBuilder("First\nSecond"));
+        assertEquals("    First\n    Second", out.toString());
+    }
 }

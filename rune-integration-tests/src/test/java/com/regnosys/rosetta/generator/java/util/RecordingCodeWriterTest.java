@@ -88,6 +88,20 @@ class RecordingCodeWriterTest {
 	}
 
 	@Test
+	void multiLineTextIsIndentedByReplayTarget() {
+		out.writeln("{");
+		out.indented(() -> out.write("/**\n * doc\n */\n"));
+		out.write("}");
+
+		assertEquals("""
+				{
+				    /**
+				     * doc
+				     */
+				}""", replayToString());
+	}
+
+	@Test
 	void replayCanBeRepeated() {
 		out.write("code");
 

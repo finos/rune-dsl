@@ -25,7 +25,8 @@ import com.regnosys.rosetta.codegen.api.CodeWriterConfig;
 /**
  * Base {@link CodeWriter} implementation handling indentation and line breaks,
  * as configured by a {@link CodeWriterConfig}. Objects other than
- * {@link CodeRenderer}s are written using their {@code toString} representation.
+ * {@link CodeRenderer}s are written using their {@code toString} representation,
+ * with line breaks in it handled as described in {@link CodeWriter#write(Object)}.
  *
  * <p>Subclasses only need to implement {@link #writeString(String)}, which
  * determines where the code is written to.
@@ -55,11 +56,47 @@ public abstract class AbstractCodeWriter implements CodeWriter {
             renderer.render(this);
             return;
         }
+        String text = object.toString();
+        int lineEnd = text.indexOf('\n');
+        if (lineEnd >= 0) {
+            writeLines(text, lineEnd);
+            return;
+        }
         if (atStartOfLine) {
             writeString(config.getIndent().repeat(indent));
             atStartOfLine = false;
         }
-        writeString(object.toString());
+        writeString(text);
+    }
+
+    /**
+     * Writes text containing at least one line feed, of which
+     * {@code firstLineEnd} is the index of the first. Each line feed (with
+     * a preceding carriage return, if any) ends the line as {@link #newline()}
+     * does, and each line with content gets the current indentation.
+     */
+    private void writeLines(String text, int firstLineEnd) {
+        int lineStart = 0;
+        int lineEnd = firstLineEnd;
+        do {
+            int contentEnd = lineEnd > lineStart && text.charAt(lineEnd - 1) == '\r' ? lineEnd - 1 : lineEnd;
+            writeLineContent(text, lineStart, contentEnd);
+            newline();
+            lineStart = lineEnd + 1;
+            lineEnd = text.indexOf('\n', lineStart);
+        } while (lineEnd >= 0);
+        writeLineContent(text, lineStart, text.length());
+    }
+
+    private void writeLineContent(String text, int start, int end) {
+        if (start == end) {
+            return;
+        }
+        if (atStartOfLine) {
+            writeString(config.getIndent().repeat(indent));
+            atStartOfLine = false;
+        }
+        writeString(text.substring(start, end));
     }
 
     @Override

@@ -54,11 +54,48 @@ public final class TargetStringConcatenationCodeWriter implements CodeWriter {
 			renderer.render(this);
 			return;
 		}
+		if (object instanceof String text) {
+			int lineEnd = text.indexOf('\n');
+			if (lineEnd >= 0) {
+				writeLines(text, lineEnd);
+				return;
+			}
+		}
 		if (atStartOfLine) {
 			target.append(INDENT.repeat(indent));
 			atStartOfLine = false;
 		}
 		target.append(object);
+	}
+
+	/**
+	 * Writes text containing at least one line feed, of which {@code firstLineEnd}
+	 * is the index of the first, following the rules of {@link CodeWriter#write(Object)}.
+	 * Only strings are split: other objects are handed to the target as they are,
+	 * so that it can handle them itself.
+	 */
+	private void writeLines(String text, int firstLineEnd) {
+		int lineStart = 0;
+		int lineEnd = firstLineEnd;
+		do {
+			int contentEnd = lineEnd > lineStart && text.charAt(lineEnd - 1) == '\r' ? lineEnd - 1 : lineEnd;
+			writeLineContent(text, lineStart, contentEnd);
+			newline();
+			lineStart = lineEnd + 1;
+			lineEnd = text.indexOf('\n', lineStart);
+		} while (lineEnd >= 0);
+		writeLineContent(text, lineStart, text.length());
+	}
+
+	private void writeLineContent(String text, int start, int end) {
+		if (start == end) {
+			return;
+		}
+		if (atStartOfLine) {
+			target.append(INDENT.repeat(indent));
+			atStartOfLine = false;
+		}
+		target.append(text.substring(start, end));
 	}
 
 	@Override
