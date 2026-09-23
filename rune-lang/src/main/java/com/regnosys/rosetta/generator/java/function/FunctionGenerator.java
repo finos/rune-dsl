@@ -542,13 +542,14 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 					out.writeln("}");
 				});
 				out.writeln("}");
+				out.newline();
 
 				dispatchingFuncs.forEach(enumFunc -> {
 					RFunction rFunction = enumFuncToRFunc.get(enumFunc);
 					RGeneratedJavaClass<? extends RosettaFunction> nestedClass = enumFuncToClass.get(enumFunc);
 					JavaClassScope scope = enumFuncToScope.get(enumFunc);
-					out.newline();
 					out.write(rBuildClass(rFunction, nestedClass, true, List.of(JavaClass.from(RosettaFunction.class)), Collections.emptyMap(), false, scope));
+					out.newline();
 				});
 			});
 			out.write("}");
