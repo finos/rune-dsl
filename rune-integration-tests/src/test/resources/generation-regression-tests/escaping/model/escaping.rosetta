@@ -22,4 +22,7 @@ func DocumentedFunction: <"A function stored in C:\\users, which */ ends a comme
     output:
         result string (1..1) <"An output stored in C:\\users, which */ ends a comment.">
 
+    condition InputIsSet: <"A condition stored in C:\\users, which is \"quoted\".">
+        input exists
+
     set result: input

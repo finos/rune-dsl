@@ -111,6 +111,8 @@ import com.rosetta.util.types.JavaPrimitiveType;
 import com.rosetta.util.types.JavaReferenceType;
 import com.rosetta.util.types.JavaType;
 
+import org.apache.commons.text.StringEscapeUtils;
+
 import jakarta.inject.Inject;
 
 public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction, RGeneratedJavaClass<? extends RosettaFunction>> {
@@ -881,7 +883,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 	private void renderContributeCondition(CodeWriter out, Condition condition, GeneratedIdentifier conditionValidator, JavaStatementScope scope) {
 		JavaStatementBuilder conditionBody = expressionGenerator.javaCode(condition.getExpression(), typeUtil.COMPARISON_RESULT, scope.lambdaScope());
 		out.writeln(conditionValidator, ".validate(() -> ", conditionBody.toLambdaBody(), ",");
-		out.writeln("    \"", condition.getDefinition(), "\");");
+		out.writeln("    \"", StringEscapeUtils.escapeJava(condition.getDefinition()), "\");");
 	}
 
 	private JavaType outputTypeOrVoid(Function function) {
