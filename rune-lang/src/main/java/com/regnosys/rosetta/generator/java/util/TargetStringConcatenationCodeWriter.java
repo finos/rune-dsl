@@ -57,9 +57,9 @@ public final class TargetStringConcatenationCodeWriter implements CodeWriter {
 			renderer.render(this);
 			return;
 		}
-		if (!(object instanceof String text)) {
-			// Only strings are split: other objects are handed to the target as they are,
-			// so that it can handle them itself.
+		if (!(object instanceof CharSequence charSequence)) {
+			// Only text is split, including Xtend rich strings: other objects are handed
+			// to the target as they are, so that it can handle them itself.
 			if (atStartOfLine) {
 				target.append(INDENT.repeat(indent));
 				atStartOfLine = false;
@@ -67,6 +67,7 @@ public final class TargetStringConcatenationCodeWriter implements CodeWriter {
 			target.append(object);
 			return;
 		}
+		String text = charSequence.toString();
 		int lineStart = 0;
 		int lineEnd;
 		while ((lineEnd = text.indexOf('\n', lineStart)) >= 0) {

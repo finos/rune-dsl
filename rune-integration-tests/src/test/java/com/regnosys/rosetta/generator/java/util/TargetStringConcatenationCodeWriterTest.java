@@ -84,7 +84,18 @@ class TargetStringConcatenationCodeWriterTest {
 	}
 
 	@Test
-	void nonStringObjectsAreHandedToTheTargetUnsplit() {
+	void richStringIsIndentedOnEveryLine() {
+		StringConcatenation richString = new StringConcatenation("\n");
+		richString.append("/**\n * doc\n */\n");
+		assertEquals("{\n    /**\n     * doc\n     */\n}", render(out -> {
+			out.writeln("{");
+			out.indented(() -> out.write(richString));
+			out.write("}");
+		}));
+	}
+
+	@Test
+	void nonTextObjectsAreHandedToTheTargetUnsplit() {
 		Object multiLine = new Object() {
 			@Override
 			public String toString() {
