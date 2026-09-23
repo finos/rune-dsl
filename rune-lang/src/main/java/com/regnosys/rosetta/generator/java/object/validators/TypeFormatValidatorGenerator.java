@@ -50,6 +50,7 @@ import com.regnosys.rosetta.generator.java.statement.JavaForLoop;
 import com.regnosys.rosetta.generator.java.statement.JavaIfThenStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclarationStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaStatement;
+import com.regnosys.rosetta.generator.java.statement.JavaStatementList;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable;
@@ -165,6 +166,7 @@ public class TypeFormatValidatorGenerator extends FluentRObjectJavaClassGenerato
 			out.writeln("public ", validatorClass.asClassDeclaration(), " {");
 			out.indented(() -> {
 				for (JavaConditionInterface dep : conditionDependencies) {
+					// Fully qualified: clashes with the imported jakarta.inject.Inject.
 					out.writeln("@", javax.inject.Inject.class);
 					out.writeln("protected ", dep, " ", scope.createIdentifier(identifierRepresentationService.toDependencyInstance(dep), StringUtils.uncapitalize(dep.getSimpleName())), ";");
 				}
@@ -188,7 +190,11 @@ public class TypeFormatValidatorGenerator extends FluentRObjectJavaClassGenerato
 					out.indented(() -> {
 						out.writeln(List.class, "<", ValidationResult.class, "<?>> ", resultsId, " = new ", ArrayList.class, "();");
 						for (RAttribute attr : attributes) {
-							out.write(checkTypeConditions(javaType, attr, aliasHierarchyPerAttribute.get(attr), pathId, instanceVar, resultsId, runConditionsScope.getBodyScope()).asStatementList());
+							JavaStatementList conditionChecks = checkTypeConditions(javaType, attr, aliasHierarchyPerAttribute.get(attr), pathId, instanceVar, resultsId, runConditionsScope.getBodyScope()).asStatementList();
+							if (!conditionChecks.isEmpty()) {
+								out.write(conditionChecks);
+								out.newline();
+							}
 						}
 						out.writeln("return ", resultsId, ";");
 					});
