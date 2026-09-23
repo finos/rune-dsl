@@ -34,6 +34,20 @@ public interface CodeWriter {
      * any other object is converted to text in an implementation-defined way,
      * e.g., using its {@code toString} representation. Writing {@code null}
      * is a no-op.
+     *
+     * <p>Text may span several lines:
+     * <ul>
+     *   <li>each line feed ({@code \n}) ends the line, exactly like
+     *       {@link #newline()}; a carriage return directly before it is
+     *       dropped, so the line break in the output is always the writer's
+     *       own;</li>
+     *   <li>each line with content starts with the current indentation, not
+     *       only the first one;</li>
+     *   <li>an empty line gets no indentation, so it stays truly empty;</li>
+     *   <li>text after the last line feed is written like text without line
+     *       breaks: the writer is left in the middle of that line.</li>
+     * </ul>
+     * Callers therefore never need to split text into lines themselves.
      */
     void write(Object object);
 
