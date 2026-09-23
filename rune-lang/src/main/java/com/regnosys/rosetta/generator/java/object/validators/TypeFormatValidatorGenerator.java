@@ -50,6 +50,7 @@ import com.regnosys.rosetta.generator.java.statement.JavaForLoop;
 import com.regnosys.rosetta.generator.java.statement.JavaIfThenStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclarationStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaStatement;
+import com.regnosys.rosetta.generator.java.statement.JavaStatementList;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable;
@@ -188,7 +189,11 @@ public class TypeFormatValidatorGenerator extends FluentRObjectJavaClassGenerato
 					out.indented(() -> {
 						out.writeln(List.class, "<", ValidationResult.class, "<?>> ", resultsId, " = new ", ArrayList.class, "();");
 						for (RAttribute attr : attributes) {
-							out.write(checkTypeConditions(javaType, attr, aliasHierarchyPerAttribute.get(attr), pathId, instanceVar, resultsId, runConditionsScope.getBodyScope()).asStatementList());
+							JavaStatementList conditionChecks = checkTypeConditions(javaType, attr, aliasHierarchyPerAttribute.get(attr), pathId, instanceVar, resultsId, runConditionsScope.getBodyScope()).asStatementList();
+							if (!conditionChecks.isEmpty()) {
+								out.write(conditionChecks);
+								out.newline();
+							}
 						}
 						out.writeln("return ", resultsId, ";");
 					});
