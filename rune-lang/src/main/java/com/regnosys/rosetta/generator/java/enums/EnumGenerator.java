@@ -127,8 +127,7 @@ public class EnumGenerator extends FluentRObjectJavaClassGenerator<REnumType, RJ
 	}
 
 	private void renderEnumValue(CodeWriter out, RJavaEnumValue value) {
-		// The javadoc spans several lines, and the writer only indents at the start of a line
-		modelGeneratorUtil.javadoc(value.getEObject()).lines().forEach(out::writeln);
+		out.write(modelGeneratorUtil.javadoc(value.getEObject()));
 		String displayName = value.getDisplayName();
 		out.write("@", RosettaEnumValue.class, "(value = \"", value.getRosettaName(), "\"");
 		if (displayName != null) {
