@@ -30,6 +30,9 @@ import com.regnosys.rosetta.generator.TargetLanguageRepresentation;
  * fluent API still be embedded in a not-yet-migrated Xtend template (e.g. a
  * {@link TargetLanguageRepresentation} whose {@code appendTo} delegates to its
  * {@code render}). To be removed once all generators use the fluent API.
+ *
+ * <p>Migration note: this intentionally duplicates the line handling of
+ * {@code AbstractCodeWriter}, and goes together with this bridge.
  */
 public final class TargetStringConcatenationCodeWriter implements CodeWriter {
 	private static final String INDENT = "    ";
@@ -54,11 +57,37 @@ public final class TargetStringConcatenationCodeWriter implements CodeWriter {
 			renderer.render(this);
 			return;
 		}
+		if (!(object instanceof CharSequence charSequence)) {
+			// Only text is split, including Xtend rich strings: other objects are handed
+			// to the target as they are, so that it can handle them itself.
+			if (atStartOfLine) {
+				target.append(INDENT.repeat(indent));
+				atStartOfLine = false;
+			}
+			target.append(object);
+			return;
+		}
+		String text = charSequence.toString();
+		int lineStart = 0;
+		int lineEnd;
+		while ((lineEnd = text.indexOf('\n', lineStart)) >= 0) {
+			int contentEnd = lineEnd > lineStart && text.charAt(lineEnd - 1) == '\r' ? lineEnd - 1 : lineEnd;
+			writeLineContent(text, lineStart, contentEnd);
+			newline();
+			lineStart = lineEnd + 1;
+		}
+		writeLineContent(text, lineStart, text.length());
+	}
+
+	private void writeLineContent(String text, int start, int end) {
+		if (start == end) {
+			return;
+		}
 		if (atStartOfLine) {
 			target.append(INDENT.repeat(indent));
 			atStartOfLine = false;
 		}
-		target.append(object);
+		target.append(text.substring(start, end));
 	}
 
 	@Override
