@@ -32,7 +32,8 @@ public class RangeTypeFormatValidator implements Validator<Range> {
 
     private List<ValidationResult<?>> runConditions(RosettaPath path, Range o) {
         List<ValidationResult<?>> results = new ArrayList();
-        results.addAll(boundedInRange.getValidationResults(path.newSubPath("quantity"), o.getQuantity(), 0, 100));return results;
+        results.addAll(boundedInRange.getValidationResults(path.newSubPath("quantity"), o.getQuantity(), 0, 100));
+        return results;
     }
 
     @Override
