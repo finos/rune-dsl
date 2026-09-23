@@ -43,10 +43,18 @@ public class RosettaGrammarUtil {
 		return "\"" + escapeLines(text).replace("\n", "\\n\" +\n\"") + "\"";
 	}
 
+	/**
+	 * Escapes model text for a Java string literal and normalises its line breaks to single
+	 * {@code \n}s. Backslashes are escaped before quotes, so the backslash added in front of a
+	 * quote is not doubled again. Doubling every backslash also stops the Java compiler from
+	 * reading a backslash followed by {@code u} as a unicode escape.
+	 */
 	private static String escapeLines(String text) {
 		return text.trim()
+				.replace("\\", "\\\\")
 				.replace("\"", "\\\"")
 				.replace("\r\n", "\n")
+				.replace("\r", "\n")
 				.replace("\n\n", "\n");
 	}
 

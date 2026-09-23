@@ -1,5 +1,7 @@
 package com.regnosys.rosetta.generator.java.condition;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import javax.inject.Inject;
 
 import org.eclipse.xtext.testing.InjectWith;
@@ -19,6 +21,21 @@ import com.rosetta.model.lib.path.RosettaPath;
 public class DataTypeConditionTest extends AbstractConditionTest {
 	@Inject
 	private RosettaTestModelService testModelService;
+
+    @Test
+    void definitionKeepsConditionTextThatNeedsEscapingInJava() throws ReflectiveOperationException {
+        JavaTestModel model = testModelService.toJavaTestModel("""
+				type Foo:
+					val string (1..1)
+
+					condition C:
+					    val <> "C:\\\\dir \\"quoted\\" \\\\u0041"
+				""").compile();
+
+        Object definition = model.getConditionJavaClass("Foo", "C").getField("DEFINITION").get(null);
+
+        assertEquals("val <> \"C:\\\\dir \\\"quoted\\\" \\\\u0041\"", definition);
+    }
 
     @Test
     void thenExpressionWithAndThatResolvesFalseIsFailure() {

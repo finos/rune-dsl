@@ -129,12 +129,13 @@ public class EnumGenerator extends FluentRObjectJavaClassGenerator<REnumType, RJ
 	private void renderEnumValue(CodeWriter out, RJavaEnumValue value) {
 		out.write(modelGeneratorUtil.javadoc(value.getEObject()));
 		String displayName = value.getDisplayName();
+		String displayNameLiteral = displayName != null ? "\"" + StringEscapeUtils.escapeJava(displayName) + "\"" : null;
 		out.write("@", RosettaEnumValue.class, "(value = \"", value.getRosettaName(), "\"");
-		if (displayName != null) {
-			out.write(", displayName = \"", displayName, "\"");
+		if (displayNameLiteral != null) {
+			out.write(", displayName = ", displayNameLiteral);
 		}
 		out.writeln(")");
 		out.write(value.getName(), "(\"", value.getRosettaName(), "\", ",
-				displayName != null ? "\"" + StringEscapeUtils.escapeJava(displayName) + "\"" : "null", ")");
+				displayNameLiteral != null ? displayNameLiteral : "null", ")");
 	}
 }

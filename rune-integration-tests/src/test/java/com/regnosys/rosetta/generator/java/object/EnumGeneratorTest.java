@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Map;
 
@@ -17,7 +18,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import com.regnosys.rosetta.generator.java.enums.EnumHelper;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
+import com.regnosys.rosetta.tests.testmodel.JavaTestModel;
+import com.regnosys.rosetta.tests.testmodel.RosettaTestModelService;
 import com.regnosys.rosetta.tests.util.ModelHelper;
+import com.rosetta.model.lib.annotations.RosettaEnumValue;
 
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
@@ -27,6 +31,8 @@ public class EnumGeneratorTest {
 	private CodeGeneratorTestHelper generatorTestHelper;
 	@Inject
 	private ModelHelper modelHelper;
+	@Inject
+	private RosettaTestModelService testModelService;
 
 	@Test
 	void shouldGenerateBasicReferenceForEnum() {
@@ -61,6 +67,21 @@ public class EnumGeneratorTest {
 						containsString("public String toDisplayString()")));
 
 		generatorTestHelper.compileToClasses(code);
+	}
+
+	@Test
+	void shouldKeepDisplayNameThatNeedsEscapingInJava() throws NoSuchFieldException {
+		JavaTestModel model = testModelService.toJavaTestModel("""
+				enum Escaped:
+					ESCAPED displayName "C:\\\\dir \\"quoted\\" \\\\u0041"
+				""").compile();
+
+		Enum<?> value = (Enum<?>) model.getEnumJavaValue("Escaped", "ESCAPED");
+		RosettaEnumValue annotation = value.getDeclaringClass().getField(value.name()).getAnnotation(RosettaEnumValue.class);
+
+		String expected = "C:\\dir \"quoted\" \\u0041";
+		assertEquals(expected, value.toString());
+		assertEquals(expected, annotation.displayName());
 	}
 
 	@Test

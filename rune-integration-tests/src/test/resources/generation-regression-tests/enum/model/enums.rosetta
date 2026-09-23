@@ -19,3 +19,6 @@ enum Documented: <"An enumeration with documentation.">
 
 enum Extended extends Documented: <"An enumeration that extends another one.">
     FIFTH <"An extra value.">
+
+enum Escaped: <"An enumeration whose display name needs escaping in Java.">
+    ESCAPED displayName "C:\\dir \"quoted\" \\u0041"
