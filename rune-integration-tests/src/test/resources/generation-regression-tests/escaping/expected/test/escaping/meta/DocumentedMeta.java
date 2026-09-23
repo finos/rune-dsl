@@ -19,7 +19,7 @@ import test.escaping.validation.exists.DocumentedOnlyExistsValidator;
 
 
 /**
- * @version 0.0.0
+ * @version 1.0 "beta" C:&#92;users
  */
 @RosettaMeta(model=Documented.class)
 public class DocumentedMeta implements RosettaMetaData<Documented> {

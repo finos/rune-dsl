@@ -29,6 +29,7 @@ import java.util.Objects
 import java.util.Optional
 import jakarta.inject.Inject
 import org.eclipse.xtend2.lib.StringConcatenationClient
+import org.apache.commons.text.StringEscapeUtils
 import com.rosetta.model.lib.annotations.RuneScopedAttributeReference
 import com.rosetta.model.lib.annotations.RuneScopedAttributeKey
 import com.rosetta.model.lib.annotations.RuneIgnore
@@ -87,10 +88,11 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 		val builderImplClass = javaType.toBuilderImplClass
 		val builderImplScope = pojoScope.createNestedClassScopeAndRegisterIdentifier(builderImplClass)
 		val modelShortName = javaType.packageName.first
+		val escapedVersion = StringEscapeUtils.escapeJava(javaType.version)
 		'''
 			«javaType.javadoc»
-			@«RosettaDataType»(value="«javaType.rosettaName»", builder=«builderImplClass».class, version="«javaType.version»")
-			@«RuneDataType»(value="«javaType.rosettaName»", model="«modelShortName»", builder=«builderImplClass».class, version="«javaType.version»")
+			@«RosettaDataType»(value="«javaType.rosettaName»", builder=«builderImplClass».class, version="«escapedVersion»")
+			@«RuneDataType»(value="«javaType.rosettaName»", model="«modelShortName»", builder=«builderImplClass».class, version="«escapedVersion»")
 			«IF javaType.choiceType»@«RuneChoiceType»«ENDIF»
 			«IF labelProviderClass !== null»@«RuneLabelProvider»(labelProvider=«labelProviderClass».class)«ENDIF»
 			public «javaType.asInterfaceDeclaration» {

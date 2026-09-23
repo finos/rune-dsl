@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * An enum stored in C:&#92;users, which *&#47; ends a comment.
- * @version 0.0.0
+ * @version 1.0 "beta" C:&#92;users
  *
  * Body Org1
  * Corpus Agreement Agr1 Agreement in C:&#92;users *&#47; "A corpus in C:&#92;users *&#47;" 

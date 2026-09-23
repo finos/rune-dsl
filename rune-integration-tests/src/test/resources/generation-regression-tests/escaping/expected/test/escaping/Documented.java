@@ -20,7 +20,7 @@ import static java.util.Optional.ofNullable;
 
 /**
  * A type stored in C:&#92;users, which *&#47; ends a comment.
- * @version 0.0.0
+ * @version 1.0 "beta" C:&#92;users
  *
  * Body Org1
  * Corpus Agreement Agr1 Agreement in C:&#92;users *&#47; "A corpus in C:&#92;users *&#47;" 
@@ -29,8 +29,8 @@ import static java.util.Optional.ofNullable;
  * Provision A provision in C:&#92;users, which *&#47; ends a comment.
  *
  */
-@RosettaDataType(value="Documented", builder=Documented.DocumentedBuilderImpl.class, version="0.0.0")
-@RuneDataType(value="Documented", model="test", builder=Documented.DocumentedBuilderImpl.class, version="0.0.0")
+@RosettaDataType(value="Documented", builder=Documented.DocumentedBuilderImpl.class, version="1.0 \"beta\" C:\\users")
+@RuneDataType(value="Documented", model="test", builder=Documented.DocumentedBuilderImpl.class, version="1.0 \"beta\" C:\\users")
 public interface Documented extends RosettaModelObject {
 
 	DocumentedMeta metaData = new DocumentedMeta();
