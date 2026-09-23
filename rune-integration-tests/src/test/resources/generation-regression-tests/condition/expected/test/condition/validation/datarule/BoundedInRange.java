@@ -22,7 +22,6 @@ public interface BoundedInRange {
 
     String NAME = "BoundedInRange";
     String DEFINITION = "item >= lowerBound and item <= upperBound";
-
     List<ValidationResult<?>> getValidationResults(RosettaPath path, Integer bounded, Integer lowerBound, Integer upperBound);
 
     class Default implements BoundedInRange {

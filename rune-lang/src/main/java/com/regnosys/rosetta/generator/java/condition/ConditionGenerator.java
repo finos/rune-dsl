@@ -1,5 +1,23 @@
+/*
+ * Copyright 2026 REGnosys
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.regnosys.rosetta.generator.java.condition;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,9 +55,6 @@ import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.validation.ValidationResult;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaType;
-
-import java.util.Arrays;
-import java.util.Collections;
 
 import jakarta.inject.Inject;
 
@@ -122,19 +137,12 @@ public class ConditionGenerator extends FluentJavaClassGenerator<Condition, Java
 			out.write(modelGeneratorUtil.emptyJavadocWithVersion(version));
 			out.writeln("@", RosettaDataRule.class, "(\"", conditionClass.getSimpleName(), "\")");
 			out.writeln("@", ImplementedBy.class, "(", conditionClass, ".Default.class)");
-			out.write("public interface ", conditionClass.getSimpleName());
-			List<JavaClass<?>> conditionInterfaces = conditionClass.getInterfaces();
-			if (!conditionInterfaces.isEmpty()) {
-				out.write(" extends ");
-				out.join(conditionInterfaces, ", ");
-			}
-			out.writeln(" {");
+			out.writeln("public ", conditionClass.asInterfaceDeclaration(), " {");
 			out.indented(() -> {
 				out.newline();
 				out.writeln("String NAME = \"", conditionClass.getSimpleName(), "\";");
 				out.writeln("String DEFINITION = ", definition, ";");
 				if (!conditionClass.implementsValidatorInterface()) {
-					out.newline();
 					out.write(List.class, "<", ValidationResult.class, "<?>> getValidationResults(", RosettaPath.class, " ", pathId, ", ", conditionClass.getInstanceClass(), " ", instanceId);
 					for (TypeParameter param : params.keySet()) {
 						out.write(", ", params.get(param), " ", getValidationResultsScope.getIdentifierOrThrow(param));
@@ -147,6 +155,7 @@ public class ConditionGenerator extends FluentJavaClassGenerator<Condition, Java
 				out.indented(() -> {
 					out.newline();
 					for (JavaClass<?> dep : deps) {
+						// Qualified because it clashes with the imported jakarta.inject.Inject
 						out.writeln("@", javax.inject.Inject.class, " protected ", dep, " ", defaultClassScope.getIdentifierOrThrow(identifierRepresentationService.toDependencyInstance(dep)), ";");
 						out.newline();
 					}
