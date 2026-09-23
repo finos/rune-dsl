@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 REGnosys
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.regnosys.rosetta.generator.java.function;
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.formatEnumName;
@@ -6,6 +22,8 @@ import static org.apache.commons.lang3.StringUtils.uncapitalize;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -267,8 +285,8 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 					.forEach(v -> assignOutputScope.createKeySynonym(v, inputs.get(0)));
 			JavaStatementScope assignOutputBodyScope = assignOutputScope.getBodyScope();
 
-			Map<RShortcut, JavaMethodScope> aliasScopes = new java.util.HashMap<>();
-			Map<RShortcut, JavaMethodScope> defaultClassAliasScopes = new java.util.HashMap<>();
+			Map<RShortcut, JavaMethodScope> aliasScopes = new HashMap<>();
+			Map<RShortcut, JavaMethodScope> defaultClassAliasScopes = new HashMap<>();
 			shortcuts.forEach(alias -> {
 				classScope.createIdentifier(alias, alias.getName());
 
@@ -301,6 +319,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 			}
 			out.writeln(" {");
 			out.indented(() -> {
+				// javax.inject.Inject is fully qualified throughout: it clashes with the imported jakarta.inject.Inject.
 				if (!preConditions.isEmpty() || !postConditions.isEmpty()) {
 					out.newline();
 					out.writeln("@", javax.inject.Inject.class, " protected ", ConditionValidator.class, " ", conditionValidatorId, ";");
@@ -476,7 +495,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 			RFunction rfunc = rObjectFactory.buildRFunction(function);
 			List<FunctionDispatch> dispatchingFuncs = new ArrayList<>();
 			functionExtensions.getDispatchingFunctions(function).forEach(dispatchingFuncs::add);
-			dispatchingFuncs.sort(java.util.Comparator.comparing(FunctionDispatch::getName));
+			dispatchingFuncs.sort(Comparator.comparing(FunctionDispatch::getName));
 			String enumParam = function.getInputs().stream()
 					.filter(i -> i.getTypeCall().getType() instanceof RosettaEnumeration)
 					.findFirst().orElseThrow().getName();
@@ -484,9 +503,9 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 
 			dispatchingFuncs.forEach(f -> classScope.createIdentifier(f, uncapitalize(function.getName() + capitalize(f.getValue().getValue().getName()))));
 
-			Map<FunctionDispatch, RFunction> enumFuncToRFunc = new java.util.HashMap<>();
-			Map<FunctionDispatch, RGeneratedJavaClass<? extends RosettaFunction>> enumFuncToClass = new java.util.HashMap<>();
-			Map<FunctionDispatch, JavaClassScope> enumFuncToScope = new java.util.HashMap<>();
+			Map<FunctionDispatch, RFunction> enumFuncToRFunc = new HashMap<>();
+			Map<FunctionDispatch, RGeneratedJavaClass<? extends RosettaFunction>> enumFuncToClass = new HashMap<>();
+			Map<FunctionDispatch, JavaClassScope> enumFuncToScope = new HashMap<>();
 			dispatchingFuncs.forEach(enumFunc -> {
 				List<RShortcut> allShortcuts = new ArrayList<>();
 				function.getShortcuts().forEach(s -> allShortcuts.add(rObjectFactory.buildRShortcut(s)));

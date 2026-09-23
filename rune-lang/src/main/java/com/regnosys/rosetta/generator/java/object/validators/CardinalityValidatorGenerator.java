@@ -131,7 +131,7 @@ public class CardinalityValidatorGenerator extends FluentRObjectJavaClassGenerat
 	}
 
 	private CodeRenderer checkCardinality(JavaPojoInterface pojo, RAttribute attr) {
-		if (attr.getCardinality() == RCardinality.UNBOUNDED) {
+		if (attr.getCardinality().equals(RCardinality.UNBOUNDED)) {
 			return null;
 		}
 		JavaPojoProperty prop = pojo.findProperty(attr.getName());

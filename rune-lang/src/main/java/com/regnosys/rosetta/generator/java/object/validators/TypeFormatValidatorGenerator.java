@@ -166,6 +166,7 @@ public class TypeFormatValidatorGenerator extends FluentRObjectJavaClassGenerato
 			out.writeln("public ", validatorClass.asClassDeclaration(), " {");
 			out.indented(() -> {
 				for (JavaConditionInterface dep : conditionDependencies) {
+					// Fully qualified: clashes with the imported jakarta.inject.Inject.
 					out.writeln("@", javax.inject.Inject.class);
 					out.writeln("protected ", dep, " ", scope.createIdentifier(identifierRepresentationService.toDependencyInstance(dep), StringUtils.uncapitalize(dep.getSimpleName())), ";");
 				}
