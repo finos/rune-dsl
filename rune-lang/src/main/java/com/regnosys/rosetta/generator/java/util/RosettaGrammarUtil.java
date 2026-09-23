@@ -16,16 +16,11 @@
 
 package com.regnosys.rosetta.generator.java.util;
 
-import com.google.common.base.Strings;
-import com.regnosys.rosetta.rosetta.RosettaFeature;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
-import org.eclipse.xtext.nodemodel.ICompositeNode;
-import org.eclipse.xtext.nodemodel.ILeafNode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 public class RosettaGrammarUtil {
 
@@ -38,42 +33,9 @@ public class RosettaGrammarUtil {
 		return "\"" + escaped + "\"";
 	}
 
-	public static String grammarText(EObject expr) {
-		ICompositeNode node = NodeModelUtils.getNode(expr);
-		if (node == null) {
-			return "";
-		} else if (node instanceof ILeafNode) {
-			return node.getText();
-		} else {
-			return StreamSupport.stream(node.getLeafNodes().spliterator(), false)
-					.map(leaf -> Strings.nullToEmpty(leaf.getText()))
-					.collect(Collectors.joining());
-		}
-	}
-
-	public static String grammarWhenThen(EObject when, EObject then) {
-		return "when " + grammarText(when).trim() + "\nthen " + grammarText(then).trim();
-	}
-
 	public static String extractNodeText(EObject rosettaFeature, EStructuralFeature feature) {
 		return NodeModelUtils.findNodesForFeature(rosettaFeature, feature).stream()
 				.map(NodeModelUtils::getTokenText)
 				.collect(Collectors.joining());
-	}
-
-	public static String extractGrammarText(RosettaFeature rosettaFeature) {
-		ICompositeNode node = NodeModelUtils.getNode(rosettaFeature);
-		if (node == null) {
-			return null;
-		}
-		if (node instanceof ILeafNode) {
-			return node.getText();
-		} else {
-			StringBuilder builder = new StringBuilder(Math.max(node.getTotalLength(), 1));
-			for (ILeafNode leaf : node.getLeafNodes()) {
-				builder.append(leaf.getText());
-			}
-			return builder.toString().trim().replace("\n", "\\n").replace("\r", "");
-		}
 	}
 }
