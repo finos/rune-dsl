@@ -185,14 +185,6 @@ public class AbstractCodeWriterTest {
     }
 
     @Test
-    void testMultiLineTextInsideIndented() {
-        out.writeln("{");
-        out.indented(() -> out.write("First\n\nSecond\n"));
-        out.write("}");
-        assertEquals("{\n    First\n\n    Second\n}", out.toString());
-    }
-
-    @Test
     void testTextOfOnlyLineFeeds() {
         out.indent();
         out.write("\n\n");

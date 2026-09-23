@@ -57,34 +57,14 @@ public abstract class AbstractCodeWriter implements CodeWriter {
             return;
         }
         String text = object.toString();
-        int lineEnd = text.indexOf('\n');
-        if (lineEnd >= 0) {
-            writeLines(text, lineEnd);
-            return;
-        }
-        if (atStartOfLine) {
-            writeString(config.getIndent().repeat(indent));
-            atStartOfLine = false;
-        }
-        writeString(text);
-    }
-
-    /**
-     * Writes text containing at least one line feed, of which
-     * {@code firstLineEnd} is the index of the first. Each line feed (with
-     * a preceding carriage return, if any) ends the line as {@link #newline()}
-     * does, and each line with content gets the current indentation.
-     */
-    private void writeLines(String text, int firstLineEnd) {
         int lineStart = 0;
-        int lineEnd = firstLineEnd;
-        do {
+        int lineEnd;
+        while ((lineEnd = text.indexOf('\n', lineStart)) >= 0) {
             int contentEnd = lineEnd > lineStart && text.charAt(lineEnd - 1) == '\r' ? lineEnd - 1 : lineEnd;
             writeLineContent(text, lineStart, contentEnd);
             newline();
             lineStart = lineEnd + 1;
-            lineEnd = text.indexOf('\n', lineStart);
-        } while (lineEnd >= 0);
+        }
         writeLineContent(text, lineStart, text.length());
     }
 

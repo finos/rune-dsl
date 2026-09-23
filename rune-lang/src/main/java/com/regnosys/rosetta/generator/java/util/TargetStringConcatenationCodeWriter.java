@@ -30,6 +30,9 @@ import com.regnosys.rosetta.generator.TargetLanguageRepresentation;
  * fluent API still be embedded in a not-yet-migrated Xtend template (e.g. a
  * {@link TargetLanguageRepresentation} whose {@code appendTo} delegates to its
  * {@code render}). To be removed once all generators use the fluent API.
+ *
+ * <p>Migration note: this intentionally duplicates the line handling of
+ * {@code AbstractCodeWriter}, and goes together with this bridge.
  */
 public final class TargetStringConcatenationCodeWriter implements CodeWriter {
 	private static final String INDENT = "    ";
@@ -54,36 +57,24 @@ public final class TargetStringConcatenationCodeWriter implements CodeWriter {
 			renderer.render(this);
 			return;
 		}
-		if (object instanceof String text) {
-			int lineEnd = text.indexOf('\n');
-			if (lineEnd >= 0) {
-				writeLines(text, lineEnd);
-				return;
+		if (!(object instanceof String text)) {
+			// Only strings are split: other objects are handed to the target as they are,
+			// so that it can handle them itself.
+			if (atStartOfLine) {
+				target.append(INDENT.repeat(indent));
+				atStartOfLine = false;
 			}
+			target.append(object);
+			return;
 		}
-		if (atStartOfLine) {
-			target.append(INDENT.repeat(indent));
-			atStartOfLine = false;
-		}
-		target.append(object);
-	}
-
-	/**
-	 * Writes text containing at least one line feed, of which {@code firstLineEnd}
-	 * is the index of the first, following the rules of {@link CodeWriter#write(Object)}.
-	 * Only strings are split: other objects are handed to the target as they are,
-	 * so that it can handle them itself.
-	 */
-	private void writeLines(String text, int firstLineEnd) {
 		int lineStart = 0;
-		int lineEnd = firstLineEnd;
-		do {
+		int lineEnd;
+		while ((lineEnd = text.indexOf('\n', lineStart)) >= 0) {
 			int contentEnd = lineEnd > lineStart && text.charAt(lineEnd - 1) == '\r' ? lineEnd - 1 : lineEnd;
 			writeLineContent(text, lineStart, contentEnd);
 			newline();
 			lineStart = lineEnd + 1;
-			lineEnd = text.indexOf('\n', lineStart);
-		} while (lineEnd >= 0);
+		}
 		writeLineContent(text, lineStart, text.length());
 	}
 

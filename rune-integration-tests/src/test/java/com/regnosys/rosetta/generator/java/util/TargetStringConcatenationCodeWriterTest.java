@@ -73,4 +73,28 @@ class TargetStringConcatenationCodeWriterTest {
 			out.write(";");
 		}));
 	}
+
+	@Test
+	void textStartingWithLineFeedEndsTheCurrentLine() {
+		assertEquals("    a\n    b", render(out -> {
+			out.indent();
+			out.write("a");
+			out.write("\nb");
+		}));
+	}
+
+	@Test
+	void nonStringObjectsAreHandedToTheTargetUnsplit() {
+		Object multiLine = new Object() {
+			@Override
+			public String toString() {
+				return "a\nb";
+			}
+		};
+		// The target splits the object's text itself, without this writer's indentation
+		assertEquals("    a\nb", render(out -> {
+			out.indent();
+			out.write(multiLine);
+		}));
+	}
 }
