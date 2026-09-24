@@ -81,12 +81,18 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 
 	protected abstract String getTestRootResourceFolder();
 
+	/** Whether a generated file is compared against an expectation; every generated file is compiled regardless. */
+	protected boolean hasExpectation(String relativePath) {
+		return true;
+	}
+
 	@BeforeAll
 	void generateCodeAndCompile() throws IOException {
 		List<Resource> models = readModelsFromResourceFolder();
 		RegisteringFileSystemAccess fsa = codeGeneratorTestHelper.generateCodeWithFSA(models);
 		generatedCode = new TreeMap<>();
-		fsa.getGeneratedFiles()
+		fsa.getGeneratedFiles().stream()
+				.filter(f -> hasExpectation(f.getPath().replace("/null/null/", "")))
 				.forEach(f -> generatedCode.put(f.getPath().replace("/null/null/", ""), normalizeLineEndings(f.getContents().toString())));
 
 		generatedClasses = fsa.getGeneratedFiles().stream().filter(f -> f.getJavaClassName() != null).collect(Collectors
@@ -104,6 +110,9 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 		expectedCode = new TreeMap<>();
 		walkFiles(resourcePath).forEach(p -> {
 			String relativePath = resourcePath.relativize(p).toString().replace(File.separatorChar, '/');
+			if (!hasExpectation(relativePath)) {
+				return;
+			}
 			String fileContents;
 			try {
 				fileContents = Files.readString(p);
