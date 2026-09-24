@@ -26,201 +26,201 @@ import static java.util.Optional.ofNullable;
 @RuneDataType(value="Child", model="test", builder=Child.ChildBuilderImpl.class, version="0.0.0")
 public interface Child extends Parent, GlobalKey {
 
-	ChildMeta metaData = new ChildMeta();
+    ChildMeta metaData = new ChildMeta();
 
-	/*********************** Getter Methods  ***********************/
-	MetaFields getMeta();
+    /*********************** Getter Methods  ***********************/
+    MetaFields getMeta();
 
-	/*********************** Build Methods  ***********************/
-	Child build();
-	
-	Child.ChildBuilder toBuilder();
-	
-	static Child.ChildBuilder builder() {
-		return new Child.ChildBuilderImpl();
-	}
+    /*********************** Build Methods  ***********************/
+    Child build();
 
-	/*********************** Utility Methods  ***********************/
-	@Override
-	default RosettaMetaData<? extends Child> metaData() {
-		return metaData;
-	}
-	
-	@Override
-	@RuneAttribute("@type")
-	default Class<? extends Child> getType() {
-		return Child.class;
-	}
-	
-	@Override
-	default void process(RosettaPath path, Processor processor) {
-		processRosetta(path.newSubPath("meta"), processor, MetaFields.class, getMeta());
-	}
-	
+    Child.ChildBuilder toBuilder();
 
-	/*********************** Builder Interface  ***********************/
-	interface ChildBuilder extends Child, Parent.ParentBuilder, GlobalKey.GlobalKeyBuilder {
-		MetaFields.MetaFieldsBuilder getOrCreateMeta();
-		@Override
-		MetaFields.MetaFieldsBuilder getMeta();
-		Child.ChildBuilder setMeta(MetaFields meta);
+    static Child.ChildBuilder builder() {
+        return new Child.ChildBuilderImpl();
+    }
 
-		@Override
-		default void process(RosettaPath path, BuilderProcessor processor) {
-			processRosetta(path.newSubPath("meta"), processor, MetaFields.MetaFieldsBuilder.class, getMeta());
-		}
-		
+    /*********************** Utility Methods  ***********************/
+    @Override
+    default RosettaMetaData<? extends Child> metaData() {
+        return metaData;
+    }
 
-		Child.ChildBuilder prune();
-	}
+    @Override
+    @RuneAttribute("@type")
+    default Class<? extends Child> getType() {
+        return Child.class;
+    }
 
-	/*********************** Immutable Implementation of Child  ***********************/
-	class ChildImpl extends Parent.ParentImpl implements Child {
-		private final MetaFields meta;
-		
-		protected ChildImpl(Child.ChildBuilder builder) {
-			super(builder);
-			this.meta = ofNullable(builder.getMeta()).map(f->f.build()).orElse(null);
-		}
-		
-		@Override
-		@RosettaAttribute("meta")
-		@Accessor(AccessorType.GETTER)
-		@RuneAttribute("meta")
-		@RuneMetaType
-		public MetaFields getMeta() {
-			return meta;
-		}
-		
-		@Override
-		public Child build() {
-			return this;
-		}
-		
-		@Override
-		public Child.ChildBuilder toBuilder() {
-			Child.ChildBuilder builder = builder();
-			setBuilderFields(builder);
-			return builder;
-		}
-		
-		protected void setBuilderFields(Child.ChildBuilder builder) {
-			super.setBuilderFields(builder);
-			ofNullable(getMeta()).ifPresent(builder::setMeta);
-		}
+    @Override
+    default void process(RosettaPath path, Processor processor) {
+        processRosetta(path.newSubPath("meta"), processor, MetaFields.class, getMeta());
+    }
 
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
-			if (!super.equals(o)) return false;
-		
-			Child _that = getType().cast(o);
-		
-			if (!Objects.equals(meta, _that.getMeta())) return false;
-			return true;
-		}
-		
-		@Override
-		public int hashCode() {
-			int _result = super.hashCode();
-			_result = 31 * _result + (meta != null ? meta.hashCode() : 0);
-			return _result;
-		}
-		
-		@Override
-		public String toString() {
-			return "Child {" +
-				"meta=" + this.meta +
-			'}' + " " + super.toString();
-		}
-	}
 
-	/*********************** Builder Implementation of Child  ***********************/
-	class ChildBuilderImpl extends Parent.ParentBuilderImpl implements Child.ChildBuilder {
-	
-		protected MetaFields.MetaFieldsBuilder meta;
-		
-		@Override
-		@RosettaAttribute("meta")
-		@Accessor(AccessorType.GETTER)
-		@RuneAttribute("meta")
-		@RuneMetaType
-		public MetaFields.MetaFieldsBuilder getMeta() {
-			return meta;
-		}
-		
-		@Override
-		public MetaFields.MetaFieldsBuilder getOrCreateMeta() {
-			MetaFields.MetaFieldsBuilder result;
-			if (meta!=null) {
-				result = meta;
-			}
-			else {
-				result = meta = MetaFields.builder();
-			}
-			
-			return result;
-		}
-		
-		@RosettaAttribute("meta")
-		@Accessor(AccessorType.SETTER)
-		@RuneAttribute("meta")
-		@RuneMetaType
-		@Override
-		public Child.ChildBuilder setMeta(MetaFields _meta) {
-			this.meta = _meta == null ? null : _meta.toBuilder();
-			return this;
-		}
-		
-		@Override
-		public Child build() {
-			return new Child.ChildImpl(this);
-		}
-		
-		@Override
-		public Child.ChildBuilder toBuilder() {
-			return this;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public Child.ChildBuilder prune() {
-			super.prune();
-			if (meta!=null && !meta.prune().hasData()) meta = null;
-			return this;
-		}
-		
-		@Override
-		public boolean hasData() {
-			if (super.hasData()) return true;
-			return false;
-		}
-	
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
-			if (!super.equals(o)) return false;
-		
-			Child _that = getType().cast(o);
-		
-			if (!Objects.equals(meta, _that.getMeta())) return false;
-			return true;
-		}
-		
-		@Override
-		public int hashCode() {
-			int _result = super.hashCode();
-			_result = 31 * _result + (meta != null ? meta.hashCode() : 0);
-			return _result;
-		}
-		
-		@Override
-		public String toString() {
-			return "ChildBuilder {" +
-				"meta=" + this.meta +
-			'}' + " " + super.toString();
-		}
-	}
+    /*********************** Builder Interface  ***********************/
+    interface ChildBuilder extends Child, Parent.ParentBuilder, GlobalKey.GlobalKeyBuilder {
+        MetaFields.MetaFieldsBuilder getOrCreateMeta();
+        @Override
+        MetaFields.MetaFieldsBuilder getMeta();
+        Child.ChildBuilder setMeta(MetaFields meta);
+
+        @Override
+        default void process(RosettaPath path, BuilderProcessor processor) {
+            processRosetta(path.newSubPath("meta"), processor, MetaFields.MetaFieldsBuilder.class, getMeta());
+        }
+
+
+        Child.ChildBuilder prune();
+    }
+
+    /*********************** Immutable Implementation of Child  ***********************/
+    class ChildImpl extends Parent.ParentImpl implements Child {
+        private final MetaFields meta;
+
+        protected ChildImpl(Child.ChildBuilder builder) {
+            super(builder);
+            this.meta = ofNullable(builder.getMeta()).map(f->f.build()).orElse(null);
+        }
+
+        @Override
+        @RosettaAttribute("meta")
+        @Accessor(AccessorType.GETTER)
+        @RuneAttribute("meta")
+        @RuneMetaType
+        public MetaFields getMeta() {
+            return meta;
+        }
+
+        @Override
+        public Child build() {
+            return this;
+        }
+
+        @Override
+        public Child.ChildBuilder toBuilder() {
+            Child.ChildBuilder builder = builder();
+            setBuilderFields(builder);
+            return builder;
+        }
+
+        protected void setBuilderFields(Child.ChildBuilder builder) {
+            super.setBuilderFields(builder);
+            ofNullable(getMeta()).ifPresent(builder::setMeta);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+            if (!super.equals(o)) return false;
+
+            Child _that = getType().cast(o);
+
+            if (!Objects.equals(meta, _that.getMeta())) return false;
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int _result = super.hashCode();
+            _result = 31 * _result + (meta != null ? meta.hashCode() : 0);
+            return _result;
+        }
+
+        @Override
+        public String toString() {
+            return "Child {" +
+                "meta=" + this.meta +
+            '}' + " " + super.toString();
+        }
+    }
+
+    /*********************** Builder Implementation of Child  ***********************/
+    class ChildBuilderImpl extends Parent.ParentBuilderImpl implements Child.ChildBuilder {
+
+        protected MetaFields.MetaFieldsBuilder meta;
+
+        @Override
+        @RosettaAttribute("meta")
+        @Accessor(AccessorType.GETTER)
+        @RuneAttribute("meta")
+        @RuneMetaType
+        public MetaFields.MetaFieldsBuilder getMeta() {
+            return meta;
+        }
+
+        @Override
+        public MetaFields.MetaFieldsBuilder getOrCreateMeta() {
+            MetaFields.MetaFieldsBuilder result;
+            if (meta!=null) {
+                result = meta;
+            }
+            else {
+                result = meta = MetaFields.builder();
+            }
+
+            return result;
+        }
+
+        @RosettaAttribute("meta")
+        @Accessor(AccessorType.SETTER)
+        @RuneAttribute("meta")
+        @RuneMetaType
+        @Override
+        public Child.ChildBuilder setMeta(MetaFields _meta) {
+            this.meta = _meta == null ? null : _meta.toBuilder();
+            return this;
+        }
+
+        @Override
+        public Child build() {
+            return new Child.ChildImpl(this);
+        }
+
+        @Override
+        public Child.ChildBuilder toBuilder() {
+            return this;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public Child.ChildBuilder prune() {
+            super.prune();
+            if (meta!=null && !meta.prune().hasData()) meta = null;
+            return this;
+        }
+
+        @Override
+        public boolean hasData() {
+            if (super.hasData()) return true;
+            return false;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+            if (!super.equals(o)) return false;
+
+            Child _that = getType().cast(o);
+
+            if (!Objects.equals(meta, _that.getMeta())) return false;
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int _result = super.hashCode();
+            _result = 31 * _result + (meta != null ? meta.hashCode() : 0);
+            return _result;
+        }
+
+        @Override
+        public String toString() {
+            return "ChildBuilder {" +
+                "meta=" + this.meta +
+            '}' + " " + super.toString();
+        }
+    }
 }

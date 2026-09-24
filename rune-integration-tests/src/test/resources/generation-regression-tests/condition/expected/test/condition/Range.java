@@ -25,179 +25,179 @@ import static java.util.Optional.ofNullable;
 @RuneDataType(value="Range", model="test", builder=Range.RangeBuilderImpl.class, version="0.0.0")
 public interface Range extends RosettaModelObject {
 
-	RangeMeta metaData = new RangeMeta();
+    RangeMeta metaData = new RangeMeta();
 
-	/*********************** Getter Methods  ***********************/
-	Integer getQuantity();
+    /*********************** Getter Methods  ***********************/
+    Integer getQuantity();
 
-	/*********************** Build Methods  ***********************/
-	Range build();
-	
-	Range.RangeBuilder toBuilder();
-	
-	static Range.RangeBuilder builder() {
-		return new Range.RangeBuilderImpl();
-	}
+    /*********************** Build Methods  ***********************/
+    Range build();
 
-	/*********************** Utility Methods  ***********************/
-	@Override
-	default RosettaMetaData<? extends Range> metaData() {
-		return metaData;
-	}
-	
-	@Override
-	@RuneAttribute("@type")
-	default Class<? extends Range> getType() {
-		return Range.class;
-	}
-	
-	@Override
-	default void process(RosettaPath path, Processor processor) {
-		processor.processBasic(path.newSubPath("quantity"), Integer.class, getQuantity(), this);
-	}
-	
+    Range.RangeBuilder toBuilder();
 
-	/*********************** Builder Interface  ***********************/
-	interface RangeBuilder extends Range, RosettaModelObjectBuilder {
-		Range.RangeBuilder setQuantity(Integer quantity);
+    static Range.RangeBuilder builder() {
+        return new Range.RangeBuilderImpl();
+    }
 
-		@Override
-		default void process(RosettaPath path, BuilderProcessor processor) {
-			processor.processBasic(path.newSubPath("quantity"), Integer.class, getQuantity(), this);
-		}
-		
+    /*********************** Utility Methods  ***********************/
+    @Override
+    default RosettaMetaData<? extends Range> metaData() {
+        return metaData;
+    }
 
-		Range.RangeBuilder prune();
-	}
+    @Override
+    @RuneAttribute("@type")
+    default Class<? extends Range> getType() {
+        return Range.class;
+    }
 
-	/*********************** Immutable Implementation of Range  ***********************/
-	class RangeImpl implements Range {
-		private final Integer quantity;
-		
-		protected RangeImpl(Range.RangeBuilder builder) {
-			this.quantity = builder.getQuantity();
-		}
-		
-		@Override
-		@RosettaAttribute("quantity")
-		@Accessor(AccessorType.GETTER)
-		@Required
-		@RuneAttribute("quantity")
-		public Integer getQuantity() {
-			return quantity;
-		}
-		
-		@Override
-		public Range build() {
-			return this;
-		}
-		
-		@Override
-		public Range.RangeBuilder toBuilder() {
-			Range.RangeBuilder builder = builder();
-			setBuilderFields(builder);
-			return builder;
-		}
-		
-		protected void setBuilderFields(Range.RangeBuilder builder) {
-			ofNullable(getQuantity()).ifPresent(builder::setQuantity);
-		}
+    @Override
+    default void process(RosettaPath path, Processor processor) {
+        processor.processBasic(path.newSubPath("quantity"), Integer.class, getQuantity(), this);
+    }
 
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
-		
-			Range _that = getType().cast(o);
-		
-			if (!Objects.equals(quantity, _that.getQuantity())) return false;
-			return true;
-		}
-		
-		@Override
-		public int hashCode() {
-			int _result = 0;
-			_result = 31 * _result + (quantity != null ? quantity.hashCode() : 0);
-			return _result;
-		}
-		
-		@Override
-		public String toString() {
-			return "Range {" +
-				"quantity=" + this.quantity +
-			'}';
-		}
-	}
 
-	/*********************** Builder Implementation of Range  ***********************/
-	class RangeBuilderImpl implements Range.RangeBuilder {
-	
-		protected Integer quantity;
-		
-		@Override
-		@RosettaAttribute("quantity")
-		@Accessor(AccessorType.GETTER)
-		@Required
-		@RuneAttribute("quantity")
-		public Integer getQuantity() {
-			return quantity;
-		}
-		
-		@RosettaAttribute("quantity")
-		@Accessor(AccessorType.SETTER)
-		@Required
-		@RuneAttribute("quantity")
-		@Override
-		public Range.RangeBuilder setQuantity(Integer _quantity) {
-			this.quantity = _quantity == null ? null : _quantity;
-			return this;
-		}
-		
-		@Override
-		public Range build() {
-			return new Range.RangeImpl(this);
-		}
-		
-		@Override
-		public Range.RangeBuilder toBuilder() {
-			return this;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public Range.RangeBuilder prune() {
-			return this;
-		}
-		
-		@Override
-		public boolean hasData() {
-			if (getQuantity()!=null) return true;
-			return false;
-		}
-	
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
-		
-			Range _that = getType().cast(o);
-		
-			if (!Objects.equals(quantity, _that.getQuantity())) return false;
-			return true;
-		}
-		
-		@Override
-		public int hashCode() {
-			int _result = 0;
-			_result = 31 * _result + (quantity != null ? quantity.hashCode() : 0);
-			return _result;
-		}
-		
-		@Override
-		public String toString() {
-			return "RangeBuilder {" +
-				"quantity=" + this.quantity +
-			'}';
-		}
-	}
+    /*********************** Builder Interface  ***********************/
+    interface RangeBuilder extends Range, RosettaModelObjectBuilder {
+        Range.RangeBuilder setQuantity(Integer quantity);
+
+        @Override
+        default void process(RosettaPath path, BuilderProcessor processor) {
+            processor.processBasic(path.newSubPath("quantity"), Integer.class, getQuantity(), this);
+        }
+
+
+        Range.RangeBuilder prune();
+    }
+
+    /*********************** Immutable Implementation of Range  ***********************/
+    class RangeImpl implements Range {
+        private final Integer quantity;
+
+        protected RangeImpl(Range.RangeBuilder builder) {
+            this.quantity = builder.getQuantity();
+        }
+
+        @Override
+        @RosettaAttribute("quantity")
+        @Accessor(AccessorType.GETTER)
+        @Required
+        @RuneAttribute("quantity")
+        public Integer getQuantity() {
+            return quantity;
+        }
+
+        @Override
+        public Range build() {
+            return this;
+        }
+
+        @Override
+        public Range.RangeBuilder toBuilder() {
+            Range.RangeBuilder builder = builder();
+            setBuilderFields(builder);
+            return builder;
+        }
+
+        protected void setBuilderFields(Range.RangeBuilder builder) {
+            ofNullable(getQuantity()).ifPresent(builder::setQuantity);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+
+            Range _that = getType().cast(o);
+
+            if (!Objects.equals(quantity, _that.getQuantity())) return false;
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int _result = 0;
+            _result = 31 * _result + (quantity != null ? quantity.hashCode() : 0);
+            return _result;
+        }
+
+        @Override
+        public String toString() {
+            return "Range {" +
+                "quantity=" + this.quantity +
+            '}';
+        }
+    }
+
+    /*********************** Builder Implementation of Range  ***********************/
+    class RangeBuilderImpl implements Range.RangeBuilder {
+
+        protected Integer quantity;
+
+        @Override
+        @RosettaAttribute("quantity")
+        @Accessor(AccessorType.GETTER)
+        @Required
+        @RuneAttribute("quantity")
+        public Integer getQuantity() {
+            return quantity;
+        }
+
+        @RosettaAttribute("quantity")
+        @Accessor(AccessorType.SETTER)
+        @Required
+        @RuneAttribute("quantity")
+        @Override
+        public Range.RangeBuilder setQuantity(Integer _quantity) {
+            this.quantity = _quantity == null ? null : _quantity;
+            return this;
+        }
+
+        @Override
+        public Range build() {
+            return new Range.RangeImpl(this);
+        }
+
+        @Override
+        public Range.RangeBuilder toBuilder() {
+            return this;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public Range.RangeBuilder prune() {
+            return this;
+        }
+
+        @Override
+        public boolean hasData() {
+            if (getQuantity()!=null) return true;
+            return false;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+
+            Range _that = getType().cast(o);
+
+            if (!Objects.equals(quantity, _that.getQuantity())) return false;
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int _result = 0;
+            _result = 31 * _result + (quantity != null ? quantity.hashCode() : 0);
+            return _result;
+        }
+
+        @Override
+        public String toString() {
+            return "RangeBuilder {" +
+                "quantity=" + this.quantity +
+            '}';
+        }
+    }
 }
