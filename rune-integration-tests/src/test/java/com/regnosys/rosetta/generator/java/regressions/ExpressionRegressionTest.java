@@ -27,16 +27,14 @@ import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 @ExtendWith(InjectionExtension.class)
 @InjectWith(RosettaTestInjectorProvider.class)
 @TestInstance(Lifecycle.PER_CLASS)
+// Only the classes expressions are generated into; other fixtures pin the supporting types. Take has
+// no expression in it, and the pojo fixture pins the choice condition.
+@ExpectedFiles(
+		include = { "test/expressions/functions/**", "test/expressions/validation/datarule/**" },
+		exclude = { "test/expressions/functions/Take.java", "test/expressions/validation/datarule/FooOrBarChoice.java" })
 public class ExpressionRegressionTest extends AbstractJavaGeneratorRegressionTest {
 	@Override
 	protected String getTestRootResourceFolder() {
 		return "generation-regression-tests/expressions";
-	}
-
-	// Only the classes that expressions are generated into; the supporting types are pinned by other fixtures.
-	@Override
-	protected boolean hasExpectation(String relativePath) {
-		return relativePath.startsWith("test/expressions/functions/")
-				|| relativePath.startsWith("test/expressions/validation/datarule/");
 	}
 }
