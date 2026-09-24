@@ -83,8 +83,7 @@ you are probably reimplementing instead of transcribing.
    covered at the time.
 2. **Migrate, then regenerate**: run the regression tests with
    `-Drune.updateExpectations` to rewrite `expected/`, e.g.
-   `mvnd -o verify -pl rune-integration-tests -am -Dtest='*RegressionTest,JavaNameEscapingTest' -Dsurefire.failIfNoSpecifiedTests=false -Drune.updateExpectations`
-   (`JavaNameEscapingTest` is a fixture test too, but its name doesn't match `*RegressionTest`).
+   `mvnd -o verify -pl rune-integration-tests -am -Dtest='*RegressionTest' -Dsurefire.failIfNoSpecifiedTests=false -Drune.updateExpectations`.
 3. **Parity check**: the diff of `expected/` must be whitespace only. Tabs
    become four spaces and trailing whitespace goes; nothing else may change,
    not even a blank line. This lists every file that differs in anything
