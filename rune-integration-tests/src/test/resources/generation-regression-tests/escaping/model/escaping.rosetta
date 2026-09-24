@@ -6,11 +6,6 @@ corpus Agreement Org1 "Agreement in C:\\users */" Agr1 <"A corpus in C:\\users *
 
 segment name
 
-type Documented: <"A type stored in C:\\users, which */ ends a comment.">
-    [docReference Org1 Agr1 name "C:\\users */" provision "A provision in C:\\users, which */ ends a comment."]
-    attr string (1..1) <"An attribute stored in C:\\users, which */ ends a comment.">
-        [docReference Org1 Agr1 name "C:\\users */" provision "A provision in C:\\users */"]
-
 enum DocumentedEnum: <"An enum stored in C:\\users, which */ ends a comment.">
     [docReference Org1 Agr1 name "C:\\users */" provision "A provision in C:\\users */"]
     VALUE <"A value stored in C:\\users, which */ ends a comment.">
