@@ -70,7 +70,7 @@ public class ModelGeneratorUtil {
 		StringBuilder out = new StringBuilder();
 		out.append("/**");
 		terminateLine(out);
-		out.append(" * @version ").append(version != null ? escapeComment(version) : null);
+		out.append(" * @version ").append(escapeComment(version));
 		terminateLine(out);
 		out.append(" */");
 		terminateLine(out);
@@ -81,9 +81,9 @@ public class ModelGeneratorUtil {
 	 * Turns model text into javadoc text: HTML-escapes it, so the text renders as written, and
 	 * makes it safe inside a comment (see {@link #escapeComment(String)}).
 	 */
-	public String escape(String definition) {
-		return definition != null && !definition.isEmpty()
-				? escapeComment(HtmlEscapers.htmlEscaper().escape(definition))
+	public String escape(String text) {
+		return text != null && !text.isEmpty()
+				? escapeComment(HtmlEscapers.htmlEscaper().escape(text))
 				: "";
 	}
 
@@ -98,9 +98,13 @@ public class ModelGeneratorUtil {
 	 * javadoc renders as a slash.</li>
 	 * </ul>
 	 * An HTML character reference keeps the rendered javadoc identical; a Java escape such as
-	 * {@code \\} would not work, because comments have no escape sequences.
+	 * {@code \\} would not work, because comments have no escape sequences. Returns an empty
+	 * string for {@code null}.
 	 */
 	public String escapeComment(String text) {
+		if (text == null) {
+			return "";
+		}
 		return text.replace("\\u", "&#92;u").replace("*/", "*&#47;");
 	}
 
@@ -160,7 +164,7 @@ public class ModelGeneratorUtil {
 				terminateLine(out);
 				out.append(" *");
 				terminateLine(out);
-				out.append(" * Provision ").append(reference.getProvision() != null ? escapeComment(reference.getProvision()) : null);
+				out.append(" * Provision ").append(escapeComment(reference.getProvision()));
 				terminateLine(out);
 				out.append(" *");
 				terminateLine(out);
