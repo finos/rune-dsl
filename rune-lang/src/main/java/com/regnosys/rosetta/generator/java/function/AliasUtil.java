@@ -2,6 +2,7 @@ package com.regnosys.rosetta.generator.java.function;
 
 import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.generator.java.scoping.JavaMethodScope;
+import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface;
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil;
@@ -55,6 +56,19 @@ public class AliasUtil {
 				}
 			}
 			out.join(func.getInputs(), ", ", input -> out.write(typeTranslator.toMetaJavaType(input), " ", scope.getIdentifierOrThrow(input)));
+		};
+	}
+	
+	public CodeRenderer getArguments(RShortcut alias, JavaStatementScope scope) {
+		RFunction func = alias.getFunction();
+		return out -> {
+			if (requiresOutput(alias)) {
+				out.write(scope.getIdentifierOrThrow(func.getOutput()), ".toBuilder()");
+				if (!func.getInputs().isEmpty()) {
+					out.write(", ");
+				}
+			}
+			out.join(func.getInputs(), ", ", input -> out.write(scope.getIdentifierOrThrow(input)));
 		};
 	}
 	

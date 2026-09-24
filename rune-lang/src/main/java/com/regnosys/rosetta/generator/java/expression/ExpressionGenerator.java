@@ -375,20 +375,6 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 		return new JavaVariable(scope.getIdentifierOrThrow(identifierService.getImplicitVarInContext(context)), actualType);
 	}
 
-	public CodeRenderer aliasCallArgs(RShortcut alias, RFunction function, JavaStatementScope scope) {
-		RAttribute output = function.getOutput();
-		List<RAttribute> inputs = function.getInputs();
-		return out -> {
-			if (exprHelper.usesOutputParameter(alias.getExpression())) {
-				out.write(scope.getIdentifierOrThrow(output), ".toBuilder()");
-				if (!inputs.isEmpty()) {
-					out.write(", ");
-				}
-			}
-			out.join(inputs, ", ", input -> out.write(scope.getIdentifierOrThrow(input)));
-		};
-	}
-
 	private JavaStatementBuilder enumCall(RosettaEnumValue feature, JavaType expectedType) {
 		JavaType itemType = typeUtil.getItemValueType(expectedType);
 		return JavaExpression.from(out -> out.write(itemType, ".", EnumHelper.convertValue(feature)), itemType);
@@ -1099,7 +1085,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 			boolean isMulti = cardinalityProvider.isSymbolMulti(shortcutDeclaration);
 			RShortcut shortcut = rObjectFactory.buildRShortcut(shortcutDeclaration);
 			JavaType itemType = typeTranslator.toJavaReferenceType(typeProvider.getRTypeOfSymbol(shortcutDeclaration));
-			CodeRenderer arguments = aliasCallArgs(shortcut, shortcut.getFunction(), context.scope);
+			CodeRenderer arguments = aliasUtil.getArguments(shortcut, context.scope);
 			if (aliasUtil.requiresOutput(shortcut)) {
 				JavaType aliasType = isMulti ? typeUtil.wrap(typeUtil.LIST, itemType) : itemType;
 				return JavaExpression.from(out -> out.write(context.scope.getIdentifierOrThrow(shortcut), "(", arguments, ").build()"), aliasType);
