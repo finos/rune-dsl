@@ -284,7 +284,8 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 		if (Files.notExists(resourcePath)) {
 			return Stream.empty();
 		}
-		return Files.walk(resourcePath, Integer.MAX_VALUE).filter(p -> !Files.isDirectory(p));
+		// Sorted, so that models load in the same order on every file system
+		return Files.walk(resourcePath, Integer.MAX_VALUE).filter(p -> !Files.isDirectory(p)).sorted();
 	}
 
 	private Path toResourcePath(String folder) {
