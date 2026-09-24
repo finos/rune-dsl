@@ -7,7 +7,7 @@ import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilde
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil;
 import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta;
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta;
-import com.regnosys.rosetta.generator.java.util.ImportManagerExtension;
+import com.regnosys.rosetta.generator.java.util.FluentImportManager;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.rosetta.model.lib.expression.ComparisonResult;
 import com.rosetta.model.lib.mapper.MapperC;
@@ -34,7 +34,7 @@ public class TypeCoercionTest {
     @Inject
     private TypeCoercionService coercionService;
     @Inject
-    private ImportManagerExtension importManager;
+    private FluentImportManager importManager;
     @Inject
     private JavaTypeUtil typeUtil;
     @Inject
@@ -62,16 +62,7 @@ public class TypeCoercionTest {
 
         JavaStatementBuilder coercedExpr =
                 coercionService.addCoercions(JavaExpression.from(expr, actual), expected, throwOnFail, scope);
-        StringConcatenationClient classCode = new StringConcatenationClient() {
-            @Override
-            protected void appendTo(TargetStringConcatenation target) {
-                target.append(coercedExpr.completeAsReturn());
-            }
-        };
-        // Normalize line endings to '\n' so the comparison holds on Windows, where the
-        // generator emits '\r\n' but the expected text blocks always use '\n'.
-        String actualCode = importManager.buildClass(pkg, classCode, scope.getFileScope())
-                .replace("\r\n", "\n")
+        String actualCode = importManager.buildClass(pkg, out -> out.write(coercedExpr.completeAsReturn()), scope.getFileScope())
                 .replace("package test.ns;", "").trim() + "\n";
         assertEquals(expectedCode, actualCode);
     }
@@ -99,8 +90,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal BigDecimal bigDecimal = BigDecimal.valueOf(10);
-                \treturn bigDecimal == null ? FieldWithMetaInteger.builder().build() : FieldWithMetaInteger.builder().setValue(bigDecimal.intValueExact()).build();
+                    final BigDecimal bigDecimal = BigDecimal.valueOf(10);
+                    return bigDecimal == null ? FieldWithMetaInteger.builder().build() : FieldWithMetaInteger.builder().setValue(bigDecimal.intValueExact()).build();
                 }
                 """;
 
@@ -118,12 +109,12 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal FieldWithMetaInteger fieldWithMetaInteger = FieldWithMetaInteger.builder().setValue(10).build();
-                \tif (fieldWithMetaInteger == null) {
-                \t\treturn null;
-                \t}
-                \tfinal Integer integer = fieldWithMetaInteger.getValue();
-                \treturn integer == null ? null : BigDecimal.valueOf(integer);
+                    final FieldWithMetaInteger fieldWithMetaInteger = FieldWithMetaInteger.builder().setValue(10).build();
+                    if (fieldWithMetaInteger == null) {
+                        return null;
+                    }
+                    final Integer integer = fieldWithMetaInteger.getValue();
+                    return integer == null ? null : BigDecimal.valueOf(integer);
                 }
                 """;
 
@@ -141,12 +132,12 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal ReferenceWithMetaString referenceWithMetaString = ReferenceWithMetaString.builder().setValue("foo").build();
-                \tif (referenceWithMetaString == null) {
-                \t\treturn FieldWithMetaString.builder().build();
-                \t}
-                \tfinal String string = referenceWithMetaString.getValue();
-                \treturn string == null ? FieldWithMetaString.builder().build() : FieldWithMetaString.builder().setValue(string).build();
+                    final ReferenceWithMetaString referenceWithMetaString = ReferenceWithMetaString.builder().setValue("foo").build();
+                    if (referenceWithMetaString == null) {
+                        return FieldWithMetaString.builder().build();
+                    }
+                    final String string = referenceWithMetaString.getValue();
+                    return string == null ? FieldWithMetaString.builder().build() : FieldWithMetaString.builder().setValue(string).build();
                 }
                 """;
 
@@ -166,12 +157,12 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal FieldWithMetaString fieldWithMetaString = FieldWithMetaString.builder().setValue("foo").build();
-                \tif (fieldWithMetaString == null) {
-                \t\treturn ReferenceWithMetaString.builder().build();
-                \t}
-                \tfinal String string = fieldWithMetaString.getValue();
-                \treturn string == null ? ReferenceWithMetaString.builder().build() : ReferenceWithMetaString.builder().setValue(string).build();
+                    final FieldWithMetaString fieldWithMetaString = FieldWithMetaString.builder().setValue("foo").build();
+                    if (fieldWithMetaString == null) {
+                        return ReferenceWithMetaString.builder().build();
+                    }
+                    final String string = fieldWithMetaString.getValue();
+                    return string == null ? ReferenceWithMetaString.builder().build() : ReferenceWithMetaString.builder().setValue(string).build();
                 }
                 """;
 
@@ -190,8 +181,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal String string = "foo";
-                \treturn string == null ? FieldWithMetaString.builder().build() : FieldWithMetaString.builder().setValue(string).build();
+                    final String string = "foo";
+                    return string == null ? FieldWithMetaString.builder().build() : FieldWithMetaString.builder().setValue(string).build();
                 }
                 """;
         assertCoercion(expected, code("\"foo\""), String.class,
@@ -202,8 +193,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal String string = "foo";
-                \treturn string == null ? ReferenceWithMetaString.builder().build() : ReferenceWithMetaString.builder().setValue(string).build();
+                    final String string = "foo";
+                    return string == null ? ReferenceWithMetaString.builder().build() : ReferenceWithMetaString.builder().setValue(string).build();
                 }
                 """;
         assertCoercion(expected2, code("\"foo\""), String.class,
@@ -217,8 +208,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal FieldWithMetaString fieldWithMetaString = FieldWithMetaString.builder().setValue("foo").build();
-                \treturn fieldWithMetaString == null ? null : fieldWithMetaString.getValue();
+                    final FieldWithMetaString fieldWithMetaString = FieldWithMetaString.builder().setValue("foo").build();
+                    return fieldWithMetaString == null ? null : fieldWithMetaString.getValue();
                 }
                 """;
 
@@ -230,8 +221,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal ReferenceWithMetaString referenceWithMetaString = ReferenceWithMetaString.builder().setValue("foo").build();;
-                \treturn referenceWithMetaString == null ? null : referenceWithMetaString.getValue();
+                    final ReferenceWithMetaString referenceWithMetaString = ReferenceWithMetaString.builder().setValue("foo").build();;
+                    return referenceWithMetaString == null ? null : referenceWithMetaString.getValue();
                 }
                 """;
 
@@ -253,8 +244,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal Integer integer = Integer.valueOf(42);
-                \treturn integer == null ? null : BigDecimal.valueOf(integer);
+                    final Integer integer = Integer.valueOf(42);
+                    return integer == null ? null : BigDecimal.valueOf(integer);
                 }
                 """;
         assertCoercion(expected, code(Integer.class, ".valueOf(42)"), Integer.class, BigDecimal.class);
@@ -264,16 +255,16 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal BigInteger bigInteger = BigInteger.valueOf(42);
-                \treturn bigInteger == null ? null : bigInteger.longValueExact();
+                    final BigInteger bigInteger = BigInteger.valueOf(42);
+                    return bigInteger == null ? null : bigInteger.longValueExact();
                 }
                 """;
         assertCoercion(expected, code(BigInteger.class, ".valueOf(42)"), BigInteger.class, Long.class);
 
         expected = """
                 {
-                \tfinal Boolean _boolean = Boolean.valueOf(true);
-                \treturn _boolean == null ? false : _boolean;
+                    final Boolean _boolean = Boolean.valueOf(true);
+                    return _boolean == null ? false : _boolean;
                 }
                 """;
         assertCoercion(expected, code(Boolean.class, ".valueOf(true)"), Boolean.class, JavaPrimitiveType.BOOLEAN);
@@ -304,8 +295,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal BigDecimal bigDecimal = BigDecimal.valueOf(42);
-                \treturn bigDecimal == null ? MapperC.<BigInteger>ofNull() : MapperC.of(Collections.singletonList(bigDecimal.toBigIntegerExact()));
+                    final BigDecimal bigDecimal = BigDecimal.valueOf(42);
+                    return bigDecimal == null ? MapperC.<BigInteger>ofNull() : MapperC.of(Collections.singletonList(bigDecimal.toBigIntegerExact()));
                 }
                 """;
         assertCoercion(expected, code(BigDecimal.class, ".valueOf(42)"), BigDecimal.class, typeUtil.wrap(typeUtil.MAPPER_C, BigInteger.class));
@@ -345,8 +336,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal Long _long = MapperS.of(42).get();
-                \treturn _long == null ? null : Math.toIntExact(_long);
+                    final Long _long = MapperS.of(42).get();
+                    return _long == null ? null : Math.toIntExact(_long);
                 }
                 """;
         assertCoercion(expected, code(MapperS.class, ".of(42)"), typeUtil.wrap(typeUtil.MAPPER_S, Long.class), Integer.class);
@@ -358,8 +349,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal Integer integer = MapperC.of(Arrays.asList(1, 2, 3)).get();
-                \treturn integer == null ? null : BigInteger.valueOf(integer);
+                    final Integer integer = MapperC.of(Arrays.asList(1, 2, 3)).get();
+                    return integer == null ? null : BigInteger.valueOf(integer);
                 }
                 """;
         assertCoercion(expected, code(MapperC.class, ".of(", Arrays.class, ".asList(1, 2, 3))"),
@@ -444,8 +435,8 @@ public class TypeCoercionTest {
     void testIntegerToLong() {
         String expected = """
                 {
-                \tfinal Integer integer = Integer.valueOf(42);
-                \treturn integer == null ? null : integer.longValue();
+                    final Integer integer = Integer.valueOf(42);
+                    return integer == null ? null : integer.longValue();
                 }
                 """;
         assertCoercion(expected, code(Integer.class, ".valueOf(42)"), typeUtil.INTEGER, typeUtil.LONG);
@@ -458,8 +449,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal Long _long = Long.valueOf(42);
-                \treturn _long == null ? null : BigInteger.valueOf(_long);
+                    final Long _long = Long.valueOf(42);
+                    return _long == null ? null : BigInteger.valueOf(_long);
                 }
                 """;
         assertCoercion(expected, code(Long.class, ".valueOf(42)"), typeUtil.LONG, typeUtil.BIG_INTEGER);
@@ -472,8 +463,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal Long _long = Long.valueOf(42);
-                \treturn _long == null ? null : BigDecimal.valueOf(_long);
+                    final Long _long = Long.valueOf(42);
+                    return _long == null ? null : BigDecimal.valueOf(_long);
                 }
                 """;
         assertCoercion(expected, code(Long.class, ".valueOf(42)"), typeUtil.LONG, typeUtil.BIG_DECIMAL);
@@ -486,8 +477,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal BigInteger bigInteger = BigInteger.valueOf(42);
-                \treturn bigInteger == null ? null : bigInteger.intValueExact();
+                    final BigInteger bigInteger = BigInteger.valueOf(42);
+                    return bigInteger == null ? null : bigInteger.intValueExact();
                 }
                 """;
         assertCoercion(expected, code(BigInteger.class, ".valueOf(42)"), typeUtil.BIG_INTEGER, typeUtil.INTEGER);
@@ -501,8 +492,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal BigInteger bigInteger = BigInteger.valueOf(42);
-                \treturn bigInteger == null ? null : new BigDecimal(bigInteger);
+                    final BigInteger bigInteger = BigInteger.valueOf(42);
+                    return bigInteger == null ? null : new BigDecimal(bigInteger);
                 }
                 """;
         assertCoercion(expected, code(BigInteger.class, ".valueOf(42)"), typeUtil.BIG_INTEGER, typeUtil.BIG_DECIMAL);
@@ -515,8 +506,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal BigDecimal bigDecimal = BigDecimal.valueOf(42);
-                \treturn bigDecimal == null ? null : bigDecimal.intValueExact();
+                    final BigDecimal bigDecimal = BigDecimal.valueOf(42);
+                    return bigDecimal == null ? null : bigDecimal.intValueExact();
                 }
                 """;
         assertCoercion(expected, code(BigDecimal.class, ".valueOf(42)"), typeUtil.BIG_DECIMAL, typeUtil.INTEGER);
@@ -529,8 +520,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal BigDecimal bigDecimal = BigDecimal.valueOf(42);
-                \treturn bigDecimal == null ? null : bigDecimal.longValueExact();
+                    final BigDecimal bigDecimal = BigDecimal.valueOf(42);
+                    return bigDecimal == null ? null : bigDecimal.longValueExact();
                 }
                 """;
         assertCoercion(expected, code(BigDecimal.class, ".valueOf(42)"), typeUtil.BIG_DECIMAL, typeUtil.LONG);
@@ -540,11 +531,11 @@ public class TypeCoercionTest {
     void testLongToIntegerWithoutThrowing() {
         String expected = """
                 {
-                \tfinal Long _long = Long.valueOf(42);
-                \tif (_long == null) {
-                \t\treturn null;
-                \t}
-                \treturn _long <= Integer.MAX_VALUE && _long >= Integer.MIN_VALUE ? (int) _long : null;
+                    final Long _long = Long.valueOf(42);
+                    if (_long == null) {
+                        return null;
+                    }
+                    return _long <= Integer.MAX_VALUE && _long >= Integer.MIN_VALUE ? (int) _long : null;
                 }
                 """;
         assertCoercion(expected, code(Long.class, ".valueOf(42)"), typeUtil.LONG, typeUtil.INTEGER, false);
@@ -557,11 +548,11 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal BigInteger bigInteger = BigInteger.valueOf(42);
-                \tif (bigInteger == null) {
-                \t\treturn null;
-                \t}
-                \treturn BigInteger.valueOf(bigInteger.intValue()).equals(bigInteger) ? bigInteger.intValue() : null;
+                    final BigInteger bigInteger = BigInteger.valueOf(42);
+                    if (bigInteger == null) {
+                        return null;
+                    }
+                    return BigInteger.valueOf(bigInteger.intValue()).equals(bigInteger) ? bigInteger.intValue() : null;
                 }
                 """;
         assertCoercion(expected, code(BigInteger.class, ".valueOf(42)"), typeUtil.BIG_INTEGER, typeUtil.INTEGER, false);
@@ -574,11 +565,11 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal BigInteger bigInteger = BigInteger.valueOf(42);
-                \tif (bigInteger == null) {
-                \t\treturn null;
-                \t}
-                \treturn BigInteger.valueOf(bigInteger.longValue()).equals(bigInteger) ? bigInteger.longValue() : null;
+                    final BigInteger bigInteger = BigInteger.valueOf(42);
+                    if (bigInteger == null) {
+                        return null;
+                    }
+                    return BigInteger.valueOf(bigInteger.longValue()).equals(bigInteger) ? bigInteger.longValue() : null;
                 }
                 """;
         assertCoercion(expected, code(BigInteger.class, ".valueOf(42)"), typeUtil.BIG_INTEGER, typeUtil.LONG, false);
@@ -591,11 +582,11 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal BigDecimal bigDecimal = BigDecimal.valueOf(42);
-                \tif (bigDecimal == null) {
-                \t\treturn null;
-                \t}
-                \treturn BigDecimal.valueOf(bigDecimal.intValue()).compareTo(bigDecimal) == 0 ? bigDecimal.intValue() : null;
+                    final BigDecimal bigDecimal = BigDecimal.valueOf(42);
+                    if (bigDecimal == null) {
+                        return null;
+                    }
+                    return BigDecimal.valueOf(bigDecimal.intValue()).compareTo(bigDecimal) == 0 ? bigDecimal.intValue() : null;
                 }
                 """;
         assertCoercion(expected, code(BigDecimal.class, ".valueOf(42)"), typeUtil.BIG_DECIMAL, typeUtil.INTEGER, false);
@@ -608,11 +599,11 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal BigDecimal bigDecimal = BigDecimal.valueOf(42);
-                \tif (bigDecimal == null) {
-                \t\treturn null;
-                \t}
-                \treturn BigDecimal.valueOf(bigDecimal.longValue()).compareTo(bigDecimal) == 0 ? bigDecimal.longValue() : null;
+                    final BigDecimal bigDecimal = BigDecimal.valueOf(42);
+                    if (bigDecimal == null) {
+                        return null;
+                    }
+                    return BigDecimal.valueOf(bigDecimal.longValue()).compareTo(bigDecimal) == 0 ? bigDecimal.longValue() : null;
                 }
                 """;
         assertCoercion(expected, code(BigDecimal.class, ".valueOf(42)"), typeUtil.BIG_DECIMAL, typeUtil.LONG, false);
@@ -625,11 +616,11 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal BigDecimal bigDecimal = BigDecimal.valueOf(42);
-                \tif (bigDecimal == null) {
-                \t\treturn null;
-                \t}
-                \treturn new BigDecimal(bigDecimal.toBigInteger()).compareTo(bigDecimal) == 0 ? bigDecimal.toBigInteger() : null;
+                    final BigDecimal bigDecimal = BigDecimal.valueOf(42);
+                    if (bigDecimal == null) {
+                        return null;
+                    }
+                    return new BigDecimal(bigDecimal.toBigInteger()).compareTo(bigDecimal) == 0 ? bigDecimal.toBigInteger() : null;
                 }
                 """;
         assertCoercion(expected, code(BigDecimal.class, ".valueOf(42)"), typeUtil.BIG_DECIMAL, typeUtil.BIG_INTEGER, false);
@@ -775,8 +766,8 @@ public class TypeCoercionTest {
 
 
                 return Arrays.asList(1, 2).stream()
-                \t.<BigDecimal>map(integer -> BigDecimal.valueOf(integer))
-                \t.collect(Collectors.toList())
+                    .<BigDecimal>map(integer -> BigDecimal.valueOf(integer))
+                    .collect(Collectors.toList())
                 ;
                 """;
         assertCoercion(expected, code(Arrays.class, ".asList(1, 2)"), typeUtil.wrap(typeUtil.LIST, Integer.class), typeUtil.wrap(typeUtil.LIST, BigDecimal.class));
@@ -790,8 +781,8 @@ public class TypeCoercionTest {
 
 
                 return Arrays.asList(1L, 2L).stream()
-                \t.<Integer>map(_long -> _long <= Integer.MAX_VALUE && _long >= Integer.MIN_VALUE ? (int) _long : null)
-                \t.collect(Collectors.toList())
+                    .<Integer>map(_long -> _long <= Integer.MAX_VALUE && _long >= Integer.MIN_VALUE ? (int) _long : null)
+                    .collect(Collectors.toList())
                 ;
                 """;
         assertCoercion(expected, code(Arrays.class, ".asList(1L, 2L)"), typeUtil.wrap(typeUtil.LIST, Long.class), typeUtil.wrap(typeUtil.LIST, Integer.class), false);
@@ -818,8 +809,8 @@ public class TypeCoercionTest {
 
 
                 return MapperS.of(Arrays.asList(1, 2).stream()
-                \t.<BigDecimal>map(integer -> BigDecimal.valueOf(integer))
-                \t.collect(Collectors.toList())
+                    .<BigDecimal>map(integer -> BigDecimal.valueOf(integer))
+                    .collect(Collectors.toList())
                 .get(0));
                 """;
         assertCoercion(expected, code(Arrays.class, ".asList(1, 2)"), typeUtil.wrap(typeUtil.LIST, Integer.class), typeUtil.wrap(typeUtil.MAPPER_S, BigDecimal.class));
@@ -918,8 +909,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal String string = "a";
-                \treturn string == null ? Collections.<String>emptyList() : Collections.singletonList(string);
+                    final String string = "a";
+                    return string == null ? Collections.<String>emptyList() : Collections.singletonList(string);
                 }
                 """;
         assertCoercion(expected, code("\"a\""), typeUtil.STRING, typeUtil.wrap(typeUtil.LIST, String.class));
@@ -945,8 +936,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal FieldWithMetaString fieldWithMetaString = FieldWithMetaString.builder().setValue("a").build();
-                \treturn fieldWithMetaString == null || fieldWithMetaString.getValue() == null ? Collections.<String>emptyList() : Collections.singletonList(fieldWithMetaString.getValue());
+                    final FieldWithMetaString fieldWithMetaString = FieldWithMetaString.builder().setValue("a").build();
+                    return fieldWithMetaString == null || fieldWithMetaString.getValue() == null ? Collections.<String>emptyList() : Collections.singletonList(fieldWithMetaString.getValue());
                 }
                 """;
         assertCoercion(expected, code("FieldWithMetaString.builder().setValue(\"a\").build()"), fieldWithMetaString(), typeUtil.wrap(typeUtil.LIST, String.class));
@@ -960,8 +951,8 @@ public class TypeCoercionTest {
 
 
                 {
-                \tfinal FieldWithMetaString fieldWithMetaString = FieldWithMetaString.builder().setValue("a").build();
-                \treturn fieldWithMetaString == null ? MapperS.<String>ofNull() : MapperS.of(fieldWithMetaString.getValue());
+                    final FieldWithMetaString fieldWithMetaString = FieldWithMetaString.builder().setValue("a").build();
+                    return fieldWithMetaString == null ? MapperS.<String>ofNull() : MapperS.of(fieldWithMetaString.getValue());
                 }
                 """;
         assertCoercion(expected, code("FieldWithMetaString.builder().setValue(\"a\").build()"), fieldWithMetaString(), typeUtil.wrap(typeUtil.MAPPER_S, String.class));
@@ -975,11 +966,11 @@ public class TypeCoercionTest {
 
 
                 return metas.stream()
-                \t.<BigDecimal>map(fieldWithMetaInteger -> {
-                \t\tfinal Integer integer = fieldWithMetaInteger.getValue();
-                \t\treturn integer == null ? null : BigDecimal.valueOf(integer);
-                \t})
-                \t.collect(Collectors.toList())
+                    .<BigDecimal>map(fieldWithMetaInteger -> {
+                        final Integer integer = fieldWithMetaInteger.getValue();
+                        return integer == null ? null : BigDecimal.valueOf(integer);
+                    })
+                    .collect(Collectors.toList())
                 ;
                 """;
         assertCoercion(expected, code("metas"), typeUtil.wrap(typeUtil.LIST, fieldWithMetaInteger()), typeUtil.wrap(typeUtil.LIST, BigDecimal.class));
@@ -992,11 +983,11 @@ public class TypeCoercionTest {
 
 
                 return metas.<BigDecimal>map("Type coercion", fieldWithMetaInteger -> {
-                \tif (fieldWithMetaInteger == null) {
-                \t\treturn null;
-                \t}
-                \tfinal Integer integer = fieldWithMetaInteger.getValue();
-                \treturn integer == null ? null : BigDecimal.valueOf(integer);
+                    if (fieldWithMetaInteger == null) {
+                        return null;
+                    }
+                    final Integer integer = fieldWithMetaInteger.getValue();
+                    return integer == null ? null : BigDecimal.valueOf(integer);
                 });
                 """;
         assertCoercion(expected, code("metas"), typeUtil.wrap(typeUtil.MAPPER_S, fieldWithMetaInteger()), typeUtil.wrap(typeUtil.MAPPER_S, BigDecimal.class));

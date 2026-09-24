@@ -66,8 +66,8 @@ public abstract class ListOperations implements RosettaFunction {
         protected List<BigDecimal> assignOutput(List<BigDecimal> result, List<? extends Foo> foos, List<Integer> ints) {
             result = new ArrayList<>(mapped(foos, ints).<BigDecimal>map("Type coercion", integer -> BigDecimal.valueOf(integer)).getMulti());
             result.addAll(ints.stream()
-            	.<BigDecimal>map(integer -> BigDecimal.valueOf(integer))
-            	.collect(Collectors.toList())
+                .<BigDecimal>map(integer -> BigDecimal.valueOf(integer))
+                .collect(Collectors.toList())
             );
             result.addAll(Collections.singletonList(BigDecimal.valueOf(1)));
             return result;

@@ -615,8 +615,8 @@ public interface Foo2 extends Foo1 {
         @Override
         public Foo2.Foo2Builder addOtherParentList(List<? extends Parent> otherParentLists) {
             return addOtherParentListOverriddenAsChild(otherParentLists.stream()
-            	.<Child>map(_parent -> _parent instanceof Child ? Child.class.cast(_parent) : null)
-            	.collect(Collectors.toList())
+                .<Child>map(_parent -> _parent instanceof Child ? Child.class.cast(_parent) : null)
+                .collect(Collectors.toList())
             );
         }
 
@@ -625,8 +625,8 @@ public interface Foo2 extends Foo1 {
         @Override
         public Foo2.Foo2Builder setOtherParentList(List<? extends Parent> otherParentLists) {
             return setOtherParentListOverriddenAsChild(otherParentLists.stream()
-            	.<Child>map(_parent -> _parent instanceof Child ? Child.class.cast(_parent) : null)
-            	.collect(Collectors.toList())
+                .<Child>map(_parent -> _parent instanceof Child ? Child.class.cast(_parent) : null)
+                .collect(Collectors.toList())
             );
         }
 
