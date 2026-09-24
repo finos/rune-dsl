@@ -70,18 +70,14 @@ public class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 		if (isSimple(expr)) {
 			return true;
 		}
-		if (expr instanceof WithMetaOperation) {
-			return true;
-		} else if (expr instanceof RosettaBinaryOperation op) {
-			return isSimple(op.getLeft()) || isSimple(op.getRight());
-		} else if (expr instanceof RosettaFunctionalOperation op) {
-			return op.getFunction() == null && isSimple(op.getArgument());
-		} else if (expr instanceof RosettaUnaryOperation op) {
-			return isSimple(op.getArgument());
-		} else if (expr instanceof ListLiteral op) {
-			return op.getElements().stream().allMatch(this::isSimple);
-		}
-		return false;
+		return switch (expr) {
+			case WithMetaOperation op -> true;
+			case RosettaBinaryOperation op -> isSimple(op.getLeft()) || isSimple(op.getRight());
+			case RosettaFunctionalOperation op -> op.getFunction() == null && isSimple(op.getArgument());
+			case RosettaUnaryOperation op -> isSimple(op.getArgument());
+			case ListLiteral op -> op.getElements().stream().allMatch(this::isSimple);
+			case null, default -> false;
+		};
 	}
 
 	private boolean isEmpty(RosettaExpression expr) {
@@ -128,48 +124,31 @@ public class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	}
 
 	// Dispatch on the dynamic type of the expression, ordered from most specific to least specific.
-	// (A pattern switch would be cleaner, but rune-lang is pinned to Java 17 for Xtend interoperability;
-	// once Xtend is removed, this can become a pattern switch.)
 	// The FormattingMode is threaded through as a parameter.
 	private void unsafeFormatExpression(RosettaExpression expr, IFormattableDocument document, FormattingMode mode) {
-		if (expr instanceof WithMetaOperation e) {
-			unsafeFormatWithMetaOperation(e, document, mode);
-		} else if (expr instanceof RosettaConstructorExpression e) {
-			unsafeFormatConstructorExpression(e, document, mode);
-		} else if (expr instanceof ListLiteral e) {
-			unsafeFormatListLiteral(e, document, mode);
-		} else if (expr instanceof RosettaConditionalExpression e) {
-			unsafeFormatConditionalExpression(e, document, mode);
-		} else if (expr instanceof RosettaFeatureCall e) {
-			unsafeFormatFeatureCall(e, document, mode);
-		} else if (expr instanceof RosettaDeepFeatureCall e) {
-			unsafeFormatDeepFeatureCall(e, document, mode);
-		} else if (expr instanceof RosettaOnlyExistsExpression e) {
-			unsafeFormatOnlyExistsExpression(e, document, mode);
-		} else if (expr instanceof RosettaCallableReference e) {
-			unsafeFormatCallableReference(e, document, mode);
-		} else if (expr instanceof ModifiableBinaryOperation e) {
-			unsafeFormatModifiableBinaryOperation(e, document, mode);
-		} else if (expr instanceof SwitchOperation e) {
-			unsafeFormatSwitchOperation(e, document, mode);
-		} else if (expr instanceof RosettaExistsExpression e) {
-			unsafeFormatExistsExpression(e, document, mode);
-		} else if (expr instanceof ChoiceOperation e) {
-			unsafeFormatChoiceOperation(e, document, mode);
-		} else if (expr instanceof RosettaAbsentExpression e) {
-			unsafeFormatAbsentExpression(e, document, mode);
-		} else if (expr instanceof RosettaFunctionalOperation e) {
-			unsafeFormatFunctionalOperation(e, document, mode);
-		} else if (expr instanceof RosettaBinaryOperation e) {
-			unsafeFormatBinaryOperation(e, document, mode);
-		} else if (expr instanceof RosettaUnaryOperation e) {
-			unsafeFormatUnaryOperation(e, document, mode);
-		} else if (expr instanceof RosettaLiteral e) {
-			unsafeFormatLiteral(e, document, mode);
-		} else if (expr instanceof RosettaImplicitVariable e) {
-			unsafeFormatImplicitVariable(e, document, mode);
+		switch (expr) {
+			case WithMetaOperation e -> unsafeFormatWithMetaOperation(e, document, mode);
+			case RosettaConstructorExpression e -> unsafeFormatConstructorExpression(e, document, mode);
+			case ListLiteral e -> unsafeFormatListLiteral(e, document, mode);
+			case RosettaConditionalExpression e -> unsafeFormatConditionalExpression(e, document, mode);
+			case RosettaFeatureCall e -> unsafeFormatFeatureCall(e, document, mode);
+			case RosettaDeepFeatureCall e -> unsafeFormatDeepFeatureCall(e, document, mode);
+			case RosettaOnlyExistsExpression e -> unsafeFormatOnlyExistsExpression(e, document, mode);
+			case RosettaCallableReference e -> unsafeFormatCallableReference(e, document, mode);
+			case ModifiableBinaryOperation e -> unsafeFormatModifiableBinaryOperation(e, document, mode);
+			case SwitchOperation e -> unsafeFormatSwitchOperation(e, document, mode);
+			case RosettaExistsExpression e -> unsafeFormatExistsExpression(e, document, mode);
+			case ChoiceOperation e -> unsafeFormatChoiceOperation(e, document, mode);
+			case RosettaAbsentExpression e -> unsafeFormatAbsentExpression(e, document, mode);
+			case RosettaFunctionalOperation e -> unsafeFormatFunctionalOperation(e, document, mode);
+			case RosettaBinaryOperation e -> unsafeFormatBinaryOperation(e, document, mode);
+			case RosettaUnaryOperation e -> unsafeFormatUnaryOperation(e, document, mode);
+			case RosettaLiteral e -> unsafeFormatLiteral(e, document, mode);
+			case RosettaImplicitVariable e -> unsafeFormatImplicitVariable(e, document, mode);
+			case null, default -> {
+				// No-op for any other expression type.
+			}
 		}
-		// No-op for any other expression type.
 	}
 
 	private void unsafeFormatWithMetaOperation(WithMetaOperation expr, IFormattableDocument document,

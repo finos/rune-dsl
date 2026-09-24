@@ -44,27 +44,22 @@ public abstract class RosettaTypeSwitch<Return, Context> {
 	}
 	
 	protected Return doSwitch(RType type, Context context) {
-		if (type instanceof RDataType) {
-			return caseDataType((RDataType)type, context);
-		} else if (type instanceof RChoiceType) {
-			return caseChoiceType((RChoiceType)type, context);
-		} else if (type instanceof REnumType) {
-			return caseEnumType((REnumType)type, context);
-		} else if (type instanceof RParametrizedType) {
-			return doSwitch((RParametrizedType)type, context);
-		} else if (type instanceof RRecordType) {
-			return doSwitch((RRecordType)type, context);
-		}
-		throw errorMissedCase(type);
+		return switch (type) {
+			case RDataType t -> caseDataType(t, context);
+			case RChoiceType t -> caseChoiceType(t, context);
+			case REnumType t -> caseEnumType(t, context);
+			case RParametrizedType t -> doSwitch(t, context);
+			case RRecordType t -> doSwitch(t, context);
+			case null, default -> throw errorMissedCase(type);
+		};
 	}
 
 	protected Return doSwitch(RParametrizedType type, Context context) {
-		if (type instanceof RAliasType) {
-			return caseAliasType((RAliasType)type, context);
-		} else if (type instanceof RBasicType) {
-			return doSwitch((RBasicType)type, context);
-		}
-		throw errorMissedCase(type);
+		return switch (type) {
+			case RAliasType t -> caseAliasType(t, context);
+			case RBasicType t -> doSwitch(t, context);
+			case null, default -> throw errorMissedCase(type);
+		};
 	}
 	protected Return doSwitch(RBasicType type, Context context) {
 		if (type instanceof RNumberType) {
@@ -83,14 +78,12 @@ public abstract class RosettaTypeSwitch<Return, Context> {
 		throw errorMissedCase(type);
 	}
 	protected Return doSwitch(RRecordType type, Context context) {
-		if (type instanceof RDateType) {
-			return caseDateType((RDateType)type, context);
-		} else if (type instanceof RDateTimeType) {
-			return caseDateTimeType((RDateTimeType)type, context);
-		} else if (type instanceof RZonedDateTimeType) {
-			return caseZonedDateTimeType((RZonedDateTimeType)type, context);
-		}
-		throw errorMissedCase(type);
+		return switch (type) {
+			case RDateType t -> caseDateType(t, context);
+			case RDateTimeType t -> caseDateTimeType(t, context);
+			case RZonedDateTimeType t -> caseZonedDateTimeType(t, context);
+			case null, default -> throw errorMissedCase(type);
+		};
 	}
 		
 	protected abstract Return caseDataType(RDataType type, Context context);

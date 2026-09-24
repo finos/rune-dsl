@@ -156,38 +156,30 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
             return existing;
         }
         cycleTracker.put(symbol, builtins.NOTHING_WITH_ANY_META);
-        RMetaAnnotatedType result;
-        if (symbol instanceof RosettaFeature f) {
-            result = safeRType(f, context, cycleTracker);
-        } else if (symbol instanceof RosettaParameter p) {
-            result = RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(p.getTypeCall()));
-        } else if (symbol instanceof ClosureParameter cp) {
-            RosettaFunctionalOperation setOp = cp.getFunction() == null
-                    ? null
-                    : (RosettaFunctionalOperation) cp.getFunction().eContainer();
-            if (setOp != null) {
-                result = safeRType(setOp.getArgument(), cycleTracker);
-            } else {
-                result = builtins.NOTHING_WITH_ANY_META;
+        RMetaAnnotatedType result = switch (symbol) {
+            case RosettaFeature f -> safeRType(f, context, cycleTracker);
+            case RosettaParameter p -> RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(p.getTypeCall()));
+            case ClosureParameter cp -> {
+                RosettaFunctionalOperation setOp = cp.getFunction() == null
+                        ? null
+                        : (RosettaFunctionalOperation) cp.getFunction().eContainer();
+                yield setOp != null ? safeRType(setOp.getArgument(), cycleTracker) : builtins.NOTHING_WITH_ANY_META;
             }
-        } else if (symbol instanceof RosettaEnumeration e) { // @Compat
-            result = RMetaAnnotatedType.withMeta(rObjectFactory.buildREnumType(e),
-                    getRMetaAttributesOfSymbol(symbol));
-        } else if (symbol instanceof Function func) {
-            Attribute out = func.getOutput();
-            result = out != null ? safeRType((RosettaFeature) out, context, cycleTracker) : builtins.NOTHING_WITH_ANY_META;
-        } else if (symbol instanceof RosettaRule rule) {
-            RosettaExpression e = rule.getExpression();
-            result = e != null ? safeRType(e, cycleTracker) : builtins.NOTHING_WITH_ANY_META;
-        } else if (symbol instanceof RosettaExternalFunction extFunc) {
-            result = RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(extFunc.getTypeCall()));
-        } else if (symbol instanceof ShortcutDeclaration alias) {
-            result = safeRType(alias.getExpression(), cycleTracker);
-        } else if (symbol instanceof TypeParameter tp) {
-            result = RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(tp.getTypeCall()));
-        } else {
-            result = builtins.NOTHING_WITH_ANY_META;
-        }
+            case RosettaEnumeration e -> // @Compat
+                    RMetaAnnotatedType.withMeta(rObjectFactory.buildREnumType(e), getRMetaAttributesOfSymbol(symbol));
+            case Function func -> {
+                Attribute out = func.getOutput();
+                yield out != null ? safeRType((RosettaFeature) out, context, cycleTracker) : builtins.NOTHING_WITH_ANY_META;
+            }
+            case RosettaRule rule -> {
+                RosettaExpression e = rule.getExpression();
+                yield e != null ? safeRType(e, cycleTracker) : builtins.NOTHING_WITH_ANY_META;
+            }
+            case RosettaExternalFunction extFunc -> RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(extFunc.getTypeCall()));
+            case ShortcutDeclaration alias -> safeRType(alias.getExpression(), cycleTracker);
+            case TypeParameter tp -> RMetaAnnotatedType.withNoMeta(typeSystem.typeCallToRType(tp.getTypeCall()));
+            case null, default -> builtins.NOTHING_WITH_ANY_META;
+        };
         cycleTracker.put(symbol, result);
         return result;
     }

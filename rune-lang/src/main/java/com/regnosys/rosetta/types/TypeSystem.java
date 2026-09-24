@@ -214,30 +214,26 @@ public class TypeSystem {
 		return typeCallToRType(type, Collections.emptyMap(), new RosettaInterpreterContext());
 	}
 	private RType typeCallToRType(RosettaType type, Map<String, RosettaValue> arguments, RosettaInterpreterContext context) {
-		if (type instanceof Choice) {
-			return factory.buildRChoiceType((Choice) type);
-		} else if (type instanceof Data) {
-			return factory.buildRDataType((Data) type);
-		} else if (type instanceof RosettaEnumeration) {
-			return factory.buildREnumType((RosettaEnumeration) type);
-		} else if (type instanceof RosettaBuiltinType) {
-			return builtins.getType(type, arguments).orElse(builtins.NOTHING);
-		} else if (type instanceof RosettaMetaType) {
-			return builtins.getType(type, arguments)
-					.orElseGet(() -> typeCallToRType(((RosettaMetaType) type).getTypeCall(), context));
-		} else if (type instanceof RosettaTypeAlias) {
-			RosettaTypeAlias alias = (RosettaTypeAlias) type;
-			LinkedHashMap<String, RosettaValue> args = new LinkedHashMap<>(arguments);
-			((RosettaTypeAlias) type).getParameters().forEach(param -> {
-				if (!arguments.containsKey(param.getName())) {
-					args.put(param.getName(), RosettaValue.empty());
-				}
-			});
-			RType refersTo = typeCallToRType(alias.getTypeCall(), RosettaInterpreterContext.of(args));
-			List<Condition> conditions = alias.getConditions();
-			return new RAliasType(typeFunctionOfTypeAlias(alias), args, refersTo, conditions);
-		}
-		return builtins.NOTHING;
+		return switch (type) {
+			case Choice choice -> factory.buildRChoiceType(choice);
+			case Data data -> factory.buildRDataType(data);
+			case RosettaEnumeration enumeration -> factory.buildREnumType(enumeration);
+			case RosettaBuiltinType builtinType -> builtins.getType(type, arguments).orElse(builtins.NOTHING);
+			case RosettaMetaType metaType -> builtins.getType(type, arguments)
+					.orElseGet(() -> typeCallToRType(metaType.getTypeCall(), context));
+			case RosettaTypeAlias alias -> {
+				LinkedHashMap<String, RosettaValue> args = new LinkedHashMap<>(arguments);
+				alias.getParameters().forEach(param -> {
+					if (!arguments.containsKey(param.getName())) {
+						args.put(param.getName(), RosettaValue.empty());
+					}
+				});
+				RType refersTo = typeCallToRType(alias.getTypeCall(), RosettaInterpreterContext.of(args));
+				List<Condition> conditions = alias.getConditions();
+				yield new RAliasType(typeFunctionOfTypeAlias(alias), args, refersTo, conditions);
+			}
+			case null, default -> builtins.NOTHING;
+		};
 	}
 	
 	private RTypeFunction typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
