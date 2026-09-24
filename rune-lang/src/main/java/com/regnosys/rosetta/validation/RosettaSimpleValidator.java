@@ -2,6 +2,7 @@ package com.regnosys.rosetta.validation;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
 import com.regnosys.rosetta.rosetta.*;
@@ -30,8 +31,6 @@ import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.scoping.IScope;
 import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.ValidationMessageAcceptor;
-import org.eclipse.xtext.xbase.lib.Conversions;
-import org.eclipse.xtext.xbase.lib.IterableExtensions;
 
 import java.util.*;
 
@@ -83,15 +82,15 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
     @Check
     public void deprecatedWarning(EObject object) {
         EList<EStructuralFeature> features = object.eClass().getEAllStructuralFeatures();
-        EStructuralFeature[] crossReferencesArray = ((EClassImpl.FeatureSubsetSupplier) features).crossReferences();
-        List<EReference> crossRefs = ((List<EReference>) Conversions.doWrapArray(crossReferencesArray));
+        EStructuralFeature[] crossRefs = ((EClassImpl.FeatureSubsetSupplier) features).crossReferences();
 
         if (crossRefs != null) {
-            for (EReference ref : crossRefs) {
+            for (EStructuralFeature crossRef : crossRefs) {
+                EReference ref = (EReference) crossRef;
                 if (ref.isMany()) {
                     Object eGet = object.eGet(ref);
                     Iterable<Annotated> annotatedList = Iterables.filter(((List<?>) eGet), Annotated.class);
-                    List<Annotated> annotatedArray = IterableExtensions.toList(annotatedList);
+                    List<Annotated> annotatedArray = Lists.newArrayList(annotatedList);
 
                     for (int i = 0; i < annotatedArray.size(); i++) {
                         checkDeprecatedAnnotation(annotatedArray.get(i), object, ref, i);
@@ -422,7 +421,7 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         if (ele instanceof FunctionDispatch) return;
 
         List<FunctionDispatch> dispatches =
-                IterableExtensions.toList(rosettaFunctionExtensions.getDispatchingFunctions(ele));
+                Lists.newArrayList(rosettaFunctionExtensions.getDispatchingFunctions(ele));
         if (dispatches.isEmpty()) return;
 
         // Map: enum -> (valueName -> list of dispatches using that value)
@@ -827,7 +826,7 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
                 return;
             }
             EList<Segment> segments = op.getPath().asSegmentList(op.getPath());
-            Segment last = segments == null ? null : IterableExtensions.lastOrNull(segments);
+            Segment last = segments == null || segments.isEmpty() ? null : segments.getLast();
             RosettaFeature feature = last == null ? null : last.getFeature();
             if (feature instanceof RosettaMetaType || !(feature instanceof Attribute) || !rosettaEcoreUtil.hasReferenceAnnotation((Attribute) feature)) {
                 error("'" + o.getOperator() + "' can only be used with attributes annotated with [metadata reference] annotation.",

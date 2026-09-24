@@ -7,10 +7,10 @@ import java.util.Optional;
 import jakarta.inject.Inject;
 
 import org.eclipse.emf.ecore.EObject;
-import org.eclipse.xtext.xbase.lib.IterableExtensions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Iterables;
 import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.rosetta.RosettaEnumeration;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
@@ -189,7 +189,7 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
     }
 	
     private boolean isFeatureOfImplicitVariable(EObject context, RosettaFeature feature) {
-        return IterableExtensions.contains(typeProvider.findFeaturesOfImplicitVariable(context), feature);
+        return Iterables.contains(typeProvider.findFeaturesOfImplicitVariable(context), feature);
     }
 	
     private boolean safeIsClosureParameterMulti(InlineFunction obj, Map<RosettaSymbol, Boolean> cycleTracker) {
