@@ -1,9 +1,7 @@
 package com.regnosys.rosetta.generator.java.function;
 
-import org.eclipse.xtend2.lib.StringConcatenationClient;
-
+import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.generator.java.scoping.JavaMethodScope;
-import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface;
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil;
@@ -45,58 +43,18 @@ public class AliasUtil {
 		}
 	}
 	
-	public StringConcatenationClient getParameters(RShortcut alias, JavaMethodScope scope) {
+	public CodeRenderer getParameters(RShortcut alias, JavaMethodScope scope) {
 		RFunction func = alias.getFunction();
-		return new StringConcatenationClient() {
-			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				if (requiresOutput(alias)) {
-					RAttribute output = func.getOutput();
-					JavaReferenceType outputParameterType = toMultiBuilderType(output.getRMetaAnnotatedType(), output.isMulti());
-					
-					target.append(outputParameterType);
-					target.append(" ");
-					target.append(scope.getIdentifierOrThrow(output));
-                    if (!func.getInputs().isEmpty()) {
-                        target.append(", ");
-                    }
-				}
-				for (int i=0; i<func.getInputs().size(); i++) {
-                    RAttribute input = func.getInputs().get(i);
-					JavaReferenceType inputParameterType = typeTranslator.toMetaJavaType(input);
-					
-					target.append(inputParameterType);
-					target.append(" ");
-					target.append(scope.getIdentifierOrThrow(input));
-                    if (i < func.getInputs().size() - 1) {
-                        target.append(", ");
-                    }
+		return out -> {
+			if (requiresOutput(alias)) {
+				RAttribute output = func.getOutput();
+				JavaReferenceType outputParameterType = toMultiBuilderType(output.getRMetaAnnotatedType(), output.isMulti());
+				out.write(outputParameterType, " ", scope.getIdentifierOrThrow(output));
+				if (!func.getInputs().isEmpty()) {
+					out.write(", ");
 				}
 			}
-		};
-	}
-	
-	public StringConcatenationClient getArguments(RShortcut alias, JavaStatementScope scope) {
-		RFunction func = alias.getFunction();
-		return new StringConcatenationClient() {
-			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				if (requiresOutput(alias)) {
-					RAttribute output = func.getOutput();
-					target.append(scope.getIdentifierOrThrow(output));
-					target.append(".toBuilder()");
-                    if (!func.getInputs().isEmpty()) {
-                        target.append(", ");
-                    }
-				}
-                for (int i=0; i<func.getInputs().size(); i++) {
-                    RAttribute input = func.getInputs().get(i);
-					target.append(scope.getIdentifierOrThrow(input));
-                    if (i < func.getInputs().size() - 1) {
-                        target.append(", ");
-                    }
-				}
-			}
+			out.join(func.getInputs(), ", ", input -> out.write(typeTranslator.toMetaJavaType(input), " ", scope.getIdentifierOrThrow(input)));
 		};
 	}
 	

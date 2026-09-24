@@ -70,7 +70,6 @@ import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta;
 import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface;
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta;
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue;
-import com.regnosys.rosetta.generator.java.util.CodeWriterTargetStringConcatenation;
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension;
 import com.regnosys.rosetta.generator.java.util.PreferWildcardImportMethod;
 import com.regnosys.rosetta.generator.java.util.RecordJavaUtil;
@@ -1100,7 +1099,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 			boolean isMulti = cardinalityProvider.isSymbolMulti(shortcutDeclaration);
 			RShortcut shortcut = rObjectFactory.buildRShortcut(shortcutDeclaration);
 			JavaType itemType = typeTranslator.toJavaReferenceType(typeProvider.getRTypeOfSymbol(shortcutDeclaration));
-			CodeRenderer arguments = CodeWriterTargetStringConcatenation.asCodeRenderer(aliasUtil.getArguments(shortcut, context.scope));
+			CodeRenderer arguments = aliasCallArgs(shortcut, shortcut.getFunction(), context.scope);
 			if (aliasUtil.requiresOutput(shortcut)) {
 				JavaType aliasType = isMulti ? typeUtil.wrap(typeUtil.LIST, itemType) : itemType;
 				return JavaExpression.from(out -> out.write(context.scope.getIdentifierOrThrow(shortcut), "(", arguments, ").build()"), aliasType);

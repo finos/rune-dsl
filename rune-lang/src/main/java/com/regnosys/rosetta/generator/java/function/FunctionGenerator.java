@@ -61,7 +61,6 @@ import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta;
 import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface;
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta;
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue;
-import com.regnosys.rosetta.generator.java.util.CodeWriterTargetStringConcatenation;
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil;
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs;
@@ -398,7 +397,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 					JavaMethodScope aliasScope = aliasScopes.get(alias);
 					out.newline();
 					out.write("protected abstract ", aliasUtil.getReturnType(alias), " ", classScope.getIdentifierOrThrow(alias), "(");
-					out.write(CodeWriterTargetStringConcatenation.asCodeRenderer(aliasUtil.getParameters(alias, aliasScope)));
+					out.write(aliasUtil.getParameters(alias, aliasScope));
 					out.writeln(");");
 				});
 				out.newline();
@@ -473,7 +472,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 						out.newline();
 						out.writeln("@Override");
 						out.write("protected ", returnType, " ", defaultClassScope.getIdentifierOrThrow(alias), "(");
-						out.write(CodeWriterTargetStringConcatenation.asCodeRenderer(aliasUtil.getParameters(alias, aliasScope)));
+						out.write(aliasUtil.getParameters(alias, aliasScope));
 						out.write(") ");
 						out.writeln(safeBody.completeAsReturn().toBlock());
 					});
