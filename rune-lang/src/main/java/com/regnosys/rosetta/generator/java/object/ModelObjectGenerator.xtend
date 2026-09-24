@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList
 import com.regnosys.rosetta.generator.GeneratedIdentifier
 import com.regnosys.rosetta.generator.java.expression.TypeCoercionService
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression
+import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface
 import com.regnosys.rosetta.generator.java.types.JavaPojoProperty
@@ -89,8 +90,8 @@ class ModelObjectGenerator extends RObjectJavaClassGenerator<RDataType, JavaPojo
 		val modelShortName = javaType.packageName.first
 		'''
 			«javaType.javadoc»
-			@«RosettaDataType»(value="«javaType.rosettaName»", builder=«builderImplClass».class, version="«javaType.version»")
-			@«RuneDataType»(value="«javaType.rosettaName»", model="«modelShortName»", builder=«builderImplClass».class, version="«javaType.version»")
+			@«RosettaDataType»(value="«javaType.rosettaName»", builder=«builderImplClass».class, version=«JavaLiteral.STRING(javaType.version)»)
+			@«RuneDataType»(value="«javaType.rosettaName»", model="«modelShortName»", builder=«builderImplClass».class, version=«JavaLiteral.STRING(javaType.version)»)
 			«IF javaType.choiceType»@«RuneChoiceType»«ENDIF»
 			«IF labelProviderClass !== null»@«RuneLabelProvider»(labelProvider=«labelProviderClass».class)«ENDIF»
 			public «javaType.asInterfaceDeclaration» {

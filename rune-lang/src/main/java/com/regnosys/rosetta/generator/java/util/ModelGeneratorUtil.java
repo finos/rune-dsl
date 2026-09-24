@@ -70,23 +70,48 @@ public class ModelGeneratorUtil {
 		StringBuilder out = new StringBuilder();
 		out.append("/**");
 		terminateLine(out);
-		out.append(" * @version ").append(version);
+		out.append(" * @version ").append(escapeComment(version));
 		terminateLine(out);
 		out.append(" */");
 		terminateLine(out);
 		return out.toString();
 	}
 
-	public String escape(String definition) {
-		return definition != null && !definition.isEmpty()
-				? HtmlEscapers.htmlEscaper().escape(definition)
+	/**
+	 * Turns model text into javadoc text: HTML-escapes it, so the text renders as written, and
+	 * makes it safe inside a comment (see {@link #escapeComment(String)}).
+	 */
+	public String escape(String text) {
+		return text != null && !text.isEmpty()
+				? escapeComment(HtmlEscapers.htmlEscaper().escape(text))
 				: "";
+	}
+
+	/**
+	 * Makes text safe to put inside a Java comment, without changing how the javadoc renders.
+	 * <ul>
+	 * <li>The Java compiler reads a backslash followed by {@code u} as a unicode escape before it
+	 * even looks for comments, so model text such as <code>C:&#92;users</code> fails to compile. That
+	 * backslash becomes the HTML character reference {@code &#92;}, which javadoc renders as a
+	 * backslash.</li>
+	 * <li>A {@code *}{@code /} would end the comment early. Its slash becomes {@code &#47;}, which
+	 * javadoc renders as a slash.</li>
+	 * </ul>
+	 * An HTML character reference keeps the rendered javadoc identical; a Java escape such as
+	 * {@code \\} would not work, because comments have no escape sequences. Returns an empty
+	 * string for {@code null}.
+	 */
+	public String escapeComment(String text) {
+		if (text == null) {
+			return "";
+		}
+		return text.replace("\\u", "&#92;u").replace("*/", "*&#47;");
 	}
 
 	private String javadocDefinition(String definition) {
 		StringBuilder out = new StringBuilder();
 		if (definition != null && !definition.isEmpty()) {
-			out.append(" * ").append(HtmlEscapers.htmlEscaper().escape(definition));
+			out.append(" * ").append(escape(definition));
 		}
 		terminateLine(out);
 		return out.toString();
@@ -95,7 +120,7 @@ public class ModelGeneratorUtil {
 	private String javadocVersion(String version) {
 		StringBuilder out = new StringBuilder();
 		if (version != null && !version.isEmpty()) {
-			out.append(" * @version ").append(version);
+			out.append(" * @version ").append(escapeComment(version));
 		}
 		terminateLine(out);
 		return out.toString();
@@ -120,11 +145,11 @@ public class ModelGeneratorUtil {
 							.append(mandate.getName())
 							.append(" ");
 					if (mandate.getDisplayName() != null) {
-						out.append(HtmlEscapers.htmlEscaper().escape(mandate.getDisplayName()));
+						out.append(escape(mandate.getDisplayName()));
 					}
 					out.append(" ");
 					if (mandate.getDefinition() != null) {
-						out.append("\"").append(HtmlEscapers.htmlEscaper().escape(mandate.getDefinition())).append("\"");
+						out.append("\"").append(escape(mandate.getDefinition())).append("\"");
 					}
 					out.append(" ");
 				}
@@ -133,13 +158,13 @@ public class ModelGeneratorUtil {
 					out.append(" * ")
 							.append(segment.getSegment().getName())
 							.append(" \"")
-							.append(HtmlEscapers.htmlEscaper().escape(segment.getSegmentRef()))
+							.append(escape(segment.getSegmentRef()))
 							.append("\"");
 				}
 				terminateLine(out);
 				out.append(" *");
 				terminateLine(out);
-				out.append(" * Provision ").append(reference.getProvision());
+				out.append(" * Provision ").append(escapeComment(reference.getProvision()));
 				terminateLine(out);
 				out.append(" *");
 				terminateLine(out);
