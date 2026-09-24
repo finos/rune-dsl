@@ -47,7 +47,9 @@ import com.regnosys.rosetta.tests.util.ModelHelper;
  * generate Java code, compile the Java code and then check whether they match expectations.
  * Any expectation mismatches or compilation errors will result in a failure.
  * 
- * Expectations can be written by setting UPDATE_EXPECTATIONS to `true` and running the test.
+ * Expectations can be written by running the test with the system property
+ * {@code rune.updateExpectations} set, e.g.
+ * {@code mvn test -pl rune-integration-tests -Dtest=PojoRegressionTest -Drune.updateExpectations}.
  * 
  * How to add a new regression test:
  * 1. Create a folder under `src/test/resources`. Let's call it ROOT_FOLDER.
@@ -55,10 +57,11 @@ import com.regnosys.rosetta.tests.util.ModelHelper;
  * 3. Put any .rosetta files to test in this folder.
  * 4. Create a new Java test class that inherits from `AbstractJavaGeneratorRegressionTest`.
  * 5. Implement `getTestRootResourceFolder` to return ROOT_FOLDER.
- * For your first run, you might want to set UPDATE_EXPECTATIONS to `true` so it will create all generated files for you.
+ * For your first run, set {@code rune.updateExpectations} so it will create all generated files for you.
  */
 public abstract class AbstractJavaGeneratorRegressionTest {
-	private static final boolean UPDATE_EXPECTATIONS = false;
+	private static final boolean UPDATE_EXPECTATIONS = System.getProperty("rune.updateExpectations") != null
+			&& !"false".equals(System.getProperty("rune.updateExpectations"));
 
 	private final static String MODEL_FOLDER = "model";
 	private final static String EXPECTATIONS_FOLDER = "expected";
@@ -192,7 +195,7 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 
 	@Test
 	void doNotUpdateExpectations() {
-		Assertions.assertFalse(UPDATE_EXPECTATIONS, "UPDATE_EXPECTATIONS should not be enabled.");
+		Assertions.assertFalse(UPDATE_EXPECTATIONS, "rune.updateExpectations should not be set.");
 	}
 
 	private void updateExpectationIfAssertionFails(Executable assertion, UpdateExpectation updateExpectation) {
@@ -206,7 +209,7 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 							"Expectation has been updated at " + getTestRootResourceFolder() + "/" + relativePath + ".\n" + e.getMessage(), e);
 				} else {
 					throw wrapAssertionFailure(
-							"Run with UPDATE_EXPECTATIONS=true to update expectation.\n" + e.getMessage(), e);
+							"Run with -Drune.updateExpectations to update expectation.\n" + e.getMessage(), e);
 				}
 			}
 		} catch (RuntimeException | Error e) {
