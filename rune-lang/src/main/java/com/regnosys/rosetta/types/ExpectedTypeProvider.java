@@ -74,7 +74,7 @@ public interface ExpectedTypeProvider {
                     return typeProvider.getRTypeOfSymbol(op.getAssignRoot());
                 }
                 List<Segment> path = op.pathAsSegmentList();
-                return typeProvider.getRTypeOfFeature(path.get(path.size() - 1).getFeature(), null);
+                return typeProvider.getRTypeOfFeature(path.getLast().getFeature(), null);
             } else if (CONSTRUCTOR_KEY_VALUE_PAIR__VALUE.equals(reference) && owner instanceof ConstructorKeyValuePair pair) {
                 return typeProvider.getRTypeOfFeature(pair.getKey(), null);
             } else if (WITH_META_ENTRY__VALUE.equals(reference) && owner instanceof WithMetaEntry entry) {

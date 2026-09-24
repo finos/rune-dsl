@@ -703,6 +703,6 @@ public class RosettaExpressionFormatter extends AbstractRosettaFormatter2 {
 	}
 
 	private static <T> T lastOrNull(List<T> list) {
-		return list.isEmpty() ? null : list.get(list.size() - 1);
+		return list.isEmpty() ? null : list.getLast();
 	}
 }

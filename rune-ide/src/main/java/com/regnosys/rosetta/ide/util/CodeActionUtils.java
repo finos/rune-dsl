@@ -81,7 +81,7 @@ public class CodeActionUtils {
 	
 	public Range getImportsRange(List<Import> imports) {
 		Position importsStart = rangeUtils.getRange(imports.get(0)).getStart();
-		Position importsEnd = rangeUtils.getRange(imports.get(imports.size() - 1)).getEnd();
+		Position importsEnd = rangeUtils.getRange(imports.getLast()).getEnd();
 		return new Range(importsStart, importsEnd);
 	}
 }

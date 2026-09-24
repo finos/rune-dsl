@@ -143,7 +143,7 @@ public class RuleReferenceService {
         }
 
         public RAttribute getTargetAttribute() {
-            return path.get(path.size() - 1);
+            return path.getLast();
         }
 
         public boolean isExplicitlyEmpty() {

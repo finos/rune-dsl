@@ -124,7 +124,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 				.collect(Collectors.toList());
 		
 		RosettaSymbol attr = op.getPath() != null && !segmentsAsSymbols.isEmpty()
-				? segmentsAsSymbols.get(segmentsAsSymbols.size() - 1)
+				? segmentsAsSymbols.getLast()
 				: op.getAssignRoot();
 		subtypeCheck(typeProvider.getRTypeOfSymbol(attr, null), expr, op, OPERATION__EXPRESSION, actual -> "Cannot assign `" + actual + "` to output `" + attr.getName() + "`");
 		boolean isList = cardinalityProvider.isSymbolMulti(attr);

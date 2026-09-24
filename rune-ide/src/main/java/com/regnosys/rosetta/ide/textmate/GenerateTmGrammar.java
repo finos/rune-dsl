@@ -251,7 +251,7 @@ public class GenerateTmGrammar {
 				if (!parts.stream().allMatch(p -> p.matches("[a-z\\-]+"))) {
 					return false;
 				}
-				return parts.get(parts.size() - 1).equals("rosetta");
+				return parts.getLast().equals("rosetta");
 			});
 		}).or(v -> v == null);
 		Predicate<Object> captures = obj -> {
@@ -281,7 +281,7 @@ public class GenerateTmGrammar {
 		// - begin/while
 		// - list of patterns
 		if (tmMap.value.get("include") != null) {
-			if (!tmMap.path.get(tmMap.path.size() - 1).equals("patterns")) {
+			if (!tmMap.path.getLast().equals("patterns")) {
 				// Note: this check is only necessary for Monaco. See https://github.com/zikaari/monaco-textmate/issues/13.
 				// VS Code supports direct includes.
 				throw new ConfigurationException("Validation failed on include: may only be used inside 'patterns'. " + tmMap.getPath());
@@ -346,11 +346,11 @@ public class GenerateTmGrammar {
 			    	for (Entry<?, ?> p: ((Map<?, ?>)node.getValue()).entrySet()) {
 						path.add((String)p.getKey());
 			    		result.add(new TmValue<>(p.getValue(), path));
-			    		path.remove(path.size() - 1);
+			    		path.removeLast();
 					}
 			    }
 			    result.addAll(findAllPatterns(node.getValue(), path));
-			    path.remove(path.size() - 1);
+			    path.removeLast();
 			}
 		} else if (input instanceof List<?> list) {
 			for (Object item : list) {

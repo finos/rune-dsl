@@ -49,11 +49,11 @@ public class CycleValidationHelper {
                 }
             }
         } else {
-            if (path.get(0).equals(path.get(path.size() - 1))) {
+            if (path.getFirst().equals(path.getLast())) {
                 return true;
             }
         }
-        path.remove(path.size() - 1);
+        path.removeLast();
         return false;
     }
 }

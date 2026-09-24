@@ -170,7 +170,7 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		}
 
 		Import firstImport = imports.get(0);
-		Import lastImport = imports.get(imports.size() - 1);
+		Import lastImport = imports.getLast();
 		ITextRegion firstRegion = NodeModelUtils.getNode(firstImport).getTextRegion();
 		ITextRegion lastRegion = NodeModelUtils.getNode(lastImport).getTextRegion();
 
