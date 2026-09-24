@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import test.pojo.Foo;
 import test.pojo.Pojo;
+import test.pojo.PojoEnum;
 import test.pojo.metafields.ReferenceWithMetaFoo;
 
 import static com.rosetta.model.lib.validation.ValidationResult.failure;
@@ -33,6 +34,8 @@ public class PojoOnlyExistsValidator implements ValidatorWithArg<Pojo, Set<Strin
             .put("multiComplexAttr", ExistenceChecker.isSet((List<? extends Foo>) o.getMultiComplexAttr()))
             .put("complexAttrWithRef", ExistenceChecker.isSet((ReferenceWithMetaFoo) o.getComplexAttrWithRef()))
             .put("multiComplexAttrWithRef", ExistenceChecker.isSet((List<? extends ReferenceWithMetaFoo>) o.getMultiComplexAttrWithRef()))
+            .put("enumAttr", ExistenceChecker.isSet((PojoEnum) o.getEnumAttr()))
+            .put("multiEnumAttr", ExistenceChecker.isSet((List<PojoEnum>) o.getMultiEnumAttr()))
             .build();
 
         // Find the fields that are set

@@ -6,6 +6,7 @@ import com.rosetta.model.lib.validation.ExistenceChecker;
 import com.rosetta.model.lib.validation.ValidationResult;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
 import com.rosetta.model.metafields.FieldWithMetaString;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,6 +22,7 @@ public class QuxOnlyExistsValidator implements ValidatorWithArg<Qux, Set<String>
     public <T2 extends Qux> ValidationResult<Qux> validate(RosettaPath path, T2 o, Set<String> fields) {
         Map<String, Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
             .put("qux", ExistenceChecker.isSet((FieldWithMetaString) o.getQux()))
+            .put("multiQux", ExistenceChecker.isSet((List<? extends FieldWithMetaString>) o.getMultiQux()))
             .build();
 
         // Find the fields that are set

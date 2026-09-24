@@ -30,6 +30,18 @@ type GrandChild extends Child:
 
 type Level1:
     attr int (0..1)
+    metaSingle string (0..1)
+        [metadata scheme]
+    otherMetaList string (0..*)
+        [metadata scheme]
+    singleParent Parent (0..1)
+    metaList string (0..*)
+        [metadata scheme]
 
 type Level2 extends Level1:
     override attr int (1..1)
+    override metaSingle string (1..1)
+    override otherMetaList string (1..*)
+    override singleParent Child (0..1)
+        [metadata reference]
+    override metaList string (1..1)

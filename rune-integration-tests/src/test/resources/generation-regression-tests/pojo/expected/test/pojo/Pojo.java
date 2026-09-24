@@ -52,6 +52,11 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 	List<? extends Foo> getMultiComplexAttr();
 	ReferenceWithMetaFoo getComplexAttrWithRef();
 	List<? extends ReferenceWithMetaFoo> getMultiComplexAttrWithRef();
+	/**
+	 * An attribute with a definition.
+	 */
+	PojoEnum getEnumAttr();
+	List<PojoEnum> getMultiEnumAttr();
 	MetaFields getMeta();
 
 	/*********************** Build Methods  ***********************/
@@ -87,6 +92,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		processRosetta(path.newSubPath("multiComplexAttr"), processor, Foo.class, getMultiComplexAttr());
 		processRosetta(path.newSubPath("complexAttrWithRef"), processor, ReferenceWithMetaFoo.class, getComplexAttrWithRef());
 		processRosetta(path.newSubPath("multiComplexAttrWithRef"), processor, ReferenceWithMetaFoo.class, getMultiComplexAttrWithRef());
+		processor.processBasic(path.newSubPath("enumAttr"), PojoEnum.class, getEnumAttr(), this);
+		processor.processBasic(path.newSubPath("multiEnumAttr"), PojoEnum.class, getMultiEnumAttr(), this);
 		processRosetta(path.newSubPath("meta"), processor, MetaFields.class, getMeta());
 	}
 	
@@ -160,6 +167,11 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		Pojo.PojoBuilder setMultiComplexAttrWithRef(List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRef);
 		Pojo.PojoBuilder addMultiComplexAttrWithRefValue(List<? extends Foo> multiComplexAttrWithRef);
 		Pojo.PojoBuilder setMultiComplexAttrWithRefValue(List<? extends Foo> multiComplexAttrWithRef);
+		Pojo.PojoBuilder setEnumAttr(PojoEnum enumAttr);
+		Pojo.PojoBuilder addMultiEnumAttr(PojoEnum multiEnumAttr);
+		Pojo.PojoBuilder addMultiEnumAttr(PojoEnum multiEnumAttr, int idx);
+		Pojo.PojoBuilder addMultiEnumAttr(List<PojoEnum> multiEnumAttr);
+		Pojo.PojoBuilder setMultiEnumAttr(List<PojoEnum> multiEnumAttr);
 		Pojo.PojoBuilder setMeta(MetaFields meta);
 
 		@Override
@@ -174,6 +186,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			processRosetta(path.newSubPath("multiComplexAttr"), processor, Foo.FooBuilder.class, getMultiComplexAttr());
 			processRosetta(path.newSubPath("complexAttrWithRef"), processor, ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder.class, getComplexAttrWithRef());
 			processRosetta(path.newSubPath("multiComplexAttrWithRef"), processor, ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder.class, getMultiComplexAttrWithRef());
+			processor.processBasic(path.newSubPath("enumAttr"), PojoEnum.class, getEnumAttr(), this);
+			processor.processBasic(path.newSubPath("multiEnumAttr"), PojoEnum.class, getMultiEnumAttr(), this);
 			processRosetta(path.newSubPath("meta"), processor, MetaFields.MetaFieldsBuilder.class, getMeta());
 		}
 		
@@ -193,6 +207,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		private final List<? extends Foo> multiComplexAttr;
 		private final ReferenceWithMetaFoo complexAttrWithRef;
 		private final List<? extends ReferenceWithMetaFoo> multiComplexAttrWithRef;
+		private final PojoEnum enumAttr;
+		private final List<PojoEnum> multiEnumAttr;
 		private final MetaFields meta;
 		
 		protected PojoImpl(Pojo.PojoBuilder builder) {
@@ -206,6 +222,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			this.multiComplexAttr = ofNullable(builder.getMultiComplexAttr()).filter(_l->!_l.isEmpty()).map(list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(ImmutableList.toImmutableList())).orElse(null);
 			this.complexAttrWithRef = ofNullable(builder.getComplexAttrWithRef()).map(f->f.build()).orElse(null);
 			this.multiComplexAttrWithRef = ofNullable(builder.getMultiComplexAttrWithRef()).filter(_l->!_l.isEmpty()).map(list -> list.stream().filter(Objects::nonNull).map(f->f.build()).filter(Objects::nonNull).collect(ImmutableList.toImmutableList())).orElse(null);
+			this.enumAttr = builder.getEnumAttr();
+			this.multiEnumAttr = ofNullable(builder.getMultiEnumAttr()).filter(_l->!_l.isEmpty()).map(ImmutableList::copyOf).orElse(null);
 			this.meta = ofNullable(builder.getMeta()).map(f->f.build()).orElse(null);
 		}
 		
@@ -300,6 +318,24 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		}
 		
 		@Override
+		@RosettaAttribute("enumAttr")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("enumAttr")
+		public PojoEnum getEnumAttr() {
+			return enumAttr;
+		}
+		
+		@Override
+		@RosettaAttribute("multiEnumAttr")
+		@Accessor(AccessorType.GETTER)
+		@Multi
+		@RuneAttribute("multiEnumAttr")
+		public List<PojoEnum> getMultiEnumAttr() {
+			return multiEnumAttr;
+		}
+		
+		@Override
 		@RosettaAttribute("meta")
 		@Accessor(AccessorType.GETTER)
 		@RuneAttribute("meta")
@@ -331,6 +367,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			ofNullable(getMultiComplexAttr()).ifPresent(builder::setMultiComplexAttr);
 			ofNullable(getComplexAttrWithRef()).ifPresent(builder::setComplexAttrWithRef);
 			ofNullable(getMultiComplexAttrWithRef()).ifPresent(builder::setMultiComplexAttrWithRef);
+			ofNullable(getEnumAttr()).ifPresent(builder::setEnumAttr);
+			ofNullable(getMultiEnumAttr()).ifPresent(builder::setMultiEnumAttr);
 			ofNullable(getMeta()).ifPresent(builder::setMeta);
 		}
 
@@ -351,6 +389,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			if (!ListEquals.listEquals(multiComplexAttr, _that.getMultiComplexAttr())) return false;
 			if (!Objects.equals(complexAttrWithRef, _that.getComplexAttrWithRef())) return false;
 			if (!ListEquals.listEquals(multiComplexAttrWithRef, _that.getMultiComplexAttrWithRef())) return false;
+			if (!Objects.equals(enumAttr, _that.getEnumAttr())) return false;
+			if (!ListEquals.listEquals(multiEnumAttr, _that.getMultiEnumAttr())) return false;
 			if (!Objects.equals(meta, _that.getMeta())) return false;
 			return true;
 		}
@@ -368,6 +408,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			_result = 31 * _result + (multiComplexAttr != null ? multiComplexAttr.hashCode() : 0);
 			_result = 31 * _result + (complexAttrWithRef != null ? complexAttrWithRef.hashCode() : 0);
 			_result = 31 * _result + (multiComplexAttrWithRef != null ? multiComplexAttrWithRef.hashCode() : 0);
+			_result = 31 * _result + (enumAttr != null ? enumAttr.getClass().getName().hashCode() : 0);
+			_result = 31 * _result + (multiEnumAttr != null ? multiEnumAttr.stream().map(Object::getClass).map(Class::getName).mapToInt(String::hashCode).sum() : 0);
 			_result = 31 * _result + (meta != null ? meta.hashCode() : 0);
 			return _result;
 		}
@@ -385,6 +427,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 				"multiComplexAttr=" + this.multiComplexAttr + ", " +
 				"complexAttrWithRef=" + this.complexAttrWithRef + ", " +
 				"multiComplexAttrWithRef=" + this.multiComplexAttrWithRef + ", " +
+				"enumAttr=" + this.enumAttr + ", " +
+				"multiEnumAttr=" + this.multiEnumAttr + ", " +
 				"meta=" + this.meta +
 			'}';
 		}
@@ -403,6 +447,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 		protected List<Foo.FooBuilder> multiComplexAttr = new ArrayList<>();
 		protected ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder complexAttrWithRef;
 		protected List<ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder> multiComplexAttrWithRef = new ArrayList<>();
+		protected PojoEnum enumAttr;
+		protected List<PojoEnum> multiEnumAttr = new ArrayList<>();
 		protected MetaFields.MetaFieldsBuilder meta;
 		
 		@Override
@@ -589,6 +635,24 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 						ReferenceWithMetaFoo.ReferenceWithMetaFooBuilder newMultiComplexAttrWithRef = ReferenceWithMetaFoo.builder();
 						return newMultiComplexAttrWithRef;
 					});
+		}
+		
+		@Override
+		@RosettaAttribute("enumAttr")
+		@Accessor(AccessorType.GETTER)
+		@Required
+		@RuneAttribute("enumAttr")
+		public PojoEnum getEnumAttr() {
+			return enumAttr;
+		}
+		
+		@Override
+		@RosettaAttribute("multiEnumAttr")
+		@Accessor(AccessorType.GETTER)
+		@Multi
+		@RuneAttribute("multiEnumAttr")
+		public List<PojoEnum> getMultiEnumAttr() {
+			return multiEnumAttr;
 		}
 		
 		@Override
@@ -993,6 +1057,59 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			return this;
 		}
 		
+		@RosettaAttribute("enumAttr")
+		@Accessor(AccessorType.SETTER)
+		@Required
+		@RuneAttribute("enumAttr")
+		@Override
+		public Pojo.PojoBuilder setEnumAttr(PojoEnum _enumAttr) {
+			this.enumAttr = _enumAttr == null ? null : _enumAttr;
+			return this;
+		}
+		
+		@RosettaAttribute("multiEnumAttr")
+		@Accessor(AccessorType.ADDER)
+		@Multi
+		@RuneAttribute("multiEnumAttr")
+		@Override
+		public Pojo.PojoBuilder addMultiEnumAttr(PojoEnum _multiEnumAttr) {
+			if (_multiEnumAttr != null) {
+				this.multiEnumAttr.add(_multiEnumAttr);
+			}
+			return this;
+		}
+		
+		@Override
+		public Pojo.PojoBuilder addMultiEnumAttr(PojoEnum _multiEnumAttr, int idx) {
+			getIndex(this.multiEnumAttr, idx, () -> _multiEnumAttr);
+			return this;
+		}
+		
+		@Override
+		public Pojo.PojoBuilder addMultiEnumAttr(List<PojoEnum> multiEnumAttrs) {
+			if (multiEnumAttrs != null) {
+				for (final PojoEnum toAdd : multiEnumAttrs) {
+					this.multiEnumAttr.add(toAdd);
+				}
+			}
+			return this;
+		}
+		
+		@RosettaAttribute("multiEnumAttr")
+		@Accessor(AccessorType.SETTER)
+		@Multi
+		@RuneAttribute("multiEnumAttr")
+		@Override
+		public Pojo.PojoBuilder setMultiEnumAttr(List<PojoEnum> multiEnumAttrs) {
+			if (multiEnumAttrs == null) {
+				this.multiEnumAttr = new ArrayList<>();
+			} else {
+				this.multiEnumAttr = multiEnumAttrs.stream()
+					.collect(Collectors.toCollection(()->new ArrayList<>()));
+			}
+			return this;
+		}
+		
 		@RosettaAttribute("meta")
 		@Accessor(AccessorType.SETTER)
 		@RuneAttribute("meta")
@@ -1040,6 +1157,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			if (getMultiComplexAttr()!=null && getMultiComplexAttr().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
 			if (getComplexAttrWithRef()!=null && getComplexAttrWithRef().hasData()) return true;
 			if (getMultiComplexAttrWithRef()!=null && getMultiComplexAttrWithRef().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;
+			if (getEnumAttr()!=null) return true;
+			if (getMultiEnumAttr()!=null && !getMultiEnumAttr().isEmpty()) return true;
 			return false;
 		}
 	
@@ -1060,6 +1179,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			
 			merger.mergeBasic(getSimpleAttr(), o.getSimpleAttr(), this::setSimpleAttr);
 			merger.mergeBasic(getMultiSimpleAttr(), o.getMultiSimpleAttr(), (Consumer<String>) this::addMultiSimpleAttr);
+			merger.mergeBasic(getEnumAttr(), o.getEnumAttr(), this::setEnumAttr);
+			merger.mergeBasic(getMultiEnumAttr(), o.getMultiEnumAttr(), (Consumer<PojoEnum>) this::addMultiEnumAttr);
 			return this;
 		}
 	
@@ -1080,6 +1201,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			if (!ListEquals.listEquals(multiComplexAttr, _that.getMultiComplexAttr())) return false;
 			if (!Objects.equals(complexAttrWithRef, _that.getComplexAttrWithRef())) return false;
 			if (!ListEquals.listEquals(multiComplexAttrWithRef, _that.getMultiComplexAttrWithRef())) return false;
+			if (!Objects.equals(enumAttr, _that.getEnumAttr())) return false;
+			if (!ListEquals.listEquals(multiEnumAttr, _that.getMultiEnumAttr())) return false;
 			if (!Objects.equals(meta, _that.getMeta())) return false;
 			return true;
 		}
@@ -1097,6 +1220,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 			_result = 31 * _result + (multiComplexAttr != null ? multiComplexAttr.hashCode() : 0);
 			_result = 31 * _result + (complexAttrWithRef != null ? complexAttrWithRef.hashCode() : 0);
 			_result = 31 * _result + (multiComplexAttrWithRef != null ? multiComplexAttrWithRef.hashCode() : 0);
+			_result = 31 * _result + (enumAttr != null ? enumAttr.getClass().getName().hashCode() : 0);
+			_result = 31 * _result + (multiEnumAttr != null ? multiEnumAttr.stream().map(Object::getClass).map(Class::getName).mapToInt(String::hashCode).sum() : 0);
 			_result = 31 * _result + (meta != null ? meta.hashCode() : 0);
 			return _result;
 		}
@@ -1114,6 +1239,8 @@ public interface Pojo extends RosettaModelObject, GlobalKey {
 				"multiComplexAttr=" + this.multiComplexAttr + ", " +
 				"complexAttrWithRef=" + this.complexAttrWithRef + ", " +
 				"multiComplexAttrWithRef=" + this.multiComplexAttrWithRef + ", " +
+				"enumAttr=" + this.enumAttr + ", " +
+				"multiEnumAttr=" + this.multiEnumAttr + ", " +
 				"meta=" + this.meta +
 			'}';
 		}

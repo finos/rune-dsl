@@ -5,10 +5,13 @@ import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.validation.ExistenceChecker;
 import com.rosetta.model.lib.validation.ValidationResult;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
+import com.rosetta.model.metafields.FieldWithMetaString;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import test.pojo.Level2;
+import test.pojo.metafields.ReferenceWithMetaChild;
 
 import static com.rosetta.model.lib.validation.ValidationResult.failure;
 import static com.rosetta.model.lib.validation.ValidationResult.success;
@@ -20,6 +23,10 @@ public class Level2OnlyExistsValidator implements ValidatorWithArg<Level2, Set<S
     public <T2 extends Level2> ValidationResult<Level2> validate(RosettaPath path, T2 o, Set<String> fields) {
         Map<String, Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
             .put("attr", ExistenceChecker.isSet((Integer) o.getAttr()))
+            .put("metaSingle", ExistenceChecker.isSet((FieldWithMetaString) o.getMetaSingle()))
+            .put("otherMetaList", ExistenceChecker.isSet((List<? extends FieldWithMetaString>) o.getOtherMetaList()))
+            .put("singleParent", ExistenceChecker.isSet((ReferenceWithMetaChild) o.getSingleParentOverriddenAsReferenceWithMetaChild()))
+            .put("metaList", ExistenceChecker.isSet((FieldWithMetaString) o.getMetaListOverriddenAsSingle()))
             .build();
 
         // Find the fields that are set
