@@ -23,12 +23,22 @@ type Pojo:
     multiComplexAttrWithRef Foo (0..*)
         [metadata reference]
 
+    enumAttr PojoEnum (1..1) <"An attribute with a definition.">
+    multiEnumAttr PojoEnum (0..*)
+
+enum PojoEnum:
+    A
+    B
+
 type Foo:
     [metadata key]
 
 
-type Qux:
+type Qux: <"A type with a definition.">
     qux string (1..1)
+        [metadata location]
+        [label "Qux \"q\" in C:\\units"]
+    multiQux string (0..*)
         [metadata location]
 
 type Bar:

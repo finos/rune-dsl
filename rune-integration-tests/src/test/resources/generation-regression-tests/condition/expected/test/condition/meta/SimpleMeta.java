@@ -8,13 +8,14 @@ import com.rosetta.model.lib.validation.Validator;
 import com.rosetta.model.lib.validation.ValidatorFactory;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 import test.condition.Simple;
+import test.condition.functions.Qualify_Simple;
 import test.condition.validation.SimpleTypeFormatValidator;
 import test.condition.validation.SimpleValidator;
+import test.condition.validation.datarule.SimpleNotEmpty;
 import test.condition.validation.datarule.SimpleNotForbidden;
 import test.condition.validation.exists.SimpleOnlyExistsValidator;
 
@@ -28,13 +29,16 @@ public class SimpleMeta implements RosettaMetaData<Simple> {
 	@Override
 	public List<Validator<? super Simple>> dataRules(ValidatorFactory factory) {
 		return Arrays.asList(
-			factory.<Simple>create(SimpleNotForbidden.class)
+			factory.<Simple>create(SimpleNotForbidden.class),
+			factory.<Simple>create(SimpleNotEmpty.class)
 		);
 	}
 	
 	@Override
 	public List<Function<? super Simple, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
+		return Arrays.asList(
+			factory.<Simple>create(Qualify_Simple.class)
+		);
 	}
 	
 	@Override

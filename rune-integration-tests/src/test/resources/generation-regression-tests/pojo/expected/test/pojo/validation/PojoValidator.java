@@ -9,6 +9,7 @@ import com.rosetta.model.metafields.FieldWithMetaString;
 import java.util.List;
 import test.pojo.Foo;
 import test.pojo.Pojo;
+import test.pojo.PojoEnum;
 import test.pojo.metafields.ReferenceWithMetaFoo;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -24,7 +25,8 @@ public class PojoValidator implements Validator<Pojo> {
             checkCardinality("simpleAttrWithMeta", (FieldWithMetaString) o.getSimpleAttrWithMeta() != null ? 1 : 0, 1, 1),
             checkCardinality("simpleAttrWithId", (FieldWithMetaString) o.getSimpleAttrWithId() != null ? 1 : 0, 1, 1),
             checkCardinality("complexAttr", (Foo) o.getComplexAttr() != null ? 1 : 0, 1, 1),
-            checkCardinality("complexAttrWithRef", (ReferenceWithMetaFoo) o.getComplexAttrWithRef() != null ? 1 : 0, 1, 1)
+            checkCardinality("complexAttrWithRef", (ReferenceWithMetaFoo) o.getComplexAttrWithRef() != null ? 1 : 0, 1, 1),
+            checkCardinality("enumAttr", (PojoEnum) o.getEnumAttr() != null ? 1 : 0, 1, 1)
         );
     }
 
