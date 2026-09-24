@@ -129,7 +129,7 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 		generatedCode = new TreeMap<>();
 		fsa.getGeneratedFiles().stream()
 				.filter(f -> isSelected(f.getPath().replace("/null/null/", "")))
-				.forEach(f -> generatedCode.put(f.getPath().replace("/null/null/", ""), normalizeLineEndings(f.getContents().toString())));
+				.forEach(f -> generatedCode.put(f.getPath().replace("/null/null/", ""), f.getContents().toString()));
 
 		generatedClasses = fsa.getGeneratedFiles().stream().filter(f -> f.getJavaClassName() != null).collect(Collectors
 				.toMap(f -> f.getJavaClassName(), f -> f.getContents().toString(), (v1, v2) -> v2, TreeMap::new));
@@ -156,13 +156,6 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 			// normalisation is needed on this side
 			expectedCode.put(relativePath, fileContents);
 		});
-	}
-
-	// TODO: remove once all generators are migrated to the fluent API. Fluent generators
-	// always emit "\n", whereas legacy Xtend generators emit the platform line separator
-	// and git checks out the expectation files with platform line endings on Windows.
-	private static String normalizeLineEndings(String content) {
-		return content.replace("\r\n", "\n");
 	}
 
 	@ParameterizedTest(name = "Generated {0} equals expectation")
