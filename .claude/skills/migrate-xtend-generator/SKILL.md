@@ -83,17 +83,20 @@ you are probably reimplementing instead of transcribing.
    covered at the time.
 2. **Migrate, then regenerate**: run the regression tests with
    `-Drune.updateExpectations` to rewrite `expected/`, e.g.
-   `mvnd -o verify -pl rune-integration-tests -am -Dtest='*RegressionTest' -Dsurefire.failIfNoSpecifiedTests=false -Drune.updateExpectations`.
+   `mvnd -o verify -pl rune-integration-tests -am -Dtest='*RegressionTest,JavaNameEscapingTest' -Dsurefire.failIfNoSpecifiedTests=false -Drune.updateExpectations`
+   (`JavaNameEscapingTest` is a fixture test too, but its name doesn't match `*RegressionTest`).
 3. **Parity check**: the diff of `expected/` must be whitespace only. Tabs
    become four spaces and trailing whitespace goes; nothing else may change,
    not even a blank line. This lists every file that differs in anything
-   else:
+   else, including files the migration added or deleted:
    ```bash
+   git add -N -- '*/expected/*'   # so that git diff also lists new files
    for f in $(git diff --name-only -- '*/expected/*'); do
-     diff -q <(git show HEAD:"$f" | expand -t 4 | sed 's/[[:space:]]*$//') \
-             <(sed 's/[[:space:]]*$//' "$f") > /dev/null || echo "$f"
+     diff -q <(git show HEAD:"$f" 2>/dev/null | expand -t 4 | sed 's/[[:space:]]*$//') \
+             <(expand -t 4 "$f" 2>/dev/null | sed 's/[[:space:]]*$//') > /dev/null || echo "$f"
    done
    ```
+   Both sides are tab-expanded, so a tab inside a line compares equal to itself.
    Investigate every file it prints. A difference is acceptable only when the
    old output was itself wrong, and then it needs a sentence in the PR.
 4. Run the functional tests that execute generated code for the feature (e.g.
