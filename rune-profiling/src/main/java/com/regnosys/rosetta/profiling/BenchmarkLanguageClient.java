@@ -11,14 +11,7 @@ import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.jsonrpc.Endpoint;
 
 public class BenchmarkLanguageClient implements Endpoint {
-	private static class Notification {
-		public final String method;
-		public final Object parameter;
-		
-		public Notification(String method, Object parameter) {
-			this.method = method;
-			this.parameter = parameter;
-		}
+	private record Notification(String method, Object parameter) {
 	}
 	
 	private List<Notification> notifications = new ArrayList<>();
@@ -37,7 +30,7 @@ public class BenchmarkLanguageClient implements Endpoint {
 	public Map<String, List<Diagnostic>> getDiagnostics() {
 		Map<String, List<Diagnostic>> result = new HashMap<>();
 		for (Notification not : notifications) {
-			if (not.parameter instanceof PublishDiagnosticsParams params) {
+			if (not.parameter() instanceof PublishDiagnosticsParams params) {
 				result.put(params.getUri(), params.getDiagnostics());
 			}
 		}
