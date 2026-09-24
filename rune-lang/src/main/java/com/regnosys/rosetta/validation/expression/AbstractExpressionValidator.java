@@ -159,7 +159,26 @@ public class AbstractExpressionValidator extends AbstractDeclarativeRosettaValid
 		}
 		return true;
 	}
-	
+
+	/**
+	 * Check that the given expression is not a list of lists. Only the operations that explicitly
+	 * support a list of lists (see {@code CanHandleListOfLists}) and the branches of a conditional
+	 * or switch expression can handle one - anywhere else it must be flattened first.
+	 *
+	 * @param description how the expression is used, e.g. "Argument". It is the subject of the error message.
+	 */
+	protected boolean isNotListOfListsCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, String description) {
+		return isNotListOfListsCheck(expr, sourceObject, feature, INSIGNIFICANT_INDEX, description);
+	}
+
+	protected boolean isNotListOfListsCheck(RosettaExpression expr, EObject sourceObject, EStructuralFeature feature, int featureIndex, String description) {
+		if (expr != null && cardinalityProvider.isOutputListOfLists(expr)) {
+			error(description + " contains a list of lists, use flatten to create a list.", sourceObject, feature, featureIndex);
+			return false;
+		}
+		return true;
+	}
+
 	protected boolean commonTypeCheck(RosettaExpression expr1, RosettaExpression expr2, EObject sourceObject, EStructuralFeature feature) {
 		if (expr1 == null || expr2 == null) {
 			return true;

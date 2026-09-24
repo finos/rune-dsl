@@ -112,6 +112,56 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	}
 	
 	@Check
+	public void checkListOfListsInBinaryOperation(RosettaBinaryOperation op) {
+		isNotListOfListsCheck(op.getLeft(), op, ROSETTA_BINARY_OPERATION__LEFT, "Left operand");
+		isNotListOfListsCheck(op.getRight(), op, ROSETTA_BINARY_OPERATION__RIGHT, "Right operand");
+	}
+
+	/**
+	 * A conditional expression is a list of lists if one of its branches is. All of its other
+	 * branches must then be a list of lists as well, or be empty.
+	 */
+	@Check
+	public void checkListOfListsInConditionalExpression(RosettaConditionalExpression expr) {
+		checkBranchesAgreeOnListOfLists(List.of(
+				new Branch(expr.getIfthen(), expr, ROSETTA_CONDITIONAL_EXPRESSION__IFTHEN),
+				new Branch(expr.getElsethen(), expr, ROSETTA_CONDITIONAL_EXPRESSION__ELSETHEN)));
+	}
+
+	/**
+	 * See {@link #checkListOfListsInConditionalExpression(RosettaConditionalExpression)}.
+	 */
+	@Check
+	public void checkListOfListsInSwitchOperation(SwitchOperation expr) {
+		checkBranchesAgreeOnListOfLists(expr.getCases().stream()
+				.map(c -> new Branch(c.getExpression(), c, SWITCH_CASE_OR_DEFAULT__EXPRESSION))
+				.toList());
+	}
+
+	private record Branch(RosettaExpression expression, EObject source, EStructuralFeature feature) {
+	}
+
+	private void checkBranchesAgreeOnListOfLists(List<Branch> branches) {
+		Map<Boolean, List<Branch>> partition = branches.stream()
+				.collect(Collectors.partitioningBy(b -> b.expression() != null && cardinalityProvider.isOutputListOfLists(b.expression())));
+		List<Branch> listOfListsBranches = partition.get(true);
+		if (listOfListsBranches.isEmpty()) {
+			return;
+		}
+		boolean allOtherBranchesAreEmpty = partition.get(false).stream().allMatch(this::isEmptyExpression);
+		if (allOtherBranchesAreEmpty) {
+			return;
+		}
+		listOfListsBranches.forEach(b ->
+			error("Branch contains a list of lists, use flatten to create a list.", b.source(), b.feature()));
+	}
+
+	private boolean isEmptyExpression(Branch branch) {
+		return branch.expression() == null
+				|| builtins.NOTHING.equals(typeProvider.getRMetaAnnotatedType(branch.expression()).getRType());
+	}
+
+	@Check
 	public void checkFunctionOperation(Operation op) {
 		RosettaExpression expr = op.getExpression();
 		if (expr != null && cardinalityProvider.isOutputListOfLists(expr)) {
@@ -289,6 +339,9 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	@Check
 	public void checkListLiteral(ListLiteral expr) {
 		commonTypeCheck(expr.getElements(), expr, LIST_LITERAL__ELEMENTS);
+		for (int i = 0; i < expr.getElements().size(); i++) {
+			isNotListOfListsCheck(expr.getElements().get(i), expr, LIST_LITERAL__ELEMENTS, i, "List element");
+		}
 	}
 	
 	@Check
@@ -348,6 +401,13 @@ public class ExpressionValidator extends AbstractExpressionValidator {
         if (ecoreUtil.isResolved(callable)) {
             int paramCount = callable.numberOfParameters();
             int argCount = expr.getArgs().size();
+            for (int i = 0; i < argCount; i++) {
+                if (expr.isExplicitArguments()) {
+                    isNotListOfListsCheck(expr.getArgs().get(i), expr, ROSETTA_CALLABLE_REFERENCE__RAW_ARGS, i, "Argument");
+                } else {
+                    isNotListOfListsCheck(expr.getArgs().get(i), expr, null, "Argument");
+                }
+            }
             if (paramCount != argCount) {
                 error("Expected " + paramCount + " argument" + (paramCount == 1 ? "" : "s") + ", but got " + argCount + " instead", expr, null);
             }
