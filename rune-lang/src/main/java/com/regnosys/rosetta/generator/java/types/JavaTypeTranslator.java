@@ -235,8 +235,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		if (op.getPath() == null) {
 			feature = (RosettaFeature)op.getAssignRoot(); // TODO: this won't work when assigning to an alias
 		} else {
-			List<Segment> segments = op.pathAsSegmentList();
-			feature = segments.get(segments.size() - 1).getFeature();
+			feature = op.pathAsSegmentList().getLast().getFeature();
 		}
 		return toJavaReferenceType(typeProvider.getRTypeOfFeature(feature, null));
 	}
@@ -245,8 +244,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		if (op.getPathTail().isEmpty()) {
 			feature = (RFeature)op.getPathHead(); // TODO: this won't work when assigning to an alias
 		} else {
-			List<? extends RFeature> segments = op.getPathTail();
-			feature = segments.get(segments.size() - 1);
+			feature = op.getPathTail().getLast();
 		}
 		return toMetaJavaType(feature);
 	}	
@@ -255,8 +253,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		if (op.getPathTail().isEmpty()) {
 			feature = (RFeature)op.getPathHead(); // TODO: this won't work when assigning to an alias
 		} else {
-			List<? extends RFeature> segments = op.getPathTail();
-			feature = segments.get(segments.size() - 1);
+			feature = op.getPathTail().getLast();
 		}
 		return toJavaType(feature);
 	}
@@ -265,8 +262,7 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		if (op.getPathTail().isEmpty()) {
 			feature = (RFeature)op.getPathHead(); // TODO: this won't work when assigning to an alias
 		} else {
-			List<? extends RFeature> segments = op.getPathTail();
-			feature = segments.get(segments.size() - 1);
+			feature = op.getPathTail().getLast();
 		}
 		return switch (feature) {
 			case RAttribute attribute -> toJavaReferenceType(attribute.getRMetaAnnotatedType());
