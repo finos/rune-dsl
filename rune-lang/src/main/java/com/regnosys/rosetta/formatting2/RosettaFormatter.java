@@ -28,9 +28,11 @@ import com.regnosys.rosetta.rosetta.RosettaExternalClass;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
+import com.regnosys.rosetta.rosetta.RosettaMetaType;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
 import com.regnosys.rosetta.rosetta.RosettaParameter;
+import com.regnosys.rosetta.rosetta.RosettaRecordType;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.RosettaScope;
@@ -111,13 +113,13 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 		});
 
 		List<Class<? extends RosettaRootElement>> groupedElementTypes = List.of(
-				com.regnosys.rosetta.rosetta.RosettaBody.class,
-				com.regnosys.rosetta.rosetta.RosettaCorpus.class,
-				com.regnosys.rosetta.rosetta.RosettaSegment.class,
-				com.regnosys.rosetta.rosetta.RosettaBasicType.class,
-				com.regnosys.rosetta.rosetta.RosettaRecordType.class,
-				com.regnosys.rosetta.rosetta.RosettaExternalFunction.class,
-				com.regnosys.rosetta.rosetta.RosettaMetaType.class);
+				RosettaBody.class,
+				RosettaCorpus.class,
+				RosettaSegment.class,
+				RosettaBasicType.class,
+				RosettaRecordType.class,
+				RosettaExternalFunction.class,
+				RosettaMetaType.class);
 		Class<? extends RosettaRootElement> lastType = null;
 		for (RosettaRootElement elem : rosettaModel.getElements()) {
 			// Root elements are separated by an empty lines, except

@@ -33,6 +33,7 @@ import org.eclipse.xtext.validation.Check;
 import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Do not write any more validators in here for the following reasons:
@@ -417,7 +418,7 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
     }
 
     @Check
-    public void checkDispatch(com.regnosys.rosetta.rosetta.simple.Function ele) {
+    public void checkDispatch(Function ele) {
         if (ele instanceof FunctionDispatch) return;
 
         List<FunctionDispatch> dispatches =
@@ -432,7 +433,7 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
             RosettaEnumeration en = enumRef.getEnumeration();
             String valueName = enumRef.getValue().getName();
             byEnum.computeIfAbsent(en, k -> new HashMap<>())
-                    .computeIfAbsent(valueName, k -> new java.util.ArrayList<>())
+                    .computeIfAbsent(valueName, k -> new ArrayList<>())
                     .add(fd);
         }
         if (byEnum.isEmpty()) return;
@@ -458,7 +459,7 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         toImplement.removeAll(mostUsedMap.keySet());
         if (!toImplement.isEmpty()) {
             warning("Missing implementation for " + mostUsedEnum.getName() + ": "
-                    + toImplement.stream().sorted().collect(java.util.stream.Collectors.joining(", ")),
+                    + toImplement.stream().sorted().collect(Collectors.joining(", ")),
                     ele, RosettaPackage.Literals.ROSETTA_NAMED__NAME);
         }
 
@@ -515,7 +516,7 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
     }
 
     @Check
-    public void checkFunctionPrefix(com.regnosys.rosetta.rosetta.simple.Function ele) {
+    public void checkFunctionPrefix(Function ele) {
         ele.getAnnotations().forEach(a -> {
             String prefix = a.getAnnotation().getPrefix();
             if (prefix != null && !ele.getName().startsWith(prefix + "_")) {
@@ -651,7 +652,7 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         List<AnnotationRef> annotations = rosettaFunctionExtensions.getCreationAnnotations(ele);
         if (annotations.isEmpty()) return;
 
-        if (!(ele instanceof com.regnosys.rosetta.rosetta.simple.Function func)) {
+        if (!(ele instanceof Function func)) {
             error("Creation annotation only allowed on a function.",
                     RosettaPackage.Literals.ROSETTA_NAMED__NAME, RosettaIssueCodes.INVALID_ELEMENT_NAME);
             return;
@@ -676,7 +677,7 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
             funcOutputDataType.getAllSuperTypes().forEach(t -> funcOutputSuperTypes.add((RDataType) t));
 
             // Attributes types list is used as a proxy check; keep behavior equivalent
-            List<Class<RType>> annotationAttributeTypes = new java.util.ArrayList<>();
+            List<Class<RType>> annotationAttributeTypes = new ArrayList<>();
             for (RAttribute a : annotationDataType.getAllAttributes()) {
                 annotationAttributeTypes.add(RType.class);
             }
@@ -700,7 +701,7 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         List<AnnotationRef> annotations = rosettaFunctionExtensions.getQualifierAnnotations(ele);
         if (annotations.isEmpty()) return;
 
-        if (!(ele instanceof com.regnosys.rosetta.rosetta.simple.Function func)) {
+        if (!(ele instanceof Function func)) {
             error("Qualification annotation only allowed on a function.",
                     RosettaPackage.Literals.ROSETTA_NAMED__NAME, RosettaIssueCodes.INVALID_ELEMENT_NAME);
             return;
