@@ -37,8 +37,7 @@ public class BenchmarkLanguageClient implements Endpoint {
 	public Map<String, List<Diagnostic>> getDiagnostics() {
 		Map<String, List<Diagnostic>> result = new HashMap<>();
 		for (Notification not : notifications) {
-			if (not.parameter instanceof PublishDiagnosticsParams) {
-				PublishDiagnosticsParams params = (PublishDiagnosticsParams)not.parameter;
+			if (not.parameter instanceof PublishDiagnosticsParams params) {
 				result.put(params.getUri(), params.getDiagnostics());
 			}
 		}

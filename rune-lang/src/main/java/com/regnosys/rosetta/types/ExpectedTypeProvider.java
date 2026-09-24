@@ -79,8 +79,8 @@ public interface ExpectedTypeProvider {
                 return typeProvider.getRTypeOfFeature(pair.getKey(), null);
             } else if (WITH_META_ENTRY__VALUE.equals(reference) && owner instanceof WithMetaEntry entry) {
                 return typeProvider.getRTypeOfFeature(entry.getKey(), reference);
-            } else if (owner instanceof RosettaExpression) {
-                return this.expressionSwitch.doSwitch((RosettaExpression) owner, reference, index);
+            } else if (owner instanceof RosettaExpression expression) {
+                return this.expressionSwitch.doSwitch(expression, reference, index);
             } else if (INLINE_FUNCTION__BODY.equals(reference)) {
                 EObject operation = owner.eContainer();
                 if (operation instanceof ReduceOperation) {

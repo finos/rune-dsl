@@ -58,15 +58,15 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 	}
 	
 	public void setDerivedState(EObject obj) {
-		if (obj instanceof RosettaConditionalExpression) {
-			this.setDefaultElseToEmpty((RosettaConditionalExpression)obj);
-		} else if (obj instanceof JoinOperation) {
-			this.setDefaultJoinSeparator((JoinOperation)obj);
-		} else if (obj instanceof RosettaCallableReference) {
-			this.setImplicitVariableInContextOfCallableReference((RosettaCallableReference)obj);
+		if (obj instanceof RosettaConditionalExpression conditional) {
+			this.setDefaultElseToEmpty(conditional);
+		} else if (obj instanceof JoinOperation join) {
+			this.setDefaultJoinSeparator(join);
+		} else if (obj instanceof RosettaCallableReference reference) {
+			this.setImplicitVariableInContextOfCallableReference(reference);
 		}
-		if (obj instanceof HasGeneratedInput) {
-			this.setDefaultInput((HasGeneratedInput)obj);
+		if (obj instanceof HasGeneratedInput withInput) {
+			this.setDefaultInput(withInput);
 		}
 	}
 	public void setAllDerivedState(TreeIterator<EObject> tree) {
@@ -79,15 +79,15 @@ public class RosettaDerivedStateComputer implements IDerivedStateComputer {
 	}
 	
 	public void removeDerivedState(EObject obj) {
-		if (obj instanceof RosettaConditionalExpression) {
-			this.discardDefaultElse((RosettaConditionalExpression)obj);
-		} else if (obj instanceof JoinOperation) {
-			this.discardDefaultJoinSeparator((JoinOperation)obj);
-		} else if (obj instanceof RosettaCallableReference) {
-			this.discardImplicitVariableInContextOfCallableReference((RosettaCallableReference)obj);
+		if (obj instanceof RosettaConditionalExpression conditional) {
+			this.discardDefaultElse(conditional);
+		} else if (obj instanceof JoinOperation join) {
+			this.discardDefaultJoinSeparator(join);
+		} else if (obj instanceof RosettaCallableReference reference) {
+			this.discardImplicitVariableInContextOfCallableReference(reference);
 		}
-		if (obj instanceof HasGeneratedInput) {
-			this.discardDefaultInput((HasGeneratedInput)obj);
+		if (obj instanceof HasGeneratedInput withInput) {
+			this.discardDefaultInput(withInput);
 		}
 	}
 	public void removeAllDerivedState(TreeIterator<EObject> tree) {

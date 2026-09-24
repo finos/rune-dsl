@@ -29,10 +29,10 @@ public class RosettaOperationCanceledManager extends OperationCanceledManager {
 			return result;
 		}
 		// Also inspect `InvocationTargetException`'s target exception.
-		if (t instanceof InvocationTargetException) {
-			return getPlatformOperationCanceledException(((InvocationTargetException)t).getTargetException());
-		} else if (t instanceof RuntimeException && t.getCause() instanceof InvocationTargetException) {
-			return getPlatformOperationCanceledException(((InvocationTargetException)t.getCause()).getTargetException());
+		if (t instanceof InvocationTargetException invocationException) {
+			return getPlatformOperationCanceledException(invocationException.getTargetException());
+		} else if (t instanceof RuntimeException && t.getCause() instanceof InvocationTargetException cause) {
+			return getPlatformOperationCanceledException(cause.getTargetException());
 		}
 		return null;
 	}

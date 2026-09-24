@@ -46,12 +46,12 @@ public class SwitchValidator extends ExpressionValidator {
 		if (rType.equals(builtins.NOTHING)) {
 			// If there is an error within the argument, do not check further
 			return;
-		} else if (rType instanceof REnumType) {
-			checkEnumSwitch((REnumType) rType, op);
-		} else if (rType instanceof RBasicType) {
-			checkBasicTypeSwitch((RBasicType) rType, op);
-		} else if (rType instanceof RChoiceType) {
-			checkChoiceSwitch((RChoiceType) rType, op);
+		} else if (rType instanceof REnumType enumType) {
+			checkEnumSwitch(enumType, op);
+		} else if (rType instanceof RBasicType basicType) {
+			checkBasicTypeSwitch(basicType, op);
+		} else if (rType instanceof RChoiceType choiceType) {
+			checkChoiceSwitch(choiceType, op);
 		} else if (rType instanceof RDataType dt) {
             checkDataSwitch(dt, op);
         } else {
@@ -133,8 +133,8 @@ public class SwitchValidator extends ExpressionValidator {
  					RMetaAnnotatedType guardType = typeProvider.getRTypeOfSymbol(guard);
  					includedOptions.put(guard, guardType);
  					RType valueType = guardType.getRType();
- 					if (valueType instanceof RChoiceType) {
- 						((RChoiceType)valueType).getAllOptions().forEach(it -> includedOptions.put(it.getEObject(), guardType));
+ 					if (valueType instanceof RChoiceType choiceType) {
+ 						choiceType.getAllOptions().forEach(it -> includedOptions.put(it.getEObject(), guardType));
  					}
  				}
  			}
@@ -149,11 +149,11 @@ public class SwitchValidator extends ExpressionValidator {
  					if (typeSystem.isSubtypeOf(opt, guard, false)) {
  						missingOptions.remove(i);
  						i--;
- 					} else if (optValueType instanceof RChoiceType) {
+ 					} else if (optValueType instanceof RChoiceType choiceType) {
  						if (typeSystem.isSubtypeOf(guard, opt, false)) {
  							missingOptions.remove(i);
  							i--;
- 							((RChoiceType)optValueType).getOwnOptions()
+ 							choiceType.getOwnOptions()
  								.forEach(o -> missingOptions.add(o.getType()));
  						}
  					}

@@ -299,13 +299,13 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
         if (target == null || !extensions.isResolved(target)) {
             return builtins.NOTHING_WITH_ANY_META;
         }
-        if (target instanceof ChoiceOption) {
+        if (target instanceof ChoiceOption option) {
             // The result is the option's value, so it keeps the option's type and metadata - exactly like
             // the matched value of the corresponding `switch` case.
-            return getRTypeOfSymbol((ChoiceOption) target, expr);
+            return getRTypeOfSymbol(option, expr);
         }
-        if (target instanceof Data) {
-            return RMetaAnnotatedType.withNoMeta(typeSystem.typeWithUnknownArgumentsToRType((Data) target));
+        if (target instanceof Data data) {
+            return RMetaAnnotatedType.withNoMeta(typeSystem.typeWithUnknownArgumentsToRType(data));
         }
         return builtins.NOTHING_WITH_ANY_META;
     }

@@ -45,12 +45,12 @@ public class CodeActionUtils {
 	public CodeActionParams getCodeActionParams(CodeAction codeAction) {
         Object data = codeAction.getData();
         CodeActionParams codeActionParams = null;
-        if (data instanceof CodeActionParams) {
-        	codeActionParams = (CodeActionParams) data;
+        if (data instanceof CodeActionParams params) {
+        	codeActionParams = params;
         }
-        if (data instanceof JsonObject) {
+        if (data instanceof JsonObject json) {
             Gson gson = new MessageJsonHandler(Map.of()).getGson();
-            codeActionParams = gson.fromJson(((JsonObject) data), CodeActionParams.class);
+            codeActionParams = gson.fromJson(json, CodeActionParams.class);
         }       
         return codeActionParams;
     }

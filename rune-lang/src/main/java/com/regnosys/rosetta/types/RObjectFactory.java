@@ -191,8 +191,8 @@ public class RObjectFactory {
 	public RAttribute buildRAttribute(Attribute attr) {
 		RDataType enclosingType = null;
 		EObject container = attr.eContainer();
-		if (container instanceof Data) {
-			enclosingType = buildRDataType((Data) container);
+		if (container instanceof Data data) {
+			enclosingType = buildRDataType(data);
 		}
 		return buildRAttributeWithEnclosingType(enclosingType, attr);
 	}
@@ -232,8 +232,8 @@ public class RObjectFactory {
 		ROperationType operationType = operation.isAdd() ? ROperationType.ADD : ROperationType.SET;
 		RAssignedRoot pathHead;
 
-		if (operation.getAssignRoot() instanceof Attribute) {
-			pathHead = buildRAttributeWithEnclosingType(null, (Attribute) operation.getAssignRoot());
+		if (operation.getAssignRoot() instanceof Attribute attribute) {
+			pathHead = buildRAttributeWithEnclosingType(null, attribute);
 		} else {
 			pathHead = buildRShortcut((ShortcutDeclaration) operation.getAssignRoot());
 		}
@@ -242,11 +242,11 @@ public class RObjectFactory {
 				.stream()
 				.map(s -> {
 					RosettaFeature feature = s.getFeature();
-					if (feature instanceof Attribute) {
-						return buildRAttribute((Attribute) feature);
+					if (feature instanceof Attribute attribute) {
+						return buildRAttribute(attribute);
 					}
-					if (feature instanceof RosettaMetaType) {
-						return buildRMetaAttribute((RosettaMetaType) feature);
+					if (feature instanceof RosettaMetaType metaType) {
+						return buildRMetaAttribute(metaType);
 					}
 					return null;
 					})

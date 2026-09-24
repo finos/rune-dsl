@@ -256,10 +256,10 @@ public class TypeSystem {
 				}
 				@Override
 				public Optional<LinkedHashMap<String, RosettaValue>> reverse(RType type) {
-					if (!(type instanceof RParametrizedType)) {
+					if (!(type instanceof RParametrizedType parametrizedType)) {
 						return Optional.empty();
 					}			
-					RosettaInterpreterContext context = RosettaInterpreterContext.of(((RParametrizedType)type).getArguments());
+					RosettaInterpreterContext context = RosettaInterpreterContext.of(parametrizedType.getArguments());
 					return solutionSet.getSolution(context).map(solution -> {
 						LinkedHashMap<String, RosettaValue> newArgs = new LinkedHashMap<>();
 						typeAlias.getParameters().forEach(p -> newArgs.put(p.getName(), solution.get(p)));
@@ -292,9 +292,7 @@ public class TypeSystem {
 		Objects.requireNonNull(t2);
 		Objects.requireNonNull(combineUnderlyingTypes);
 		
-		if (t1 instanceof RAliasType && t2 instanceof RAliasType) {
-			RAliasType alias1 = (RAliasType) t1;
-			RAliasType alias2 = (RAliasType) t2;
+		if (t1 instanceof RAliasType alias1 && t2 instanceof RAliasType alias2) {
 			if (alias1.getTypeFunction().equals(alias2.getTypeFunction())) {
 				RTypeFunction typeFunc = alias1.getTypeFunction();
 				RType underlier = keepTypeAliasIfPossible(alias1.getRefersTo(), alias2.getRefersTo(), combineUnderlyingTypes);
@@ -306,8 +304,8 @@ public class TypeSystem {
 				List<RAliasType> superAliases = new ArrayList<>();
 				RAliasType curr = alias1;
 				superAliases.add(curr);
-				while (curr.getRefersTo() instanceof RAliasType) {
-					curr = (RAliasType) curr.getRefersTo();
+				while (curr.getRefersTo() instanceof RAliasType superAlias) {
+					curr = superAlias;
 					superAliases.add(curr);
 				}
 				curr = alias2;
@@ -316,8 +314,8 @@ public class TypeSystem {
 				if (match.isPresent()) {
 					return keepTypeAliasIfPossible(match.get(), curr, combineUnderlyingTypes);
 				}
-				while (curr.getRefersTo() instanceof RAliasType) {
-					curr = (RAliasType) curr.getRefersTo();
+				while (curr.getRefersTo() instanceof RAliasType superAlias) {
+					curr = superAlias;
 					RTypeFunction tf2 = curr.getTypeFunction();
 					match = superAliases.stream().filter(a -> tf2.equals(a.getTypeFunction())).findFirst();
 					if (match.isPresent()) {
@@ -326,17 +324,17 @@ public class TypeSystem {
 				}
 				return keepTypeAliasIfPossible(alias1.getRefersTo(), alias2.getRefersTo(), combineUnderlyingTypes);
 			}
-		} else if (t1 instanceof RAliasType) {
-			return keepTypeAliasIfPossible(((RAliasType) t1).getRefersTo(), t2, combineUnderlyingTypes);
-		} else if (t2 instanceof RAliasType) {
-			return keepTypeAliasIfPossible(t1, ((RAliasType) t2).getRefersTo(), combineUnderlyingTypes);
+		} else if (t1 instanceof RAliasType alias1) {
+			return keepTypeAliasIfPossible(alias1.getRefersTo(), t2, combineUnderlyingTypes);
+		} else if (t2 instanceof RAliasType alias2) {
+			return keepTypeAliasIfPossible(t1, alias2.getRefersTo(), combineUnderlyingTypes);
 		}
 		return combineUnderlyingTypes.apply(t1, t2);
 	}
 
 	public RType stripFromTypeAliases(RType t) {
-		while (t instanceof RAliasType) {
-			t = ((RAliasType)t).getRefersTo();
+		while (t instanceof RAliasType alias) {
+			t = alias.getRefersTo();
 		}
 		return t;
 	}
@@ -373,10 +371,10 @@ public class TypeSystem {
 			// Descend check: strip to resolve alias-of-choice options, then test subtypehood so we
 			// only recurse into a nested choice that could actually contain the target.
 			RType strippedOptionType = stripFromTypeAliases(optionType);
-			if (strippedOptionType instanceof RChoiceType && isSubtypeOf(target, strippedOptionType, false)) {
+			if (strippedOptionType instanceof RChoiceType nestedChoice && isSubtypeOf(target, strippedOptionType, false)) {
 				List<RChoiceOption> extendedPrefix = new ArrayList<>(prefix);
 				extendedPrefix.add(option);
-				List<RChoiceOption> result = findChoiceOptionPath((RChoiceType) strippedOptionType, target, extendedPrefix);
+				List<RChoiceOption> result = findChoiceOptionPath(nestedChoice, target, extendedPrefix);
 				if (result != null) {
 					return result;
 				}
@@ -388,8 +386,7 @@ public class TypeSystem {
 	public AliasHierarchy computeAliasHierarchy(RType t) {
 		List<RAliasType> aliasHierarchy = new ArrayList<>();
 		RType underlyingType = t;
-		while (underlyingType instanceof RAliasType) {
-			RAliasType alias = (RAliasType)underlyingType;
+		while (underlyingType instanceof RAliasType alias) {
 			aliasHierarchy.add(alias);
 			underlyingType = alias.getRefersTo();
 		}

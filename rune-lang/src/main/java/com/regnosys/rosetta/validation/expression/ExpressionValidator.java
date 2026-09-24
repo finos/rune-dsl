@@ -300,8 +300,8 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 			if (s instanceof RosettaCallableWithArgs callable) {
                 checkCallableReference(expr, callable);
 			} else {
-				if (s instanceof Attribute) {
-					if (functionExtensions.isOutput((Attribute) s)) {
+				if (s instanceof Attribute attribute) {
+					if (functionExtensions.isOutput(attribute)) {
 						Iterable<? extends RosettaFeature> implicitFeatures = typeProvider.findFeaturesOfImplicitVariable(expr);
 						if (Iterables.any(implicitFeatures, f -> f.getName().equals(s.getName()))) {
 							error(
@@ -312,9 +312,9 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 						}
 					}
 				}
-				if (s instanceof RosettaEnumeration) {
+				if (s instanceof RosettaEnumeration enumeration) {
 					if (!(expr.eContainer() instanceof RosettaFeatureCall)) {
-						var enumValues = ((RosettaEnumeration) s).getEnumValues().stream()
+						var enumValues = enumeration.getEnumValues().stream()
 								.map(v -> v.getName())
 								.collect(Collectors.joining(", "));
 						error("Enum type `" + s.getName() + "` must be followed by ` -> <enum value>`. Possible values are: " + enumValues, expr, ROSETTA_SYMBOL_REFERENCE__SYMBOL);
@@ -387,7 +387,7 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 	}
 	
 	private boolean mayBeEmpty(RType t) {
-		return t instanceof RDataType && ((RDataType) t).getAllAttributes().stream().allMatch(a -> a.getCardinality().isOptional()) || t instanceof RChoiceType;
+		return t instanceof RDataType data && data.getAllAttributes().stream().allMatch(a -> a.getCardinality().isOptional()) || t instanceof RChoiceType;
 	}
 	@Check
 	public void checkOnlyExistsExpression(RosettaOnlyExistsExpression expr) {
@@ -395,11 +395,11 @@ public class ExpressionValidator extends AbstractExpressionValidator {
 			for (RosettaExpression input : expr.getArgs()) {
 				RosettaNamed invalidMetaFeature = null;
 				EStructuralFeature structFeature = null;
-				if (input instanceof RosettaFeatureCall && ((RosettaFeatureCall)input).getFeature() instanceof RosettaMetaType) {
-					invalidMetaFeature = ((RosettaFeatureCall)input).getFeature();
+				if (input instanceof RosettaFeatureCall featureCall && featureCall.getFeature() instanceof RosettaMetaType) {
+					invalidMetaFeature = featureCall.getFeature();
 					structFeature = ROSETTA_FEATURE_CALL__FEATURE;
-				} else if (input instanceof RosettaSymbolReference && ((RosettaSymbolReference)input).getSymbol() instanceof RosettaMetaType) {
-					invalidMetaFeature = ((RosettaSymbolReference)input).getSymbol();
+				} else if (input instanceof RosettaSymbolReference symbolReference && symbolReference.getSymbol() instanceof RosettaMetaType) {
+					invalidMetaFeature = symbolReference.getSymbol();
 					structFeature = ROSETTA_SYMBOL_REFERENCE__SYMBOL;
 				}
 				if (invalidMetaFeature != null) {

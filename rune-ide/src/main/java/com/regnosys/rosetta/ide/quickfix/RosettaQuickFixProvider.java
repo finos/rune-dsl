@@ -96,8 +96,7 @@ public class RosettaQuickFixProvider extends AbstractDeclarativeIdeQuickfixProvi
 			Import importObj = (Import) object;
 			EObject container = importObj.eContainer();
 
-			if (container instanceof RosettaModel) {
-				RosettaModel model = (RosettaModel) container;
+			if (container instanceof RosettaModel model) {
 				List<Import> imports = model.getImports();
 
 				Range importsRange = codeActionUtils.getImportsRange(imports);

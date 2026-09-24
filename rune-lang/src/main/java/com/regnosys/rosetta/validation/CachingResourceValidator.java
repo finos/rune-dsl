@@ -19,8 +19,8 @@ public class CachingResourceValidator extends ResourceValidatorImpl {
 	@Override
 	public List<Issue> validate(Resource resource, CheckMode mode, CancelIndicator cancelIndicator)
 			throws OperationCanceledError {
-		if (resource instanceof XtextResource) {
-			return ((XtextResource) resource).getCache().get(VALIDATION_RESULTS_KEY, resource,
+		if (resource instanceof XtextResource xtextResource) {
+			return xtextResource.getCache().get(VALIDATION_RESULTS_KEY, resource,
 					() -> super.validate(resource, mode, cancelIndicator));
 		} else {
 			return super.validate(resource, mode, cancelIndicator);
