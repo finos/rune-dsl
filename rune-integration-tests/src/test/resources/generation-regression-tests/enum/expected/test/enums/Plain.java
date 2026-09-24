@@ -1,4 +1,4 @@
-package test.functiondispatch;
+package test.enums;
 
 import com.rosetta.model.lib.annotations.RosettaEnum;
 import com.rosetta.model.lib.annotations.RosettaEnumValue;
@@ -10,20 +10,20 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * @version 0.0.0
  */
-@RosettaEnum("Operation")
-public enum Operation {
+@RosettaEnum("Plain")
+public enum Plain {
 
-    @RosettaEnumValue(value = "INCREMENT")
-    INCREMENT("INCREMENT", null),
+    @RosettaEnumValue(value = "ONE")
+    ONE("ONE", null),
 
-    @RosettaEnumValue(value = "DECREMENT")
-    DECREMENT("DECREMENT", null)
+    @RosettaEnumValue(value = "TWO")
+    TWO("TWO", null)
     ;
 
-    private static Map<String, Operation> values;
+    private static Map<String, Plain> values;
     static {
-        Map<String, Operation> map = new ConcurrentHashMap<>();
-        for (Operation instance : Operation.values()) {
+        Map<String, Plain> map = new ConcurrentHashMap<>();
+        for (Plain instance : Plain.values()) {
             map.put(instance.toDisplayString(), instance);
         }
         values = Collections.unmodifiableMap(map);
@@ -32,13 +32,13 @@ public enum Operation {
     private final String rosettaName;
     private final String displayName;
 
-    Operation(String rosettaName, String displayName) {
+    Plain(String rosettaName, String displayName) {
         this.rosettaName = rosettaName;
         this.displayName = displayName;
     }
 
-    public static Operation fromDisplayName(String name) {
-        Operation value = values.get(name);
+    public static Plain fromDisplayName(String name) {
+        Plain value = values.get(name);
         if (value == null) {
             throw new IllegalArgumentException("No enum constant with display name \"" + name + "\".");
         }

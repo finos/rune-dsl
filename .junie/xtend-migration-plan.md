@@ -85,8 +85,8 @@ Xtend can be dropped as a dependency, which also lets `rune-lang` move off Java 
 (it is currently pinned there for Xtend interoperability).
 
 ### rune-lang — code generators
-- [ ] generator/java/condition/ConditionGenerator
-- [ ] generator/java/enums/EnumGenerator
+- [x] generator/java/condition/ConditionGenerator
+- [x] generator/java/enums/EnumGenerator
 - [ ] generator/java/expression/ExpressionGenerator
 - [ ] generator/java/expression/TypeCoercionService
 - [x] generator/java/function/FunctionGenerator
@@ -104,11 +104,11 @@ Xtend can be dropped as a dependency, which also lets `rune-lang` move off Java 
 - [x] generator/java/reports/RuleGenerator
 
 ### rune-lang — generator utilities/helpers
-- [ ] generator/java/enums/EnumHelper
+- [x] generator/java/enums/EnumHelper
 - [ ] generator/java/util/ImportManagerExtension
-- [ ] generator/java/util/ModelGeneratorUtil
+- [x] generator/java/util/ModelGeneratorUtil
 - [ ] generator/java/util/RecordJavaUtil
-- [ ] generator/java/util/RosettaGrammarUtil
+- [x] generator/java/util/RosettaGrammarUtil
 
 ### rune-xcore-plugin-dependencies
 - [ ] xcore/generator/serializer/RosettaSerializerFragment

@@ -1,4 +1,4 @@
-package test.typeformatvalidation.validation.datarule;
+package test.condition.validation.datarule;
 
 import com.google.inject.ImplementedBy;
 import com.rosetta.model.lib.annotations.RosettaDataRule;
@@ -11,38 +11,39 @@ import com.rosetta.model.lib.validation.Validator;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import test.condition.Simple;
 
 import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 
 /**
  * @version 0.0.0
  */
-@RosettaDataRule("PositiveIntIsPositive")
-@ImplementedBy(PositiveIntIsPositive.Default.class)
-public interface PositiveIntIsPositive extends Validator<Integer> {
+@RosettaDataRule("SimpleNotForbidden")
+@ImplementedBy(SimpleNotForbidden.Default.class)
+public interface SimpleNotForbidden extends Validator<Simple> {
 
-    String NAME = "PositiveIntIsPositive";
-    String DEFINITION = "item > 0";
+    String NAME = "SimpleNotForbidden";
+    String DEFINITION = "val <> \"forbidden\"";
 
-    class Default implements PositiveIntIsPositive {
+    class Default implements SimpleNotForbidden {
 
         @Override
-        public List<ValidationResult<?>> getValidationResults(RosettaPath path, Integer positiveInt) {
-            ComparisonResult result = executeDataRule(positiveInt);
+        public List<ValidationResult<?>> getValidationResults(RosettaPath path, Simple simple) {
+            ComparisonResult result = executeDataRule(simple);
             if (result.getOrDefault(true)) {
-                return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "PositiveInt", path, DEFINITION));
+                return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Simple", path, DEFINITION));
             }
 
             String failureMessage = result.getError();
             if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
                 failureMessage = "Condition has failed.";
             }
-            return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "PositiveInt", path, DEFINITION, failureMessage));
+            return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Simple", path, DEFINITION, failureMessage));
         }
 
-        private ComparisonResult executeDataRule(Integer positiveInt) {
+        private ComparisonResult executeDataRule(Simple simple) {
             try {
-                return greaterThan(MapperS.of(positiveInt), MapperS.of(0), CardinalityOperator.All);
+                return notEqual(MapperS.of(simple).<String>map("getVal", _simple -> _simple.getVal()), MapperS.of("forbidden"), CardinalityOperator.Any);
             }
             catch (Exception ex) {
                 return ComparisonResult.failure(ex.getMessage());
@@ -51,10 +52,10 @@ public interface PositiveIntIsPositive extends Validator<Integer> {
     }
 
     @SuppressWarnings("unused")
-    class NoOp implements PositiveIntIsPositive {
+    class NoOp implements SimpleNotForbidden {
 
         @Override
-        public List<ValidationResult<?>> getValidationResults(RosettaPath path, Integer positiveInt) {
+        public List<ValidationResult<?>> getValidationResults(RosettaPath path, Simple simple) {
             return Collections.emptyList();
         }
     }

@@ -1,0 +1,21 @@
+namespace test.enums
+
+body Organisation Org1
+corpus Agreement Org1 "Agreement 1" Agr1
+
+segment name
+
+enum Plain:
+    ONE
+    TWO
+
+enum Documented: <"An enumeration with documentation.">
+    [docReference Org1 Agr1 name "something" provision "some provision"]
+    FIRST <"The first value.">
+    SECOND displayName "second value" <"The second value, with a display name.">
+        [docReference Org1 Agr1 name "something else" provision "another provision"]
+    THIRD displayName "third"
+    FOURTH
+
+enum Extended extends Documented: <"An enumeration that extends another one.">
+    FIFTH <"An extra value.">

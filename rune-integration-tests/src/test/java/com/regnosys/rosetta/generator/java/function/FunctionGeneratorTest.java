@@ -5566,49 +5566,49 @@ public class FunctionGeneratorTest {
 				@RosettaDataRule("FooBar")
 				@ImplementedBy(FooBar.Default.class)
 				public interface FooBar extends Validator<Foo> {
-				\t
-					String NAME = "FooBar";
-					String DEFINITION = "if test = True then FuncFoo( attr, \\"x\\" ) else FuncFoo( attr, \\"y\\" )";
-				\t
-					class Default implements FooBar {
-				\t
-						@Inject protected FuncFoo funcFoo;
-				\t\t
-						@Override
-						public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo foo) {
-							ComparisonResult result = executeDataRule(foo);
-							if (result.getOrDefault(true)) {
-								return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION));
-							}
-				\t\t\t
-							String failureMessage = result.getError();
-							if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
-								failureMessage = "Condition has failed.";
-							}
-							return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage));
-						}
-				\t\t
-						private ComparisonResult executeDataRule(Foo foo) {
-							try {
-								if (areEqual(MapperS.of(foo).<Boolean>map("getTest", _foo -> _foo.getTest()), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
-									return ComparisonResult.ofNullSafe(MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), "x")));
-								}
-								return ComparisonResult.ofNullSafe(MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), "y")));
-							}
-							catch (Exception ex) {
-								return ComparisonResult.failure(ex.getMessage());
-							}
-						}
-					}
-				\t
-					@SuppressWarnings("unused")
-					class NoOp implements FooBar {
-				\t
-						@Override
-						public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo foo) {
-							return Collections.emptyList();
-						}
-					}
+
+				    String NAME = "FooBar";
+				    String DEFINITION = "if test = True then FuncFoo( attr, \\"x\\" ) else FuncFoo( attr, \\"y\\" )";
+
+				    class Default implements FooBar {
+
+				        @Inject protected FuncFoo funcFoo;
+
+				        @Override
+				        public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo foo) {
+				            ComparisonResult result = executeDataRule(foo);
+				            if (result.getOrDefault(true)) {
+				                return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION));
+				            }
+
+				            String failureMessage = result.getError();
+				            if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
+				                failureMessage = "Condition has failed.";
+				            }
+				            return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Foo", path, DEFINITION, failureMessage));
+				        }
+
+				        private ComparisonResult executeDataRule(Foo foo) {
+				            try {
+				                if (areEqual(MapperS.of(foo).<Boolean>map("getTest", _foo -> _foo.getTest()), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+				                    return ComparisonResult.ofNullSafe(MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), "x")));
+				                }
+				                return ComparisonResult.ofNullSafe(MapperS.of(funcFoo.evaluate(MapperS.of(foo).<String>map("getAttr", _foo -> _foo.getAttr()).get(), "y")));
+				            }
+				            catch (Exception ex) {
+				                return ComparisonResult.failure(ex.getMessage());
+				            }
+				        }
+				    }
+
+				    @SuppressWarnings("unused")
+				    class NoOp implements FooBar {
+
+				        @Override
+				        public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo foo) {
+				            return Collections.emptyList();
+				        }
+				    }
 				}
 				""",
                 f

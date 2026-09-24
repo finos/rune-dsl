@@ -4,7 +4,6 @@ import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -72,21 +71,21 @@ public abstract class RGeneratedJavaClass<T> extends JavaClass<T> {
 			}
 		};
 	}
-	public StringConcatenationClient asInterfaceDeclaration() {
-		return new StringConcatenationClient() {
+	public TargetLanguageRepresentation asInterfaceDeclaration() {
+		return new TargetLanguageRepresentation() {
 			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				target.append("interface ");
-				target.append(RGeneratedJavaClass.this.getSimpleName());
+			public void render(CodeWriter out) {
+				out.write("interface ", RGeneratedJavaClass.this.getSimpleName());
 				List<JavaClass<?>> interfaces = RGeneratedJavaClass.this.getInterfaces();
 				if (!interfaces.isEmpty()) {
-					target.append(" extends ");
-					target.append(interfaces.get(0));
-					for (int i=1; i<interfaces.size(); i++) {
-						target.append(", ");
-						target.append(interfaces.get(i));
-					}
+					out.write(" extends ");
+					out.join(interfaces, ", ");
 				}
+			}
+
+			@Override
+			public void appendTo(TargetStringConcatenation target) {
+				render(new TargetStringConcatenationCodeWriter(target));
 			}
 		};
 	}
