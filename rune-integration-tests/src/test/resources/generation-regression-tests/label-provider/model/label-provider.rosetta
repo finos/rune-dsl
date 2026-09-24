@@ -1,0 +1,9 @@
+namespace test.labelprovider
+
+func ToNumber:
+    [codeImplementation]
+    [ingest JSON]
+    inputs:
+        input int (1..1)
+    output:
+        result int (1..1)

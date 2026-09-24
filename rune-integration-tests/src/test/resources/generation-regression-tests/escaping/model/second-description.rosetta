@@ -1,0 +1,1 @@
+namespace test.escaping : <"A second description of the same namespace, in C:\\users.">

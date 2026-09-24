@@ -171,6 +171,10 @@ public class InMemoryJavacCompiler {
 		Map<String, Class<?>> classes = new HashMap<String, Class<?>>();
 		try {
 			for (String className : sourceCodes.keySet()) {
+				if (className.endsWith(".package-info")) {
+					// A package-info with only javadoc compiles to no class file, and there is no class to load
+					continue;
+				}
 				classes.put(className, classLoader.loadClass(className));
 			}
 		} catch (ClassNotFoundException e) {

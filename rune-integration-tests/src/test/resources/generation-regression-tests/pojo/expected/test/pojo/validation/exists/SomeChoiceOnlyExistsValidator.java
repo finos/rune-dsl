@@ -17,24 +17,24 @@ import static com.rosetta.model.lib.validation.ValidationResult.success;
 
 public class SomeChoiceOnlyExistsValidator implements ValidatorWithArg<SomeChoice, Set<String>> {
 
-	/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
-	@Override
-	public <T2 extends SomeChoice> ValidationResult<SomeChoice> validate(RosettaPath path, T2 o, Set<String> fields) {
-		Map<String, Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
-				.put("Foo", ExistenceChecker.isSet((Foo) o.getFoo()))
-				.put("Bar", ExistenceChecker.isSet((Bar) o.getBar()))
-				.build();
-		
-		// Find the fields that are set
-		Set<String> setFields = fieldExistenceMap.entrySet().stream()
-				.filter(Map.Entry::getValue)
-				.map(Map.Entry::getKey)
-				.collect(Collectors.toSet());
-		
-		if (setFields.equals(fields)) {
-			return success("SomeChoice", ValidationResult.ValidationType.ONLY_EXISTS, "SomeChoice", path, "");
-		}
-		return failure("SomeChoice", ValidationResult.ValidationType.ONLY_EXISTS, "SomeChoice", path, "",
-				String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
-	}
+    /* Casting is required to ensure types are output to ensure recompilation in Rosetta */
+    @Override
+    public <T2 extends SomeChoice> ValidationResult<SomeChoice> validate(RosettaPath path, T2 o, Set<String> fields) {
+        Map<String, Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
+            .put("Foo", ExistenceChecker.isSet((Foo) o.getFoo()))
+            .put("Bar", ExistenceChecker.isSet((Bar) o.getBar()))
+            .build();
+
+        // Find the fields that are set
+        Set<String> setFields = fieldExistenceMap.entrySet().stream()
+            .filter(Map.Entry::getValue)
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toSet());
+
+        if (setFields.equals(fields)) {
+            return success("SomeChoice", ValidationResult.ValidationType.ONLY_EXISTS, "SomeChoice", path, "");
+        }
+        return failure("SomeChoice", ValidationResult.ValidationType.ONLY_EXISTS, "SomeChoice", path, "",
+            String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
+    }
 }

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import com.regnosys.rosetta.rosetta.Schema;
 import com.regnosys.rosetta.rosetta.expression.ListLiteral;
 import com.regnosys.rosetta.rosetta.expression.MapOperation;
 import com.regnosys.rosetta.rosetta.expression.RosettaExistsExpression;
@@ -193,6 +194,23 @@ public class RosettaParsingTest {
 				TWO 
 			
 		""");
+	}
+
+	@Test
+	void testSchemaDocumentation() {
+		RosettaTestModel parsedModel = modelService.toTestModel("""
+			namespace test
+			version "1"
+
+			schema fixml XML <"A named serialization schema.">
+		""");
+		Schema schema = parsedModel.getModel().getElements().stream()
+				.filter(Schema.class::isInstance)
+				.map(Schema.class::cast)
+				.findFirst()
+				.orElseThrow();
+
+		assertEquals("A named serialization schema.", schema.getDefinition());
 	}
 
 	@Test

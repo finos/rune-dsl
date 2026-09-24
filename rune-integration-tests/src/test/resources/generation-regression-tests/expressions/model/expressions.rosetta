@@ -1,0 +1,185 @@
+namespace test.expressions
+
+metaType key string
+metaType scheme string
+metaType reference string
+
+enum Colour:
+    RED
+    GREEN displayName "green"
+
+type Foo:
+    [metadata key]
+    i int (0..1)
+    s string (0..*)
+    code string (0..1)
+        [metadata scheme]
+    ref Foo (0..1)
+        [metadata reference]
+    refs Foo (0..*)
+        [metadata reference]
+
+    condition Rules:
+        one-of
+            and (optional choice i, code)
+            and (i only exists or (i, code) only exists)
+            and item -> i exists
+
+type Bar extends Foo:
+
+choice FooOrBar:
+    Foo
+    Bar
+
+func Operators:
+    inputs:
+        foo Foo (0..1)
+        foos Foo (0..*)
+        l int(digits: 12) (0..1)
+        b int(digits: 30) (0..1)
+        flag boolean (0..1)
+        flags boolean (0..*)
+    output:
+        result boolean (0..*)
+
+    alias arithmetic: foo -> i + 1.5 * 2 - l / b
+    alias concatenation: "a" + "b"
+    alias numberLiterals: [1, 3000000000, 30000000000000000000, 1.5]
+    alias otherLiterals: ["s", empty]
+    alias comparison: foo -> i > 1 and foo -> i >= 1.5 or foo -> i < l or foo -> i <= b
+    alias equality: foos -> i all = 1 and foos -> i any <> 1 and foo -> i = 1 and foo -> i <> 1
+    alias existence: foo exists and foo -> i is absent and foos single exists and foos multiple exists and (foo -> i only exists)
+    alias membership: foos -> i contains 1.5 and foos -> i disjoint [2, 3]
+    alias defaults: [foo -> i default 0, foos -> i default [1]]
+
+    condition UsesBooleans:
+        if flag then comparison and flag and (flags contains True) or False
+
+    set result: comparison
+    add result: flag
+    add result: foos exists
+
+func ListOperations:
+    inputs:
+        foos Foo (0..*)
+        ints int (0..*)
+    output:
+        result number (0..*)
+
+    alias filtered: foos filter key exists then only-element filter i exists
+    alias listOfLists: foos extract s then filter item count > 0 then flatten
+    alias mapped: [foos extract f [f -> i], foos extract s then extract item count, foos extract s then extract item distinct then flatten count, foos only-element extract i]
+    alias reduced: foos extract i then reduce a, b [a + b]
+    alias sorted: [foos extract i then sort, foos sort [i] then extract i, foos extract code then sort then extract item to-int]
+    alias extremes: [foos extract i then max, foos min [i] -> i, foos extract code then max to-int]
+    alias singles: [foos first, foos last] extract i
+    alias aggregates: [foos reverse count, foos distinct count, foos extract i then sum]
+    alias joined: [foos extract s then flatten join ", ", foos only-element extract s then join]
+
+    set result: mapped
+    add result: ints
+    add result: 1
+
+func Conversions:
+    inputs:
+        s string (0..1)
+        colour Colour (0..1)
+        d date (0..1)
+        dt dateTime (0..1)
+        zdt zonedDateTime (0..1)
+    output:
+        result date (0..1)
+
+    alias numbers: [s to-number, s to-int]
+    alias enums: [s to-enum Colour to-enum Colour to-string, colour to-string, 1 to-string]
+    alias temporals: [s to-date to-string, s to-time to-string, s to-date-time to-string, s to-zoned-date-time to-string]
+    alias recordFeatures: [d -> day, d -> month, d -> year, dt -> date -> day, zdt -> date -> day]
+    alias times: [dt -> time, zdt -> time]
+    alias timezone: zdt -> timezone
+    alias dateTimes: dateTime { date: d, time: dt -> time }
+    alias zonedDateTimes: zonedDateTime { date: d, time: dt -> time, timezone: "UTC" }
+
+    set result: date { year: 2024, month: 1, day: 2 }
+    set result: date { year: d -> year, month: 1, day: 2 }
+
+func Control:
+    inputs:
+        colour Colour (0..1)
+        fooOrBar FooOrBar (0..1)
+        fooOrBars FooOrBar (0..*)
+        foo Foo (0..1)
+        foos Foo (0..*)
+        s string (0..1)
+    output:
+        result int (0..1)
+
+    alias enumSwitch: colour switch RED then 1, GREEN then 2, default 3
+    alias choiceSwitch: fooOrBar switch Foo then i, Bar then 2
+    alias dataSwitch: foo switch Bar then i, default 0
+    alias literalSwitch: s switch "a" then 1, default 2
+    alias narrowed: [foo as Bar, foos as Bar, fooOrBar as Bar, fooOrBars as Bar]
+    alias either: if s exists then foos else if colour exists then foo else if fooOrBar exists then fooOrBar as Foo
+    alias deepAttribute: fooOrBar ->> i
+    alias deepKey: fooOrBar ->> key
+    alias metas: [foo -> code -> scheme, foo -> ref -> reference, foo -> key]
+    alias enumValue: if colour = GREEN then Colour -> RED
+    alias called: [Min(1, 2.5), Max(1, 2)]
+    alias leapYear: IsLeapYear(2024)
+
+    set result: if foo exists then Take(1, 1, 1, 1, foo -> code, "x") else Take(foo -> i, foo -> i, foo -> i, 1, empty, empty)
+
+func Take:
+    [codeImplementation]
+    inputs:
+        i int (0..1)
+        l int(digits: 12) (0..1)
+        b int(digits: 30) (0..1)
+        n number (0..1)
+        s string (0..1)
+        code string (0..1)
+            [metadata scheme]
+    output:
+        result int (0..1)
+
+func Constructors:
+    inputs:
+        foo Foo (0..1)
+        foos Foo (0..*)
+    output:
+        result Foo (0..1)
+
+    alias fromOutput: result
+
+    set result: Foo {
+        i: foo -> i,
+        s: ["a"],
+        code: "x",
+        ref: foo as-key,
+        refs: foos as-key
+    }
+    set result -> ref: fromOutput as-key
+
+func WithMeta:
+    inputs:
+        code string (0..1)
+            [metadata scheme]
+        foo Foo (0..1)
+        metaFoo Foo (0..1)
+            [metadata scheme]
+    output:
+        result Foo (0..1)
+
+    alias withMetas: [
+        "a" with-meta { scheme: "s" },
+        code with-meta { scheme: "t" }
+    ]
+    alias typeMetas: [
+        foo with-meta { key: "k" },
+        metaFoo with-meta { key: "k" },
+        foo with-meta { key: "k", scheme: "s" },
+        metaFoo with-meta { key: "k", scheme: "s" },
+        foo with-meta
+    ]
+    alias referenceMeta: foo with-meta { reference: "r" }
+
+    set result: Foo { s: code, ... }

@@ -24,29 +24,29 @@ import test.pojo.validation.exists.Level2OnlyExistsValidator;
 @RosettaMeta(model=Level2.class)
 public class Level2Meta implements RosettaMetaData<Level2> {
 
-	@Override
-	public List<Validator<? super Level2>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super Level2, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super Level2> validator(ValidatorFactory factory) {
-		return factory.<Level2>create(Level2Validator.class);
-	}
+    @Override
+    public List<Validator<? super Level2>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super Level2> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<Level2>create(Level2TypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super Level2, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Override
-	public ValidatorWithArg<? super Level2, Set<String>> onlyExistsValidator() {
-		return new Level2OnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super Level2> validator(ValidatorFactory factory) {
+        return factory.<Level2>create(Level2Validator.class);
+    }
+
+    @Override
+    public Validator<? super Level2> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<Level2>create(Level2TypeFormatValidator.class);
+    }
+
+    @Override
+    public ValidatorWithArg<? super Level2, Set<String>> onlyExistsValidator() {
+        return new Level2OnlyExistsValidator();
+    }
 }

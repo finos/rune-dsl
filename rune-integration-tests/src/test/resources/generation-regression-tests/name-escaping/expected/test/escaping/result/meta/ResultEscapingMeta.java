@@ -24,29 +24,29 @@ import test.escaping.result.validation.exists.ResultEscapingOnlyExistsValidator;
 @RosettaMeta(model=ResultEscaping.class)
 public class ResultEscapingMeta implements RosettaMetaData<ResultEscaping> {
 
-	@Override
-	public List<Validator<? super ResultEscaping>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super ResultEscaping, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super ResultEscaping> validator(ValidatorFactory factory) {
-		return factory.<ResultEscaping>create(ResultEscapingValidator.class);
-	}
+    @Override
+    public List<Validator<? super ResultEscaping>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super ResultEscaping> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<ResultEscaping>create(ResultEscapingTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super ResultEscaping, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Override
-	public ValidatorWithArg<? super ResultEscaping, Set<String>> onlyExistsValidator() {
-		return new ResultEscapingOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super ResultEscaping> validator(ValidatorFactory factory) {
+        return factory.<ResultEscaping>create(ResultEscapingValidator.class);
+    }
+
+    @Override
+    public Validator<? super ResultEscaping> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<ResultEscaping>create(ResultEscapingTypeFormatValidator.class);
+    }
+
+    @Override
+    public ValidatorWithArg<? super ResultEscaping, Set<String>> onlyExistsValidator() {
+        return new ResultEscapingOnlyExistsValidator();
+    }
 }

@@ -15,24 +15,22 @@ import static com.rosetta.model.lib.validation.ValidationResult.success;
 import static java.util.stream.Collectors.toList;
 
 public class LeafValidator implements Validator<Leaf> {
+    private List<ComparisonResult> getComparisonResults(Leaf o) {
+        return Lists.<ComparisonResult>newArrayList(
+            checkCardinality("common", (String) o.getCommon() != null ? 1 : 0, 1, 1)
+        );
+    }
 
-	private List<ComparisonResult> getComparisonResults(Leaf o) {
-		return Lists.<ComparisonResult>newArrayList(
-				checkCardinality("common", (String) o.getCommon() != null ? 1 : 0, 1, 1)
-			);
-	}
-
-	@Override
-	public List<ValidationResult<?>> getValidationResults(RosettaPath path, Leaf o) {
-		return getComparisonResults(o)
-			.stream()
-			.map(res -> {
-				if (!isNullOrEmpty(res.getError())) {
-					return failure("Leaf", ValidationResult.ValidationType.CARDINALITY, "Leaf", path, "", res.getError());
-				}
-				return success("Leaf", ValidationResult.ValidationType.CARDINALITY, "Leaf", path, "");
-			})
-			.collect(toList());
-	}
-
+    @Override
+    public List<ValidationResult<?>> getValidationResults(RosettaPath path, Leaf o) {
+        return getComparisonResults(o)
+            .stream()
+            .map(res -> {
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("Leaf", ValidationResult.ValidationType.CARDINALITY, "Leaf", path, "", res.getError());
+                }
+                return success("Leaf", ValidationResult.ValidationType.CARDINALITY, "Leaf", path, "");
+            })
+            .collect(toList());
+    }
 }

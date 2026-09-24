@@ -24,29 +24,29 @@ import test.pojo.validation.exists.Foo1OnlyExistsValidator;
 @RosettaMeta(model=Foo1.class)
 public class Foo1Meta implements RosettaMetaData<Foo1> {
 
-	@Override
-	public List<Validator<? super Foo1>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super Foo1, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super Foo1> validator(ValidatorFactory factory) {
-		return factory.<Foo1>create(Foo1Validator.class);
-	}
+    @Override
+    public List<Validator<? super Foo1>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super Foo1> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<Foo1>create(Foo1TypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super Foo1, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Override
-	public ValidatorWithArg<? super Foo1, Set<String>> onlyExistsValidator() {
-		return new Foo1OnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super Foo1> validator(ValidatorFactory factory) {
+        return factory.<Foo1>create(Foo1Validator.class);
+    }
+
+    @Override
+    public Validator<? super Foo1> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<Foo1>create(Foo1TypeFormatValidator.class);
+    }
+
+    @Override
+    public ValidatorWithArg<? super Foo1, Set<String>> onlyExistsValidator() {
+        return new Foo1OnlyExistsValidator();
+    }
 }

@@ -15,22 +15,22 @@ import static java.util.stream.Collectors.toList;
 
 public class ParentTypeFormatValidator implements Validator<Parent> {
 
-	private List<ComparisonResult> getComparisonResults(Parent o) {
-		return Lists.<ComparisonResult>newArrayList(
-			);
-	}
+    private List<ComparisonResult> getComparisonResults(Parent o) {
+        return Lists.<ComparisonResult>newArrayList(
+        );
+    }
 
-	@Override
-	public List<ValidationResult<?>> getValidationResults(RosettaPath path, Parent o) {
-		return getComparisonResults(o)
-			.stream()
-			.map(res -> {
-				if (!isNullOrEmpty(res.getError())) {
-					return failure("Parent", ValidationResult.ValidationType.TYPE_FORMAT, "Parent", path, "", res.getError());
-				}
-				return success("Parent", ValidationResult.ValidationType.TYPE_FORMAT, "Parent", path, "");
-			})
-			.collect(toList());
-	}
+    @Override
+    public List<ValidationResult<?>> getValidationResults(RosettaPath path, Parent o) {
+        return getComparisonResults(o)
+            .stream()
+            .map(res -> {
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("Parent", ValidationResult.ValidationType.TYPE_FORMAT, "Parent", path, "", res.getError());
+                }
+                return success("Parent", ValidationResult.ValidationType.TYPE_FORMAT, "Parent", path, "");
+            })
+            .collect(toList());
+    }
 
 }

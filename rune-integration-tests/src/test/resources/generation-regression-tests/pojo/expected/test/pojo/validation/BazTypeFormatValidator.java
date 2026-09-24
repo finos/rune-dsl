@@ -15,22 +15,22 @@ import static java.util.stream.Collectors.toList;
 
 public class BazTypeFormatValidator implements Validator<Baz> {
 
-	private List<ComparisonResult> getComparisonResults(Baz o) {
-		return Lists.<ComparisonResult>newArrayList(
-			);
-	}
+    private List<ComparisonResult> getComparisonResults(Baz o) {
+        return Lists.<ComparisonResult>newArrayList(
+        );
+    }
 
-	@Override
-	public List<ValidationResult<?>> getValidationResults(RosettaPath path, Baz o) {
-		return getComparisonResults(o)
-			.stream()
-			.map(res -> {
-				if (!isNullOrEmpty(res.getError())) {
-					return failure("Baz", ValidationResult.ValidationType.TYPE_FORMAT, "Baz", path, "", res.getError());
-				}
-				return success("Baz", ValidationResult.ValidationType.TYPE_FORMAT, "Baz", path, "");
-			})
-			.collect(toList());
-	}
+    @Override
+    public List<ValidationResult<?>> getValidationResults(RosettaPath path, Baz o) {
+        return getComparisonResults(o)
+            .stream()
+            .map(res -> {
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("Baz", ValidationResult.ValidationType.TYPE_FORMAT, "Baz", path, "", res.getError());
+                }
+                return success("Baz", ValidationResult.ValidationType.TYPE_FORMAT, "Baz", path, "");
+            })
+            .collect(toList());
+    }
 
 }

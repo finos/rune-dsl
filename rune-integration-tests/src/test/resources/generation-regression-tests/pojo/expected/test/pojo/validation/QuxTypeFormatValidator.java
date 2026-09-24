@@ -15,22 +15,22 @@ import static java.util.stream.Collectors.toList;
 
 public class QuxTypeFormatValidator implements Validator<Qux> {
 
-	private List<ComparisonResult> getComparisonResults(Qux o) {
-		return Lists.<ComparisonResult>newArrayList(
-			);
-	}
+    private List<ComparisonResult> getComparisonResults(Qux o) {
+        return Lists.<ComparisonResult>newArrayList(
+        );
+    }
 
-	@Override
-	public List<ValidationResult<?>> getValidationResults(RosettaPath path, Qux o) {
-		return getComparisonResults(o)
-			.stream()
-			.map(res -> {
-				if (!isNullOrEmpty(res.getError())) {
-					return failure("Qux", ValidationResult.ValidationType.TYPE_FORMAT, "Qux", path, "", res.getError());
-				}
-				return success("Qux", ValidationResult.ValidationType.TYPE_FORMAT, "Qux", path, "");
-			})
-			.collect(toList());
-	}
+    @Override
+    public List<ValidationResult<?>> getValidationResults(RosettaPath path, Qux o) {
+        return getComparisonResults(o)
+            .stream()
+            .map(res -> {
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("Qux", ValidationResult.ValidationType.TYPE_FORMAT, "Qux", path, "", res.getError());
+                }
+                return success("Qux", ValidationResult.ValidationType.TYPE_FORMAT, "Qux", path, "");
+            })
+            .collect(toList());
+    }
 
 }

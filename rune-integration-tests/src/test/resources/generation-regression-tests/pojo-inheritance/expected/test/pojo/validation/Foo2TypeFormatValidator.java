@@ -20,25 +20,25 @@ import static java.util.stream.Collectors.toList;
 
 public class Foo2TypeFormatValidator implements Validator<Foo2> {
 
-	private List<ComparisonResult> getComparisonResults(Foo2 o) {
-		return Lists.<ComparisonResult>newArrayList(
-				checkNumber("attr", o.getAttr(), empty(), of(0), empty(), empty()), 
-				checkNumber("numberAttr", o.getNumberAttrOverriddenAsBigInteger(), of(30), of(0), empty(), of(new BigDecimal("1E+2"))), 
-				checkString("stringAttr", o.getStringAttr().getValue(), 0, of(42), empty())
-			);
-	}
+    private List<ComparisonResult> getComparisonResults(Foo2 o) {
+        return Lists.<ComparisonResult>newArrayList(
+            checkNumber("attr", o.getAttr(), empty(), of(0), empty(), empty()),
+            checkNumber("numberAttr", o.getNumberAttrOverriddenAsBigInteger(), of(30), of(0), empty(), of(new BigDecimal("1E+2"))),
+            checkString("stringAttr", o.getStringAttr().getValue(), 0, of(42), empty())
+        );
+    }
 
-	@Override
-	public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo2 o) {
-		return getComparisonResults(o)
-			.stream()
-			.map(res -> {
-				if (!isNullOrEmpty(res.getError())) {
-					return failure("Foo2", ValidationResult.ValidationType.TYPE_FORMAT, "Foo2", path, "", res.getError());
-				}
-				return success("Foo2", ValidationResult.ValidationType.TYPE_FORMAT, "Foo2", path, "");
-			})
-			.collect(toList());
-	}
+    @Override
+    public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo2 o) {
+        return getComparisonResults(o)
+            .stream()
+            .map(res -> {
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("Foo2", ValidationResult.ValidationType.TYPE_FORMAT, "Foo2", path, "", res.getError());
+                }
+                return success("Foo2", ValidationResult.ValidationType.TYPE_FORMAT, "Foo2", path, "");
+            })
+            .collect(toList());
+    }
 
 }

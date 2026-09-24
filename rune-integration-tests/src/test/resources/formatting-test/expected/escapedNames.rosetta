@@ -1,0 +1,9 @@
+namespace test.^namespace
+
+import ^annotation.^func.* as ^import
+
+import ^type.^enum.*
+
+type ^type:
+    ^condition string (1..1)
+    ^extract ^type.^enum.^choice (1..1)

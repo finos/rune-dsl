@@ -11,7 +11,9 @@ import com.regnosys.rosetta.ide.symbol.RosettaDocumentSymbolService;
 import com.regnosys.rosetta.ide.validation.UnusedElementDiagnosticsProvider;
 import org.eclipse.xtext.documentation.IEObjectDocumentationProvider;
 import org.eclipse.xtext.generator.IContextualOutputConfigurationProvider;
+import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalCreator;
 import org.eclipse.xtext.ide.editor.contentassist.IdeContentProposalProvider;
+import org.eclipse.xtext.ide.editor.contentassist.IdeCrossrefProposalProvider;
 import org.eclipse.xtext.ide.editor.quickfix.IQuickFixProvider;
 import org.eclipse.xtext.ide.server.ICapabilitiesContributor;
 import org.eclipse.xtext.ide.server.codeActions.ICodeActionService2;
@@ -23,7 +25,9 @@ import org.eclipse.xtext.ide.server.symbol.DocumentSymbolService;
 import org.eclipse.xtext.service.OperationCanceledManager;
 
 import com.regnosys.rosetta.generator.RosettaOutputConfigurationProvider;
+import com.regnosys.rosetta.ide.contentassist.RosettaContentProposalCreator;
 import com.regnosys.rosetta.ide.contentassist.RosettaContentProposalProvider;
+import com.regnosys.rosetta.ide.contentassist.RosettaCrossrefProposalProvider;
 import com.regnosys.rosetta.ide.contentassist.cancellable.CancellableContentAssistService;
 import com.regnosys.rosetta.ide.contentassist.cancellable.CancellableRosettaParser;
 import com.regnosys.rosetta.ide.contentassist.cancellable.ICancellableContentAssistParser;
@@ -135,6 +139,14 @@ public class RosettaIdeModule extends AbstractRosettaIdeModule {
 	
 	public Class<? extends IdeContentProposalProvider> bindIdeContentProposalProvider() {
 		return RosettaContentProposalProvider.class;
+	}
+	
+	public Class<? extends IdeContentProposalCreator> bindIdeContentProposalCreator() {
+		return RosettaContentProposalCreator.class;
+	}
+	
+	public Class<? extends IdeCrossrefProposalProvider> bindIdeCrossrefProposalProvider() {
+		return RosettaCrossrefProposalProvider.class;
 	}
 	
 	public Class<? extends ICapabilitiesContributor> bindICapabilitiesContributor() {

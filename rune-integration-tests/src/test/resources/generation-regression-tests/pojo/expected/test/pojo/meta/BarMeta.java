@@ -24,29 +24,29 @@ import test.pojo.validation.exists.BarOnlyExistsValidator;
 @RosettaMeta(model=Bar.class)
 public class BarMeta implements RosettaMetaData<Bar> {
 
-	@Override
-	public List<Validator<? super Bar>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super Bar, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super Bar> validator(ValidatorFactory factory) {
-		return factory.<Bar>create(BarValidator.class);
-	}
+    @Override
+    public List<Validator<? super Bar>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super Bar> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<Bar>create(BarTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super Bar, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Override
-	public ValidatorWithArg<? super Bar, Set<String>> onlyExistsValidator() {
-		return new BarOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super Bar> validator(ValidatorFactory factory) {
+        return factory.<Bar>create(BarValidator.class);
+    }
+
+    @Override
+    public Validator<? super Bar> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<Bar>create(BarTypeFormatValidator.class);
+    }
+
+    @Override
+    public ValidatorWithArg<? super Bar, Set<String>> onlyExistsValidator() {
+        return new BarOnlyExistsValidator();
+    }
 }

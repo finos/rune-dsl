@@ -15,22 +15,22 @@ import static java.util.stream.Collectors.toList;
 
 public class OuterChoiceTypeFormatValidator implements Validator<OuterChoice> {
 
-	private List<ComparisonResult> getComparisonResults(OuterChoice o) {
-		return Lists.<ComparisonResult>newArrayList(
-			);
-	}
+    private List<ComparisonResult> getComparisonResults(OuterChoice o) {
+        return Lists.<ComparisonResult>newArrayList(
+        );
+    }
 
-	@Override
-	public List<ValidationResult<?>> getValidationResults(RosettaPath path, OuterChoice o) {
-		return getComparisonResults(o)
-			.stream()
-			.map(res -> {
-				if (!isNullOrEmpty(res.getError())) {
-					return failure("OuterChoice", ValidationResult.ValidationType.TYPE_FORMAT, "OuterChoice", path, "", res.getError());
-				}
-				return success("OuterChoice", ValidationResult.ValidationType.TYPE_FORMAT, "OuterChoice", path, "");
-			})
-			.collect(toList());
-	}
+    @Override
+    public List<ValidationResult<?>> getValidationResults(RosettaPath path, OuterChoice o) {
+        return getComparisonResults(o)
+            .stream()
+            .map(res -> {
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("OuterChoice", ValidationResult.ValidationType.TYPE_FORMAT, "OuterChoice", path, "", res.getError());
+                }
+                return success("OuterChoice", ValidationResult.ValidationType.TYPE_FORMAT, "OuterChoice", path, "");
+            })
+            .collect(toList());
+    }
 
 }

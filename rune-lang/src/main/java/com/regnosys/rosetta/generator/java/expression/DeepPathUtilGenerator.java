@@ -122,7 +122,7 @@ public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RData
 					(input, scope) -> metaKeyToStatement(choiceType, input, "globalKey", "metaChooseGlobalKey", scope)));
 		}
 
-		return out -> renderClass(out, javaClass, classScope, dependencies, methods);
+		return renderClass(javaClass, classScope, dependencies, methods);
 	}
 
 	private boolean hasImpliedKey(RDataType type) {
@@ -253,19 +253,21 @@ public class DeepPathUtilGenerator extends FluentRObjectJavaClassGenerator<RData
 		return optionMapper.mapExpression(it -> JavaExpression.from(out -> out.write(it, metaChain, ".get()"), typeUtil.STRING));
 	}
 
-	private void renderClass(CodeWriter out, JavaClass<?> javaClass, JavaClassScope classScope, Set<JavaClass<?>> dependencies, List<GeneratedMethod> methods) {
-		out.writeln("public class ", javaClass, " {");
-		out.indented(() -> {
-			if (!dependencies.isEmpty()) {
-				renderDependencies(out, javaClass, classScope, dependencies);
-				out.newline();
-			}
-			for (GeneratedMethod method : methods) {
-				out.writeln("public ", method.returnType(), " ", method.name(), "(", method.inputParameter().getExpressionType(), " ", method.inputParameter(), ") ", method.body());
-				out.newline();
-			}
-		});
-		out.write("}");
+	private CodeRenderer renderClass(JavaClass<?> javaClass, JavaClassScope classScope, Set<JavaClass<?>> dependencies, List<GeneratedMethod> methods) {
+		return out -> {
+			out.writeln("public class ", javaClass, " {");
+			out.indented(() -> {
+				if (!dependencies.isEmpty()) {
+					renderDependencies(out, javaClass, classScope, dependencies);
+					out.newline();
+				}
+				for (GeneratedMethod method : methods) {
+					out.writeln("public ", method.returnType(), " ", method.name(), "(", method.inputParameter().getExpressionType(), " ", method.inputParameter(), ") ", method.body());
+					out.newline();
+				}
+			});
+			out.write("}");
+		};
 	}
 
 	private void renderDependencies(CodeWriter out, JavaClass<?> javaClass, JavaClassScope classScope, Set<JavaClass<?>> dependencies) {

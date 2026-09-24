@@ -17,8 +17,8 @@ import org.eclipse.xtext.resource.IDerivedStateComputer;
 import org.eclipse.xtext.resource.IResourceDescription;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.impl.DefaultResourceDescriptionStrategy;
-import org.eclipse.xtext.serializer.analysis.ContextTypePDAProvider;
-import org.eclipse.xtext.serializer.analysis.IContextTypePDAProvider;
+import org.eclipse.xtext.serializer.ISerializer;
+import org.eclipse.xtext.serializer.impl.Serializer;
 import org.eclipse.xtext.serializer.tokens.ICrossReferenceSerializer;
 import org.eclipse.xtext.service.DispatchingProvider;
 import org.eclipse.xtext.validation.INamesAreUniqueValidationHelper;
@@ -41,8 +41,8 @@ import com.regnosys.rosetta.parsing.RosettaValueConverterService;
 import com.regnosys.rosetta.resource.RosettaResource;
 import com.regnosys.rosetta.resource.RosettaResourceDescriptionStrategy;
 import com.regnosys.rosetta.scoping.RosettaQualifiedNameProvider;
-import com.regnosys.rosetta.serializer.RosettaContextTypePDAProvider;
 import com.regnosys.rosetta.serializer.RosettaCrossReferenceSerializer;
+import com.regnosys.rosetta.serializer.RosettaSerializer;
 import com.regnosys.rosetta.serialization.RosettaTransientValueService;
 import com.regnosys.rosetta.transgest.ModelLoader;
 import com.regnosys.rosetta.transgest.ModelLoaderImpl;
@@ -136,9 +136,24 @@ public class RosettaRuntimeModule extends AbstractRosettaRuntimeModule {
 		return XtextResourceFormatter.class;
 	}
 
-	public void configureContextTypePDAProvider(Binder binder) {
-		binder.bind(IContextTypePDAProvider.class).to(RosettaContextTypePDAProvider.class);
-		binder.bind(ContextTypePDAProvider.class).to(RosettaContextTypePDAProvider.class);
+	// Serializing is safe from several threads because RosettaSerializer builds the grammar analysis
+	// once, on one thread, before the first serialization — see SerializerAnalysisWarmUp for what is
+	// unsafe and why sequencing the work closes it rather than guarding each cache.
+	//
+	// Bound under both the interface and the concrete Xtext class. configureSerializer is the binding
+	// that does the work: AbstractRosettaRuntimeModule:105 already points ISerializer at the concrete
+	// Serializer, so without it the concrete class gets a just-in-time instance with no gate, and
+	// injecting the concrete class is not exotic — it is the only way to reach serializeToRegions and
+	// serializeReplacement, which ISerializer does not declare, and XtextResourceFormatter injects it
+	// for exactly that reason. The override below is belt and braces over the generated binding, kept
+	// so that a future edit to it cannot quietly hand out an ungated serializer.
+	@Override
+	public Class<? extends ISerializer> bindISerializer() {
+		return RosettaSerializer.class;
+	}
+
+	public void configureSerializer(Binder binder) {
+		binder.bind(Serializer.class).to(RosettaSerializer.class);
 	}
 
 	public Class<? extends ICrossReferenceSerializer> bindICrossReferenceSerializer() {

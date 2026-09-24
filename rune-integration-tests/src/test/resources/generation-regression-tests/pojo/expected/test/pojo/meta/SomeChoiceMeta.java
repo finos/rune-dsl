@@ -25,30 +25,30 @@ import test.pojo.validation.exists.SomeChoiceOnlyExistsValidator;
 @RosettaMeta(model=SomeChoice.class)
 public class SomeChoiceMeta implements RosettaMetaData<SomeChoice> {
 
-	@Override
-	public List<Validator<? super SomeChoice>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-			factory.<SomeChoice>create(SomeChoiceChoice.class)
-		);
-	}
-	
-	@Override
-	public List<Function<? super SomeChoice, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super SomeChoice> validator(ValidatorFactory factory) {
-		return factory.<SomeChoice>create(SomeChoiceValidator.class);
-	}
+    @Override
+    public List<Validator<? super SomeChoice>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+            factory.<SomeChoice>create(SomeChoiceChoice.class)
+        );
+    }
 
-	@Override
-	public Validator<? super SomeChoice> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<SomeChoice>create(SomeChoiceTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super SomeChoice, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Override
-	public ValidatorWithArg<? super SomeChoice, Set<String>> onlyExistsValidator() {
-		return new SomeChoiceOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super SomeChoice> validator(ValidatorFactory factory) {
+        return factory.<SomeChoice>create(SomeChoiceValidator.class);
+    }
+
+    @Override
+    public Validator<? super SomeChoice> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<SomeChoice>create(SomeChoiceTypeFormatValidator.class);
+    }
+
+    @Override
+    public ValidatorWithArg<? super SomeChoice, Set<String>> onlyExistsValidator() {
+        return new SomeChoiceOnlyExistsValidator();
+    }
 }

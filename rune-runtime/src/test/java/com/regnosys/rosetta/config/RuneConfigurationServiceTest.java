@@ -3,15 +3,20 @@ package com.regnosys.rosetta.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 
 import com.rosetta.model.lib.transform.SerializationFormat;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class RuneConfigurationServiceTest {
 
@@ -221,4 +226,107 @@ class RuneConfigurationServiceTest {
 		String out = service.writeString(config);
 		assertFalse(out.contains("defaultSerialisationFormat"), out);
 	}
+
+	// --- readIfPresent -----------------------------------------------------------------------------
+
+	@Test
+	void noPathAtAllIsACallerMistakeRatherThanAnAbsentFile() {
+		// Reading null as "there is no configuration" would hide a caller that never resolved one.
+		assertThrows(NullPointerException.class, () -> service.readIfPresent(null));
+	}
+
+	@Test
+	void aByteOrderMarkIsNotContent(@TempDir Path dir) throws IOException {
+		// Several Windows editors write one. Counted as content, a comment-only file would then be
+		// read, and fail with "No content to map due to end-of-input".
+		assertFalse(service.readIfPresent(write(dir, "bom-blank.yml", "\uFEFF\n")).isPresent());
+		assertFalse(service.readIfPresent(write(dir, "bom-comments.yml", "\uFEFF# nothing yet\n")).isPresent());
+	}
+
+	@Test
+	void aFileWithNothingToReadIsAbsent(@TempDir Path dir) throws IOException {
+		// How a project asks for a configuration to be created: the file is there to be written into,
+		// and read() cannot tell it apart from a truncated one.
+		assertFalse(service.readIfPresent(dir.resolve("missing.yml")).isPresent());
+		assertFalse(service.readIfPresent(write(dir, "empty.yml", "")).isPresent());
+		assertFalse(service.readIfPresent(write(dir, "blank.yml", "\n  \n\n")).isPresent());
+		assertFalse(service.readIfPresent(write(dir, "comments.yml", "# nothing yet\n#   still nothing\n")).isPresent());
+	}
+
+	@Test
+	void aFileWithAConfigurationIsRead(@TempDir Path dir) throws IOException {
+		assertEquals("DEMO", service.readIfPresent(write(dir, "plain.yml", CONFIG)).get().getModel().getName());
+		// A mark in front of real content is Jackson's to handle, and it does.
+		assertEquals("DEMO", service.readIfPresent(write(dir, "bom.yml", "\uFEFF" + CONFIG)).get().getModel().getName());
+	}
+
+	@Test
+	void aFileThatWillNotParseFailsNamingIt(@TempDir Path dir) throws IOException {
+		Path file = write(dir, "rune-config.yml", "model:\n\tname: tabs are not YAML\n");
+
+		IOException failure = assertThrows(IOException.class, () -> service.readIfPresent(file));
+
+		assertTrue(failure.getMessage().contains(file.toString()), failure.getMessage());
+	}
+
+	@Test
+	void aFileThatIsNotTextFailsNamingIt(@TempDir Path dir) throws IOException {
+		Path file = dir.resolve("rune-config.yml");
+		Files.write(file, new byte[] {(byte) 0xC3, (byte) 0x28});
+
+		IOException failure = assertThrows(IOException.class, () -> service.readIfPresent(file));
+
+		assertTrue(failure.getMessage().contains(file.toString()), failure.getMessage());
+	}
+
+	@Test
+	void aConfigurationThatCannotBeWrittenFailsNamingTheFile(@TempDir Path dir) throws IOException {
+		Path file = dir.resolve("rune-config.yml");
+		Files.createDirectory(file);
+
+		IOException failure = assertThrows(IOException.class, () -> service.write(file, service.readString(CONFIG)));
+
+		assertTrue(failure.getMessage().contains(file.toString()), failure.getMessage());
+	}
+
+	@Test
+	void aConfigurationWithNoModelSectionSaysSoRatherThanNull(@TempDir Path dir) throws IOException {
+		// Jackson wraps the required-field NullPointerException, which carries no message of its own,
+		// so reading the cause alone would end the message in ": null".
+		Path file = write(dir, "rune-config.yml", "namespaceConfig: []\n");
+
+		IOException failure = assertThrows(IOException.class, () -> service.readIfPresent(file));
+
+		assertTrue(failure.getMessage().contains(file.toString()), failure.getMessage());
+		assertFalse(failure.getMessage().endsWith("null"), failure.getMessage());
+		assertTrue(failure.getMessage().contains("`model` section"), failure.getMessage());
+	}
+
+	@Test
+	void everyGeneratorSettingSurvivesARoundTrip() throws IOException {
+		// doNotPrune is the one that did not: a project that let a tool rewrite its configuration lost
+		// every entry it had pinned there.
+		String yaml = "model:\n  name: DEMO\n"
+				+ "generators:\n"
+				+ "  namespaces:\n"
+				+ "    - demo.*\n"
+				+ "  doNotPrune:\n"
+				+ "    - type: demo.Party\n"
+				+ "      attribute: details\n";
+
+		RuneConfiguration read = service.readString(yaml);
+		RuneConfiguration reread = service.readString(service.writeString(read));
+
+		assertEquals(Collections.singletonList("demo.*"), reread.getGenerators().getNamespaces());
+		assertEquals(1, reread.getGenerators().doNotPrune().size());
+		assertEquals("demo.Party", reread.getGenerators().doNotPrune().get(0).getType());
+		assertEquals("details", reread.getGenerators().doNotPrune().get(0).getAttribute());
+	}
+
+	private static Path write(Path dir, String name, String content) throws IOException {
+		Path file = dir.resolve(name);
+		Files.write(file, content.getBytes(StandardCharsets.UTF_8));
+		return file;
+	}
+
 }

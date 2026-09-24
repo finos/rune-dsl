@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,7 +48,9 @@ import com.regnosys.rosetta.tests.util.ModelHelper;
  * generate Java code, compile the Java code and then check whether they match expectations.
  * Any expectation mismatches or compilation errors will result in a failure.
  * 
- * Expectations can be written by setting UPDATE_EXPECTATIONS to `true` and running the test.
+ * Expectations can be written by running the test with the system property
+ * {@code rune.updateExpectations} set, e.g.
+ * {@code mvn test -pl rune-integration-tests -Dtest=PojoRegressionTest -Drune.updateExpectations}.
  * 
  * How to add a new regression test:
  * 1. Create a folder under `src/test/resources`. Let's call it ROOT_FOLDER.
@@ -55,10 +58,12 @@ import com.regnosys.rosetta.tests.util.ModelHelper;
  * 3. Put any .rosetta files to test in this folder.
  * 4. Create a new Java test class that inherits from `AbstractJavaGeneratorRegressionTest`.
  * 5. Implement `getTestRootResourceFolder` to return ROOT_FOLDER.
- * For your first run, you might want to set UPDATE_EXPECTATIONS to `true` so it will create all generated files for you.
+ * For your first run, set {@code rune.updateExpectations} so it will create all generated files for you.
+ * To compare only some of the generated files, annotate the test class with {@link ExpectedFiles}.
  */
 public abstract class AbstractJavaGeneratorRegressionTest {
-	private static final boolean UPDATE_EXPECTATIONS = false;
+	private static final boolean UPDATE_EXPECTATIONS = System.getProperty("rune.updateExpectations") != null
+			&& !"false".equals(System.getProperty("rune.updateExpectations"));
 
 	private final static String MODEL_FOLDER = "model";
 	private final static String EXPECTATIONS_FOLDER = "expected";
@@ -70,21 +75,61 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 	@Inject
 	private CodeGeneratorTestHelper codeGeneratorTestHelper;
 
+	private final List<String> includedFiles;
+	private final List<String> excludedFiles;
+
+	private List<String> allGeneratedPaths;
 	private SortedMap<String, String> generatedCode;
 	private SortedMap<String, String> expectedCode;
 
 	private SortedMap<String, String> generatedClasses;
 	private CompilationException compilationException = null;
 
+	protected AbstractJavaGeneratorRegressionTest() {
+		ExpectedFiles selection = getClass().getAnnotation(ExpectedFiles.class);
+		includedFiles = selection == null ? List.of("**") : List.of(selection.include());
+		excludedFiles = selection == null ? List.of() : List.of(selection.exclude());
+	}
+
 	protected abstract String getTestRootResourceFolder();
+
+	/** Whether a generated file is compared against an expectation, as selected by {@link ExpectedFiles}. */
+	private boolean isSelected(String relativePath) {
+		return includedFiles.stream().anyMatch(glob -> matches(glob, relativePath))
+				&& excludedFiles.stream().noneMatch(glob -> matches(glob, relativePath));
+	}
+
+	private static boolean matches(String glob, String relativePath) {
+		return globToRegex(glob).matcher(relativePath).matches();
+	}
+
+	private static Pattern globToRegex(String glob) {
+		StringBuilder regex = new StringBuilder();
+		for (int i = 0; i < glob.length(); i++) {
+			char c = glob.charAt(i);
+			if (c == '*' && i + 1 < glob.length() && glob.charAt(i + 1) == '*') {
+				regex.append(".*");
+				i++;
+			} else if (c == '*') {
+				regex.append("[^/]*");
+			} else if (c == '?') {
+				regex.append("[^/]");
+			} else {
+				regex.append(Pattern.quote(String.valueOf(c)));
+			}
+		}
+		return Pattern.compile(regex.toString());
+	}
 
 	@BeforeAll
 	void generateCodeAndCompile() throws IOException {
 		List<Resource> models = readModelsFromResourceFolder();
 		RegisteringFileSystemAccess fsa = codeGeneratorTestHelper.generateCodeWithFSA(models);
+		allGeneratedPaths = fsa.getGeneratedFiles().stream().map(f -> f.getPath().replace("/null/null/", "")).toList();
 		generatedCode = new TreeMap<>();
-		fsa.getGeneratedFiles()
-				.forEach(f -> generatedCode.put(f.getPath().replace("/null/null/", ""), normalizeLineEndings(f.getContents().toString())));
+		fsa.getGeneratedFiles().stream()
+				.filter(f -> isSelected(f.getPath().replace("/null/null/", "")))
+				.forEach(f -> generatedCode.put(f.getPath().replace("/null/null/", ""), f.getContents().toString()));
 
 		generatedClasses = fsa.getGeneratedFiles().stream().filter(f -> f.getJavaClassName() != null).collect(Collectors
 				.toMap(f -> f.getJavaClassName(), f -> f.getContents().toString(), (v1, v2) -> v2, TreeMap::new));
@@ -111,13 +156,6 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 			// normalisation is needed on this side
 			expectedCode.put(relativePath, fileContents);
 		});
-	}
-
-	// TODO: remove once all generators are migrated to the fluent API. Fluent generators
-	// always emit "\n", whereas legacy Xtend generators emit the platform line separator
-	// and git checks out the expectation files with platform line endings on Windows.
-	private static String normalizeLineEndings(String content) {
-		return content.replace("\r\n", "\n");
 	}
 
 	@ParameterizedTest(name = "Generated {0} equals expectation")
@@ -149,8 +187,18 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 				+ getTestRootResourceFolder() + "/" + EXPECTATIONS_FOLDER);
 		updateExpectationIfAssertionFails(
 				() -> Assertions.assertTrue(generatedCode.containsKey(relativePath),
-						"The expected file " + relativePath + " is never generated."),
+						allGeneratedPaths.contains(relativePath)
+								? "The expected file " + relativePath + " is not selected by @ExpectedFiles on " + getClass().getSimpleName() + "; delete it."
+								: "The expected file " + relativePath + " is never generated."),
 				() -> deleteExpectationFile(relativePath));
+	}
+
+	@Test
+	void expectedFilesPatternsMatchGeneratedFiles() {
+		List<String> unmatched = Stream.concat(includedFiles.stream(), excludedFiles.stream())
+				.filter(glob -> allGeneratedPaths.stream().noneMatch(path -> matches(glob, path)))
+				.toList();
+		Assertions.assertTrue(unmatched.isEmpty(), "@ExpectedFiles patterns that match no generated file: " + unmatched);
 	}
 
 	private Stream<Arguments> provideExpectedFiles() {
@@ -192,7 +240,7 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 
 	@Test
 	void doNotUpdateExpectations() {
-		Assertions.assertFalse(UPDATE_EXPECTATIONS, "UPDATE_EXPECTATIONS should not be enabled.");
+		Assertions.assertFalse(UPDATE_EXPECTATIONS, "rune.updateExpectations should not be set.");
 	}
 
 	private void updateExpectationIfAssertionFails(Executable assertion, UpdateExpectation updateExpectation) {
@@ -206,7 +254,7 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 							"Expectation has been updated at " + getTestRootResourceFolder() + "/" + relativePath + ".\n" + e.getMessage(), e);
 				} else {
 					throw wrapAssertionFailure(
-							"Run with UPDATE_EXPECTATIONS=true to update expectation.\n" + e.getMessage(), e);
+							"Run with -Drune.updateExpectations to update expectation.\n" + e.getMessage(), e);
 				}
 			}
 		} catch (RuntimeException | Error e) {
@@ -272,7 +320,8 @@ public abstract class AbstractJavaGeneratorRegressionTest {
 		if (Files.notExists(resourcePath)) {
 			return Stream.empty();
 		}
-		return Files.walk(resourcePath, Integer.MAX_VALUE).filter(p -> !Files.isDirectory(p));
+		// Sorted, so that models load in the same order on every file system
+		return Files.walk(resourcePath, Integer.MAX_VALUE).filter(p -> !Files.isDirectory(p)).sorted();
 	}
 
 	private Path toResourcePath(String folder) {

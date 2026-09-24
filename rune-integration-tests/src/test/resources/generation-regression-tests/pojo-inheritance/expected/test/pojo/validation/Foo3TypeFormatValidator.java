@@ -19,25 +19,25 @@ import static java.util.stream.Collectors.toList;
 
 public class Foo3TypeFormatValidator implements Validator<Foo3> {
 
-	private List<ComparisonResult> getComparisonResults(Foo3 o) {
-		return Lists.<ComparisonResult>newArrayList(
-				checkNumber("attr", o.getAttr(), empty(), of(0), empty(), empty()), 
-				checkNumber("numberAttr", o.getNumberAttrOverriddenAsInteger(), empty(), of(0), empty(), empty()), 
-				checkString("stringAttr", o.getStringAttr().getValue(), 0, of(42), empty())
-			);
-	}
+    private List<ComparisonResult> getComparisonResults(Foo3 o) {
+        return Lists.<ComparisonResult>newArrayList(
+            checkNumber("attr", o.getAttr(), empty(), of(0), empty(), empty()),
+            checkNumber("numberAttr", o.getNumberAttrOverriddenAsInteger(), empty(), of(0), empty(), empty()),
+            checkString("stringAttr", o.getStringAttr().getValue(), 0, of(42), empty())
+        );
+    }
 
-	@Override
-	public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo3 o) {
-		return getComparisonResults(o)
-			.stream()
-			.map(res -> {
-				if (!isNullOrEmpty(res.getError())) {
-					return failure("Foo3", ValidationResult.ValidationType.TYPE_FORMAT, "Foo3", path, "", res.getError());
-				}
-				return success("Foo3", ValidationResult.ValidationType.TYPE_FORMAT, "Foo3", path, "");
-			})
-			.collect(toList());
-	}
+    @Override
+    public List<ValidationResult<?>> getValidationResults(RosettaPath path, Foo3 o) {
+        return getComparisonResults(o)
+            .stream()
+            .map(res -> {
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("Foo3", ValidationResult.ValidationType.TYPE_FORMAT, "Foo3", path, "", res.getError());
+                }
+                return success("Foo3", ValidationResult.ValidationType.TYPE_FORMAT, "Foo3", path, "");
+            })
+            .collect(toList());
+    }
 
 }

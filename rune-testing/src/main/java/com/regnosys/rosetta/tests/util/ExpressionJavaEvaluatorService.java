@@ -7,6 +7,7 @@ import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtext.testing.validation.ValidationTestHelper;
 
 import com.google.inject.Injector;
+import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator;
 import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider;
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator;
@@ -17,6 +18,7 @@ import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder;
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass;
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue;
+import com.regnosys.rosetta.generator.java.util.FluentImportManager;
 import com.regnosys.rosetta.generator.java.util.ImportManagerExtension;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
@@ -45,6 +47,8 @@ public class ExpressionJavaEvaluatorService {
 	private Injector injector;
 	@Inject
 	private ImportManagerExtension importManagerExtension;
+	@Inject
+	private FluentImportManager fluentImportManager;
 
 	public Object evaluate(CharSequence rosettaExpression, RosettaModel context, JavaType expectedType,
 			ClassLoader classLoader) {
@@ -126,9 +130,8 @@ public class ExpressionJavaEvaluatorService {
 		metaFieldGenerator.streamObjects(expr).forEach(object -> {
 			RJavaWithMetaValue typeRepresentation = metaFieldGenerator.createTypeRepresentation(object);
 			JavaClassScope classScope = JavaClassScope.createAndRegisterIdentifier(typeRepresentation);
-			StringConcatenationClient classCode = metaFieldGenerator.generateClass(object, typeRepresentation, "0",
-					classScope);
-			String javaFileCode = importManagerExtension.buildClass(typeRepresentation.getPackageName(), classCode,
+			CodeRenderer classCode = metaFieldGenerator.generateClass(object, typeRepresentation, "0", classScope);
+			String javaFileCode = fluentImportManager.buildClass(typeRepresentation.getPackageName(), classCode,
 					classScope.getFileScope());
 			compiler.addSource(typeRepresentation.getCanonicalName().withDots(), javaFileCode);
 		});

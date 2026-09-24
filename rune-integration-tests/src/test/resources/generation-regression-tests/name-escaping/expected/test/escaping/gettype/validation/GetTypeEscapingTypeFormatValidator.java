@@ -18,23 +18,23 @@ import static java.util.stream.Collectors.toList;
 
 public class GetTypeEscapingTypeFormatValidator implements Validator<GetTypeEscaping> {
 
-	private List<ComparisonResult> getComparisonResults(GetTypeEscaping o) {
-		return Lists.<ComparisonResult>newArrayList(
-				checkNumber("type", o._getType(), empty(), of(0), empty(), empty())
-			);
-	}
+    private List<ComparisonResult> getComparisonResults(GetTypeEscaping o) {
+        return Lists.<ComparisonResult>newArrayList(
+            checkNumber("type", o._getType(), empty(), of(0), empty(), empty())
+        );
+    }
 
-	@Override
-	public List<ValidationResult<?>> getValidationResults(RosettaPath path, GetTypeEscaping o) {
-		return getComparisonResults(o)
-			.stream()
-			.map(res -> {
-				if (!isNullOrEmpty(res.getError())) {
-					return failure("GetTypeEscaping", ValidationResult.ValidationType.TYPE_FORMAT, "GetTypeEscaping", path, "", res.getError());
-				}
-				return success("GetTypeEscaping", ValidationResult.ValidationType.TYPE_FORMAT, "GetTypeEscaping", path, "");
-			})
-			.collect(toList());
-	}
+    @Override
+    public List<ValidationResult<?>> getValidationResults(RosettaPath path, GetTypeEscaping o) {
+        return getComparisonResults(o)
+            .stream()
+            .map(res -> {
+                if (!isNullOrEmpty(res.getError())) {
+                    return failure("GetTypeEscaping", ValidationResult.ValidationType.TYPE_FORMAT, "GetTypeEscaping", path, "", res.getError());
+                }
+                return success("GetTypeEscaping", ValidationResult.ValidationType.TYPE_FORMAT, "GetTypeEscaping", path, "");
+            })
+            .collect(toList());
+    }
 
 }

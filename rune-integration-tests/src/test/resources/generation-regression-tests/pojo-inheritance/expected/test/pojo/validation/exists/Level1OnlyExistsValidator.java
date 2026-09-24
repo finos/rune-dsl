@@ -5,33 +5,40 @@ import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.validation.ExistenceChecker;
 import com.rosetta.model.lib.validation.ValidationResult;
 import com.rosetta.model.lib.validation.ValidatorWithArg;
+import com.rosetta.model.metafields.FieldWithMetaString;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import test.pojo.Level1;
+import test.pojo.Parent;
 
 import static com.rosetta.model.lib.validation.ValidationResult.failure;
 import static com.rosetta.model.lib.validation.ValidationResult.success;
 
 public class Level1OnlyExistsValidator implements ValidatorWithArg<Level1, Set<String>> {
 
-	/* Casting is required to ensure types are output to ensure recompilation in Rosetta */
-	@Override
-	public <T2 extends Level1> ValidationResult<Level1> validate(RosettaPath path, T2 o, Set<String> fields) {
-		Map<String, Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
-				.put("attr", ExistenceChecker.isSet((Integer) o.getAttr()))
-				.build();
-		
-		// Find the fields that are set
-		Set<String> setFields = fieldExistenceMap.entrySet().stream()
-				.filter(Map.Entry::getValue)
-				.map(Map.Entry::getKey)
-				.collect(Collectors.toSet());
-		
-		if (setFields.equals(fields)) {
-			return success("Level1", ValidationResult.ValidationType.ONLY_EXISTS, "Level1", path, "");
-		}
-		return failure("Level1", ValidationResult.ValidationType.ONLY_EXISTS, "Level1", path, "",
-				String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
-	}
+    /* Casting is required to ensure types are output to ensure recompilation in Rosetta */
+    @Override
+    public <T2 extends Level1> ValidationResult<Level1> validate(RosettaPath path, T2 o, Set<String> fields) {
+        Map<String, Boolean> fieldExistenceMap = ImmutableMap.<String, Boolean>builder()
+            .put("attr", ExistenceChecker.isSet((Integer) o.getAttr()))
+            .put("metaSingle", ExistenceChecker.isSet((FieldWithMetaString) o.getMetaSingle()))
+            .put("otherMetaList", ExistenceChecker.isSet((List<? extends FieldWithMetaString>) o.getOtherMetaList()))
+            .put("singleParent", ExistenceChecker.isSet((Parent) o.getSingleParent()))
+            .put("metaList", ExistenceChecker.isSet((List<? extends FieldWithMetaString>) o.getMetaList()))
+            .build();
+
+        // Find the fields that are set
+        Set<String> setFields = fieldExistenceMap.entrySet().stream()
+            .filter(Map.Entry::getValue)
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toSet());
+
+        if (setFields.equals(fields)) {
+            return success("Level1", ValidationResult.ValidationType.ONLY_EXISTS, "Level1", path, "");
+        }
+        return failure("Level1", ValidationResult.ValidationType.ONLY_EXISTS, "Level1", path, "",
+            String.format("[%s] should only be set.  Set fields: %s", fields, setFields));
+    }
 }
