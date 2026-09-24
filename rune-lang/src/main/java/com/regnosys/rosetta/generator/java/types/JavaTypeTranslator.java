@@ -87,8 +87,8 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	public boolean isValueRosettaModelObject(JavaType type) {
 		JavaType itemType = typeUtil.getItemType(type);
-		if (itemType instanceof RJavaWithMetaValue) {
-			return isValueRosettaModelObject((RJavaWithMetaValue)itemType);
+		if (itemType instanceof RJavaWithMetaValue metaItemType) {
+			return isValueRosettaModelObject(metaItemType);
 		}
 		return itemType.isSubtypeOf(typeUtil.ROSETTA_MODEL_OBJECT);
 	}
@@ -289,20 +289,20 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 	}
 	public JavaClass<?> toJavaReferenceType(RMetaAnnotatedType type) {
 		JavaType jt = toJavaType(type);
-		if (jt instanceof JavaPrimitiveType) {
-			return ((JavaPrimitiveType)jt).toReferenceType();
-		} else if (jt instanceof JavaClass<?>) {
-			return (JavaClass<?>)jt;
+		if (jt instanceof JavaPrimitiveType primitive) {
+			return primitive.toReferenceType();
+		} else if (jt instanceof JavaClass<?> clazz) {
+			return clazz;
 		} else {
 			throw new UnsupportedOperationException("Cannot convert type " + getTypeDebugInfo(type) + " to a Java reference type.");
 		}
 	}
 	public JavaClass<?> toJavaReferenceType(RType type) {
 		JavaType jt = toJavaType(type);
-		if (jt instanceof JavaPrimitiveType) {
-			return ((JavaPrimitiveType)jt).toReferenceType();
-		} else if (jt instanceof JavaClass<?>) {
-			return (JavaClass<?>)jt;
+		if (jt instanceof JavaPrimitiveType primitive) {
+			return primitive.toReferenceType();
+		} else if (jt instanceof JavaClass<?> clazz) {
+			return clazz;
 		} else {
 			throw new UnsupportedOperationException("Cannot convert type " + getTypeDebugInfo(type) + " to a Java reference type.");
 		}

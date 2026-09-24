@@ -156,8 +156,7 @@ public class JavaTypeUtil {
 		return wrap(wrapperType, typeTranslator.toJavaReferenceType(typeProvider.getRMetaAnnotatedType(item)));
 	}
 	public <T> JavaParameterizedType<T> wrapExtendsWithoutMeta(JavaGenericTypeDeclaration<T> wrapperType, JavaType itemType) {
-		if (itemType instanceof RJavaWithMetaValue) {
-			RJavaWithMetaValue metaItemType = (RJavaWithMetaValue) itemType;
+		if (itemType instanceof RJavaWithMetaValue metaItemType) {
 			return JavaParameterizedType.from(wrapperType, JavaWildcardTypeArgument.extendsBound(metaItemType.getValueType()));
 		}
 		return JavaParameterizedType.from(wrapperType, JavaWildcardTypeArgument.extendsBound(itemType.toReferenceType()));
@@ -197,12 +196,12 @@ public class JavaTypeUtil {
 	}
 	
 	public boolean hasWildcardArgument(JavaType t) {
-		return t instanceof JavaParameterizedType && ((JavaParameterizedType<?>) t).getArguments().get(0) instanceof JavaWildcardTypeArgument;
+		return t instanceof JavaParameterizedType<?> pt && pt.getArguments().get(0) instanceof JavaWildcardTypeArgument;
 	}
 	public JavaType getItemValueType(JavaType t) {
 		JavaType itemType = getItemType(t);
-		if (itemType instanceof RJavaWithMetaValue) {
-			return ((RJavaWithMetaValue) itemType).valueType;
+		if (itemType instanceof RJavaWithMetaValue metaItemType) {
+			return metaItemType.valueType;
 		}
 		return itemType;
 	}
@@ -213,8 +212,8 @@ public class JavaTypeUtil {
 				return BOOLEAN;
 			} else {
 				JavaTypeArgument arg = ((JavaParameterizedType<?>)t).getArguments().get(0);
-				if (arg instanceof JavaWildcardTypeArgument) {
-					return ((JavaWildcardTypeArgument)arg).getBound().orElse(OBJECT);
+				if (arg instanceof JavaWildcardTypeArgument wildcard) {
+					return wildcard.getBound().orElse(OBJECT);
 				}
 				return (JavaReferenceType) arg;
 			}
@@ -255,35 +254,35 @@ public class JavaTypeUtil {
 	}
 	
 	public boolean isList(JavaType t) {
-		if (t instanceof JavaParameterizedType) {
-			return LIST.equals(((JavaParameterizedType<?>) t).getGenericTypeDeclaration());
+		if (t instanceof JavaParameterizedType<?> pt) {
+			return LIST.equals(pt.getGenericTypeDeclaration());
 		}
 		return LIST.equals(t);
 	}
 	
 	public boolean extendsMapper(JavaType t) {
-		if (t instanceof JavaParameterizedType) {
-			return ((JavaParameterizedType<?>) t).getGenericTypeDeclaration().extendsDeclaration(MAPPER);
-		} else if (t instanceof JavaClass) {
-			return ((JavaClass<?>) t).extendsDeclaration(MAPPER);
+		if (t instanceof JavaParameterizedType<?> pt) {
+			return pt.getGenericTypeDeclaration().extendsDeclaration(MAPPER);
+		} else if (t instanceof JavaClass<?> c) {
+			return c.extendsDeclaration(MAPPER);
 		}
 		return false;
 	}
 	public boolean isMapper(JavaType t) {
-		if (t instanceof JavaParameterizedType) {
-			return MAPPER.equals(((JavaParameterizedType<?>) t).getGenericTypeDeclaration());
+		if (t instanceof JavaParameterizedType<?> pt) {
+			return MAPPER.equals(pt.getGenericTypeDeclaration());
 		}
 		return false;
 	}
 	public boolean isMapperS(JavaType t) {
-		if (t instanceof JavaParameterizedType) {
-			return MAPPER_S.equals(((JavaParameterizedType<?>) t).getGenericTypeDeclaration());
+		if (t instanceof JavaParameterizedType<?> pt) {
+			return MAPPER_S.equals(pt.getGenericTypeDeclaration());
 		}
 		return false;
 	}
 	public boolean isMapperC(JavaType t) {
-		if (t instanceof JavaParameterizedType) {
-			return MAPPER_C.equals(((JavaParameterizedType<?>) t).getGenericTypeDeclaration());
+		if (t instanceof JavaParameterizedType<?> pt) {
+			return MAPPER_C.equals(pt.getGenericTypeDeclaration());
 		}
 		return false;
 	}
@@ -291,8 +290,8 @@ public class JavaTypeUtil {
 		return COMPARISON_RESULT.equals(t);
 	}
 	public boolean isMapperListOfLists(JavaType t) {
-		if (t instanceof JavaParameterizedType) {
-			return MAPPER_LIST_OF_LISTS.equals(((JavaParameterizedType<?>) t).getGenericTypeDeclaration());
+		if (t instanceof JavaParameterizedType<?> pt) {
+			return MAPPER_LIST_OF_LISTS.equals(pt.getGenericTypeDeclaration());
 		}
 		return false;
 	}
