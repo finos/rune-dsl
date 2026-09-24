@@ -413,35 +413,7 @@ public class RosettaSerializerFragment extends SerializerFragment2 {
 		return new StringConcatenationClient() {
 			@Override
 			protected void appendTo(TargetStringConcatenation target) {
-				target.append("""
-						/**
-						 * <pre>
-						 * Contexts:
-						""");
-				target.append(" *     ");
-				target.append(joinSortedContexts(constraint).replaceAll("\\n", "\n*     "), " ");
-				target.newLineIfNotEmpty();
-				target.append("""
-						 *
-						 * Constraint:
-						""");
-				target.append(" *     ");
-				if (constraint.getBody() == null) {
-					target.append("{");
-					target.append(constraint.getType().getName());
-					target.append("}");
-				} else {
-					String body = constraint.getBody().toString()
-							.replaceAll("\\n", "\n*     ")
-							.replaceAll("<", "&lt;")
-							.replaceAll(">", "&gt;");
-					target.append(body, " ");
-				}
-				target.newLineIfNotEmpty();
-				target.append("""
-						 * </pre>
-						 */
-						protected void sequence_""");
+				target.append("protected void sequence_");
 				target.append(constraint.getSimpleName());
 				target.append("(");
 				target.append(ISerializationContext.class);
