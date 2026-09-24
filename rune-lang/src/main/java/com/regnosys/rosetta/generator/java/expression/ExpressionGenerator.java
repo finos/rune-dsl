@@ -48,6 +48,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.regnosys.rosetta.RosettaEcoreUtil;
 import com.regnosys.rosetta.codegen.api.CodeRenderer;
+import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.GenerationException;
 import com.regnosys.rosetta.generator.java.enums.EnumHelper;
@@ -466,6 +467,15 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 			.mapExpression(it -> JavaExpression.from(out -> out.write(it, right), resultType));
 	}
 
+	/**
+	 * Writes {@code receiver} followed by a method call chained on the next, indented line.
+	 * Continuation lines of a multi-line argument, such as a lambda body, are indented along with it.
+	 */
+	private static void writeChainedCall(CodeWriter out, Object receiver, Object... call) {
+		out.writeln(receiver);
+		out.indented(() -> out.write(call));
+	}
+
 	private JavaStatementBuilder binaryExpr(RosettaBinaryOperation expr, Context context) {
 		RosettaExpression left = expr.getLeft();
 		RosettaExpression right = expr.getRight();
@@ -616,7 +626,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 			.collapseToSingleExpression(context.scope);
 		return argCode
 			.mapExpression(it -> JavaExpression.from(
-				out -> out.write(it, "\n    .", name, "()"),
+				out -> writeChainedCall(out, it, ".", name, "()"),
 				argumentTypeToReturnType.apply(argCode.getExpressionType())
 			));
 	}
@@ -639,7 +649,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 		InlineFunctionCode inlineFunction = inlineFunction(op.getFunction(), expectedBodyType, context);
 		return argCode
 			.mapExpression(it -> JavaExpression.from(
-				out -> out.write(it, "\n    .", name, "(", inlineFunction.code(), ")"),
+				out -> writeChainedCall(out, it, ".", name, "(", inlineFunction.code(), ")"),
 				argumentAndBodyTypeToReturnType.apply(argCode.getExpressionType(), inlineFunction.bodyType())
 			));
 	}
@@ -653,7 +663,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 
 		return argCode
 			.mapExpression(it -> JavaExpression.from(
-				out -> out.write(it, "\n    .", name, "(", lambdaParam, " -> ", unwrapCoercion.toLambdaBody(), ")"),
+				out -> writeChainedCall(out, it, ".", name, "(", lambdaParam, " -> ", unwrapCoercion.toLambdaBody(), ")"),
 				argumentAndBodyTypeToReturnType.apply(argCode.getExpressionType(), expectedItemType.getValueType())
 			));
 	}
@@ -795,7 +805,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 				.collapseToSingleExpression(context.scope);
 			return argCode
 				.mapExpression(it -> JavaExpression.from(
-					out -> out.write(it, "\n    .filterSingleNullSafe(", inlineFunctionCode, ")"),
+					out -> writeChainedCall(out, it, ".filterSingleNullSafe(", inlineFunctionCode, ")"),
 					argCode.getExpressionType()
 				));
 		} else if (cardinalityProvider.isOutputListOfLists(expr.getArgument())) {
@@ -804,7 +814,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 				.collapseToSingleExpression(context.scope);
 			return argCode
 				.mapExpression(it -> JavaExpression.from(
-					out -> out.write(it, "\n    .filterListNullSafe(", inlineFunctionCode, ")"),
+					out -> writeChainedCall(out, it, ".filterListNullSafe(", inlineFunctionCode, ")"),
 					argCode.getExpressionType()
 				));
 		} else {
@@ -813,7 +823,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 				.collapseToSingleExpression(context.scope);
 			return argCode
 				.mapExpression(it -> JavaExpression.from(
-					out -> out.write(it, "\n    .filterItemNullSafe(", inlineFunctionCode, ")"),
+					out -> writeChainedCall(out, it, ".filterItemNullSafe(", inlineFunctionCode, ")"),
 					argCode.getExpressionType()
 				));
 		}
@@ -912,7 +922,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 				return javaCode(expr.getArgument(), context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER_S, expr.getArgument())))
 					.collapseToSingleExpression(context.scope)
 					.mapExpression(it -> JavaExpression.from(
-						out -> out.write(it, "\n    .mapSingleToList(", inlineFunction.code(), ")"),
+						out -> writeChainedCall(out, it, ".mapSingleToList(", inlineFunction.code(), ")"),
 						inlineFunction.bodyType()
 					));
 			} else {
@@ -926,7 +936,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 				return javaCode(expr.getArgument(), context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER_LIST_OF_LISTS, expr.getArgument())))
 					.collapseToSingleExpression(context.scope)
 					.mapExpression(it -> JavaExpression.from(
-						out -> out.write(it, "\n    .mapListToList(", inlineFunction.code(), ")"),
+						out -> writeChainedCall(out, it, ".mapListToList(", inlineFunction.code(), ")"),
 						typeUtil.hasWildcardArgument(inlineFunction.bodyType()) ? typeUtil.wrapExtends(typeUtil.MAPPER_LIST_OF_LISTS, bodyItemType) : typeUtil.wrap(typeUtil.MAPPER_LIST_OF_LISTS, bodyItemType)
 					));
 			} else {
@@ -935,7 +945,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 				return javaCode(expr.getArgument(), context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER_LIST_OF_LISTS, expr.getArgument())))
 					.collapseToSingleExpression(context.scope)
 					.mapExpression(it -> JavaExpression.from(
-						out -> out.write(it, "\n    .mapListToItem(", inlineFunction.code(), ")"),
+						out -> writeChainedCall(out, it, ".mapListToItem(", inlineFunction.code(), ")"),
 						typeUtil.hasWildcardArgument(inlineFunction.bodyType()) ? typeUtil.wrapExtends(typeUtil.MAPPER_C, bodyItemType) : typeUtil.wrap(typeUtil.MAPPER_C, bodyItemType)
 					));
 			}
@@ -946,7 +956,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 				return javaCode(expr.getArgument(), context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER_C, expr.getArgument())))
 					.collapseToSingleExpression(context.scope)
 					.mapExpression(it -> JavaExpression.from(
-						out -> out.write(it, "\n    .mapItemToList(", inlineFunction.code(), ")"),
+						out -> writeChainedCall(out, it, ".mapItemToList(", inlineFunction.code(), ")"),
 						typeUtil.hasWildcardArgument(inlineFunction.bodyType()) ? typeUtil.wrapExtends(typeUtil.MAPPER_LIST_OF_LISTS, bodyItemType) : typeUtil.wrap(typeUtil.MAPPER_LIST_OF_LISTS, bodyItemType)
 					));
 			} else {
@@ -1041,7 +1051,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 		return javaCode(expr.getArgument(), context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER_C, expr.getArgument())))
 			.collapseToSingleExpression(context.scope)
 			.mapExpression(it -> JavaExpression.from(
-				out -> out.write(it, "\n    .<", outputType, ">reduce(", inlineFunction.code(), ")"),
+				out -> writeChainedCall(out, it, ".<", outputType, ">reduce(", inlineFunction.code(), ")"),
 				inlineFunction.bodyType()
 			));
 	}
@@ -1201,11 +1211,13 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 		String filterMethod = isMulti ? "filterItemNullSafe" : "filterSingleNullSafe";
 		JavaType resultType = isMulti ? typeUtil.wrap(typeUtil.MAPPER_C, targetType) : typeUtil.wrap(typeUtil.MAPPER_S, targetType);
 		return collapsed.mapExpression(it -> JavaExpression.from(
-			out -> out.write(
-				it,
-				"\n    .", filterMethod, "(", filterParam, " -> ", filterParam, ".get() instanceof ", targetType, ")",
-				"\n    .map(", JavaLiteral.STRING("as " + targetType.getSimpleName()), ", ", castParam, " -> (", targetType, ") ", castParam, ")"
-			),
+			out -> {
+				out.writeln(it);
+				out.indented(() -> {
+					out.writeln(".", filterMethod, "(", filterParam, " -> ", filterParam, ".get() instanceof ", targetType, ")");
+					out.write(".map(", JavaLiteral.STRING("as " + targetType.getSimpleName()), ", ", castParam, " -> (", targetType, ") ", castParam, ")");
+				});
+			},
 			resultType));
 	}
 
@@ -1244,16 +1256,28 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 		JavaType clazz = typeTranslator.toJavaReferenceType(metaAnnotatedType);
 		if (clazz instanceof JavaPojoInterface pojo) {
 			if (expr.getValues().isEmpty()) {
-				return JavaExpression.from(out -> out.write(pojo, ".builder()\n    .build()"), pojo);
+				return JavaExpression.from(out -> {
+					out.writeln(pojo, ".builder()");
+					out.indented(() -> out.write(".build()"));
+				}, pojo);
 			}
 			// Each setter is evaluated right before it is combined with the previous ones.
 			Iterator<ConstructorKeyValuePair> pairs = expr.getValues().iterator();
 			JavaStatementBuilder allSetCode = constructorSetter(pojo, pairs.next(), context);
 			while (pairs.hasNext()) {
 				JavaStatementBuilder attrCode = constructorSetter(pojo, pairs.next(), context);
-				allSetCode = allSetCode.then(attrCode, (previousSetters, setAttr) -> JavaExpression.from(out -> out.write(previousSetters, "\n", setAttr), null), context.scope);
+				allSetCode = allSetCode.then(attrCode, (previousSetters, setAttr) -> JavaExpression.from(out -> {
+					out.writeln(previousSetters);
+					out.write(setAttr);
+				}, null), context.scope);
 			}
-			return allSetCode.mapExpression(it -> JavaExpression.from(out -> out.write(pojo, ".builder()\n    ", it, "\n    .build()"), pojo));
+			return allSetCode.mapExpression(it -> JavaExpression.from(out -> {
+				out.writeln(pojo, ".builder()");
+				out.indented(() -> {
+					out.writeln(it);
+					out.write(".build()");
+				});
+			}, pojo));
 		} else { // type instanceof RRecordType
 			Map<String, JavaStatementBuilder> featureMap = new LinkedHashMap<>();
 			for (ConstructorKeyValuePair pair : expr.getValues()) {
@@ -1297,15 +1321,19 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 				return javaCode(value, context.withExpected(typeUtil.wrapExtendsWithoutMeta(typeUtil.MAPPER_C, value)))
 					.collapseToSingleExpression(scope)
 					.mapExpression(it -> JavaExpression.from(
-						out -> out.write(
-							it,
-							"\n    .getItems()",
-							"\n    .map(", item, " -> ", metaClass, ".builder()",
-							"\n        .setExternalReference(", item, ".getMappedObject().getMeta().getExternalKey())",
-							"\n        .setGlobalReference(", item, ".getMappedObject().getMeta().getGlobalKey())",
-							"\n        .build())",
-							"\n    .collect(", Collectors.class, ".toList())"
-						),
+						out -> {
+							out.writeln(it);
+							out.indented(() -> {
+								out.writeln(".getItems()");
+								out.writeln(".map(", item, " -> ", metaClass, ".builder()");
+								out.indented(() -> {
+									out.writeln(".setExternalReference(", item, ".getMappedObject().getMeta().getExternalKey())");
+									out.writeln(".setGlobalReference(", item, ".getMappedObject().getMeta().getGlobalKey())");
+									out.writeln(".build())");
+								});
+								out.write(".collect(", Collectors.class, ".toList())");
+							});
+						},
 						typeUtil.wrap(typeUtil.LIST, metaClass)
 					));
 			} else {
@@ -1315,18 +1343,24 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 				return javaCode(value, context.withExpected(typeTranslator.toJavaReferenceType(RMetaAnnotatedType.withNoMeta(typeProvider.getRMetaAnnotatedType(value).getRType()))))
 					.declareAsVariable(true, feature.getName(), scope)
 					.mapExpression(it -> JavaExpression.from(
-						out -> out.write(
-							metaClass, ".builder()",
-							"\n    .setGlobalReference(", Optional.class, ".ofNullable(", it, ")",
-							"\n        .map(", r, " -> ", r, ".getMeta())",
-							"\n        .map(", m, " -> ", m, ".getGlobalKey())",
-							"\n        .orElse(null))",
-							"\n    .setExternalReference(", Optional.class, ".ofNullable(", it, ")",
-							"\n        .map(", r, " -> ", r, ".getMeta())",
-							"\n        .map(", m, " -> ", m, ".getExternalKey())",
-							"\n        .orElse(null))",
-							"\n    .build()"
-						),
+						out -> {
+							out.writeln(metaClass, ".builder()");
+							out.indented(() -> {
+								out.writeln(".setGlobalReference(", Optional.class, ".ofNullable(", it, ")");
+								out.indented(() -> {
+									out.writeln(".map(", r, " -> ", r, ".getMeta())");
+									out.writeln(".map(", m, " -> ", m, ".getGlobalKey())");
+									out.writeln(".orElse(null))");
+								});
+								out.writeln(".setExternalReference(", Optional.class, ".ofNullable(", it, ")");
+								out.indented(() -> {
+									out.writeln(".map(", r, " -> ", r, ".getMeta())");
+									out.writeln(".map(", m, " -> ", m, ".getExternalKey())");
+									out.writeln(".orElse(null))");
+								});
+								out.write(".build()");
+							});
+						},
 						metaClass
 					));
 			}
