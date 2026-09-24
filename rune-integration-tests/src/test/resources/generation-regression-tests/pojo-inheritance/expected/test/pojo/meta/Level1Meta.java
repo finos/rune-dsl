@@ -24,41 +24,41 @@ import test.pojo.validation.exists.Level1OnlyExistsValidator;
 @RosettaMeta(model=Level1.class)
 public class Level1Meta implements RosettaMetaData<Level1> {
 
-	@Override
-	public List<Validator<? super Level1>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super Level1, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super Level1> validator(ValidatorFactory factory) {
-		return factory.<Level1>create(Level1Validator.class);
-	}
+    @Override
+    public List<Validator<? super Level1>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super Level1> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<Level1>create(Level1TypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super Level1, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super Level1> validator() {
-		return new Level1Validator();
-	}
+    @Override
+    public Validator<? super Level1> validator(ValidatorFactory factory) {
+        return factory.<Level1>create(Level1Validator.class);
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super Level1> typeFormatValidator() {
-		return new Level1TypeFormatValidator();
-	}
-	
-	@Override
-	public ValidatorWithArg<? super Level1, Set<String>> onlyExistsValidator() {
-		return new Level1OnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super Level1> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<Level1>create(Level1TypeFormatValidator.class);
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super Level1> validator() {
+        return new Level1Validator();
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super Level1> typeFormatValidator() {
+        return new Level1TypeFormatValidator();
+    }
+
+    @Override
+    public ValidatorWithArg<? super Level1, Set<String>> onlyExistsValidator() {
+        return new Level1OnlyExistsValidator();
+    }
 }

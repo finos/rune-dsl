@@ -121,12 +121,6 @@
                                 <include>**/*</include>
                             </includes>
                         </fileset>
-                        <fileset>
-                            <directory>${basedir}/../rune-lang/xtend-gen</directory>
-                            <includes>
-                                <include>**/*</include>
-                            </includes>
-                        </fileset>
                         <!-- rune-testing -->
                         <fileset>
                             <directory>${basedir}/../rune-testing/src-gen/</directory>
@@ -207,8 +201,6 @@
                         <sourceRoot>${project.basedir}/src/main/java</sourceRoot>
                         <sourceRoot>${project.basedir}/src-gen/main/java</sourceRoot>
                         <sourceRoot>${project.basedir}/emf-gen/main/java</sourceRoot>
-                        <sourceRoot>
-                            ${project.basedir}/xtend-gen/main/java</sourceRoot>
                     </sourceRoots>
                     <languages>
                         <language>
@@ -237,10 +229,6 @@
                         <version>${project.version}</version>
                     </dependency>
                 </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.eclipse.xtend</groupId>
-                <artifactId>xtend-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

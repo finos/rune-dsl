@@ -24,41 +24,41 @@ import test.deeppath.validation.exists.Option2OnlyExistsValidator;
 @RosettaMeta(model=Option2.class)
 public class Option2Meta implements RosettaMetaData<Option2> {
 
-	@Override
-	public List<Validator<? super Option2>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super Option2, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super Option2> validator(ValidatorFactory factory) {
-		return factory.<Option2>create(Option2Validator.class);
-	}
+    @Override
+    public List<Validator<? super Option2>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super Option2> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<Option2>create(Option2TypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super Option2, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super Option2> validator() {
-		return new Option2Validator();
-	}
+    @Override
+    public Validator<? super Option2> validator(ValidatorFactory factory) {
+        return factory.<Option2>create(Option2Validator.class);
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super Option2> typeFormatValidator() {
-		return new Option2TypeFormatValidator();
-	}
-	
-	@Override
-	public ValidatorWithArg<? super Option2, Set<String>> onlyExistsValidator() {
-		return new Option2OnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super Option2> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<Option2>create(Option2TypeFormatValidator.class);
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super Option2> validator() {
+        return new Option2Validator();
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super Option2> typeFormatValidator() {
+        return new Option2TypeFormatValidator();
+    }
+
+    @Override
+    public ValidatorWithArg<? super Option2, Set<String>> onlyExistsValidator() {
+        return new Option2OnlyExistsValidator();
+    }
 }

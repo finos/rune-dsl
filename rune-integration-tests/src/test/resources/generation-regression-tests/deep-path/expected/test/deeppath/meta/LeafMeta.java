@@ -24,41 +24,41 @@ import test.deeppath.validation.exists.LeafOnlyExistsValidator;
 @RosettaMeta(model=Leaf.class)
 public class LeafMeta implements RosettaMetaData<Leaf> {
 
-	@Override
-	public List<Validator<? super Leaf>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super Leaf, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super Leaf> validator(ValidatorFactory factory) {
-		return factory.<Leaf>create(LeafValidator.class);
-	}
+    @Override
+    public List<Validator<? super Leaf>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super Leaf> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<Leaf>create(LeafTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super Leaf, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super Leaf> validator() {
-		return new LeafValidator();
-	}
+    @Override
+    public Validator<? super Leaf> validator(ValidatorFactory factory) {
+        return factory.<Leaf>create(LeafValidator.class);
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super Leaf> typeFormatValidator() {
-		return new LeafTypeFormatValidator();
-	}
-	
-	@Override
-	public ValidatorWithArg<? super Leaf, Set<String>> onlyExistsValidator() {
-		return new LeafOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super Leaf> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<Leaf>create(LeafTypeFormatValidator.class);
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super Leaf> validator() {
+        return new LeafValidator();
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super Leaf> typeFormatValidator() {
+        return new LeafTypeFormatValidator();
+    }
+
+    @Override
+    public ValidatorWithArg<? super Leaf, Set<String>> onlyExistsValidator() {
+        return new LeafOnlyExistsValidator();
+    }
 }

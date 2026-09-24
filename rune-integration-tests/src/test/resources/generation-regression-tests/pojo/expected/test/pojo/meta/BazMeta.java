@@ -24,41 +24,41 @@ import test.pojo.validation.exists.BazOnlyExistsValidator;
 @RosettaMeta(model=Baz.class)
 public class BazMeta implements RosettaMetaData<Baz> {
 
-	@Override
-	public List<Validator<? super Baz>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super Baz, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super Baz> validator(ValidatorFactory factory) {
-		return factory.<Baz>create(BazValidator.class);
-	}
+    @Override
+    public List<Validator<? super Baz>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super Baz> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<Baz>create(BazTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super Baz, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super Baz> validator() {
-		return new BazValidator();
-	}
+    @Override
+    public Validator<? super Baz> validator(ValidatorFactory factory) {
+        return factory.<Baz>create(BazValidator.class);
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super Baz> typeFormatValidator() {
-		return new BazTypeFormatValidator();
-	}
-	
-	@Override
-	public ValidatorWithArg<? super Baz, Set<String>> onlyExistsValidator() {
-		return new BazOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super Baz> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<Baz>create(BazTypeFormatValidator.class);
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super Baz> validator() {
+        return new BazValidator();
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super Baz> typeFormatValidator() {
+        return new BazTypeFormatValidator();
+    }
+
+    @Override
+    public ValidatorWithArg<? super Baz, Set<String>> onlyExistsValidator() {
+        return new BazOnlyExistsValidator();
+    }
 }

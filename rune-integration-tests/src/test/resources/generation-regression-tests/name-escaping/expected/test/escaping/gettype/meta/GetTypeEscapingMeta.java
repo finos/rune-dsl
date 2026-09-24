@@ -24,41 +24,41 @@ import test.escaping.gettype.validation.exists.GetTypeEscapingOnlyExistsValidato
 @RosettaMeta(model=GetTypeEscaping.class)
 public class GetTypeEscapingMeta implements RosettaMetaData<GetTypeEscaping> {
 
-	@Override
-	public List<Validator<? super GetTypeEscaping>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super GetTypeEscaping, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super GetTypeEscaping> validator(ValidatorFactory factory) {
-		return factory.<GetTypeEscaping>create(GetTypeEscapingValidator.class);
-	}
+    @Override
+    public List<Validator<? super GetTypeEscaping>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super GetTypeEscaping> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<GetTypeEscaping>create(GetTypeEscapingTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super GetTypeEscaping, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super GetTypeEscaping> validator() {
-		return new GetTypeEscapingValidator();
-	}
+    @Override
+    public Validator<? super GetTypeEscaping> validator(ValidatorFactory factory) {
+        return factory.<GetTypeEscaping>create(GetTypeEscapingValidator.class);
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super GetTypeEscaping> typeFormatValidator() {
-		return new GetTypeEscapingTypeFormatValidator();
-	}
-	
-	@Override
-	public ValidatorWithArg<? super GetTypeEscaping, Set<String>> onlyExistsValidator() {
-		return new GetTypeEscapingOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super GetTypeEscaping> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<GetTypeEscaping>create(GetTypeEscapingTypeFormatValidator.class);
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super GetTypeEscaping> validator() {
+        return new GetTypeEscapingValidator();
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super GetTypeEscaping> typeFormatValidator() {
+        return new GetTypeEscapingTypeFormatValidator();
+    }
+
+    @Override
+    public ValidatorWithArg<? super GetTypeEscaping, Set<String>> onlyExistsValidator() {
+        return new GetTypeEscapingOnlyExistsValidator();
+    }
 }

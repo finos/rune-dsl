@@ -25,8 +25,7 @@ import com.regnosys.rosetta.generator.TargetLanguageRepresentation;
 /**
  * Migration bridge: lets a fluent {@link CodeRenderer} render into the legacy Xtend
  * template machinery by exposing a {@link CodeWriter} that appends to a
- * {@link TargetStringConcatenation}. This is the counterpart of
- * {@link CodeWriterTargetStringConcatenation}, and lets a value rendered with the
+ * {@link TargetStringConcatenation}. It lets a value rendered with the
  * fluent API still be embedded in a not-yet-migrated Xtend template (e.g. a
  * {@link TargetLanguageRepresentation} whose {@code appendTo} delegates to its
  * {@code render}). To be removed once all generators use the fluent API.

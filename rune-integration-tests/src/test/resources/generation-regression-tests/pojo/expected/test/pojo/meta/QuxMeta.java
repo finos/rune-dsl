@@ -24,41 +24,41 @@ import test.pojo.validation.exists.QuxOnlyExistsValidator;
 @RosettaMeta(model=Qux.class)
 public class QuxMeta implements RosettaMetaData<Qux> {
 
-	@Override
-	public List<Validator<? super Qux>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super Qux, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super Qux> validator(ValidatorFactory factory) {
-		return factory.<Qux>create(QuxValidator.class);
-	}
+    @Override
+    public List<Validator<? super Qux>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super Qux> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<Qux>create(QuxTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super Qux, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super Qux> validator() {
-		return new QuxValidator();
-	}
+    @Override
+    public Validator<? super Qux> validator(ValidatorFactory factory) {
+        return factory.<Qux>create(QuxValidator.class);
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super Qux> typeFormatValidator() {
-		return new QuxTypeFormatValidator();
-	}
-	
-	@Override
-	public ValidatorWithArg<? super Qux, Set<String>> onlyExistsValidator() {
-		return new QuxOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super Qux> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<Qux>create(QuxTypeFormatValidator.class);
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super Qux> validator() {
+        return new QuxValidator();
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super Qux> typeFormatValidator() {
+        return new QuxTypeFormatValidator();
+    }
+
+    @Override
+    public ValidatorWithArg<? super Qux, Set<String>> onlyExistsValidator() {
+        return new QuxOnlyExistsValidator();
+    }
 }

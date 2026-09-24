@@ -25,42 +25,42 @@ import test.condition.validation.exists.WithDependencyOnlyExistsValidator;
 @RosettaMeta(model=WithDependency.class)
 public class WithDependencyMeta implements RosettaMetaData<WithDependency> {
 
-	@Override
-	public List<Validator<? super WithDependency>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-			factory.<WithDependency>create(WithDependencyUsesFunction.class)
-		);
-	}
-	
-	@Override
-	public List<Function<? super WithDependency, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super WithDependency> validator(ValidatorFactory factory) {
-		return factory.<WithDependency>create(WithDependencyValidator.class);
-	}
+    @Override
+    public List<Validator<? super WithDependency>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+            factory.<WithDependency>create(WithDependencyUsesFunction.class)
+        );
+    }
 
-	@Override
-	public Validator<? super WithDependency> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<WithDependency>create(WithDependencyTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super WithDependency, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super WithDependency> validator() {
-		return new WithDependencyValidator();
-	}
+    @Override
+    public Validator<? super WithDependency> validator(ValidatorFactory factory) {
+        return factory.<WithDependency>create(WithDependencyValidator.class);
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super WithDependency> typeFormatValidator() {
-		return new WithDependencyTypeFormatValidator();
-	}
-	
-	@Override
-	public ValidatorWithArg<? super WithDependency, Set<String>> onlyExistsValidator() {
-		return new WithDependencyOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super WithDependency> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<WithDependency>create(WithDependencyTypeFormatValidator.class);
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super WithDependency> validator() {
+        return new WithDependencyValidator();
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super WithDependency> typeFormatValidator() {
+        return new WithDependencyTypeFormatValidator();
+    }
+
+    @Override
+    public ValidatorWithArg<? super WithDependency, Set<String>> onlyExistsValidator() {
+        return new WithDependencyOnlyExistsValidator();
+    }
 }

@@ -153,10 +153,10 @@ public abstract class Control implements RosettaFunction {
         @Override
         protected MapperC<? extends Bar> narrowed(Colour colour, FooOrBar fooOrBar, List<? extends FooOrBar> fooOrBars, Foo foo, List<? extends Foo> foos, String s) {
             return MapperC.<Bar>of(MapperS.of(foo)
-            	.filterSingleNullSafe(a -> a.get() instanceof Bar)
-            	.map("as Bar", bar -> (Bar) bar), MapperC.<Foo>of(foos)
-            	.filterItemNullSafe(a -> a.get() instanceof Bar)
-            	.map("as Bar", bar -> (Bar) bar), MapperS.of(fooOrBar).<Bar>map("getBar", _fooOrBar -> _fooOrBar.getBar()), MapperC.<FooOrBar>of(fooOrBars).<Bar>map("getBar", _fooOrBar -> _fooOrBar.getBar()));
+                .filterSingleNullSafe(a -> a.get() instanceof Bar)
+                .map("as Bar", bar -> (Bar) bar), MapperC.<Foo>of(foos)
+                .filterItemNullSafe(a -> a.get() instanceof Bar)
+                .map("as Bar", bar -> (Bar) bar), MapperS.of(fooOrBar).<Bar>map("getBar", _fooOrBar -> _fooOrBar.getBar()), MapperC.<FooOrBar>of(fooOrBars).<Bar>map("getBar", _fooOrBar -> _fooOrBar.getBar()));
         }
 
         @Override

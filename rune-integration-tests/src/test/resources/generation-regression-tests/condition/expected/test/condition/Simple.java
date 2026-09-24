@@ -26,189 +26,189 @@ import static java.util.Optional.ofNullable;
 @RuneDataType(value="Simple", model="test", builder=Simple.SimpleBuilderImpl.class, version="0.0.0")
 public interface Simple extends RosettaModelObject {
 
-	SimpleMeta metaData = new SimpleMeta();
+    SimpleMeta metaData = new SimpleMeta();
 
-	/*********************** Getter Methods  ***********************/
-	String getVal();
+    /*********************** Getter Methods  ***********************/
+    String getVal();
 
-	/*********************** Build Methods  ***********************/
-	Simple build();
-	
-	Simple.SimpleBuilder toBuilder();
-	
-	static Simple.SimpleBuilder builder() {
-		return new Simple.SimpleBuilderImpl();
-	}
+    /*********************** Build Methods  ***********************/
+    Simple build();
 
-	/*********************** Utility Methods  ***********************/
-	@Override
-	default RosettaMetaData<? extends Simple> metaData() {
-		return metaData;
-	}
-	
-	@Override
-	@RuneAttribute("@type")
-	default Class<? extends Simple> getType() {
-		return Simple.class;
-	}
-	
-	@Override
-	default void process(RosettaPath path, Processor processor) {
-		processor.processBasic(path.newSubPath("val"), String.class, getVal(), this);
-	}
-	
+    Simple.SimpleBuilder toBuilder();
 
-	/*********************** Builder Interface  ***********************/
-	interface SimpleBuilder extends Simple, RosettaModelObjectBuilder {
-		Simple.SimpleBuilder setVal(String val);
+    static Simple.SimpleBuilder builder() {
+        return new Simple.SimpleBuilderImpl();
+    }
 
-		@Override
-		default void process(RosettaPath path, BuilderProcessor processor) {
-			processor.processBasic(path.newSubPath("val"), String.class, getVal(), this);
-		}
-		
+    /*********************** Utility Methods  ***********************/
+    @Override
+    default RosettaMetaData<? extends Simple> metaData() {
+        return metaData;
+    }
 
-		Simple.SimpleBuilder prune();
-	}
+    @Override
+    @RuneAttribute("@type")
+    default Class<? extends Simple> getType() {
+        return Simple.class;
+    }
 
-	/*********************** Immutable Implementation of Simple  ***********************/
-	class SimpleImpl implements Simple {
-		private final String val;
-		
-		protected SimpleImpl(Simple.SimpleBuilder builder) {
-			this.val = builder.getVal();
-		}
-		
-		@Override
-		@RosettaAttribute("val")
-		@Accessor(AccessorType.GETTER)
-		@Required
-		@RuneAttribute("val")
-		public String getVal() {
-			return val;
-		}
-		
-		@Override
-		public Simple build() {
-			return this;
-		}
-		
-		@Override
-		public Simple.SimpleBuilder toBuilder() {
-			Simple.SimpleBuilder builder = builder();
-			setBuilderFields(builder);
-			return builder;
-		}
-		
-		protected void setBuilderFields(Simple.SimpleBuilder builder) {
-			ofNullable(getVal()).ifPresent(builder::setVal);
-		}
+    @Override
+    default void process(RosettaPath path, Processor processor) {
+        processor.processBasic(path.newSubPath("val"), String.class, getVal(), this);
+    }
 
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
-		
-			Simple _that = getType().cast(o);
-		
-			if (!Objects.equals(val, _that.getVal())) return false;
-			return true;
-		}
-		
-		@Override
-		public int hashCode() {
-			int _result = 0;
-			_result = 31 * _result + (val != null ? val.hashCode() : 0);
-			return _result;
-		}
-		
-		@Override
-		public String toString() {
-			return "Simple {" +
-				"val=" + this.val +
-			'}';
-		}
-	}
 
-	/*********************** Builder Implementation of Simple  ***********************/
-	class SimpleBuilderImpl implements Simple.SimpleBuilder {
-	
-		protected String val;
-		
-		@Override
-		@RosettaAttribute("val")
-		@Accessor(AccessorType.GETTER)
-		@Required
-		@RuneAttribute("val")
-		public String getVal() {
-			return val;
-		}
-		
-		@RosettaAttribute("val")
-		@Accessor(AccessorType.SETTER)
-		@Required
-		@RuneAttribute("val")
-		@Override
-		public Simple.SimpleBuilder setVal(String _val) {
-			this.val = _val == null ? null : _val;
-			return this;
-		}
-		
-		@Override
-		public Simple build() {
-			return new Simple.SimpleImpl(this);
-		}
-		
-		@Override
-		public Simple.SimpleBuilder toBuilder() {
-			return this;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public Simple.SimpleBuilder prune() {
-			return this;
-		}
-		
-		@Override
-		public boolean hasData() {
-			if (getVal()!=null) return true;
-			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public Simple.SimpleBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			Simple.SimpleBuilder o = (Simple.SimpleBuilder) other;
-			
-			
-			merger.mergeBasic(getVal(), o.getVal(), this::setVal);
-			return this;
-		}
-	
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
-		
-			Simple _that = getType().cast(o);
-		
-			if (!Objects.equals(val, _that.getVal())) return false;
-			return true;
-		}
-		
-		@Override
-		public int hashCode() {
-			int _result = 0;
-			_result = 31 * _result + (val != null ? val.hashCode() : 0);
-			return _result;
-		}
-		
-		@Override
-		public String toString() {
-			return "SimpleBuilder {" +
-				"val=" + this.val +
-			'}';
-		}
-	}
+    /*********************** Builder Interface  ***********************/
+    interface SimpleBuilder extends Simple, RosettaModelObjectBuilder {
+        Simple.SimpleBuilder setVal(String val);
+
+        @Override
+        default void process(RosettaPath path, BuilderProcessor processor) {
+            processor.processBasic(path.newSubPath("val"), String.class, getVal(), this);
+        }
+
+
+        Simple.SimpleBuilder prune();
+    }
+
+    /*********************** Immutable Implementation of Simple  ***********************/
+    class SimpleImpl implements Simple {
+        private final String val;
+
+        protected SimpleImpl(Simple.SimpleBuilder builder) {
+            this.val = builder.getVal();
+        }
+
+        @Override
+        @RosettaAttribute("val")
+        @Accessor(AccessorType.GETTER)
+        @Required
+        @RuneAttribute("val")
+        public String getVal() {
+            return val;
+        }
+
+        @Override
+        public Simple build() {
+            return this;
+        }
+
+        @Override
+        public Simple.SimpleBuilder toBuilder() {
+            Simple.SimpleBuilder builder = builder();
+            setBuilderFields(builder);
+            return builder;
+        }
+
+        protected void setBuilderFields(Simple.SimpleBuilder builder) {
+            ofNullable(getVal()).ifPresent(builder::setVal);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+
+            Simple _that = getType().cast(o);
+
+            if (!Objects.equals(val, _that.getVal())) return false;
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int _result = 0;
+            _result = 31 * _result + (val != null ? val.hashCode() : 0);
+            return _result;
+        }
+
+        @Override
+        public String toString() {
+            return "Simple {" +
+                "val=" + this.val +
+            '}';
+        }
+    }
+
+    /*********************** Builder Implementation of Simple  ***********************/
+    class SimpleBuilderImpl implements Simple.SimpleBuilder {
+
+        protected String val;
+
+        @Override
+        @RosettaAttribute("val")
+        @Accessor(AccessorType.GETTER)
+        @Required
+        @RuneAttribute("val")
+        public String getVal() {
+            return val;
+        }
+
+        @RosettaAttribute("val")
+        @Accessor(AccessorType.SETTER)
+        @Required
+        @RuneAttribute("val")
+        @Override
+        public Simple.SimpleBuilder setVal(String _val) {
+            this.val = _val == null ? null : _val;
+            return this;
+        }
+
+        @Override
+        public Simple build() {
+            return new Simple.SimpleImpl(this);
+        }
+
+        @Override
+        public Simple.SimpleBuilder toBuilder() {
+            return this;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public Simple.SimpleBuilder prune() {
+            return this;
+        }
+
+        @Override
+        public boolean hasData() {
+            if (getVal()!=null) return true;
+            return false;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public Simple.SimpleBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+            Simple.SimpleBuilder o = (Simple.SimpleBuilder) other;
+
+
+            merger.mergeBasic(getVal(), o.getVal(), this::setVal);
+            return this;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+
+            Simple _that = getType().cast(o);
+
+            if (!Objects.equals(val, _that.getVal())) return false;
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int _result = 0;
+            _result = 31 * _result + (val != null ? val.hashCode() : 0);
+            return _result;
+        }
+
+        @Override
+        public String toString() {
+            return "SimpleBuilder {" +
+                "val=" + this.val +
+            '}';
+        }
+    }
 }

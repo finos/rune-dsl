@@ -25,42 +25,42 @@ import test.condition.validation.exists.SpansSeveralLinesOnlyExistsValidator;
 @RosettaMeta(model=SpansSeveralLines.class)
 public class SpansSeveralLinesMeta implements RosettaMetaData<SpansSeveralLines> {
 
-	@Override
-	public List<Validator<? super SpansSeveralLines>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-			factory.<SpansSeveralLines>create(SpansSeveralLinesNotAMultiLineText.class)
-		);
-	}
-	
-	@Override
-	public List<Function<? super SpansSeveralLines, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super SpansSeveralLines> validator(ValidatorFactory factory) {
-		return factory.<SpansSeveralLines>create(SpansSeveralLinesValidator.class);
-	}
+    @Override
+    public List<Validator<? super SpansSeveralLines>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+            factory.<SpansSeveralLines>create(SpansSeveralLinesNotAMultiLineText.class)
+        );
+    }
 
-	@Override
-	public Validator<? super SpansSeveralLines> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<SpansSeveralLines>create(SpansSeveralLinesTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super SpansSeveralLines, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super SpansSeveralLines> validator() {
-		return new SpansSeveralLinesValidator();
-	}
+    @Override
+    public Validator<? super SpansSeveralLines> validator(ValidatorFactory factory) {
+        return factory.<SpansSeveralLines>create(SpansSeveralLinesValidator.class);
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super SpansSeveralLines> typeFormatValidator() {
-		return new SpansSeveralLinesTypeFormatValidator();
-	}
-	
-	@Override
-	public ValidatorWithArg<? super SpansSeveralLines, Set<String>> onlyExistsValidator() {
-		return new SpansSeveralLinesOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super SpansSeveralLines> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<SpansSeveralLines>create(SpansSeveralLinesTypeFormatValidator.class);
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super SpansSeveralLines> validator() {
+        return new SpansSeveralLinesValidator();
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super SpansSeveralLines> typeFormatValidator() {
+        return new SpansSeveralLinesTypeFormatValidator();
+    }
+
+    @Override
+    public ValidatorWithArg<? super SpansSeveralLines, Set<String>> onlyExistsValidator() {
+        return new SpansSeveralLinesOnlyExistsValidator();
+    }
 }

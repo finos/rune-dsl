@@ -6,10 +6,10 @@ import java.util.Arrays;
 
 
 public class BodyCorpusLabelProvider extends GraphBasedLabelProvider {
-	public BodyCorpusLabelProvider() {
-		super(new LabelNode());
-		
-		startNode.addLabel(Arrays.asList("attr"), "My attribute");
-		startNode.addLabel(Arrays.asList("other"), "Other from rule");
-	}
+    public BodyCorpusLabelProvider() {
+        super(new LabelNode());
+
+        startNode.addLabel(Arrays.asList("attr"), "My attribute");
+        startNode.addLabel(Arrays.asList("other"), "Other from rule");
+    }
 }

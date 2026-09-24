@@ -26,189 +26,189 @@ import static java.util.Optional.ofNullable;
 @RuneDataType(value="WithDependency", model="test", builder=WithDependency.WithDependencyBuilderImpl.class, version="0.0.0")
 public interface WithDependency extends RosettaModelObject {
 
-	WithDependencyMeta metaData = new WithDependencyMeta();
+    WithDependencyMeta metaData = new WithDependencyMeta();
 
-	/*********************** Getter Methods  ***********************/
-	String getVal();
+    /*********************** Getter Methods  ***********************/
+    String getVal();
 
-	/*********************** Build Methods  ***********************/
-	WithDependency build();
-	
-	WithDependency.WithDependencyBuilder toBuilder();
-	
-	static WithDependency.WithDependencyBuilder builder() {
-		return new WithDependency.WithDependencyBuilderImpl();
-	}
+    /*********************** Build Methods  ***********************/
+    WithDependency build();
 
-	/*********************** Utility Methods  ***********************/
-	@Override
-	default RosettaMetaData<? extends WithDependency> metaData() {
-		return metaData;
-	}
-	
-	@Override
-	@RuneAttribute("@type")
-	default Class<? extends WithDependency> getType() {
-		return WithDependency.class;
-	}
-	
-	@Override
-	default void process(RosettaPath path, Processor processor) {
-		processor.processBasic(path.newSubPath("val"), String.class, getVal(), this);
-	}
-	
+    WithDependency.WithDependencyBuilder toBuilder();
 
-	/*********************** Builder Interface  ***********************/
-	interface WithDependencyBuilder extends WithDependency, RosettaModelObjectBuilder {
-		WithDependency.WithDependencyBuilder setVal(String val);
+    static WithDependency.WithDependencyBuilder builder() {
+        return new WithDependency.WithDependencyBuilderImpl();
+    }
 
-		@Override
-		default void process(RosettaPath path, BuilderProcessor processor) {
-			processor.processBasic(path.newSubPath("val"), String.class, getVal(), this);
-		}
-		
+    /*********************** Utility Methods  ***********************/
+    @Override
+    default RosettaMetaData<? extends WithDependency> metaData() {
+        return metaData;
+    }
 
-		WithDependency.WithDependencyBuilder prune();
-	}
+    @Override
+    @RuneAttribute("@type")
+    default Class<? extends WithDependency> getType() {
+        return WithDependency.class;
+    }
 
-	/*********************** Immutable Implementation of WithDependency  ***********************/
-	class WithDependencyImpl implements WithDependency {
-		private final String val;
-		
-		protected WithDependencyImpl(WithDependency.WithDependencyBuilder builder) {
-			this.val = builder.getVal();
-		}
-		
-		@Override
-		@RosettaAttribute("val")
-		@Accessor(AccessorType.GETTER)
-		@Required
-		@RuneAttribute("val")
-		public String getVal() {
-			return val;
-		}
-		
-		@Override
-		public WithDependency build() {
-			return this;
-		}
-		
-		@Override
-		public WithDependency.WithDependencyBuilder toBuilder() {
-			WithDependency.WithDependencyBuilder builder = builder();
-			setBuilderFields(builder);
-			return builder;
-		}
-		
-		protected void setBuilderFields(WithDependency.WithDependencyBuilder builder) {
-			ofNullable(getVal()).ifPresent(builder::setVal);
-		}
+    @Override
+    default void process(RosettaPath path, Processor processor) {
+        processor.processBasic(path.newSubPath("val"), String.class, getVal(), this);
+    }
 
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
-		
-			WithDependency _that = getType().cast(o);
-		
-			if (!Objects.equals(val, _that.getVal())) return false;
-			return true;
-		}
-		
-		@Override
-		public int hashCode() {
-			int _result = 0;
-			_result = 31 * _result + (val != null ? val.hashCode() : 0);
-			return _result;
-		}
-		
-		@Override
-		public String toString() {
-			return "WithDependency {" +
-				"val=" + this.val +
-			'}';
-		}
-	}
 
-	/*********************** Builder Implementation of WithDependency  ***********************/
-	class WithDependencyBuilderImpl implements WithDependency.WithDependencyBuilder {
-	
-		protected String val;
-		
-		@Override
-		@RosettaAttribute("val")
-		@Accessor(AccessorType.GETTER)
-		@Required
-		@RuneAttribute("val")
-		public String getVal() {
-			return val;
-		}
-		
-		@RosettaAttribute("val")
-		@Accessor(AccessorType.SETTER)
-		@Required
-		@RuneAttribute("val")
-		@Override
-		public WithDependency.WithDependencyBuilder setVal(String _val) {
-			this.val = _val == null ? null : _val;
-			return this;
-		}
-		
-		@Override
-		public WithDependency build() {
-			return new WithDependency.WithDependencyImpl(this);
-		}
-		
-		@Override
-		public WithDependency.WithDependencyBuilder toBuilder() {
-			return this;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public WithDependency.WithDependencyBuilder prune() {
-			return this;
-		}
-		
-		@Override
-		public boolean hasData() {
-			if (getVal()!=null) return true;
-			return false;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public WithDependency.WithDependencyBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
-			WithDependency.WithDependencyBuilder o = (WithDependency.WithDependencyBuilder) other;
-			
-			
-			merger.mergeBasic(getVal(), o.getVal(), this::setVal);
-			return this;
-		}
-	
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
-		
-			WithDependency _that = getType().cast(o);
-		
-			if (!Objects.equals(val, _that.getVal())) return false;
-			return true;
-		}
-		
-		@Override
-		public int hashCode() {
-			int _result = 0;
-			_result = 31 * _result + (val != null ? val.hashCode() : 0);
-			return _result;
-		}
-		
-		@Override
-		public String toString() {
-			return "WithDependencyBuilder {" +
-				"val=" + this.val +
-			'}';
-		}
-	}
+    /*********************** Builder Interface  ***********************/
+    interface WithDependencyBuilder extends WithDependency, RosettaModelObjectBuilder {
+        WithDependency.WithDependencyBuilder setVal(String val);
+
+        @Override
+        default void process(RosettaPath path, BuilderProcessor processor) {
+            processor.processBasic(path.newSubPath("val"), String.class, getVal(), this);
+        }
+
+
+        WithDependency.WithDependencyBuilder prune();
+    }
+
+    /*********************** Immutable Implementation of WithDependency  ***********************/
+    class WithDependencyImpl implements WithDependency {
+        private final String val;
+
+        protected WithDependencyImpl(WithDependency.WithDependencyBuilder builder) {
+            this.val = builder.getVal();
+        }
+
+        @Override
+        @RosettaAttribute("val")
+        @Accessor(AccessorType.GETTER)
+        @Required
+        @RuneAttribute("val")
+        public String getVal() {
+            return val;
+        }
+
+        @Override
+        public WithDependency build() {
+            return this;
+        }
+
+        @Override
+        public WithDependency.WithDependencyBuilder toBuilder() {
+            WithDependency.WithDependencyBuilder builder = builder();
+            setBuilderFields(builder);
+            return builder;
+        }
+
+        protected void setBuilderFields(WithDependency.WithDependencyBuilder builder) {
+            ofNullable(getVal()).ifPresent(builder::setVal);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+
+            WithDependency _that = getType().cast(o);
+
+            if (!Objects.equals(val, _that.getVal())) return false;
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int _result = 0;
+            _result = 31 * _result + (val != null ? val.hashCode() : 0);
+            return _result;
+        }
+
+        @Override
+        public String toString() {
+            return "WithDependency {" +
+                "val=" + this.val +
+            '}';
+        }
+    }
+
+    /*********************** Builder Implementation of WithDependency  ***********************/
+    class WithDependencyBuilderImpl implements WithDependency.WithDependencyBuilder {
+
+        protected String val;
+
+        @Override
+        @RosettaAttribute("val")
+        @Accessor(AccessorType.GETTER)
+        @Required
+        @RuneAttribute("val")
+        public String getVal() {
+            return val;
+        }
+
+        @RosettaAttribute("val")
+        @Accessor(AccessorType.SETTER)
+        @Required
+        @RuneAttribute("val")
+        @Override
+        public WithDependency.WithDependencyBuilder setVal(String _val) {
+            this.val = _val == null ? null : _val;
+            return this;
+        }
+
+        @Override
+        public WithDependency build() {
+            return new WithDependency.WithDependencyImpl(this);
+        }
+
+        @Override
+        public WithDependency.WithDependencyBuilder toBuilder() {
+            return this;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public WithDependency.WithDependencyBuilder prune() {
+            return this;
+        }
+
+        @Override
+        public boolean hasData() {
+            if (getVal()!=null) return true;
+            return false;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public WithDependency.WithDependencyBuilder merge(RosettaModelObjectBuilder other, BuilderMerger merger) {
+            WithDependency.WithDependencyBuilder o = (WithDependency.WithDependencyBuilder) other;
+
+
+            merger.mergeBasic(getVal(), o.getVal(), this::setVal);
+            return this;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+
+            WithDependency _that = getType().cast(o);
+
+            if (!Objects.equals(val, _that.getVal())) return false;
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int _result = 0;
+            _result = 31 * _result + (val != null ? val.hashCode() : 0);
+            return _result;
+        }
+
+        @Override
+        public String toString() {
+            return "WithDependencyBuilder {" +
+                "val=" + this.val +
+            '}';
+        }
+    }
 }
