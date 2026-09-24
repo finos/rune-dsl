@@ -110,8 +110,7 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 		return safeIsSymbolMulti(symbol, new HashMap<>());
 	}
 	public boolean isFeatureMulti(RosettaFeature feature) {
-		if (feature instanceof Attribute) {
-            Attribute attribute = (Attribute) feature;
+		if (feature instanceof Attribute attribute) {
             return attribute.getCard() != null && attribute.getCard().isIsMany();
         }
         return false;
@@ -132,30 +131,30 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 		cycleTracker.put(symbol, null);
 		
 		boolean result;
-	    if (symbol instanceof RosettaFeature) {
-	        result = isFeatureMulti((RosettaFeature) symbol);
+	    if (symbol instanceof RosettaFeature feature) {
+	        result = isFeatureMulti(feature);
 	    } else if (symbol instanceof RosettaParameter) {
 	        result = false;
-	    } else if (symbol instanceof ClosureParameter) {
-	        result = safeIsClosureParameterMulti(((ClosureParameter) symbol).getFunction(), cycleTracker);
+	    } else if (symbol instanceof ClosureParameter closureParameter) {
+	        result = safeIsClosureParameterMulti(closureParameter.getFunction(), cycleTracker);
 	    } else if (symbol instanceof RosettaEnumeration) { // @Compat: RosettaEnumeration should not be a RosettaSymbol.
 	        result = false;
-	    } else if (symbol instanceof Function) {
-	        if (((Function) symbol).getOutput() != null) {
-	            result = isFeatureMulti((RosettaFeature) ((Function) symbol).getOutput());
+	    } else if (symbol instanceof Function function) {
+	        if (function.getOutput() != null) {
+	            result = isFeatureMulti(function.getOutput());
 	        } else {
 	            result = false;
 	        }
-	    } else if (symbol instanceof RosettaRule) {
-	        if (((RosettaRule) symbol).getExpression() != null) {
-	            result = safeIsMulti(((RosettaRule) symbol).getExpression(), cycleTracker);
+	    } else if (symbol instanceof RosettaRule rule) {
+	        if (rule.getExpression() != null) {
+	            result = safeIsMulti(rule.getExpression(), cycleTracker);
 	        } else {
 	            result = false;
 	        }
 	    } else if (symbol instanceof RosettaExternalFunction) {
 	        result = false;
-	    } else if (symbol instanceof ShortcutDeclaration) {
-	        result = safeIsMulti(((ShortcutDeclaration) symbol).getExpression(), cycleTracker);
+	    } else if (symbol instanceof ShortcutDeclaration shortcut) {
+	        result = safeIsMulti(shortcut.getExpression(), cycleTracker);
 	    } else if (symbol instanceof TypeParameter) {
 	        result = false;
 	    } else {
@@ -177,8 +176,8 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
         return definingContainer.map(container -> {
             if (container instanceof RosettaTypeWithConditions) {
                 return false;
-            } else if (container instanceof RosettaFunctionalOperation) {
-                return safeIsClosureParameterMulti(((RosettaFunctionalOperation) container).getFunction(), cycleTracker);
+            } else if (container instanceof RosettaFunctionalOperation op) {
+                return safeIsClosureParameterMulti(op.getFunction(), cycleTracker);
             } else if (container instanceof RosettaRule) {
             	return false;
             } else if (container instanceof SwitchCaseOrDefault) {
@@ -194,11 +193,11 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 	
     private boolean safeIsClosureParameterMulti(InlineFunction obj, Map<RosettaSymbol, Boolean> cycleTracker) {
         EObject op = obj.eContainer();
-        if (op instanceof RosettaFunctionalOperation) {
-            if (op instanceof ThenOperation) {
-                return safeIsMulti(((ThenOperation) op).getArgument(), cycleTracker);
+        if (op instanceof RosettaFunctionalOperation functionalOp) {
+            if (functionalOp instanceof ThenOperation thenOp) {
+                return safeIsMulti(thenOp.getArgument(), cycleTracker);
             }
-            return isOutputListOfLists(((RosettaFunctionalOperation) op).getArgument());
+            return isOutputListOfLists(functionalOp.getArgument());
         }
         return false;
     }
@@ -219,8 +218,7 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 	private boolean safeIsOutputListOfLists(RosettaExpression expr, Map<RosettaSymbol, Boolean> cycleTracker) {
         if (expr instanceof FlattenOperation) {
             return false;
-        } else if (expr instanceof MapOperation) {
-            MapOperation mapOperation = (MapOperation) expr;
+        } else if (expr instanceof MapOperation mapOperation) {
             if (mapOperation.getFunction() == null) {
                 return false;
             } else if (safeIsItemMulti(mapOperation.getFunction(), cycleTracker)) {
@@ -228,27 +226,26 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
             } else {
                 return safeIsBodyExpressionMulti(mapOperation.getFunction(), cycleTracker) && safeIsPreviousOperationMulti(mapOperation, cycleTracker);
             }
-        } else if (expr instanceof ThenOperation) {
-            InlineFunction function = ((ThenOperation) expr).getFunction();
+        } else if (expr instanceof ThenOperation thenOp) {
+            InlineFunction function = thenOp.getFunction();
             if (function instanceof InlineFunction) {
                 return safeIsOutputListOfLists(function.getBody(), cycleTracker);
             }
             return false;
-        } else if (expr instanceof RosettaSymbolReference) {
-            RosettaSymbol symbol = ((RosettaSymbolReference) expr).getSymbol();
-            if (symbol instanceof ClosureParameter) {
-                InlineFunction function = ((ClosureParameter) symbol).getFunction();
+        } else if (expr instanceof RosettaSymbolReference symbolRef) {
+            RosettaSymbol symbol = symbolRef.getSymbol();
+            if (symbol instanceof ClosureParameter closureParameter) {
+                InlineFunction function = closureParameter.getFunction();
                 EObject enclosed = function.eContainer();
-                if (enclosed instanceof ThenOperation) {
-                    return safeIsOutputListOfLists(((ThenOperation) enclosed).getArgument(), cycleTracker);
+                if (enclosed instanceof ThenOperation thenOp) {
+                    return safeIsOutputListOfLists(thenOp.getArgument(), cycleTracker);
                 }
             }
             return false;
         } else if (expr instanceof RosettaImplicitVariable) {
             Optional<? extends EObject> container = implicitVariableUtil.findContainerDefiningImplicitVariable(expr);
-            return container.map(obj -> obj instanceof ThenOperation && safeIsOutputListOfLists(((ThenOperation) obj).getArgument(), cycleTracker)).orElse(false);
-        } else if (expr instanceof CanHandleListOfLists) {
-            CanHandleListOfLists listExpression = (CanHandleListOfLists) expr;
+            return container.map(obj -> obj instanceof ThenOperation thenOp && safeIsOutputListOfLists(thenOp.getArgument(), cycleTracker)).orElse(false);
+        } else if (expr instanceof CanHandleListOfLists listExpression) {
             return safeIsOutputListOfLists(listExpression.getArgument(), cycleTracker);
         }
         return false;
@@ -518,8 +515,8 @@ public class CardinalityProvider extends RosettaExpressionSwitch<Boolean, Map<Ro
 	@Override
 	protected Boolean caseSymbolReference(RosettaSymbolReference expr, Map<RosettaSymbol, Boolean> cycleTracker) {
 		RosettaSymbol s = expr.getSymbol();
-		if (s instanceof RosettaFeature) {
-			if (isFeatureOfImplicitVariable(expr, (RosettaFeature) s) && safeIsImplicitVariableMulti(expr, cycleTracker)) {
+		if (s instanceof RosettaFeature feature) {
+			if (isFeatureOfImplicitVariable(expr, feature) && safeIsImplicitVariableMulti(expr, cycleTracker)) {
 				return true;
 			}
 		}

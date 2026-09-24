@@ -97,8 +97,8 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
                     }
                 } else {
                     Object annotated = object.eGet(ref);
-                    if (annotated instanceof Annotated) {
-                        checkDeprecatedAnnotation(((Annotated) annotated), object, ref, ValidationMessageAcceptor.INSIGNIFICANT_INDEX);
+                    if (annotated instanceof Annotated a) {
+                        checkDeprecatedAnnotation(a, object, ref, ValidationMessageAcceptor.INSIGNIFICANT_INDEX);
                     }
                 }
             }
@@ -185,8 +185,8 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         }
 
         // Recursively check if argument is a RosettaUnaryOperation that requires then
-        if (op.getArgument() instanceof RosettaUnaryOperation) {
-            return isThenMandatory((RosettaUnaryOperation) op.getArgument());
+        if (op.getArgument() instanceof RosettaUnaryOperation argument) {
+            return isThenMandatory(argument);
         }
 
         return false;
@@ -651,7 +651,7 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         List<AnnotationRef> annotations = rosettaFunctionExtensions.getCreationAnnotations(ele);
         if (annotations.isEmpty()) return;
 
-        if (!(ele instanceof com.regnosys.rosetta.rosetta.simple.Function)) {
+        if (!(ele instanceof com.regnosys.rosetta.rosetta.simple.Function func)) {
             error("Creation annotation only allowed on a function.",
                     RosettaPackage.Literals.ROSETTA_NAMED__NAME, RosettaIssueCodes.INVALID_ELEMENT_NAME);
             return;
@@ -661,7 +661,6 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
                     RosettaPackage.Literals.ROSETTA_NAMED__NAME, RosettaIssueCodes.INVALID_ELEMENT_NAME);
             return;
         }
-        com.regnosys.rosetta.rosetta.simple.Function func = (com.regnosys.rosetta.rosetta.simple.Function) ele;
 
         RType annotationType = rosettaTypeProvider.getRTypeOfSymbol(annotations.get(0).getAttribute()).getRType();
         if (annotationType instanceof RChoiceType choice) {
@@ -701,12 +700,11 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
         List<AnnotationRef> annotations = rosettaFunctionExtensions.getQualifierAnnotations(ele);
         if (annotations.isEmpty()) return;
 
-        if (!(ele instanceof com.regnosys.rosetta.rosetta.simple.Function)) {
+        if (!(ele instanceof com.regnosys.rosetta.rosetta.simple.Function func)) {
             error("Qualification annotation only allowed on a function.",
                     RosettaPackage.Literals.ROSETTA_NAMED__NAME, RosettaIssueCodes.INVALID_ELEMENT_NAME);
             return;
         }
-        com.regnosys.rosetta.rosetta.simple.Function func = (com.regnosys.rosetta.rosetta.simple.Function) ele;
 
         if (annotations.size() > 1) {
             error("Only 1 qualification annotation allowed.",
@@ -828,13 +826,13 @@ public class RosettaSimpleValidator extends AbstractDeclarativeRosettaValidator 
             EList<Segment> segments = op.getPath().asSegmentList(op.getPath());
             Segment last = segments == null || segments.isEmpty() ? null : segments.getLast();
             RosettaFeature feature = last == null ? null : last.getFeature();
-            if (feature instanceof RosettaMetaType || !(feature instanceof Attribute) || !rosettaEcoreUtil.hasReferenceAnnotation((Attribute) feature)) {
+            if (feature instanceof RosettaMetaType || !(feature instanceof Attribute attribute) || !rosettaEcoreUtil.hasReferenceAnnotation(attribute)) {
                 error("'" + o.getOperator() + "' can only be used with attributes annotated with [metadata reference] annotation.",
                         o, ExpressionPackage.Literals.ROSETTA_OPERATION__OPERATOR);
             }
         } else if (container instanceof ConstructorKeyValuePair kv) {
             RosettaFeature attr = kv.getKey();
-            if (!(attr instanceof Attribute) || !rosettaEcoreUtil.hasReferenceAnnotation((Attribute) attr)) {
+            if (!(attr instanceof Attribute attribute) || !rosettaEcoreUtil.hasReferenceAnnotation(attribute)) {
                 error("'" + o.getOperator() + "' can only be used with attributes annotated with [metadata reference] annotation.",
                         o, ExpressionPackage.Literals.ROSETTA_OPERATION__OPERATOR);
             }

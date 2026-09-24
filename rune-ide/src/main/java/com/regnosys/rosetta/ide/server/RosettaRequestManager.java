@@ -73,8 +73,8 @@ public class RosettaRequestManager extends RequestManager {
 		}
 		
 		Object serviceProvider = serviceProviderRegistry.getExtensionToFactoryMap().get("rosetta");
-		if (serviceProvider instanceof IResourceServiceProvider) {
-			this.requestCacheManager = ((IResourceServiceProvider) serviceProvider).get(RequestScopedCacheManager.class);
+		if (serviceProvider instanceof IResourceServiceProvider resourceServiceProvider) {
+			this.requestCacheManager = resourceServiceProvider.get(RequestScopedCacheManager.class);
 		} else {
 			this.requestCacheManager = null;
 		}
