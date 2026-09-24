@@ -46,11 +46,6 @@ import com.rosetta.util.types.JavaType;
  * the imports it determines precede the body in the generated file, and
  * identifier names can only be resolved once all identifiers in the file have
  * been claimed.
- *
- * <p>Migration note: this is the fluent counterpart of
- * {@code ImportingStringConcatenation} (which preprocesses and replays in a
- * similar way), and intentionally duplicates its import resolution logic. The
- * latter will be deleted once all generators use the fluent API.
  */
 public class RecordingCodeWriter implements CodeWriter {
 	private final Map<DottedPath, DottedPath> imports = new HashMap<>();

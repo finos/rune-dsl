@@ -27,7 +27,6 @@ import com.rosetta.util.DottedPath;
 /**
  * Given the body of a Java class represented as a {@link CodeRenderer},
  * generates a full Java class file by adding imports and resolving identifiers.
- * The fluent counterpart of {@link ImportManagerExtension}.
  */
 public class FluentImportManager {
 	public String buildClass(DottedPath packageName, CodeRenderer classCode, JavaFileScope fileScope) {
