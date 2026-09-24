@@ -29,12 +29,6 @@ func IsAllowed:
     set result:
         input -> val <> "forbidden"
 
-type Escaped:
-    val string (1..1)
-
-    condition NeedsEscaping:
-        val <> "C:\\dir \"quoted\" \\u0041"
-
 type SpansSeveralLines:
     val string (1..1)
 

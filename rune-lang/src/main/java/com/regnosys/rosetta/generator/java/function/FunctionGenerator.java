@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -47,6 +48,7 @@ import com.regnosys.rosetta.generator.java.scoping.JavaMethodScope;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.statement.JavaStatement;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
+import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable;
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface;
@@ -110,8 +112,6 @@ import com.rosetta.util.types.JavaParameterizedType;
 import com.rosetta.util.types.JavaPrimitiveType;
 import com.rosetta.util.types.JavaReferenceType;
 import com.rosetta.util.types.JavaType;
-
-import org.apache.commons.text.StringEscapeUtils;
 
 import jakarta.inject.Inject;
 
@@ -211,7 +211,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 				out.write("format = ", SerializationFormat.class, ".", format.name());
 			}
 			if (configPath != null) {
-				out.write(", configPath = \"", configPath, "\"");
+				out.write(", configPath = ", JavaLiteral.STRING(configPath));
 			}
 		});
 	}
@@ -883,7 +883,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 	private void renderContributeCondition(CodeWriter out, Condition condition, GeneratedIdentifier conditionValidator, JavaStatementScope scope) {
 		JavaStatementBuilder conditionBody = expressionGenerator.javaCode(condition.getExpression(), typeUtil.COMPARISON_RESULT, scope.lambdaScope());
 		out.writeln(conditionValidator, ".validate(() -> ", conditionBody.toLambdaBody(), ",");
-		out.writeln("    \"", StringEscapeUtils.escapeJava(condition.getDefinition()), "\");");
+		out.writeln("    ", JavaLiteral.STRING(Objects.requireNonNullElse(condition.getDefinition(), "")), ");");
 	}
 
 	private JavaType outputTypeOrVoid(Function function) {

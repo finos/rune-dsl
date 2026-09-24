@@ -22,12 +22,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import org.apache.commons.text.StringEscapeUtils;
-
 import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.java.FluentRObjectJavaClassGenerator;
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope;
+import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral;
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
 import com.regnosys.rosetta.generator.java.types.RJavaEnum;
 import com.regnosys.rosetta.generator.java.types.RJavaEnumValue;
@@ -129,13 +128,12 @@ public class EnumGenerator extends FluentRObjectJavaClassGenerator<REnumType, RJ
 	private void renderEnumValue(CodeWriter out, RJavaEnumValue value) {
 		out.write(modelGeneratorUtil.javadoc(value.getEObject()));
 		String displayName = value.getDisplayName();
-		String displayNameLiteral = displayName != null ? "\"" + StringEscapeUtils.escapeJava(displayName) + "\"" : null;
 		out.write("@", RosettaEnumValue.class, "(value = \"", value.getRosettaName(), "\"");
-		if (displayNameLiteral != null) {
-			out.write(", displayName = ", displayNameLiteral);
+		if (displayName != null) {
+			out.write(", displayName = ", JavaLiteral.STRING(displayName));
 		}
 		out.writeln(")");
 		out.write(value.getName(), "(\"", value.getRosettaName(), "\", ",
-				displayNameLiteral != null ? displayNameLiteral : "null", ")");
+				displayName != null ? JavaLiteral.STRING(displayName) : JavaLiteral.NULL, ")");
 	}
 }
