@@ -735,7 +735,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 	}
 
 	private static <T> T headOrNull(List<T> list) {
-		return list.isEmpty() ? null : list.get(0);
+		return list.isEmpty() ? null : list.getFirst();
 	}
 
 	private static <T> List<T> tail(List<T> list) {
@@ -743,6 +743,6 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 	}
 
 	private static <T> T lastOrNull(List<T> list) {
-		return list.isEmpty() ? null : list.get(list.size() - 1);
+		return list.isEmpty() ? null : list.getLast();
 	}
 }
