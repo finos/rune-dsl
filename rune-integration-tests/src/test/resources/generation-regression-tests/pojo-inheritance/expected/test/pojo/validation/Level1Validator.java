@@ -5,8 +5,10 @@ import com.rosetta.model.lib.expression.ComparisonResult;
 import com.rosetta.model.lib.path.RosettaPath;
 import com.rosetta.model.lib.validation.ValidationResult;
 import com.rosetta.model.lib.validation.Validator;
+import com.rosetta.model.metafields.FieldWithMetaString;
 import java.util.List;
 import test.pojo.Level1;
+import test.pojo.Parent;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.checkCardinality;
@@ -17,7 +19,9 @@ import static java.util.stream.Collectors.toList;
 public class Level1Validator implements Validator<Level1> {
     private List<ComparisonResult> getComparisonResults(Level1 o) {
         return Lists.<ComparisonResult>newArrayList(
-            checkCardinality("attr", (Integer) o.getAttr() != null ? 1 : 0, 0, 1)
+            checkCardinality("attr", (Integer) o.getAttr() != null ? 1 : 0, 0, 1),
+            checkCardinality("metaSingle", (FieldWithMetaString) o.getMetaSingle() != null ? 1 : 0, 0, 1),
+            checkCardinality("singleParent", (Parent) o.getSingleParent() != null ? 1 : 0, 0, 1)
         );
     }
 

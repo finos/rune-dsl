@@ -71,20 +71,34 @@ you are probably reimplementing instead of transcribing.
 
 ## Verification
 
-1. **Regression test**: create
-   `rune-integration-tests/src/test/resources/generation-regression-tests/<name>/model/*.rosetta`
-   covering the generator's interesting cases, plus a test class extending
-   `AbstractJavaGeneratorRegressionTest`. Generate the `expected/` files by
-   temporarily flipping `UPDATE_EXPECTATIONS` to `true` in
-   `AbstractJavaGeneratorRegressionTest`, running the test, and flipping it
-   back. Review the generated expectations before committing them.
-2. **Parity check against the old generator**: check out the commit that still
-   has the `.xtend` version (e.g. in a second worktree), copy the same model
-   and test class there, generate expectations with the old generator, and
-   diff against the new output. Aim for token-identical output; only
-   whitespace (tabs vs spaces, trailing whitespace, line endings) should
-   differ. Investigate any non-whitespace diff before proceeding.
-3. Run the functional tests that execute generated code for the feature (e.g.
+1. **Fixtures first, on the old generator**: before touching the `.xtend`, make
+   sure a regression fixture under
+   `rune-integration-tests/src/test/resources/generation-regression-tests/<name>/`
+   exercises every branch of the generator's template (every `«IF»`, every
+   `«FOR»` with zero, one and several items, optional values that are `null`).
+   If one is missing, add the model and a test class extending
+   `AbstractJavaGeneratorRegressionTest`, generate `expected/` with the
+   **unmigrated** generator and commit it on its own. Every layout regression
+   in earlier migrations (#1293, #1376, #1378) was in output no fixture
+   covered at the time.
+2. **Migrate, then regenerate**: run the regression tests with
+   `-Drune.updateExpectations` to rewrite `expected/`, e.g.
+   `mvnd -o verify -pl rune-integration-tests -am -Dtest='*RegressionTest' -Dsurefire.failIfNoSpecifiedTests=false -Drune.updateExpectations`.
+3. **Parity check**: the diff of `expected/` must be whitespace only. Tabs
+   become four spaces and trailing whitespace goes; nothing else may change,
+   not even a blank line. This lists every file that differs in anything
+   else, including files the migration added or deleted:
+   ```bash
+   git add -N -- '*/expected/*'   # so that git diff also lists new files
+   for f in $(git diff --name-only -- '*/expected/*'); do
+     diff -q <(git show HEAD:"$f" 2>/dev/null | expand -t 4 | sed 's/[[:space:]]*$//') \
+             <(expand -t 4 "$f" 2>/dev/null | sed 's/[[:space:]]*$//') > /dev/null || echo "$f"
+   done
+   ```
+   Both sides are tab-expanded, so a tab inside a line compares equal to itself.
+   Investigate every file it prints. A difference is acceptable only when the
+   old output was itself wrong, and then it needs a sentence in the PR.
+4. Run the functional tests that execute generated code for the feature (e.g.
    the relevant tests in `FunctionGeneratorTest`), plus all existing
    `*RegressionTest` classes — a migration must not change other generators'
    output.
@@ -107,3 +121,32 @@ you are probably reimplementing instead of transcribing.
   the fluent `CodeWriter` API. The final cleanup deletes them together with
   the Xtend machinery and adds a fluent debug writer for
   `JavaExpression.toString()`.
+- Xtend and Java disagree on these, and each one has changed generated output
+  in an earlier migration:
+  - `«x»` with `x == null` renders nothing, but `StringBuilder.append(null)`
+    and `"…" + null` render `null`. `CodeWriter.write(null)` renders
+    nothing, so write to the `CodeWriter` instead of building strings.
+  - A template line holding only `«IF»`, `«ELSE»`, `«ENDIF»`, `«FOR»` or
+    `«ENDFOR»` produces no output line. Do not turn it into an
+    `out.newline()`, and keep every blank line the template does emit.
+  - `==` in Xtend is `equals`, `===` is identity. `?.` is null-safe. `head`
+    and `last` return `null` on an empty list; `forall` is `true` on one.
+- Render every Java string literal with `JavaLiteral.STRING(text)` (or
+  `JavaLiteral.NULL`), never `"\"" + text + "\""` or a hand-picked escaper.
+  Model text in javadoc goes through `ModelGeneratorUtil.escape`.
+- Write multi-line text in one `out.write`: the writer indents every line.
+  Do not split it into lines yourself.
+- Reuse an existing representation instead of rebuilding it by hand, e.g.
+  `out.write(javaClass.asClassDeclaration())` /
+  `asInterfaceDeclaration()`.
+- Port what is used; delete what is not. Before converting a method with no
+  caller in rune-dsl, check rosetta-code-generators and rune-python-generator;
+  if nothing calls it there either, delete it.
+- Keep the design: transcribe with the fluent API rather than reworking how a
+  generator is structured. A reviewer will ask why a pattern changed.
+- Keep public and protected signatures stable where another class (or a
+  downstream repo) calls them, unless you also migrate every caller.
+- Style in review: Apache license header on new files; `java.*` imports in
+  their own group; a comment wherever a type stays fully qualified because of
+  a name clash; locals declared with a readable general type (`JavaType`, not
+  `JavaParameterizedType<…>`).
