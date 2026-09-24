@@ -144,8 +144,8 @@ public class JavaIfThenElseBuilder extends JavaStatementBuilder {
 		return "if (" + condition + ") " + toBlock(thenBranch) + " else " + elsePart;
 	}
 	private JavaBlockBuilder toBlock(JavaStatementBuilder stat) {
-		if (stat instanceof JavaBlockBuilder) {
-			return (JavaBlockBuilder) stat;
+		if (stat instanceof JavaBlockBuilder block) {
+			return block;
 		} else {
 			return new JavaBlockBuilder(stat);
 		}

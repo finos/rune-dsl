@@ -66,8 +66,8 @@ public class JavaConditionalExpression extends JavaStatementBuilder implements J
 	public JavaStatementBuilder mapExpression(Function<JavaExpression, ? extends JavaStatementBuilder> mapper) {
 		JavaStatementBuilder newThenBranch = mapper.apply(thenBranch);
 		JavaStatementBuilder newElseBranch = mapper.apply(elseBranch);
-		if (newThenBranch instanceof JavaExpression && newElseBranch instanceof JavaExpression) {
-			return new JavaConditionalExpression(condition, (JavaExpression)newThenBranch, (JavaExpression)newElseBranch, typeUtil);
+		if (newThenBranch instanceof JavaExpression newThenExpression && newElseBranch instanceof JavaExpression newElseExpression) {
+			return new JavaConditionalExpression(condition, newThenExpression, newElseExpression, typeUtil);
 		} else {
 			return new JavaIfThenElseBuilder(condition, newThenBranch, newElseBranch, typeUtil);
 		}

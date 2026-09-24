@@ -62,8 +62,8 @@ public class JavaBlock extends JavaStatement implements JavaLambdaBody {
 	
 	@Override
 	public JavaBlock prepend(JavaStatement other) {
-		if (other instanceof JavaBlock) {
-			return ((JavaBlock) other).append(this);
+		if (other instanceof JavaBlock otherBlock) {
+			return otherBlock.append(this);
 		}
 		JavaStatementList newStatements = new JavaStatementList();
 		newStatements.add(other);
@@ -72,8 +72,8 @@ public class JavaBlock extends JavaStatement implements JavaLambdaBody {
 	}
 	@Override
 	public JavaBlock append(JavaStatement other) {
-		if (other instanceof JavaBlock) {
-			return this.append((JavaBlock)other);
+		if (other instanceof JavaBlock otherBlock) {
+			return this.append(otherBlock);
 		}
 		JavaStatementList newStatements = new JavaStatementList();
 		newStatements.addAll(this.statements);
