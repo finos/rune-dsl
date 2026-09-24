@@ -56,8 +56,8 @@ public abstract class WithMeta implements RosettaFunction {
 
         protected Foo.FooBuilder assignOutput(Foo.FooBuilder result, FieldWithMetaString code, Foo foo, FieldWithMetaFoo metaFoo) {
             result = toBuilder(Foo.builder()
-            	.setS((code == null || code.getValue() == null ? Collections.<String>emptyList() : Collections.singletonList(code.getValue())))
-            	.build());
+                .setS((code == null || code.getValue() == null ? Collections.<String>emptyList() : Collections.singletonList(code.getValue())))
+                .build());
             return Optional.ofNullable(result)
                 .map(o -> o.prune())
                 .orElse(null);

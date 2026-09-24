@@ -843,7 +843,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 		if (e instanceof RosettaSymbolReference ref && ref.getSymbol() instanceof RosettaCallableWithArgs) {
 			// assign-output for an alias
 			return JavaExpression.from(
-					o -> { o.write(scope.getIdentifierOrThrow(shortcut), "("); o.write(CodeWriterTargetStringConcatenation.asCodeRenderer(expressionGenerator.aliasCallArgs(shortcut, function, scope))); o.write(")"); },
+					o -> { o.write(scope.getIdentifierOrThrow(shortcut), "("); o.write(expressionGenerator.aliasCallArgs(shortcut, function, scope)); o.write(")"); },
 					shortcutExpressionJavaType(shortcut));
 		}
 		return lhsExpand(e, scope);
