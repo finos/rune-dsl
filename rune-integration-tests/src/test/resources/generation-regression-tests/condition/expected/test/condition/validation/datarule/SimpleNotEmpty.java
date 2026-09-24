@@ -21,42 +21,42 @@ import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 @RosettaDataRule("SimpleNotEmpty")
 @ImplementedBy(SimpleNotEmpty.Default.class)
 public interface SimpleNotEmpty extends Validator<Simple> {
-	
-	String NAME = "SimpleNotEmpty";
-	String DEFINITION = "val <> \"\"";
-	
-	class Default implements SimpleNotEmpty {
-	
-		@Override
-		public List<ValidationResult<?>> getValidationResults(RosettaPath path, Simple simple) {
-			ComparisonResult result = executeDataRule(simple);
-			if (result.getOrDefault(true)) {
-				return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Simple", path, DEFINITION));
-			}
-			
-			String failureMessage = result.getError();
-			if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
-				failureMessage = "Condition has failed.";
-			}
-			return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Simple", path, DEFINITION, failureMessage));
-		}
-		
-		private ComparisonResult executeDataRule(Simple simple) {
-			try {
-				return notEqual(MapperS.of(simple).<String>map("getVal", _simple -> _simple.getVal()), MapperS.of(""), CardinalityOperator.Any);
-			}
-			catch (Exception ex) {
-				return ComparisonResult.failure(ex.getMessage());
-			}
-		}
-	}
-	
-	@SuppressWarnings("unused")
-	class NoOp implements SimpleNotEmpty {
-	
-		@Override
-		public List<ValidationResult<?>> getValidationResults(RosettaPath path, Simple simple) {
-			return Collections.emptyList();
-		}
-	}
+
+    String NAME = "SimpleNotEmpty";
+    String DEFINITION = "val <> \"\"";
+
+    class Default implements SimpleNotEmpty {
+
+        @Override
+        public List<ValidationResult<?>> getValidationResults(RosettaPath path, Simple simple) {
+            ComparisonResult result = executeDataRule(simple);
+            if (result.getOrDefault(true)) {
+                return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Simple", path, DEFINITION));
+            }
+
+            String failureMessage = result.getError();
+            if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
+                failureMessage = "Condition has failed.";
+            }
+            return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Simple", path, DEFINITION, failureMessage));
+        }
+
+        private ComparisonResult executeDataRule(Simple simple) {
+            try {
+                return notEqual(MapperS.of(simple).<String>map("getVal", _simple -> _simple.getVal()), MapperS.of(""), CardinalityOperator.Any);
+            }
+            catch (Exception ex) {
+                return ComparisonResult.failure(ex.getMessage());
+            }
+        }
+    }
+
+    @SuppressWarnings("unused")
+    class NoOp implements SimpleNotEmpty {
+
+        @Override
+        public List<ValidationResult<?>> getValidationResults(RosettaPath path, Simple simple) {
+            return Collections.emptyList();
+        }
+    }
 }

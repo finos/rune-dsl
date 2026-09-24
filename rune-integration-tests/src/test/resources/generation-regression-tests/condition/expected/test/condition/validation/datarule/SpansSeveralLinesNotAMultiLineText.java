@@ -21,43 +21,43 @@ import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 @RosettaDataRule("SpansSeveralLinesNotAMultiLineText")
 @ImplementedBy(SpansSeveralLinesNotAMultiLineText.Default.class)
 public interface SpansSeveralLinesNotAMultiLineText extends Validator<SpansSeveralLines> {
-	
-	String NAME = "SpansSeveralLinesNotAMultiLineText";
-	String DEFINITION = "val <> \"first line\n" + 
-		"second line\"";
-	
-	class Default implements SpansSeveralLinesNotAMultiLineText {
-	
-		@Override
-		public List<ValidationResult<?>> getValidationResults(RosettaPath path, SpansSeveralLines spansSeveralLines) {
-			ComparisonResult result = executeDataRule(spansSeveralLines);
-			if (result.getOrDefault(true)) {
-				return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "SpansSeveralLines", path, DEFINITION));
-			}
-			
-			String failureMessage = result.getError();
-			if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
-				failureMessage = "Condition has failed.";
-			}
-			return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "SpansSeveralLines", path, DEFINITION, failureMessage));
-		}
-		
-		private ComparisonResult executeDataRule(SpansSeveralLines spansSeveralLines) {
-			try {
-				return notEqual(MapperS.of(spansSeveralLines).<String>map("getVal", _spansSeveralLines -> _spansSeveralLines.getVal()), MapperS.of("first line\nsecond line"), CardinalityOperator.Any);
-			}
-			catch (Exception ex) {
-				return ComparisonResult.failure(ex.getMessage());
-			}
-		}
-	}
-	
-	@SuppressWarnings("unused")
-	class NoOp implements SpansSeveralLinesNotAMultiLineText {
-	
-		@Override
-		public List<ValidationResult<?>> getValidationResults(RosettaPath path, SpansSeveralLines spansSeveralLines) {
-			return Collections.emptyList();
-		}
-	}
+
+    String NAME = "SpansSeveralLinesNotAMultiLineText";
+    String DEFINITION = "val <> \"first line\n" +
+        "second line\"";
+
+    class Default implements SpansSeveralLinesNotAMultiLineText {
+
+        @Override
+        public List<ValidationResult<?>> getValidationResults(RosettaPath path, SpansSeveralLines spansSeveralLines) {
+            ComparisonResult result = executeDataRule(spansSeveralLines);
+            if (result.getOrDefault(true)) {
+                return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "SpansSeveralLines", path, DEFINITION));
+            }
+
+            String failureMessage = result.getError();
+            if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
+                failureMessage = "Condition has failed.";
+            }
+            return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "SpansSeveralLines", path, DEFINITION, failureMessage));
+        }
+
+        private ComparisonResult executeDataRule(SpansSeveralLines spansSeveralLines) {
+            try {
+                return notEqual(MapperS.of(spansSeveralLines).<String>map("getVal", _spansSeveralLines -> _spansSeveralLines.getVal()), MapperS.of("first line\nsecond line"), CardinalityOperator.Any);
+            }
+            catch (Exception ex) {
+                return ComparisonResult.failure(ex.getMessage());
+            }
+        }
+    }
+
+    @SuppressWarnings("unused")
+    class NoOp implements SpansSeveralLinesNotAMultiLineText {
+
+        @Override
+        public List<ValidationResult<?>> getValidationResults(RosettaPath path, SpansSeveralLines spansSeveralLines) {
+            return Collections.emptyList();
+        }
+    }
 }

@@ -19,43 +19,43 @@ import static com.rosetta.model.lib.expression.ExpressionOperatorsNullSafe.*;
 @RosettaDataRule("BoundedInRange")
 @ImplementedBy(BoundedInRange.Default.class)
 public interface BoundedInRange {
-	
-	String NAME = "BoundedInRange";
-	String DEFINITION = "item >= lowerBound and item <= upperBound";
-	List<ValidationResult<?>> getValidationResults(RosettaPath path, Integer bounded, Integer lowerBound, Integer upperBound);
-	
-	class Default implements BoundedInRange {
-	
-		@Override
-		public List<ValidationResult<?>> getValidationResults(RosettaPath path, Integer bounded, Integer lowerBound, Integer upperBound) {
-			ComparisonResult result = executeDataRule(bounded, lowerBound, upperBound);
-			if (result.getOrDefault(true)) {
-				return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Bounded", path, DEFINITION));
-			}
-			
-			String failureMessage = result.getError();
-			if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
-				failureMessage = "Condition has failed.";
-			}
-			return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Bounded", path, DEFINITION, failureMessage));
-		}
-		
-		private ComparisonResult executeDataRule(Integer bounded, Integer lowerBound, Integer upperBound) {
-			try {
-				return greaterThanEquals(MapperS.of(bounded), MapperS.of(lowerBound), CardinalityOperator.All).andNullSafe(lessThanEquals(MapperS.of(bounded), MapperS.of(upperBound), CardinalityOperator.All));
-			}
-			catch (Exception ex) {
-				return ComparisonResult.failure(ex.getMessage());
-			}
-		}
-	}
-	
-	@SuppressWarnings("unused")
-	class NoOp implements BoundedInRange {
-	
-		@Override
-		public List<ValidationResult<?>> getValidationResults(RosettaPath path, Integer bounded, Integer lowerBound, Integer upperBound) {
-			return Collections.emptyList();
-		}
-	}
+
+    String NAME = "BoundedInRange";
+    String DEFINITION = "item >= lowerBound and item <= upperBound";
+    List<ValidationResult<?>> getValidationResults(RosettaPath path, Integer bounded, Integer lowerBound, Integer upperBound);
+
+    class Default implements BoundedInRange {
+
+        @Override
+        public List<ValidationResult<?>> getValidationResults(RosettaPath path, Integer bounded, Integer lowerBound, Integer upperBound) {
+            ComparisonResult result = executeDataRule(bounded, lowerBound, upperBound);
+            if (result.getOrDefault(true)) {
+                return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "Bounded", path, DEFINITION));
+            }
+
+            String failureMessage = result.getError();
+            if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
+                failureMessage = "Condition has failed.";
+            }
+            return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "Bounded", path, DEFINITION, failureMessage));
+        }
+
+        private ComparisonResult executeDataRule(Integer bounded, Integer lowerBound, Integer upperBound) {
+            try {
+                return greaterThanEquals(MapperS.of(bounded), MapperS.of(lowerBound), CardinalityOperator.All).andNullSafe(lessThanEquals(MapperS.of(bounded), MapperS.of(upperBound), CardinalityOperator.All));
+            }
+            catch (Exception ex) {
+                return ComparisonResult.failure(ex.getMessage());
+            }
+        }
+    }
+
+    @SuppressWarnings("unused")
+    class NoOp implements BoundedInRange {
+
+        @Override
+        public List<ValidationResult<?>> getValidationResults(RosettaPath path, Integer bounded, Integer lowerBound, Integer upperBound) {
+            return Collections.emptyList();
+        }
+    }
 }

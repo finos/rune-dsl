@@ -21,44 +21,44 @@ import test.condition.functions.IsAllowed;
 @RosettaDataRule("WithDependencyUsesFunction")
 @ImplementedBy(WithDependencyUsesFunction.Default.class)
 public interface WithDependencyUsesFunction extends Validator<WithDependency> {
-	
-	String NAME = "WithDependencyUsesFunction";
-	String DEFINITION = "IsAllowed";
-	
-	class Default implements WithDependencyUsesFunction {
-	
-		@Inject protected IsAllowed isAllowed;
-		
-		@Override
-		public List<ValidationResult<?>> getValidationResults(RosettaPath path, WithDependency withDependency) {
-			ComparisonResult result = executeDataRule(withDependency);
-			if (result.getOrDefault(true)) {
-				return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "WithDependency", path, DEFINITION));
-			}
-			
-			String failureMessage = result.getError();
-			if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
-				failureMessage = "Condition has failed.";
-			}
-			return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "WithDependency", path, DEFINITION, failureMessage));
-		}
-		
-		private ComparisonResult executeDataRule(WithDependency withDependency) {
-			try {
-				return ComparisonResult.ofNullSafe(MapperS.of(isAllowed.evaluate(withDependency)));
-			}
-			catch (Exception ex) {
-				return ComparisonResult.failure(ex.getMessage());
-			}
-		}
-	}
-	
-	@SuppressWarnings("unused")
-	class NoOp implements WithDependencyUsesFunction {
-	
-		@Override
-		public List<ValidationResult<?>> getValidationResults(RosettaPath path, WithDependency withDependency) {
-			return Collections.emptyList();
-		}
-	}
+
+    String NAME = "WithDependencyUsesFunction";
+    String DEFINITION = "IsAllowed";
+
+    class Default implements WithDependencyUsesFunction {
+
+        @Inject protected IsAllowed isAllowed;
+
+        @Override
+        public List<ValidationResult<?>> getValidationResults(RosettaPath path, WithDependency withDependency) {
+            ComparisonResult result = executeDataRule(withDependency);
+            if (result.getOrDefault(true)) {
+                return Arrays.asList(ValidationResult.success(NAME, ValidationResult.ValidationType.DATA_RULE, "WithDependency", path, DEFINITION));
+            }
+
+            String failureMessage = result.getError();
+            if (failureMessage == null || failureMessage.contains("Null") || failureMessage == "") {
+                failureMessage = "Condition has failed.";
+            }
+            return Arrays.asList(ValidationResult.failure(NAME, ValidationResult.ValidationType.DATA_RULE, "WithDependency", path, DEFINITION, failureMessage));
+        }
+
+        private ComparisonResult executeDataRule(WithDependency withDependency) {
+            try {
+                return ComparisonResult.ofNullSafe(MapperS.of(isAllowed.evaluate(withDependency)));
+            }
+            catch (Exception ex) {
+                return ComparisonResult.failure(ex.getMessage());
+            }
+        }
+    }
+
+    @SuppressWarnings("unused")
+    class NoOp implements WithDependencyUsesFunction {
+
+        @Override
+        public List<ValidationResult<?>> getValidationResults(RosettaPath path, WithDependency withDependency) {
+            return Collections.emptyList();
+        }
+    }
 }
