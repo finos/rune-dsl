@@ -5,8 +5,11 @@ import org.eclipse.xtext.generator.IFileSystemAccess2
 import java.util.List
 import com.regnosys.rosetta.rosetta.RosettaModel
 import com.google.common.collect.LinkedHashMultimap
+import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil
+import jakarta.inject.Inject
 
 class JavaPackageInfoGenerator {
+	@Inject ModelGeneratorUtil modelGeneratorUtil
 
 	def namespaceToDescriptionMap(List<RosettaModel> elements) {
 		val namespaceToDescription = LinkedHashMultimap.<String, String>create
@@ -31,7 +34,7 @@ class JavaPackageInfoGenerator {
 		return '''
 			/**
 			*	«FOR desc : descriptions»
-			*	«desc»
+			*	«modelGeneratorUtil.escapeComment(desc)»
 			*	<p>
 			*	«ENDFOR»
 			*

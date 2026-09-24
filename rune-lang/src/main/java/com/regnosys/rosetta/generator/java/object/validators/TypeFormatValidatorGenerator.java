@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.StringEscapeUtils;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -52,6 +51,7 @@ import com.regnosys.rosetta.generator.java.statement.JavaLocalVariableDeclaratio
 import com.regnosys.rosetta.generator.java.statement.JavaStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaStatementList;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
+import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable;
 import com.regnosys.rosetta.generator.java.types.JavaConditionInterface;
@@ -355,7 +355,7 @@ public class TypeFormatValidatorGenerator extends FluentRObjectJavaClassGenerato
 
 	private CodeRenderer optionalPattern(Optional<Pattern> v) {
 		if (v.isPresent()) {
-			return out -> out.write(OPTIONAL_OF, "(", Pattern.class, ".compile(\"", StringEscapeUtils.escapeJava(v.get().toString()), "\"))");
+			return out -> out.write(OPTIONAL_OF, "(", Pattern.class, ".compile(", JavaLiteral.STRING(v.get().toString()), "))");
 		} else {
 			return out -> out.write(OPTIONAL_EMPTY, "()");
 		}
@@ -363,7 +363,7 @@ public class TypeFormatValidatorGenerator extends FluentRObjectJavaClassGenerato
 
 	private CodeRenderer optionalBigDecimal(Optional<BigDecimal> v) {
 		if (v.isPresent()) {
-			return out -> out.write(OPTIONAL_OF, "(new ", BigDecimal.class, "(\"", StringEscapeUtils.escapeJava(v.get().toString()), "\"))");
+			return out -> out.write(OPTIONAL_OF, "(new ", BigDecimal.class, "(", JavaLiteral.STRING(v.get().toString()), "))");
 		} else {
 			return out -> out.write(OPTIONAL_EMPTY, "()");
 		}

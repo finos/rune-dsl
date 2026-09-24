@@ -21,10 +21,13 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 
 import com.google.inject.ImplementedBy;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
@@ -37,12 +40,12 @@ import com.regnosys.rosetta.generator.java.scoping.JavaClassScope;
 import com.regnosys.rosetta.generator.java.scoping.JavaIdentifierRepresentationService;
 import com.regnosys.rosetta.generator.java.scoping.JavaMethodScope;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
+import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral;
 import com.regnosys.rosetta.generator.java.types.JavaConditionInterface;
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil;
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass;
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil;
-import com.regnosys.rosetta.generator.java.util.RosettaGrammarUtil;
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaTypeWithConditions;
@@ -92,7 +95,7 @@ public class ConditionGenerator extends FluentJavaClassGenerator<Condition, Java
 
 	@Override
 	protected CodeRenderer generateClass(Condition condition, JavaConditionInterface conditionClass, String version, JavaClassScope classScope) {
-		String definition = RosettaGrammarUtil.quoteForCodeWriter(RosettaGrammarUtil.extractNodeText(condition, SimplePackage.Literals.CONDITION__EXPRESSION));
+		CodeRenderer definition = definitionLiteral(condition);
 		List<JavaClass<?>> deps = dependencyProvider.javaDependencies(condition.getExpression());
 		ImplicitVariableRepresentation implicitVarRepr = identifierRepresentationService.getImplicitVarInContext(condition.getExpression());
 		String instanceVarName = StringUtils.uncapitalize(conditionClass.getInstanceType().getName());
@@ -221,5 +224,24 @@ public class ConditionGenerator extends FluentJavaClassGenerator<Condition, Java
 			});
 			out.write("}");
 		};
+	}
+
+	/**
+	 * The condition's expression as written in the model, as a string literal that is continued
+	 * on a new line after each line break.
+	 */
+	private CodeRenderer definitionLiteral(Condition condition) {
+		String text = NodeModelUtils.findNodesForFeature(condition, SimplePackage.Literals.CONDITION__EXPRESSION).stream()
+				.map(NodeModelUtils::getTokenText)
+				.collect(Collectors.joining())
+				.trim()
+				.replace("\r\n", "\n")
+				.replace("\n\n", "\n");
+		List<String> lines = Arrays.asList(text.split("\n", -1));
+		int lastLine = lines.size() - 1;
+		List<JavaLiteral> literals = IntStream.range(0, lines.size())
+				.mapToObj(i -> JavaLiteral.STRING(i < lastLine ? lines.get(i) + "\n" : lines.get(i)))
+				.toList();
+		return out -> out.join(literals, " +\n");
 	}
 }

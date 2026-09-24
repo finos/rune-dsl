@@ -22,12 +22,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import org.apache.commons.text.StringEscapeUtils;
-
 import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.java.FluentRObjectJavaClassGenerator;
 import com.regnosys.rosetta.generator.java.scoping.JavaClassScope;
+import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral;
 import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
 import com.regnosys.rosetta.generator.java.types.RJavaEnum;
 import com.regnosys.rosetta.generator.java.types.RJavaEnumValue;
@@ -131,10 +130,10 @@ public class EnumGenerator extends FluentRObjectJavaClassGenerator<REnumType, RJ
 		String displayName = value.getDisplayName();
 		out.write("@", RosettaEnumValue.class, "(value = \"", value.getRosettaName(), "\"");
 		if (displayName != null) {
-			out.write(", displayName = \"", displayName, "\"");
+			out.write(", displayName = ", JavaLiteral.STRING(displayName));
 		}
 		out.writeln(")");
 		out.write(value.getName(), "(\"", value.getRosettaName(), "\", ",
-				displayName != null ? "\"" + StringEscapeUtils.escapeJava(displayName) + "\"" : "null", ")");
+				displayName != null ? JavaLiteral.STRING(displayName) : JavaLiteral.NULL, ")");
 	}
 }

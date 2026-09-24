@@ -18,11 +18,10 @@ import com.regnosys.rosetta.rosetta.simple.AnnotationPathExpression
 import com.regnosys.rosetta.utils.DeepFeatureCallUtil
 import com.regnosys.rosetta.types.RosettaTypeProvider
 import com.regnosys.rosetta.types.RChoiceType
-import org.apache.commons.text.StringEscapeUtils
 import com.regnosys.rosetta.lib.labelprovider.GraphBasedLabelProvider
 import com.regnosys.rosetta.lib.labelprovider.LabelNode
 import java.util.Arrays
-import java.util.stream.Collectors
+import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral
 import java.util.HashSet
 import com.regnosys.rosetta.utils.AnnotationPathExpressionUtil
 import com.regnosys.rosetta.generator.java.RObjectJavaClassGenerator
@@ -147,7 +146,7 @@ class LabelProviderGenerator extends RObjectJavaClassGenerator<RObject, RGenerat
 							«LabelNode» «nodeVarName» = new «LabelNode»();
 						«ENDIF»
 						«FOR path : labels.keySet»
-							«nodeVarName».addLabel(«path.representAsList», "«StringEscapeUtils.escapeJava(labels.get(path))»");
+							«nodeVarName».addLabel(«path.representAsList», «JavaLiteral.STRING(labels.get(path))»);
 						«ENDFOR»
 					«ENDFOR»
 					«FOR node : edgesPerNode.keySet»
@@ -156,7 +155,7 @@ class LabelProviderGenerator extends RObjectJavaClassGenerator<RObject, RGenerat
 						«IF !edges.empty»
 						
 						«FOR pathElement : edges.keySet»
-							«nodeVarName».addOutgoingEdge("«StringEscapeUtils.escapeJava(pathElement)»", «constructorScope.getIdentifierOrThrow(edges.get(pathElement))»);
+							«nodeVarName».addOutgoingEdge(«JavaLiteral.STRING(pathElement)», «constructorScope.getIdentifierOrThrow(edges.get(pathElement))»);
 						«ENDFOR»
 						«ENDIF»
 					«ENDFOR»
@@ -166,7 +165,7 @@ class LabelProviderGenerator extends RObjectJavaClassGenerator<RObject, RGenerat
 	}
 	
 	private def StringConcatenationClient representAsList(DottedPath path) {
-		'''«Arrays».asList(«path.stream.map[StringEscapeUtils.escapeJava(it)].collect(Collectors.joining("\", \"", "\"", "\""))»)'''
+		'''«Arrays».asList(«FOR segment : path.stream.toList SEPARATOR ", "»«JavaLiteral.STRING(segment)»«ENDFOR»)'''
 	}
 	
 	private def void buildLabelGraph(RDataType currentNode, Map<RDataType, Map<DottedPath, String>> labelsPerNode, Map<RDataType, Map<String, RDataType>> edgesPerNode) {
