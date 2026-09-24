@@ -110,14 +110,7 @@ public class JavaConditionalExpression extends JavaStatementBuilder implements J
 
 	@Override
 	public JavaExpression collapseToSingleExpression(JavaStatementScope scope) {
-		return JavaExpression.from(new StringConcatenationClient() {
-			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				target.append("(");
-				target.append(JavaConditionalExpression.this);
-				target.append(")");
-			}
-		}, commonType);
+		return JavaExpression.from(out -> out.write("(", this, ")"), commonType);
 	}
 
 	@Override
@@ -140,12 +133,7 @@ public class JavaConditionalExpression extends JavaStatementBuilder implements J
 	}
 	
 	private JavaExpression toExpression() {
-		return JavaExpression.from(new StringConcatenationClient() {
-			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				target.append(JavaConditionalExpression.this);
-			}
-		}, commonType);
+		return JavaExpression.from(out -> out.write(this), commonType);
 	}
 	
 	@Override

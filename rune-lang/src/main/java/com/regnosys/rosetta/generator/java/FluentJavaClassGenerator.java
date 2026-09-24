@@ -26,9 +26,7 @@ import jakarta.inject.Inject;
 
 /**
  * Base class for generators that produce a Java class using the fluent
- * {@link CodeRenderer} API. This is the fluent counterpart of
- * {@link XtendJavaClassGenerator}, which it will replace once all generators
- * are migrated.
+ * {@link CodeRenderer} API.
  *
  * <p>The renderer returned by {@link #generateClass} is rendered once into a
  * {@link RecordingCodeWriter}, which collects imports and claims identifiers

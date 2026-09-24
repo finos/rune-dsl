@@ -414,14 +414,12 @@
                     <sourceDirectories>
                         <sourceDirectory>src/main/java</sourceDirectory>
                         <sourceDirectory>src/test/java</sourceDirectory>
-                        <sourceDirectory>${project.basedir}/xtend-gen/main/java</sourceDirectory>
-                        <sourceDirectory>${project.basedir}/xtend-gen/test/java</sourceDirectory>
                     </sourceDirectories>
                 </configuration>
                 <executions>
                     <execution>
                         <id>Check style</id>
-                        <!-- This needs to run /after/ xtend (test) source
+                        <!-- This needs to run /after/ (test) source
                         generation is done. -->
                         <phase>process-test-sources</phase>
                         <goals>
@@ -444,7 +442,6 @@
                             <sources>
                                 <source>${project.basedir}/src-gen/main/java</source>
                                 <source>${project.basedir}/emf-gen/main/java</source>
-                                <source>${project.basedir}/xtend-gen/main/java</source>
                             </sources>
                         </configuration>
                     </execution>
@@ -458,7 +455,6 @@
                             <sources>
                                 <source>${project.basedir}/src-gen/test/java</source>
                                 <source>${project.basedir}/emf-gen/test/java</source>
-                                <source>${project.basedir}/xtend-gen/test/java</source>
                             </sources>
                         </configuration>
                     </execution>
@@ -509,30 +505,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven-surefire-plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.eclipse.xtend</groupId>
-                    <artifactId>xtend-maven-plugin</artifactId>
-                    <version>${xtext.version}</version>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>compile</goal>
-                                <goal>xtend-install-debug-info</goal>
-                                <goal>testCompile</goal>
-                                <goal>xtend-test-install-debug-info</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                    <configuration>
-                        <outputDirectory>
-                            ${project.basedir}/xtend-gen/main/java
-                        </outputDirectory>
-                        <testOutputDirectory>
-                            ${project.basedir}/xtend-gen/test/java
-                        </testOutputDirectory>
-                        <showEmptyDirWarning>false</showEmptyDirWarning>
-                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.eclipse.xtext</groupId>

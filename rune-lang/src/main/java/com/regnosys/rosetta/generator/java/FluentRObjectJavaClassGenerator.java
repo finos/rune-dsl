@@ -23,7 +23,6 @@ import com.rosetta.util.types.JavaTypeDeclaration;
 
 /**
  * A {@link FluentJavaClassGenerator} for objects with an EMF source object.
- * This is the fluent counterpart of {@link RObjectJavaClassGenerator}.
  */
 public abstract class FluentRObjectJavaClassGenerator<T extends RObject, C extends JavaTypeDeclaration<?>> extends FluentJavaClassGenerator<T, C> {
 	@Override

@@ -25,30 +25,30 @@ import test.deeppath.validation.exists.InnerChoiceOnlyExistsValidator;
 @RosettaMeta(model=InnerChoice.class)
 public class InnerChoiceMeta implements RosettaMetaData<InnerChoice> {
 
-	@Override
-	public List<Validator<? super InnerChoice>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-			factory.<InnerChoice>create(InnerChoiceChoice.class)
-		);
-	}
-	
-	@Override
-	public List<Function<? super InnerChoice, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super InnerChoice> validator(ValidatorFactory factory) {
-		return factory.<InnerChoice>create(InnerChoiceValidator.class);
-	}
+    @Override
+    public List<Validator<? super InnerChoice>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+            factory.<InnerChoice>create(InnerChoiceChoice.class)
+        );
+    }
 
-	@Override
-	public Validator<? super InnerChoice> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<InnerChoice>create(InnerChoiceTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super InnerChoice, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Override
-	public ValidatorWithArg<? super InnerChoice, Set<String>> onlyExistsValidator() {
-		return new InnerChoiceOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super InnerChoice> validator(ValidatorFactory factory) {
+        return factory.<InnerChoice>create(InnerChoiceValidator.class);
+    }
+
+    @Override
+    public Validator<? super InnerChoice> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<InnerChoice>create(InnerChoiceTypeFormatValidator.class);
+    }
+
+    @Override
+    public ValidatorWithArg<? super InnerChoice, Set<String>> onlyExistsValidator() {
+        return new InnerChoiceOnlyExistsValidator();
+    }
 }

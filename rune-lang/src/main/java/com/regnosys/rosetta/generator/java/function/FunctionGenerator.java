@@ -61,7 +61,6 @@ import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta;
 import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface;
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta;
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue;
-import com.regnosys.rosetta.generator.java.util.CodeWriterTargetStringConcatenation;
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil;
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs;
@@ -398,7 +397,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 					JavaMethodScope aliasScope = aliasScopes.get(alias);
 					out.newline();
 					out.write("protected abstract ", aliasUtil.getReturnType(alias), " ", classScope.getIdentifierOrThrow(alias), "(");
-					out.write(CodeWriterTargetStringConcatenation.asCodeRenderer(aliasUtil.getParameters(alias, aliasScope)));
+					out.write(aliasUtil.getParameters(alias, aliasScope));
 					out.writeln(");");
 				});
 				out.newline();
@@ -473,7 +472,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 						out.newline();
 						out.writeln("@Override");
 						out.write("protected ", returnType, " ", defaultClassScope.getIdentifierOrThrow(alias), "(");
-						out.write(CodeWriterTargetStringConcatenation.asCodeRenderer(aliasUtil.getParameters(alias, aliasScope)));
+						out.write(aliasUtil.getParameters(alias, aliasScope));
 						out.write(") ");
 						out.writeln(safeBody.completeAsReturn().toBlock());
 					});
@@ -611,7 +610,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 					JavaStatementBuilder coerced = coercionService.addCoercions(javaExpr, attribute.isMulti() ? typeUtil.wrapExtends(typeUtil.LIST, toBuilderItemType(attribute)) : toBuilderItemType(attribute), scope);
 					return coerced
 							.mapExpression(it -> JavaExpression.from(
-									o -> { o.write(assignTarget(op, function, outs, scope)); o.write(".addAll(", it, ")"); },
+									o -> { o.write(assignTarget(op, outs, scope)); o.write(".addAll(", it, ")"); },
 									JavaPrimitiveType.VOID))
 							.completeAsExpressionStatement();
 				}
@@ -619,7 +618,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 					JavaStatementBuilder coerced = coercionService.addCoercions(javaExpr, toBuilderType(attribute), scope);
 					return coerced
 							.mapExpression(it -> JavaExpression.from(
-									o -> { o.write(assignTarget(op, function, outs, scope)); o.write(" = ", it); },
+									o -> { o.write(assignTarget(op, outs, scope)); o.write(" = ", it); },
 									JavaPrimitiveType.VOID))
 							.completeAsExpressionStatement();
 				}
@@ -631,7 +630,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 		return assignValue(scope, op, assignAsKey(op))
 				.collapseToSingleExpression(scope)
 				.mapExpression(it -> {
-					JavaExpression expr = assignTarget(op, function, outs, scope);
+					JavaExpression expr = assignTarget(op, outs, scope);
 
 					// path intermediary
 					int intermediarySegmentSize = op.getPathTail().size() - 1;
@@ -827,23 +826,23 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 		return op.getPathTail().stream().map(f -> capitalize(f.getName())).collect(Collectors.joining());
 	}
 
-	private JavaExpression assignTarget(ROperation operation, RFunction function, Map<RShortcut, Boolean> outs, JavaStatementScope scope) {
+	private JavaExpression assignTarget(ROperation operation, Map<RShortcut, Boolean> outs, JavaStatementScope scope) {
 		Object root = operation.getPathHead();
 		if (root instanceof RAttribute attr) {
 			return new JavaVariable(scope.getIdentifierOrThrow(attr), typeTranslator.toJavaReferenceType(attr.getRMetaAnnotatedType()));
 		}
 		if (root instanceof RShortcut shortcut) {
-			return unfoldLHSShortcut(shortcut, function, scope);
+			return unfoldLHSShortcut(shortcut, scope);
 		}
 		throw new IllegalStateException("Unexpected assign target: " + root);
 	}
 
-	private JavaExpression unfoldLHSShortcut(RShortcut shortcut, RFunction function, JavaStatementScope scope) {
+	private JavaExpression unfoldLHSShortcut(RShortcut shortcut, JavaStatementScope scope) {
 		RosettaExpression e = shortcut.getExpression();
 		if (e instanceof RosettaSymbolReference ref && ref.getSymbol() instanceof RosettaCallableWithArgs) {
 			// assign-output for an alias
 			return JavaExpression.from(
-					o -> { o.write(scope.getIdentifierOrThrow(shortcut), "("); o.write(CodeWriterTargetStringConcatenation.asCodeRenderer(expressionGenerator.aliasCallArgs(shortcut, function, scope))); o.write(")"); },
+					o -> o.write(scope.getIdentifierOrThrow(shortcut), "(", aliasUtil.getArguments(shortcut, scope), ")"),
 					shortcutExpressionJavaType(shortcut));
 		}
 		return lhsExpand(e, scope);

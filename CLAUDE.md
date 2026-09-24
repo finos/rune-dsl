@@ -8,7 +8,7 @@ Rune DSL is a domain-specific language (DSL) for modelling data and business log
 
 ## Build & test
 
-Requires **Java 21** strictly (enforced as `[21,22)`; Xtend cannot compile on later JDKs). Verify with `mvn -v`.
+Requires **Java 21** strictly (enforced as `[21,22)`). Verify with `mvn -v`.
 
 ```bash
 mvn clean install              # full build of all modules (runs grammar gen + codegen + tests)
@@ -32,7 +32,6 @@ Several source roots are **generated and git-ignored**; never edit files under t
 
 - `**/emf-gen/` — EMF model classes generated from the Xcore/`.xtext` model
 - `**/src-gen/` — Xtext infrastructure (parser, lexer, scoping stubs)
-- `**/xtend-gen/` — Java generated from `.xtend` sources
 
 The grammar lives at `rune-lang/src/main/java/com/regnosys/rosetta/Rosetta.xtext`. It is processed by the MWE2 workflow `GenerateRosetta.mwe2`, which runs automatically in Maven's `generate-sources` phase. After changing the grammar you must rebuild (`mvn -pl rune-lang generate-sources` or a full build) to regenerate the parser and EMF classes.
 
@@ -48,17 +47,8 @@ The grammar lives at `rune-lang/src/main/java/com/regnosys/rosetta/Rosetta.xtext
 - **rune-profiling** — profiling harness.
 - **rune-xcore-plugin-dependencies** — packaging module supplying Xcore plugin dependencies to the build.
 
-## Xtend → Java migration (active)
-
-The codebase is mid-migration from Xtend to plain Java (~64 `.xtend` files remain). New code should be written in Java. The process and rules are documented in `.junie/xtend-migration-plan.md` — key points when migrating a file:
-
-- Treat the `xtend-gen/` output as *inspiration only*; write idiomatic Java (meaningful names, Java streams/lambdas, Java text blocks instead of `StringBuilder` patterns, no `@Extension`/Xtend libs).
-- Delete the generated Java stub before adding the hand-written Java class so there is no duplicate type, then delete the original `.xtend` source.
-- Pay special care to Xtend triple-quote string templates — these are used throughout the code generator and are easy to break.
-- Run tests before and after and confirm the same number of tests execute.
-
 ## Notes
 
-- IntelliJ has limited Xtext support: it can't edit `.xtend`/`.xtext` or run `GenerateRosetta.mwe2` — let Maven handle those and edit/run regular Java there. Eclipse "IDE for Java and DSL Developers" (2025-06) is the supported full IDE. See `README.md` for IDE setup and troubleshooting.
+- IntelliJ has limited Xtext support: it can't edit `.xtext` or run `GenerateRosetta.mwe2` — let Maven handle those and edit/run regular Java there. Eclipse "IDE for Java and DSL Developers" (2025-06) is the supported full IDE. See `README.md` for IDE setup and troubleshooting.
 - This is a FINOS project; contributions require a CLA and go through PRs (see `CONTRIBUTING.md`).
 - Raise pull requests from a fork: push the branch to your own fork and open the PR against `finos/rune-dsl`, never pushing a branch to this repository. `CONTRIBUTING.md` requires this of everyone, maintainers included — write access does not exempt you, and a PR whose head is this repository has to be closed and re-raised.

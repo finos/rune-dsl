@@ -19,7 +19,6 @@ package com.regnosys.rosetta.generator.java.statement.builder;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
 
 import com.regnosys.rosetta.codegen.api.CodeRenderer;
@@ -27,7 +26,6 @@ import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.DebuggingTargetLanguageStringConcatenation;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
-import com.regnosys.rosetta.generator.java.util.CodeWriterTargetStringConcatenation;
 import com.regnosys.rosetta.generator.java.util.TargetStringConcatenationCodeWriter;
 import com.regnosys.rosetta.generator.java.statement.JavaAssignment;
 import com.regnosys.rosetta.generator.java.statement.JavaExpressionStatement;
@@ -50,28 +48,6 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 		this.type = type;
 	}
 	
-	/**
-	 * Creates an expression from a legacy Xtend template.
-	 *
-	 * <p>Migration note: prefer {@link #from(CodeRenderer, JavaType)}. This overload
-	 * will be removed once all generators use the fluent API. It is not annotated
-	 * {@code @Deprecated} (yet) to avoid flooding the not-yet-migrated Xtend
-	 * generators with warnings.
-	 */
-	public static JavaExpression from(StringConcatenationClient value, JavaType type) {
-		return new JavaExpression(type) {
-			@Override
-			public void appendTo(TargetStringConcatenation target) {
-				target.append(value);
-			}
-
-			@Override
-			public void render(CodeWriter out) {
-				StringConcatenationClient.appendTo(value, new CodeWriterTargetStringConcatenation(out));
-			}
-		};
-	}
-
 	/**
 	 * Creates an expression from a fluent renderer.
 	 */

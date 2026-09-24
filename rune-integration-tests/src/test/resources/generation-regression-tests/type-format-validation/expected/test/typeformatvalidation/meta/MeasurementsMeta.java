@@ -24,29 +24,29 @@ import test.typeformatvalidation.validation.exists.MeasurementsOnlyExistsValidat
 @RosettaMeta(model=Measurements.class)
 public class MeasurementsMeta implements RosettaMetaData<Measurements> {
 
-	@Override
-	public List<Validator<? super Measurements>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super Measurements, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super Measurements> validator(ValidatorFactory factory) {
-		return factory.<Measurements>create(MeasurementsValidator.class);
-	}
+    @Override
+    public List<Validator<? super Measurements>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super Measurements> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<Measurements>create(MeasurementsTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super Measurements, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Override
-	public ValidatorWithArg<? super Measurements, Set<String>> onlyExistsValidator() {
-		return new MeasurementsOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super Measurements> validator(ValidatorFactory factory) {
+        return factory.<Measurements>create(MeasurementsValidator.class);
+    }
+
+    @Override
+    public Validator<? super Measurements> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<Measurements>create(MeasurementsTypeFormatValidator.class);
+    }
+
+    @Override
+    public ValidatorWithArg<? super Measurements, Set<String>> onlyExistsValidator() {
+        return new MeasurementsOnlyExistsValidator();
+    }
 }

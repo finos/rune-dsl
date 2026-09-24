@@ -25,179 +25,179 @@ import static java.util.Optional.ofNullable;
 @RuneDataType(value="GetClassEscaping", model="test", builder=GetClassEscaping.GetClassEscapingBuilderImpl.class, version="0.0.0")
 public interface GetClassEscaping extends RosettaModelObject {
 
-	GetClassEscapingMeta metaData = new GetClassEscapingMeta();
+    GetClassEscapingMeta metaData = new GetClassEscapingMeta();
 
-	/*********************** Getter Methods  ***********************/
-	Integer _getClass();
+    /*********************** Getter Methods  ***********************/
+    Integer _getClass();
 
-	/*********************** Build Methods  ***********************/
-	GetClassEscaping build();
-	
-	GetClassEscaping.GetClassEscapingBuilder toBuilder();
-	
-	static GetClassEscaping.GetClassEscapingBuilder builder() {
-		return new GetClassEscaping.GetClassEscapingBuilderImpl();
-	}
+    /*********************** Build Methods  ***********************/
+    GetClassEscaping build();
 
-	/*********************** Utility Methods  ***********************/
-	@Override
-	default RosettaMetaData<? extends GetClassEscaping> metaData() {
-		return metaData;
-	}
-	
-	@Override
-	@RuneAttribute("@type")
-	default Class<? extends GetClassEscaping> getType() {
-		return GetClassEscaping.class;
-	}
-	
-	@Override
-	default void process(RosettaPath path, Processor processor) {
-		processor.processBasic(path.newSubPath("class"), Integer.class, _getClass(), this);
-	}
-	
+    GetClassEscaping.GetClassEscapingBuilder toBuilder();
 
-	/*********************** Builder Interface  ***********************/
-	interface GetClassEscapingBuilder extends GetClassEscaping, RosettaModelObjectBuilder {
-		GetClassEscaping.GetClassEscapingBuilder setClass(Integer _class);
+    static GetClassEscaping.GetClassEscapingBuilder builder() {
+        return new GetClassEscaping.GetClassEscapingBuilderImpl();
+    }
 
-		@Override
-		default void process(RosettaPath path, BuilderProcessor processor) {
-			processor.processBasic(path.newSubPath("class"), Integer.class, _getClass(), this);
-		}
-		
+    /*********************** Utility Methods  ***********************/
+    @Override
+    default RosettaMetaData<? extends GetClassEscaping> metaData() {
+        return metaData;
+    }
 
-		GetClassEscaping.GetClassEscapingBuilder prune();
-	}
+    @Override
+    @RuneAttribute("@type")
+    default Class<? extends GetClassEscaping> getType() {
+        return GetClassEscaping.class;
+    }
 
-	/*********************** Immutable Implementation of GetClassEscaping  ***********************/
-	class GetClassEscapingImpl implements GetClassEscaping {
-		private final Integer _class;
-		
-		protected GetClassEscapingImpl(GetClassEscaping.GetClassEscapingBuilder builder) {
-			this._class = builder._getClass();
-		}
-		
-		@Override
-		@RosettaAttribute("class")
-		@Accessor(AccessorType.GETTER)
-		@Required
-		@RuneAttribute("class")
-		public Integer _getClass() {
-			return _class;
-		}
-		
-		@Override
-		public GetClassEscaping build() {
-			return this;
-		}
-		
-		@Override
-		public GetClassEscaping.GetClassEscapingBuilder toBuilder() {
-			GetClassEscaping.GetClassEscapingBuilder builder = builder();
-			setBuilderFields(builder);
-			return builder;
-		}
-		
-		protected void setBuilderFields(GetClassEscaping.GetClassEscapingBuilder builder) {
-			ofNullable(_getClass()).ifPresent(builder::setClass);
-		}
+    @Override
+    default void process(RosettaPath path, Processor processor) {
+        processor.processBasic(path.newSubPath("class"), Integer.class, _getClass(), this);
+    }
 
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
-		
-			GetClassEscaping _that = getType().cast(o);
-		
-			if (!Objects.equals(_class, _that._getClass())) return false;
-			return true;
-		}
-		
-		@Override
-		public int hashCode() {
-			int _result = 0;
-			_result = 31 * _result + (_class != null ? _class.hashCode() : 0);
-			return _result;
-		}
-		
-		@Override
-		public String toString() {
-			return "GetClassEscaping {" +
-				"class=" + this._class +
-			'}';
-		}
-	}
 
-	/*********************** Builder Implementation of GetClassEscaping  ***********************/
-	class GetClassEscapingBuilderImpl implements GetClassEscaping.GetClassEscapingBuilder {
-	
-		protected Integer _class;
-		
-		@Override
-		@RosettaAttribute("class")
-		@Accessor(AccessorType.GETTER)
-		@Required
-		@RuneAttribute("class")
-		public Integer _getClass() {
-			return _class;
-		}
-		
-		@RosettaAttribute("class")
-		@Accessor(AccessorType.SETTER)
-		@Required
-		@RuneAttribute("class")
-		@Override
-		public GetClassEscaping.GetClassEscapingBuilder setClass(Integer __class) {
-			this._class = __class == null ? null : __class;
-			return this;
-		}
-		
-		@Override
-		public GetClassEscaping build() {
-			return new GetClassEscaping.GetClassEscapingImpl(this);
-		}
-		
-		@Override
-		public GetClassEscaping.GetClassEscapingBuilder toBuilder() {
-			return this;
-		}
-	
-		@SuppressWarnings("unchecked")
-		@Override
-		public GetClassEscaping.GetClassEscapingBuilder prune() {
-			return this;
-		}
-		
-		@Override
-		public boolean hasData() {
-			if (_getClass()!=null) return true;
-			return false;
-		}
-	
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
-		
-			GetClassEscaping _that = getType().cast(o);
-		
-			if (!Objects.equals(_class, _that._getClass())) return false;
-			return true;
-		}
-		
-		@Override
-		public int hashCode() {
-			int _result = 0;
-			_result = 31 * _result + (_class != null ? _class.hashCode() : 0);
-			return _result;
-		}
-		
-		@Override
-		public String toString() {
-			return "GetClassEscapingBuilder {" +
-				"class=" + this._class +
-			'}';
-		}
-	}
+    /*********************** Builder Interface  ***********************/
+    interface GetClassEscapingBuilder extends GetClassEscaping, RosettaModelObjectBuilder {
+        GetClassEscaping.GetClassEscapingBuilder setClass(Integer _class);
+
+        @Override
+        default void process(RosettaPath path, BuilderProcessor processor) {
+            processor.processBasic(path.newSubPath("class"), Integer.class, _getClass(), this);
+        }
+
+
+        GetClassEscaping.GetClassEscapingBuilder prune();
+    }
+
+    /*********************** Immutable Implementation of GetClassEscaping  ***********************/
+    class GetClassEscapingImpl implements GetClassEscaping {
+        private final Integer _class;
+
+        protected GetClassEscapingImpl(GetClassEscaping.GetClassEscapingBuilder builder) {
+            this._class = builder._getClass();
+        }
+
+        @Override
+        @RosettaAttribute("class")
+        @Accessor(AccessorType.GETTER)
+        @Required
+        @RuneAttribute("class")
+        public Integer _getClass() {
+            return _class;
+        }
+
+        @Override
+        public GetClassEscaping build() {
+            return this;
+        }
+
+        @Override
+        public GetClassEscaping.GetClassEscapingBuilder toBuilder() {
+            GetClassEscaping.GetClassEscapingBuilder builder = builder();
+            setBuilderFields(builder);
+            return builder;
+        }
+
+        protected void setBuilderFields(GetClassEscaping.GetClassEscapingBuilder builder) {
+            ofNullable(_getClass()).ifPresent(builder::setClass);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+
+            GetClassEscaping _that = getType().cast(o);
+
+            if (!Objects.equals(_class, _that._getClass())) return false;
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int _result = 0;
+            _result = 31 * _result + (_class != null ? _class.hashCode() : 0);
+            return _result;
+        }
+
+        @Override
+        public String toString() {
+            return "GetClassEscaping {" +
+                "class=" + this._class +
+            '}';
+        }
+    }
+
+    /*********************** Builder Implementation of GetClassEscaping  ***********************/
+    class GetClassEscapingBuilderImpl implements GetClassEscaping.GetClassEscapingBuilder {
+
+        protected Integer _class;
+
+        @Override
+        @RosettaAttribute("class")
+        @Accessor(AccessorType.GETTER)
+        @Required
+        @RuneAttribute("class")
+        public Integer _getClass() {
+            return _class;
+        }
+
+        @RosettaAttribute("class")
+        @Accessor(AccessorType.SETTER)
+        @Required
+        @RuneAttribute("class")
+        @Override
+        public GetClassEscaping.GetClassEscapingBuilder setClass(Integer __class) {
+            this._class = __class == null ? null : __class;
+            return this;
+        }
+
+        @Override
+        public GetClassEscaping build() {
+            return new GetClassEscaping.GetClassEscapingImpl(this);
+        }
+
+        @Override
+        public GetClassEscaping.GetClassEscapingBuilder toBuilder() {
+            return this;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public GetClassEscaping.GetClassEscapingBuilder prune() {
+            return this;
+        }
+
+        @Override
+        public boolean hasData() {
+            if (_getClass()!=null) return true;
+            return false;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || !(o instanceof RosettaModelObject) || !getType().equals(((RosettaModelObject)o).getType())) return false;
+
+            GetClassEscaping _that = getType().cast(o);
+
+            if (!Objects.equals(_class, _that._getClass())) return false;
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int _result = 0;
+            _result = 31 * _result + (_class != null ? _class.hashCode() : 0);
+            return _result;
+        }
+
+        @Override
+        public String toString() {
+            return "GetClassEscapingBuilder {" +
+                "class=" + this._class +
+            '}';
+        }
+    }
 }
