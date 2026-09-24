@@ -51,6 +51,25 @@ public class RosettaTypeProviderTest {
 	}
 	
 	@Test
+	void testToEnumWithUnresolvedEnumerationHasNoType() {
+		RosettaTestModel model = modelService.toTestModel("""
+				namespace test
+
+				type Foo:
+					a string (1..1)
+				""", false);
+		RosettaExpression expr = model.parseExpression("foo -> a to-enum MissingEnum", "foo Foo (1..1)");
+
+		// An unresolved enumeration is a proxy with no containing model. Building an REnumType from it
+		// produces a type whose name cannot be computed, so anything that reports on this expression -
+		// a validator describing the type in a message, for instance - fails with an NPE instead of
+		// letting the user see the linking error.
+		RMetaAnnotatedType actualType = typeProvider.getRMetaAnnotatedType(expr);
+		Assertions.assertEquals(builtins.NOTHING_WITH_ANY_META, actualType);
+		Assertions.assertDoesNotThrow(() -> actualType.getRType().getName());
+	}
+
+	@Test
 	void testRecursiveRuleTypeInference() {
 		RosettaTestModel model = modelService.toTestModel("""
 				namespace test
