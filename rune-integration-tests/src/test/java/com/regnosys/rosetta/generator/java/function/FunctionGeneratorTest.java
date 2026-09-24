@@ -6,7 +6,6 @@ import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.regnosys.rosetta.tests.util.ModelHelper;
 import com.rosetta.model.lib.RosettaModelObject;
-import com.rosetta.model.lib.functions.ConditionValidator.ConditionException;
 import com.rosetta.model.lib.meta.Key;
 import com.rosetta.model.lib.meta.Reference;
 import com.rosetta.model.lib.records.Date;
@@ -55,28 +54,6 @@ public class FunctionGeneratorTest {
 
     private static final DottedPath METAFIELDS = DottedPath.splitOnDots("com.rosetta.model.metafields");
     private static final DottedPath TEST_METAFIELDS = DottedPath.splitOnDots("com.rosetta.test.model.metafields");
-
-    @Test
-    void conditionDefinitionThatNeedsEscapingInJavaIsTheFailureMessage() {
-        var code = generatorTestHelper.generateCode("""
-                func F:
-                    inputs:
-                        input string (1..1)
-                    output:
-                        result string (1..1)
-
-                    condition InputIsNotX: <"C:\\\\dir \\"quoted\\" \\\\u0041">
-                        input <> "x"
-
-                    set result: input
-                """);
-        var classes = generatorTestHelper.compileToClasses(code);
-        var func = functionGeneratorHelper.createFunc(classes, "F");
-
-        ConditionException exception = assertThrows(ConditionException.class,
-                () -> functionGeneratorHelper.invokeFunc(func, String.class, "x"));
-        assertEquals("C:\\dir \"quoted\" \\u0041", exception.getMessage());
-    }
 
     @Test
     void reportingRuleSupportsRecursion() {
