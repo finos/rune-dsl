@@ -18,9 +18,8 @@ package com.regnosys.rosetta.generator.java.statement.builder;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
-
-import org.eclipse.xtend2.lib.StringConcatenation;
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
@@ -151,18 +150,8 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 	
 	@Override
 	public String toString() {
-		StringConcatenation result = new StringConcatenation();
-		result.append("{");
-		result.newLine();
-		result.append("\t");
-		statements.forEach(stat -> {
-			result.append(stat, "\t");
-			result.newLine();
-			result.append("\t");
-		});
-		result.append(lastStatement, "\t");
-		result.newLine();
-		result.append('}');
-		return result.toString();
+		return Stream.concat(statements.stream(), Stream.of(lastStatement))
+				.map(statement -> "\t" + String.valueOf(statement).replace("\n", "\n\t"))
+				.collect(Collectors.joining("\n", "{\n", "\n}"));
 	}
 }

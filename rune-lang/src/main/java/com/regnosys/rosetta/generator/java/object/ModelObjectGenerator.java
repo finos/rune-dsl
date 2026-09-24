@@ -53,7 +53,7 @@ import com.regnosys.rosetta.generator.java.types.JavaTypeTranslator;
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil;
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass;
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue;
-import com.regnosys.rosetta.generator.java.util.ImportManagerExtension;
+import com.regnosys.rosetta.generator.java.util.FluentImportManager;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.simple.Data;
 import com.regnosys.rosetta.types.RDataType;
@@ -79,7 +79,7 @@ public class ModelObjectGenerator extends FluentRObjectJavaClassGenerator<RDataT
 	@Inject
 	private ModelObjectBuilderGenerator builderGenerator;
 	@Inject
-	private ImportManagerExtension importManager;
+	private FluentImportManager importManager;
 	@Inject
 	private JavaTypeTranslator typeTranslator;
 	@Inject

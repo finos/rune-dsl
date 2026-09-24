@@ -29,8 +29,6 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
-import org.eclipse.xtend2.lib.StringConcatenationClient;
-
 import com.google.common.collect.Lists;
 import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.codegen.api.CodeWriter;

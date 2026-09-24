@@ -19,8 +19,6 @@ package com.regnosys.rosetta.generator.java.statement.builder;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.eclipse.xtend2.lib.StringConcatenation;
-
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.statement.JavaBlock;
@@ -140,20 +138,10 @@ public class JavaIfThenElseBuilder extends JavaStatementBuilder {
 	
 	@Override
 	public String toString() {
-		StringConcatenation result = new StringConcatenation();
-		result.append("if (");
-		result.append(condition);
-		result.append(") ");
 		// Wrapping in a `JavaBlockBuilder` will make sure that the `then` branch is always enclosed in curly braces.
 		// This is a style preference, and is technically not necessary.
-		result.append(toBlock(thenBranch));
-		result.append(" else ");
-		if (elseBranch instanceof JavaIfThenElseBuilder) {
-			result.append(elseBranch);
-		} else {
-			result.append(toBlock(elseBranch));
-		}
-		return result.toString();
+		String elsePart = elseBranch instanceof JavaIfThenElseBuilder ? elseBranch.toString() : toBlock(elseBranch).toString();
+		return "if (" + condition + ") " + toBlock(thenBranch) + " else " + elsePart;
 	}
 	private JavaBlockBuilder toBlock(JavaStatementBuilder stat) {
 		if (stat instanceof JavaBlockBuilder) {

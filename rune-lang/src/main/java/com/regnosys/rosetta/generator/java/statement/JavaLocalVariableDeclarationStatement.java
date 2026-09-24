@@ -16,8 +16,6 @@
 
 package com.regnosys.rosetta.generator.java.statement;
 
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
-
 import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
@@ -48,21 +46,6 @@ public class JavaLocalVariableDeclarationStatement extends JavaStatement {
 		this.initialExpression = initialExpression;
 	}
 	
-	@Override
-	public void appendTo(TargetStringConcatenation target) {
-		if (isFinal) {
-			target.append("final ");
-		}
-		target.append(variableType);
-		target.append(" ");
-		target.append(variableId);
-		if (initialExpression != null) {
-			target.append(" = ");
-			target.append(initialExpression);
-		}
-		target.append(";");
-	}
-
 	@Override
 	public void render(CodeWriter out) {
 		if (isFinal) {

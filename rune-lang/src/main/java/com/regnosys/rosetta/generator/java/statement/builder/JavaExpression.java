@@ -19,14 +19,11 @@ package com.regnosys.rosetta.generator.java.statement.builder;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
-
 import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.codegen.api.CodeWriter;
-import com.regnosys.rosetta.generator.DebuggingTargetLanguageStringConcatenation;
+import com.regnosys.rosetta.generator.DebugCodeWriter;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
-import com.regnosys.rosetta.generator.java.util.TargetStringConcatenationCodeWriter;
 import com.regnosys.rosetta.generator.java.statement.JavaAssignment;
 import com.regnosys.rosetta.generator.java.statement.JavaExpressionStatement;
 import com.regnosys.rosetta.generator.java.statement.JavaLambdaBody;
@@ -53,11 +50,6 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 	 */
 	public static JavaExpression from(CodeRenderer value, JavaType type) {
 		return new JavaExpression(type) {
-			@Override
-			public void appendTo(TargetStringConcatenation target) {
-				value.render(new TargetStringConcatenationCodeWriter(target));
-			}
-
 			@Override
 			public void render(CodeWriter out) {
 				value.render(out);
@@ -124,7 +116,7 @@ public abstract class JavaExpression extends JavaStatementBuilder implements Jav
 	
 	@Override
 	public String toString() {
-		return DebuggingTargetLanguageStringConcatenation.convertToDebugString(this);
+		return DebugCodeWriter.toDebugString(this);
 	}
 
 }

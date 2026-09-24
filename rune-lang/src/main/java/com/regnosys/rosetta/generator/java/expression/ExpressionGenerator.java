@@ -70,7 +70,7 @@ import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta;
 import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface;
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta;
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue;
-import com.regnosys.rosetta.generator.java.util.ImportManagerExtension;
+import com.regnosys.rosetta.generator.java.util.FluentImportManager;
 import com.regnosys.rosetta.generator.java.util.PreferWildcardImportMethod;
 import com.regnosys.rosetta.generator.java.util.RecordJavaUtil;
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs;
@@ -232,7 +232,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 	@Inject
 	private RosettaEcoreUtil ecoreUtil;
 	@Inject
-	private ImportManagerExtension importManager;
+	private FluentImportManager importManager;
 	@Inject
 	private ExpressionHelper exprHelper;
 	@Inject
@@ -277,7 +277,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 	}
 
 	private PreferWildcardImportMethod runtimeMethod(String methodName) {
-		return importManager.importWildcard(importManager.method(ExpressionOperatorsNullSafe.class, methodName));
+		return importManager.wildcardMethod(ExpressionOperatorsNullSafe.class, methodName);
 	}
 
 	private JavaStatementBuilder applyRuntimeMethod(JavaStatementBuilder expr, String methodName, JavaType resultType) {

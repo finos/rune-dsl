@@ -16,6 +16,9 @@
 
 package com.regnosys.rosetta.generator.java.util;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
+
 import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.codegen.support.StringCodeWriter;
 import com.regnosys.rosetta.generator.java.scoping.JavaFileScope;
@@ -46,5 +49,24 @@ public class FluentImportManager {
 			result.newline();
 		}
 		return result.toString();
+	}
+
+	/**
+	 * The first public method of the given class with the given name. Written to a
+	 * {@link RecordingCodeWriter}, it is statically imported.
+	 */
+	public Method method(Class<?> clazz, String methodName) {
+		return Arrays.stream(clazz.getMethods())
+				.filter(m -> m.getName().equals(methodName))
+				.findFirst()
+				.orElseThrow(() -> new IllegalArgumentException("No public method " + methodName + " in " + clazz.getName()));
+	}
+
+	/**
+	 * Like {@link #method(Class, String)}, but preferring a wildcard import of the
+	 * members of the given class.
+	 */
+	public PreferWildcardImportMethod wildcardMethod(Class<?> clazz, String methodName) {
+		return new PreferWildcardImportMethod(method(clazz, methodName));
 	}
 }
