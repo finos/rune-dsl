@@ -759,17 +759,14 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 	@Override
 	protected JavaStatementBuilder caseFeatureCall(RosettaFeatureCall expr, Context context) {
 		RosettaFeature feature = expr.getFeature();
-		if (feature instanceof RosettaEnumValue enumValue) {
-			return enumCall(enumValue, context.expectedType);
-		} else if (feature instanceof Attribute attribute) {
-			return attributeCall(javaCode(expr.getReceiver(), context.withExpected(typeUtil.wrapExtendsWithoutMeta(typeUtil.MAPPER, expr.getReceiver()))), typeProvider.getRMetaAnnotatedType(expr.getReceiver()), rObjectFactory.buildRAttribute(attribute), false, context.expectedType, context.scope);
-		} else if (feature instanceof RosettaMetaType metaType) {
-			return metaCall(javaCode(expr.getReceiver(), context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER, expr.getReceiver()))), typeProvider.getRMetaAnnotatedType(expr.getReceiver()), metaType, false, context.scope);
-		} else if (feature instanceof RosettaRecordFeature recordFeature) {
-			return recordCall(javaCode(expr.getReceiver(), context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER, expr.getReceiver()))), typeProvider.getRMetaAnnotatedType(expr.getReceiver()), recordFeature, context.scope);
-		} else {
-			throw new UnsupportedOperationException("Unsupported feature type of " + (feature == null ? null : feature.getClass().getName()));
-		}
+		return switch (feature) {
+			case RosettaEnumValue enumValue -> enumCall(enumValue, context.expectedType);
+			case Attribute attribute -> attributeCall(javaCode(expr.getReceiver(), context.withExpected(typeUtil.wrapExtendsWithoutMeta(typeUtil.MAPPER, expr.getReceiver()))), typeProvider.getRMetaAnnotatedType(expr.getReceiver()), rObjectFactory.buildRAttribute(attribute), false, context.expectedType, context.scope);
+			case RosettaMetaType metaType -> metaCall(javaCode(expr.getReceiver(), context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER, expr.getReceiver()))), typeProvider.getRMetaAnnotatedType(expr.getReceiver()), metaType, false, context.scope);
+			case RosettaRecordFeature recordFeature -> recordCall(javaCode(expr.getReceiver(), context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER, expr.getReceiver()))), typeProvider.getRMetaAnnotatedType(expr.getReceiver()), recordFeature, context.scope);
+			case null -> throw new UnsupportedOperationException("Unsupported feature type of null");
+			default -> throw new UnsupportedOperationException("Unsupported feature type of " + feature.getClass().getName());
+		};
 	}
 
 	@Override

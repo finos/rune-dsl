@@ -217,22 +217,18 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 		return itemType;
 	}
 	public JavaClass<?> toMetaJavaType(RFeature feature) {
-		if (feature instanceof RAttribute) {
-			return toMetaJavaType((RAttribute) feature);
-		} else if (feature instanceof RMetaAttribute) {
-			return toItemJavaType((RMetaAttribute) feature);
-		} else {
-			throw new UnsupportedOperationException("No JavaType exists for feature: " + feature.getName());
-		}
+		return switch (feature) {
+			case RAttribute attribute -> toMetaJavaType(attribute);
+			case RMetaAttribute metaAttribute -> toItemJavaType(metaAttribute);
+			default -> throw new UnsupportedOperationException("No JavaType exists for feature: " + feature.getName());
+		};
 	}	
 	public JavaClass<?> toJavaType(RFeature feature) {
-		if (feature instanceof RAttribute) {
-			return toJavaType((RAttribute) feature);
-		} else if (feature instanceof RMetaAttribute) {
-			return toItemJavaType((RMetaAttribute) feature);
-		} else {
-			throw new UnsupportedOperationException("No JavaType exists for feature: " + feature.getName());
-		}
+		return switch (feature) {
+			case RAttribute attribute -> toJavaType(attribute);
+			case RMetaAttribute metaAttribute -> toItemJavaType(metaAttribute);
+			default -> throw new UnsupportedOperationException("No JavaType exists for feature: " + feature.getName());
+		};
 	}
 	public JavaClass<?> operationToReferenceWithMetaType(Operation op) {
 		RosettaFeature feature;
@@ -272,13 +268,11 @@ public class JavaTypeTranslator extends RosettaTypeSwitch<JavaType, Void> {
 			List<? extends RFeature> segments = op.getPathTail();
 			feature = segments.get(segments.size() - 1);
 		}
-		if (feature instanceof RAttribute) {
-			return toJavaReferenceType(((RAttribute)feature).getRMetaAnnotatedType());
-		} else if (feature instanceof RMetaAttribute) {
-			return toJavaReferenceType(((RMetaAttribute)feature).getRType());
-		} else {
-			throw new UnsupportedOperationException("No JavaReferenceType exists for feature: " + feature.getName());
-		}
+		return switch (feature) {
+			case RAttribute attribute -> toJavaReferenceType(attribute.getRMetaAnnotatedType());
+			case RMetaAttribute metaAttribute -> toJavaReferenceType(metaAttribute.getRType());
+			default -> throw new UnsupportedOperationException("No JavaReferenceType exists for feature: " + feature.getName());
+		};
 	}
 	
 	private String getTypeDebugInfo(RType type) {

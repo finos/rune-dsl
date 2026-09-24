@@ -36,22 +36,16 @@ public class InterpreterValueJavaConverter {
 		if (value.size() == 0) {
 			return JavaLiteral.NULL;
 		}
-		if (value instanceof RosettaBooleanValue) {
-			return toJavaListIfNecessary(((RosettaBooleanValue) value).getItems(), this::convertBooleanValueToJava);
-		} else if (value instanceof RosettaDateTimeValue) {
-			return toJavaListIfNecessary(((RosettaDateTimeValue) value).getItems(), this::convertDateTimeValueToJava);
-		} else if (value instanceof RosettaDateValue) {
-			return toJavaListIfNecessary(((RosettaDateValue) value).getItems(), this::convertDateValueToJava);
-		} else if (value instanceof RosettaNumberValue) {
-			return toJavaListIfNecessary(((RosettaNumberValue) value).getItems(), this::convertNumberValueToJava);
-		} else if (value instanceof RosettaStringValue) {
-			return toJavaListIfNecessary(((RosettaStringValue) value).getItems(), this::convertStringValueToJava);
-		} else if (value instanceof RosettaTimeValue) {
-			return toJavaListIfNecessary(((RosettaTimeValue) value).getItems(), this::convertTimeValueToJava);
-		} else if (value instanceof RosettaZonedDateTimeValue) {
-			return toJavaListIfNecessary(((RosettaZonedDateTimeValue) value).getItems(), this::convertZonedDateTimeValueToJava);
-		}
-		throw new UnsupportedOperationException("Cannot convert " + value + " to Java code");
+		return switch (value) {
+			case RosettaBooleanValue booleanValue -> toJavaListIfNecessary(booleanValue.getItems(), this::convertBooleanValueToJava);
+			case RosettaDateTimeValue dateTimeValue -> toJavaListIfNecessary(dateTimeValue.getItems(), this::convertDateTimeValueToJava);
+			case RosettaDateValue dateValue -> toJavaListIfNecessary(dateValue.getItems(), this::convertDateValueToJava);
+			case RosettaNumberValue numberValue -> toJavaListIfNecessary(numberValue.getItems(), this::convertNumberValueToJava);
+			case RosettaStringValue stringValue -> toJavaListIfNecessary(stringValue.getItems(), this::convertStringValueToJava);
+			case RosettaTimeValue timeValue -> toJavaListIfNecessary(timeValue.getItems(), this::convertTimeValueToJava);
+			case RosettaZonedDateTimeValue zonedDateTimeValue -> toJavaListIfNecessary(zonedDateTimeValue.getItems(), this::convertZonedDateTimeValueToJava);
+			default -> throw new UnsupportedOperationException("Cannot convert " + value + " to Java code");
+		};
 	}
 	
 	private <T> JavaExpression toJavaListIfNecessary(List<T> items, Function<T, JavaExpression> handler) {
