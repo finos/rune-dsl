@@ -1,5 +1,6 @@
 package com.regnosys.rosetta.generator.java.expression;
 
+import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.generator.java.scoping.JavaPackageName;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
@@ -15,7 +16,6 @@ import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaPrimitiveType;
 import com.rosetta.util.types.JavaType;
-import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
 import org.junit.jupiter.api.Test;
@@ -40,23 +40,23 @@ public class TypeCoercionTest {
     @Inject
     private ExpressionScopeUtility scopeUtil;
 
-    private void assertCoercion(String expectedCode, StringConcatenationClient expr, Class<?> actual, JavaType expected) {
+    private void assertCoercion(String expectedCode, CodeRenderer expr, Class<?> actual, JavaType expected) {
         assertCoercion(expectedCode, expr, JavaType.from(actual), expected);
     }
 
-    private void assertCoercion(String expectedCode, StringConcatenationClient expr, JavaType actual, Class<?> expected) {
+    private void assertCoercion(String expectedCode, CodeRenderer expr, JavaType actual, Class<?> expected) {
         assertCoercion(expectedCode, expr, actual, JavaType.from(expected));
     }
 
-    private void assertCoercion(String expectedCode, StringConcatenationClient expr, Class<?> actual, Class<?> expected) {
+    private void assertCoercion(String expectedCode, CodeRenderer expr, Class<?> actual, Class<?> expected) {
         assertCoercion(expectedCode, expr, JavaType.from(actual), JavaType.from(expected));
     }
 
-    private void assertCoercion(String expectedCode, StringConcatenationClient expr, JavaType actual, JavaType expected) {
+    private void assertCoercion(String expectedCode, CodeRenderer expr, JavaType actual, JavaType expected) {
         assertCoercion(expectedCode, expr, actual, expected, true);
     }
 
-    private void assertCoercion(String expectedCode, StringConcatenationClient expr, JavaType actual, JavaType expected, boolean throwOnFail) {
+    private void assertCoercion(String expectedCode, CodeRenderer expr, JavaType actual, JavaType expected, boolean throwOnFail) {
         DottedPath pkg = DottedPath.of("test", "ns");
         JavaStatementScope scope = scopeUtil.createTestExpressionScope(pkg);
 
@@ -68,18 +68,11 @@ public class TypeCoercionTest {
     }
 
     /**
-     * Builds a {@link StringConcatenationClient} from literal text fragments and embedded
-     * type references ({@link Class} objects), mirroring an Xtend {@code '''...'''} template.
+     * Builds a {@link CodeRenderer} from literal text fragments and embedded
+     * type references ({@link Class} objects).
      */
-    private static StringConcatenationClient code(Object... parts) {
-        return new StringConcatenationClient() {
-            @Override
-            protected void appendTo(TargetStringConcatenation target) {
-                for (Object part : parts) {
-                    target.append(part);
-                }
-            }
-        };
+    private static CodeRenderer code(Object... parts) {
+        return out -> out.write(parts);
     }
 
     @Test

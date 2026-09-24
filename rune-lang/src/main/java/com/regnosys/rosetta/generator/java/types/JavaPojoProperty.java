@@ -21,7 +21,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.xtend2.lib.StringConcatenationClient;
 
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
 import com.rosetta.model.lib.process.AttributeMeta;
@@ -135,15 +134,7 @@ public class JavaPojoProperty {
 	}
 
 	public JavaExpression applyGetter(JavaExpression expr) {
-		return JavaExpression.from(new StringConcatenationClient() {
-			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				target.append(expr);
-				target.append('.');
-				target.append(getOperationName(JavaPojoPropertyOperationType.GET));
-				target.append("()");
-			}
-		}, type);
+		return JavaExpression.from(out -> out.write(expr, ".", getOperationName(JavaPojoPropertyOperationType.GET), "()"), type);
 	}
 	
 	@Override
