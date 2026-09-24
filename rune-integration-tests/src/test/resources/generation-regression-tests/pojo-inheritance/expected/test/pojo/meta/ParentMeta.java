@@ -24,29 +24,29 @@ import test.pojo.validation.exists.ParentOnlyExistsValidator;
 @RosettaMeta(model=Parent.class)
 public class ParentMeta implements RosettaMetaData<Parent> {
 
-	@Override
-	public List<Validator<? super Parent>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super Parent, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super Parent> validator(ValidatorFactory factory) {
-		return factory.<Parent>create(ParentValidator.class);
-	}
+    @Override
+    public List<Validator<? super Parent>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super Parent> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<Parent>create(ParentTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super Parent, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Override
-	public ValidatorWithArg<? super Parent, Set<String>> onlyExistsValidator() {
-		return new ParentOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super Parent> validator(ValidatorFactory factory) {
+        return factory.<Parent>create(ParentValidator.class);
+    }
+
+    @Override
+    public Validator<? super Parent> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<Parent>create(ParentTypeFormatValidator.class);
+    }
+
+    @Override
+    public ValidatorWithArg<? super Parent, Set<String>> onlyExistsValidator() {
+        return new ParentOnlyExistsValidator();
+    }
 }

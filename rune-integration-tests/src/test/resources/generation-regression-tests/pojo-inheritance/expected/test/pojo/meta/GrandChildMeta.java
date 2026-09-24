@@ -24,29 +24,29 @@ import test.pojo.validation.exists.GrandChildOnlyExistsValidator;
 @RosettaMeta(model=GrandChild.class)
 public class GrandChildMeta implements RosettaMetaData<GrandChild> {
 
-	@Override
-	public List<Validator<? super GrandChild>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super GrandChild, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super GrandChild> validator(ValidatorFactory factory) {
-		return factory.<GrandChild>create(GrandChildValidator.class);
-	}
+    @Override
+    public List<Validator<? super GrandChild>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super GrandChild> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<GrandChild>create(GrandChildTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super GrandChild, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Override
-	public ValidatorWithArg<? super GrandChild, Set<String>> onlyExistsValidator() {
-		return new GrandChildOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super GrandChild> validator(ValidatorFactory factory) {
+        return factory.<GrandChild>create(GrandChildValidator.class);
+    }
+
+    @Override
+    public Validator<? super GrandChild> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<GrandChild>create(GrandChildTypeFormatValidator.class);
+    }
+
+    @Override
+    public ValidatorWithArg<? super GrandChild, Set<String>> onlyExistsValidator() {
+        return new GrandChildOnlyExistsValidator();
+    }
 }

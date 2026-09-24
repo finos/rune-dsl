@@ -24,29 +24,29 @@ import test.condition.validation.exists.RangeOnlyExistsValidator;
 @RosettaMeta(model=Range.class)
 public class RangeMeta implements RosettaMetaData<Range> {
 
-	@Override
-	public List<Validator<? super Range>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super Range, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super Range> validator(ValidatorFactory factory) {
-		return factory.<Range>create(RangeValidator.class);
-	}
+    @Override
+    public List<Validator<? super Range>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super Range> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<Range>create(RangeTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super Range, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Override
-	public ValidatorWithArg<? super Range, Set<String>> onlyExistsValidator() {
-		return new RangeOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super Range> validator(ValidatorFactory factory) {
+        return factory.<Range>create(RangeValidator.class);
+    }
+
+    @Override
+    public Validator<? super Range> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<Range>create(RangeTypeFormatValidator.class);
+    }
+
+    @Override
+    public ValidatorWithArg<? super Range, Set<String>> onlyExistsValidator() {
+        return new RangeOnlyExistsValidator();
+    }
 }

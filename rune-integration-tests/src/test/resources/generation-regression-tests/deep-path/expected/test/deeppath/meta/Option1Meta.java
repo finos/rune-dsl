@@ -24,29 +24,29 @@ import test.deeppath.validation.exists.Option1OnlyExistsValidator;
 @RosettaMeta(model=Option1.class)
 public class Option1Meta implements RosettaMetaData<Option1> {
 
-	@Override
-	public List<Validator<? super Option1>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super Option1, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super Option1> validator(ValidatorFactory factory) {
-		return factory.<Option1>create(Option1Validator.class);
-	}
+    @Override
+    public List<Validator<? super Option1>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super Option1> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<Option1>create(Option1TypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super Option1, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Override
-	public ValidatorWithArg<? super Option1, Set<String>> onlyExistsValidator() {
-		return new Option1OnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super Option1> validator(ValidatorFactory factory) {
+        return factory.<Option1>create(Option1Validator.class);
+    }
+
+    @Override
+    public Validator<? super Option1> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<Option1>create(Option1TypeFormatValidator.class);
+    }
+
+    @Override
+    public ValidatorWithArg<? super Option1, Set<String>> onlyExistsValidator() {
+        return new Option1OnlyExistsValidator();
+    }
 }

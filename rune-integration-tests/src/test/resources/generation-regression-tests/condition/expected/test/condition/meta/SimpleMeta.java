@@ -26,33 +26,33 @@ import test.condition.validation.exists.SimpleOnlyExistsValidator;
 @RosettaMeta(model=Simple.class)
 public class SimpleMeta implements RosettaMetaData<Simple> {
 
-	@Override
-	public List<Validator<? super Simple>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-			factory.<Simple>create(SimpleNotForbidden.class),
-			factory.<Simple>create(SimpleNotEmpty.class)
-		);
-	}
-	
-	@Override
-	public List<Function<? super Simple, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Arrays.asList(
-			factory.<Simple>create(Qualify_Simple.class)
-		);
-	}
-	
-	@Override
-	public Validator<? super Simple> validator(ValidatorFactory factory) {
-		return factory.<Simple>create(SimpleValidator.class);
-	}
+    @Override
+    public List<Validator<? super Simple>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+            factory.<Simple>create(SimpleNotForbidden.class),
+            factory.<Simple>create(SimpleNotEmpty.class)
+        );
+    }
 
-	@Override
-	public Validator<? super Simple> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<Simple>create(SimpleTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super Simple, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Arrays.asList(
+            factory.<Simple>create(Qualify_Simple.class)
+        );
+    }
 
-	@Override
-	public ValidatorWithArg<? super Simple, Set<String>> onlyExistsValidator() {
-		return new SimpleOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super Simple> validator(ValidatorFactory factory) {
+        return factory.<Simple>create(SimpleValidator.class);
+    }
+
+    @Override
+    public Validator<? super Simple> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<Simple>create(SimpleTypeFormatValidator.class);
+    }
+
+    @Override
+    public ValidatorWithArg<? super Simple, Set<String>> onlyExistsValidator() {
+        return new SimpleOnlyExistsValidator();
+    }
 }
