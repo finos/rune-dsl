@@ -650,7 +650,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 					}
 
 					// end of path
-					RFeature seg = op.getPathTail().get(op.getPathTail().size() - 1);
+					RFeature seg = op.getPathTail().getLast();
 					JavaExpression oldExpr = expr;
 					JavaType outputExpressionType = typeUtil.getItemType(expr.getExpressionType());
 					JavaPojoProperty prop = getPojoProperty(seg, outputExpressionType);

@@ -16,8 +16,6 @@
 
 package com.regnosys.rosetta.generator.java.statement.builder;
 
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
-
 import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.rosetta.util.types.JavaType;
@@ -35,11 +33,6 @@ public class JavaThis extends JavaExpression {
 	@Override
 	public JavaStatementBuilder declareAsVariable(boolean isFinal, String variableId, JavaStatementScope scope) {
 		return this;
-	}
-
-	@Override
-	public void appendTo(TargetStringConcatenation target) {
-		target.append("this");
 	}
 
 	@Override

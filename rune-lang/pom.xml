@@ -28,9 +28,6 @@
     <name>Rune DSL SDK</name>
     <artifactId>rune-lang</artifactId>
 
-    <properties>
-        <maven.compiler.release>17</maven.compiler.release>
-    </properties>
 
     <description>
         Responsibilities: defining the core of the Rune DSL, including

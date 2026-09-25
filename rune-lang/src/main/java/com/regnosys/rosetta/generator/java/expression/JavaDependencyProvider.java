@@ -45,20 +45,20 @@ public class JavaDependencyProvider {
 			var deepFeatureCalls = EcoreUtil2.eAllOfType(expression, RosettaDeepFeatureCall.class);
 
 			rosettaSymbols.stream()
-				.filter(s -> s instanceof Function)
-				.map(s -> rTypeBuilderFactory.buildRFunction((Function)s))
+				.filter(Function.class::isInstance)
+				.map(s -> rTypeBuilderFactory.buildRFunction((Function) s))
 				.map(typeTranslator::toFunctionJavaClass)
 				.forEach(result::add);
 			rosettaSymbols.stream()
-				.filter(s -> s instanceof RosettaRule)
-				.map(s -> rTypeBuilderFactory.buildRFunction((RosettaRule)s))
+				.filter(RosettaRule.class::isInstance)
+				.map(s -> rTypeBuilderFactory.buildRFunction((RosettaRule) s))
 				.map(typeTranslator::toFunctionJavaClass)
 				.forEach(result::add);
 			deepFeatureCalls.stream()
 				.map(dfc -> typeSystem.stripFromTypeAliases(typeProvider.getRMetaAnnotatedType(dfc.getReceiver()).getRType()))
-				.map(t -> t instanceof RChoiceType ? ((RChoiceType)t).asRDataType() : t)
-				.filter(t -> t instanceof RDataType)
-				.map(t -> typeTranslator.toDeepPathUtilJavaClass((RDataType)t))
+				.map(t -> t instanceof RChoiceType choiceType ? choiceType.asRDataType() : t)
+				.filter(RDataType.class::isInstance)
+				.map(t -> typeTranslator.toDeepPathUtilJavaClass((RDataType) t))
 				.forEach(result::add);
 		}
 	}

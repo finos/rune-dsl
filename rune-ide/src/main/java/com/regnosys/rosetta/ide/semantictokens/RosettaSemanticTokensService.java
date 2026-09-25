@@ -87,20 +87,17 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	}
 	
 	private Optional<RosettaSemanticTokenTypesEnum> typeToToken(RosettaType t) {
-		if (extensions.isResolved(t)) {
-			if (t instanceof Data) {
-				return Optional.of(TYPE);
-			} else if (t instanceof RosettaBasicType) {
-				return Optional.of(BASIC_TYPE);
-			} else if (t instanceof RosettaRecordType) {
-				return Optional.of(RECORD_TYPE);
-			} else if (t instanceof RosettaEnumeration) {
-				return Optional.of(ENUM);
-			} else if (t instanceof RosettaTypeAlias) {
-				return Optional.of(TYPE_ALIAS);
-			}
+		if (!extensions.isResolved(t)) {
+			return Optional.empty();
 		}
-		return Optional.empty();
+		return switch (t) {
+			case Data d -> Optional.of(TYPE);
+			case RosettaBasicType b -> Optional.of(BASIC_TYPE);
+			case RosettaRecordType r -> Optional.of(RECORD_TYPE);
+			case RosettaEnumeration e -> Optional.of(ENUM);
+			case RosettaTypeAlias a -> Optional.of(TYPE_ALIAS);
+			default -> Optional.empty();
+		};
 	}
 	private RosettaSemanticTokenModifiersEnum getCardinalityModifier(RosettaSymbol symbol) {
 		if (cardinalityProvider.isSymbolMulti(symbol)) {
@@ -260,14 +257,12 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	}
 	
 	private SemanticToken markFeature(EObject objectToMark, EStructuralFeature featureToMark, RosettaFeature feature, AttributeType t) {
-		if (feature instanceof RosettaEnumValue) {
-			return createSemanticToken(objectToMark, featureToMark, ENUM_MEMBER);
-		} else if (feature instanceof Attribute) {
-			return markAttribute(objectToMark, featureToMark, (Attribute)feature, t);
-		} else if (feature instanceof RosettaMetaType) {
-			return createSemanticToken(objectToMark, featureToMark, META_MEMBER);
-		}
-		return null;
+		return switch (feature) {
+			case RosettaEnumValue enumValue -> createSemanticToken(objectToMark, featureToMark, ENUM_MEMBER);
+			case Attribute attribute -> markAttribute(objectToMark, featureToMark, attribute, t);
+			case RosettaMetaType metaType -> createSemanticToken(objectToMark, featureToMark, META_MEMBER);
+			case null, default -> null;
+		};
 	}
 	@MarkSemanticToken
 	public SemanticToken markFeature(RosettaFeatureCall featureCall) {
@@ -279,29 +274,25 @@ public class RosettaSemanticTokensService extends AbstractSemanticTokensService 
 	}
 	
 	private SemanticToken markSymbol(EObject objectToMark, EStructuralFeature featureToMark, RosettaSymbol symbol) {
-		if (symbol instanceof Attribute) {
-			RMetaAnnotatedType implicitType = typeProvider.typeOfImplicitVariable(objectToMark);
-			if (implicitType != null) {
-				Set<? extends RosettaFeature> implicitFeatures = Sets.newHashSet(extensions.allFeaturesExcludingEnumValues(implicitType, objectToMark));
-				if (implicitFeatures.contains(symbol)) {
-					return markAttribute(objectToMark, featureToMark, (Attribute)symbol, AttributeType.INPUT);
+		return switch (symbol) {
+			case Attribute attribute -> {
+				RMetaAnnotatedType implicitType = typeProvider.typeOfImplicitVariable(objectToMark);
+				if (implicitType != null) {
+					Set<? extends RosettaFeature> implicitFeatures = Sets.newHashSet(extensions.allFeaturesExcludingEnumValues(implicitType, objectToMark));
+					if (implicitFeatures.contains(symbol)) {
+						yield markAttribute(objectToMark, featureToMark, attribute, AttributeType.INPUT);
+					}
 				}
+				yield markAttribute(objectToMark, featureToMark, attribute, AttributeType.OTHER);
 			}
-			return markAttribute(objectToMark, featureToMark, (Attribute)symbol, AttributeType.OTHER);
-		} else if (symbol instanceof ClosureParameter) {
-			return markClosureParameter(objectToMark, featureToMark, (ClosureParameter)symbol);
-		} else if (symbol instanceof Function) {
-			return markFunction(objectToMark, featureToMark, (Function)symbol);
-		} else if (symbol instanceof RosettaExternalFunction) {
-			return createSemanticToken(objectToMark, featureToMark, RosettaSemanticTokenTypesEnum.FUNCTION, DEFAULT_LIBRARY);
-		} else if (symbol instanceof RosettaRule) {
-			return markRule(objectToMark, featureToMark, (RosettaRule)symbol);
-		} else if (symbol instanceof ShortcutDeclaration) {
-			return markAlias(objectToMark, featureToMark, (ShortcutDeclaration)symbol);
-		} else if (symbol instanceof TypeParameter) {
-			return createSemanticToken(objectToMark, featureToMark, PARAMETER);
-		}
-		return null;
+			case ClosureParameter parameter -> markClosureParameter(objectToMark, featureToMark, parameter);
+			case Function function -> markFunction(objectToMark, featureToMark, function);
+			case RosettaExternalFunction function -> createSemanticToken(objectToMark, featureToMark, RosettaSemanticTokenTypesEnum.FUNCTION, DEFAULT_LIBRARY);
+			case RosettaRule rule -> markRule(objectToMark, featureToMark, rule);
+			case ShortcutDeclaration alias -> markAlias(objectToMark, featureToMark, alias);
+			case TypeParameter parameter -> createSemanticToken(objectToMark, featureToMark, PARAMETER);
+			case null, default -> null;
+		};
 	}
 	@MarkSemanticToken
 	public SemanticToken markSymbolReference(RosettaSymbolReference reference) {

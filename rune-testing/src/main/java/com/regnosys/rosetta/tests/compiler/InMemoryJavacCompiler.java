@@ -243,10 +243,10 @@ public class InMemoryJavacCompiler {
 
 		@Override
 		public String inferBinaryName(Location location, JavaFileObject file) {
-			if (file instanceof JavaFileObjectWithName) {
-				return ((JavaFileObjectWithName) file).getClassName();
-			} else if (file instanceof CompiledCode) {
-				return ((CompiledCode) file).getClassName();
+			if (file instanceof JavaFileObjectWithName fileWithName) {
+				return fileWithName.getClassName();
+			} else if (file instanceof CompiledCode compiledCode) {
+				return compiledCode.getClassName();
 			} else { // if it's not CustomJavaFileObject, then it's coming from standard file manager
 						// - let it handle the file
 				return super.inferBinaryName(location, file);
@@ -427,8 +427,7 @@ public class InMemoryJavacCompiler {
 	        CharSequence charContent = getCharContent(ignoreEncodingErrors);
 	        if (charContent == null)
 	            throw new UnsupportedOperationException();
-	        if (charContent instanceof CharBuffer) {
-	            CharBuffer buffer = (CharBuffer)charContent;
+	        if (charContent instanceof CharBuffer buffer) {
 	            if (buffer.hasArray())
 	                return new CharArrayReader(buffer.array());
 	        }

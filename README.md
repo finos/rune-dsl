@@ -80,7 +80,7 @@ To build the project, run `mvn clean install`.
 Install version `2025-06` of the "Eclipse IDE for Java and DSL Developers" using the [Eclipse Installer](https://www.eclipse.org/downloads/packages/installer). You might have to enable "Advanced Mode" in the settings of the Eclipse Installer to install a specific version.
 
 #### Configure Eclipse with the right version of Java
-Xtend files cannot be build with any Java version later than 21. In Eclipse, go to Settings... > Java > Installed JREs and make sure the checked JRE points to a Java version of 21.
+The build requires Java 21. In Eclipse, go to Settings... > Java > Installed JREs and make sure the checked JRE points to a Java version of 21.
 
 #### Install the Checkstyle plugin
 We use [Checkstyle](https://checkstyle.sourceforge.io/) for enforcing good coding practices. The Eclipse plugin for Checkstyle can be found here: [https://checkstyle.org/eclipse-cs/#!/](https://checkstyle.org/eclipse-cs/#!/).
@@ -101,7 +101,6 @@ If you're seeing 1000+ errors in the "Problems" window of Eclipse, try the follo
 
 ### 3. Setting things up in Intellij
 Support for developing Xtext projects in Intellij is limited. It has no support for
-- editing `Xtend` files
 - editing the `Xtext` file
 - running `GenerateRosetta.mwe2`.
 

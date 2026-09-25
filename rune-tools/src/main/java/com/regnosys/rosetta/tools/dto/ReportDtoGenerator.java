@@ -97,33 +97,39 @@ public class ReportDtoGenerator {
     }
 
     private String getGetter(RAttribute rAttribute) {
-        return INDENT + String.format("public %s get%s() {\n", getAttributeType(rAttribute), StringUtils.capitalize(rAttribute.getName())) +
-                INDENT + INDENT + String.format("return %s;\n", rAttribute.getName()) +
-                INDENT + "}\n";
+        return """
+                    public %s get%s() {
+                        return %s;
+                    }
+                """.formatted(getAttributeType(rAttribute), StringUtils.capitalize(rAttribute.getName()), rAttribute.getName());
     }
 
     private String getEquals(RType rType, Set<RAttribute> rAttributes) {
-        return INDENT + "@Override\n" +
-                INDENT + "public boolean equals(Object o) {\n" +
-                INDENT + INDENT + "if (o == null || getClass() != o.getClass()) return false;\n" +
-                INDENT + INDENT + String.format("%s that = (%s) o;\n", getClassName(rType), getClassName(rType)) +
-                INDENT + INDENT + String.format("return %s;\n",
-                rAttributes.stream()
-                        .map(a -> String.format("Objects.equals(%s, that.%s)", a.getName(), a.getName()))
-                        .sorted()
-                        .collect(Collectors.joining(" &&\n" + INDENT + INDENT + INDENT))) +
-                INDENT + "}\n";
+        String comparisons = rAttributes.stream()
+                .map(a -> String.format("Objects.equals(%s, that.%s)", a.getName(), a.getName()))
+                .sorted()
+                .collect(Collectors.joining(" &&\n" + INDENT + INDENT + INDENT));
+        return """
+                    @Override
+                    public boolean equals(Object o) {
+                        if (o == null || getClass() != o.getClass()) return false;
+                        %s that = (%s) o;
+                        return %s;
+                    }
+                """.formatted(getClassName(rType), getClassName(rType), comparisons);
     }
 
     private String getHashCode(Set<RAttribute> rAttributes) {
-        return INDENT + "@Override\n" +
-                INDENT + "public int hashCode() {\n" +
-                INDENT + INDENT + String.format("return Objects.hash(%s);\n",
-                rAttributes.stream()
-                        .map(RAttribute::getName)
-                        .sorted()
-                        .collect(Collectors.joining(",\n" + INDENT + INDENT + INDENT))) +
-                INDENT + "}\n";
+        String names = rAttributes.stream()
+                .map(RAttribute::getName)
+                .sorted()
+                .collect(Collectors.joining(",\n" + INDENT + INDENT + INDENT));
+        return """
+                    @Override
+                    public int hashCode() {
+                        return Objects.hash(%s);
+                    }
+                """.formatted(names);
     }
 
     private String getClassName(RType rType) {

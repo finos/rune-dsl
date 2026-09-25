@@ -63,11 +63,10 @@ public class FormatterRequestWithDefaultPreferencesProvider implements Provider<
 		}
 		private Map<String, String> getValuesMapIfPossible(ITypedPreferenceValues preferences) {
 			while (!(preferences instanceof MapBasedPreferenceValues && ((MapBasedPreferenceValues) preferences).getDelegate() == null)) {
-				if (preferences instanceof TypedPreferenceValues && ((TypedPreferenceValues) preferences).getDelegate() instanceof ITypedPreferenceValues) {
-					preferences = (ITypedPreferenceValues) ((TypedPreferenceValues) preferences).getDelegate();
-				} else if (preferences instanceof MapBasedPreferenceValues && ((MapBasedPreferenceValues) preferences).getDelegate() instanceof ITypedPreferenceValues) {
-					MapBasedPreferenceValues preferencesWithDelegate = (MapBasedPreferenceValues) preferences;
-					Map<String, String> delegateValues = getValuesMapIfPossible((ITypedPreferenceValues) preferencesWithDelegate.getDelegate());
+				if (preferences instanceof TypedPreferenceValues typedPreferences && typedPreferences.getDelegate() instanceof ITypedPreferenceValues delegate) {
+					preferences = delegate;
+				} else if (preferences instanceof MapBasedPreferenceValues preferencesWithDelegate && preferencesWithDelegate.getDelegate() instanceof ITypedPreferenceValues delegate) {
+					Map<String, String> delegateValues = getValuesMapIfPossible(delegate);
 					if (delegateValues == null) {
 						return null;
 					}

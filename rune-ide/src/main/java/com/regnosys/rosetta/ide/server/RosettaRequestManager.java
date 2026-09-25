@@ -33,6 +33,7 @@ import jakarta.inject.Singleton;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.function.Function;
 
 /**
  * A request manager that will time out after a configurable amount of seconds.
@@ -72,8 +73,8 @@ public class RosettaRequestManager extends RequestManager {
 		}
 		
 		Object serviceProvider = serviceProviderRegistry.getExtensionToFactoryMap().get("rosetta");
-		if (serviceProvider instanceof IResourceServiceProvider) {
-			this.requestCacheManager = ((IResourceServiceProvider) serviceProvider).get(RequestScopedCacheManager.class);
+		if (serviceProvider instanceof IResourceServiceProvider resourceServiceProvider) {
+			this.requestCacheManager = resourceServiceProvider.get(RequestScopedCacheManager.class);
 		} else {
 			this.requestCacheManager = null;
 		}
@@ -121,7 +122,7 @@ public class RosettaRequestManager extends RequestManager {
 				requestCacheManager.clearAll();
 			}
 			return nonCancellable.apply();
-		}, (cancelIndicator, intermediate) -> runCancellableWithTimeout((_cancelIndicator) -> cancellable.apply(_cancelIndicator, intermediate)).apply(cancelIndicator));
+		}, (cancelIndicator, intermediate) -> applyWithTimeout(cancelIndicator, ci -> cancellable.apply(ci, intermediate)));
 	}
 	
     private <V> CompletableFuture<V> withTimeout(CompletableFuture<V> future) {
@@ -130,24 +131,22 @@ public class RosettaRequestManager extends RequestManager {
         }
         return future.orTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS);
     }
-	private <V> Function1<? super CancelIndicator, ? extends V> runCancellableWithTimeout(Function1<? super CancelIndicator, ? extends V> cancellable) {
-		return (cancelIndicator) -> {
-			try {
-		    	if (timeout == null) {
-		    		return cancellable.apply(cancelIndicator);
-		    	}
-				return CompletableFuture.supplyAsync(
-						() -> cancellable.apply(cancelIndicator),
-						scheduler
-					).orTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS).join();
-            } catch (CompletionException ex) {
-                // Unwrap to retain original cause semantics for callers
-                Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
-                if (cause instanceof RuntimeException re) {
-                    throw re;
-                }
-                throw new RuntimeException(cause);
-            }
-        };
+	private <V> V applyWithTimeout(CancelIndicator cancelIndicator, Function<CancelIndicator, ? extends V> cancellable) {
+		try {
+			if (timeout == null) {
+				return cancellable.apply(cancelIndicator);
+			}
+			return CompletableFuture.supplyAsync(
+					() -> cancellable.apply(cancelIndicator),
+					scheduler
+				).orTimeout(timeout.toMillis(), TimeUnit.MILLISECONDS).join();
+		} catch (CompletionException ex) {
+			// Unwrap to retain original cause semantics for callers
+			Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+			if (cause instanceof RuntimeException re) {
+				throw re;
+			}
+			throw new RuntimeException(cause);
+		}
 	}
 }

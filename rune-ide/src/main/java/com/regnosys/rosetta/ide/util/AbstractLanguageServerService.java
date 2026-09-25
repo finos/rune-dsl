@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -205,10 +204,10 @@ public class AbstractLanguageServerService<T> {
 			try {
 				try {
 					method.setAccessible(true);
-					if (state.cancelIndicator.isCanceled()) {
+					if (state.cancelIndicator().isCanceled()) {
 						return List.of();
 					}
-					Object res = method.invoke(getInstance(), state.currentObject);
+					Object res = method.invoke(getInstance(), state.currentObject());
 					if (res instanceof Optional) {
 						res = ((Optional<?>)res).orElse(null);
 					}
@@ -268,45 +267,7 @@ public class AbstractLanguageServerService<T> {
 		}
 	}
 
-	private static class State {
-	
-		private final EObject currentObject;
-		private final Method currentMethod;
-		private final Document currentDocument;
-		private final XtextResource currentResource;
-		private final CancelIndicator cancelIndicator;
-		
-		private State(EObject currentObject, Method currentMethod, Document currentDocument,
-				XtextResource currentResource, CancelIndicator cancelIndicator) {
-			super();
-			this.currentObject = currentObject;
-			this.currentMethod = currentMethod;
-			this.currentDocument = currentDocument;
-			this.currentResource = currentResource;
-			this.cancelIndicator = cancelIndicator;
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(cancelIndicator, currentDocument, currentMethod, currentObject,
-					currentResource);
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			State other = (State) obj;
-			return Objects.equals(cancelIndicator, other.cancelIndicator)
-					&& Objects.equals(currentDocument, other.currentDocument)
-					&& Objects.equals(currentMethod, other.currentMethod)
-					&& Objects.equals(currentObject, other.currentObject)
-					&& Objects.equals(currentResource, other.currentResource);
-		}
-		 
+	private record State(EObject currentObject, Method currentMethod, Document currentDocument,
+			XtextResource currentResource, CancelIndicator cancelIndicator) {
 	}
 }

@@ -97,8 +97,7 @@ public class CancellableRosettaParser extends RosettaParser implements ICancella
 					parser.getLocalTrace().addAll(element.getLocalTrace());
 					parser.getLocalTrace().add(elementToParse);
 					parser.getParamStack().addAll(element.getParamStack());
-					if (elementToParse instanceof UnorderedGroup && element.getGrammarElement() == elementToParse) {
-						UnorderedGroup group = (UnorderedGroup) elementToParse;
+					if (elementToParse instanceof UnorderedGroup group && element.getGrammarElement() == elementToParse) {
 						IUnorderedGroupHelper helper = getInitializedUnorderedGroupHelper(element, parser, group);
 						parser.setUnorderedGroupHelper(ignoreFirstEntrance(helper));
 					}

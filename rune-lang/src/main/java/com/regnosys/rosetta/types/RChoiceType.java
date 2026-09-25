@@ -78,8 +78,8 @@ public class RChoiceType extends RType implements RObject {
 		if (visited.add(this)) {
 			return getOwnOptions().stream().flatMap(o -> {
 				RType stripped = typeSystem.stripFromTypeAliases(o.getType().getRType());
-				if (stripped instanceof RChoiceType) {
-					return Streams.concat(Stream.of(o), ((RChoiceType) stripped).doGetAllOptions(visited));
+				if (stripped instanceof RChoiceType choice) {
+					return Streams.concat(Stream.of(o), choice.doGetAllOptions(visited));
 				}
 				return Stream.of(o);
 			});

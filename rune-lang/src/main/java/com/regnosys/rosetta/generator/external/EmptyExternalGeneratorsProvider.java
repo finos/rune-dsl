@@ -17,7 +17,6 @@
 package com.regnosys.rosetta.generator.external;
 
 import java.util.Collections;
-import java.util.Iterator;
 
 import jakarta.inject.Provider;
 
@@ -29,12 +28,7 @@ public class EmptyExternalGeneratorsProvider implements Provider<ExternalGenerat
 
 	@Override
 	public ExternalGenerators get() {
-		return new ExternalGenerators() {
-			@Override
-			public Iterator<ExternalGenerator> iterator() {
-				return Collections.emptyIterator();
-			}
-		};
+		return Collections::emptyIterator;
 	}
 
 }

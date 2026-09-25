@@ -96,9 +96,7 @@ public class LabelProviderGeneratorTest {
 	}
 	private void assertGeneratedFileMatches(String expectationFileName, String expectedGeneratedPath) throws IOException {
 		GeneratedFile file = getGeneratedFile(expectedGeneratedPath);
-		// This file comes straight from the fsa, so normalise the platform line
-		// separator emitted by the Xtend templates
-		String actualSource = file.getContents().toString().replace("\r\n", "\n");
+		String actualSource = file.getContents().toString();
 		String expectedSource = Resources.toString(getClass().getResource("/label-annotations/" + expectationFileName), StandardCharsets.UTF_8);
 		Assertions.assertEquals(expectedSource, actualSource);
 	}
@@ -483,8 +481,7 @@ public class LabelProviderGeneratorTest {
 
 		assertGeneratedFiles("/test/labels/types/FooLabelProvider.java");
 		// Pins the emitted source of a type-rooted provider, not just its behaviour: the package and the
-		// whitespace the Xtend template is sensitive to. This is the parity gate for migrating the
-		// generator to Java.
+		// whitespace.
 		assertGeneratedFileMatches("type-flat/FooLabelProvider.java", "/test/labels/types/FooLabelProvider.java");
 		assertLabels(
 			"/test/labels/types/FooLabelProvider.java",

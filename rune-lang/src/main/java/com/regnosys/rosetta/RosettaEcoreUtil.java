@@ -85,12 +85,12 @@ public class RosettaEcoreUtil {
 	}
 	
 	public Iterable<? extends RosettaFeature> allFeaturesExcludingEnumValues(RType t, ResourceSet resourceSet) {
-		if (t instanceof RDataType) {
-			return Iterables.transform(((RDataType) t).getAllAttributes(), RAttribute::getEObject);
-		} else if (t instanceof RChoiceType) {
-			return allFeaturesExcludingEnumValues(((RChoiceType) t).asRDataType(), resourceSet);
-		} else if (t instanceof RAliasType) {
-			return allFeaturesExcludingEnumValues(((RAliasType) t).getRefersTo(), resourceSet);
+		if (t instanceof RDataType data) {
+			return Iterables.transform(data.getAllAttributes(), RAttribute::getEObject);
+		} else if (t instanceof RChoiceType choice) {
+			return allFeaturesExcludingEnumValues(choice.asRDataType(), resourceSet);
+		} else if (t instanceof RAliasType alias) {
+			return allFeaturesExcludingEnumValues(alias.getRefersTo(), resourceSet);
 		} else if (t instanceof RRecordType) {
 			if (resourceSet != null) {
 				return builtins.toRosettaType(t, RosettaRecordType.class, resourceSet).getFeatures();
@@ -169,8 +169,7 @@ public class RosettaEcoreUtil {
 	
 	public Attribute getParentAttribute(Attribute attr) {
 		EObject container = attr.eContainer();
-		if (container instanceof Data) {
-			Data t = (Data) container;
+		if (container instanceof Data t) {
 			Set<Data> visited = new HashSet<>();
 			visited.add(t);
 			Data st = t.getSuperType();

@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
-
 import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
@@ -48,11 +46,11 @@ import com.rosetta.util.types.JavaType;
  *     return x;
  * }
  * ```
- * This can be done using the following Xtend code:
+ * This can be done using the following code:
  * ```
- * JavaExpression.from('''42''', JavaPrimitiveType.INT)
+ * JavaExpression.from(out -> out.write("42"), JavaPrimitiveType.INT)
  *     .declareAsVariable(true, "x", scope)
- *     .completeAsReturn
+ *     .completeAsReturn();
  * ```
  * 
  * *Example 2*
@@ -68,24 +66,19 @@ import com.rosetta.util.types.JavaType;
  *     return ifThenElseResult + 1;
  * }
  * ```
- * This can be done using the following Xtend code:
+ * This can be done using the following code:
  * ```
- * JavaExpression.from('''foo == bar''', JavaPrimitiveType.BOOLEAN)
- *     .mapExpression[
- *         new JavaIfThenElseBuilder(
+ * JavaExpression.from(out -> out.write("foo == bar"), JavaPrimitiveType.BOOLEAN)
+ *     .mapExpression(it -> new JavaIfThenElseBuilder(
  *             it,
- *             JavaExpression.from('''42''', JavaPrimitiveType.INT),
- *             JavaExpression.from('''0''', JavaPrimitiveType.INT)
- *         )
- *     ]
- *     .mapExpression[
- *         JavaExpression.from('''compute(«it»)''', JavaPrimitiveType.INT)
- *     ]
- *     .collapseToSingleExpression
- *     .mapExpression[
- *         JavaExpression.from('''«it» + 1''', JavaPrimitiveType.INT)
- *     ]
- *     .completeAsReturn
+ *             JavaExpression.from(out -> out.write("42"), JavaPrimitiveType.INT),
+ *             JavaExpression.from(out -> out.write("0"), JavaPrimitiveType.INT),
+ *             typeUtil
+ *         ))
+ *     .mapExpression(it -> JavaExpression.from(out -> out.write("compute(", it, ")"), JavaPrimitiveType.INT))
+ *     .collapseToSingleExpression(scope)
+ *     .mapExpression(it -> JavaExpression.from(out -> out.write(it, " + 1"), JavaPrimitiveType.INT))
+ *     .completeAsReturn();
  * ```
  */
 public abstract class JavaStatementBuilder {
@@ -99,13 +92,6 @@ public abstract class JavaStatementBuilder {
 			argCode = argCode.then(
 				arguments.get(i),
 				(argList, newArg) -> new JavaExpression(null) {
-					@Override
-					public void appendTo(TargetStringConcatenation target) {
-						target.append(argList);
-						target.append(", ");
-						target.append(newArg);
-					}
-
 					@Override
 					public void render(CodeWriter out) {
 						out.write(argList, ", ", newArg);

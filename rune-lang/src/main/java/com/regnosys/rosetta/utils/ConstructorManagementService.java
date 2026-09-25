@@ -101,7 +101,7 @@ public class ConstructorManagementService {
         }
 
         private static boolean isRequired(RosettaFeature it) {
-            return !(it instanceof Attribute) || ((Attribute) it).getCard().getInf() != 0;
+            return !(it instanceof Attribute attribute) || attribute.getCard().getInf() != 0;
         }
     }
 }
