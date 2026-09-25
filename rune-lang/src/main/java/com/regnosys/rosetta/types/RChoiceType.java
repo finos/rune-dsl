@@ -87,8 +87,8 @@ public class RChoiceType extends RType implements RObject {
 		}
 		for (RChoiceOption option : options) {
 			RType optionRType = option.getType().getRType();
-			if (optionRType instanceof RChoiceType) {
-				if (!((RChoiceType) optionRType).doHasImpliedKey(visited)) {
+			if (optionRType instanceof RChoiceType choice) {
+				if (!choice.doHasImpliedKey(visited)) {
 					return false;
 				}
 			} else if (optionRType instanceof RDataType leaf) {
@@ -117,8 +117,8 @@ public class RChoiceType extends RType implements RObject {
 		if (visited.add(this)) {
 			return getOwnOptions().stream().flatMap(o -> {
 				RType stripped = typeSystem.stripFromTypeAliases(o.getType().getRType());
-				if (stripped instanceof RChoiceType) {
-					return Streams.concat(Stream.of(o), ((RChoiceType) stripped).doGetAllOptions(visited));
+				if (stripped instanceof RChoiceType choice) {
+					return Streams.concat(Stream.of(o), choice.doGetAllOptions(visited));
 				}
 				return Stream.of(o);
 			});

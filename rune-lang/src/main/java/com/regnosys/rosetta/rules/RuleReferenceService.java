@@ -143,7 +143,7 @@ public class RuleReferenceService {
         }
 
         public RAttribute getTargetAttribute() {
-            return path.get(path.size() - 1);
+            return path.getLast();
         }
 
         public boolean isExplicitlyEmpty() {
@@ -258,8 +258,8 @@ public class RuleReferenceService {
         RAttribute result = start;
         for (String next : path) {
             RType attrType = result.getRMetaAnnotatedType().getRType();
-            if (attrType instanceof RChoiceType) {
-                attrType = ((RChoiceType) attrType).asRDataType();
+            if (attrType instanceof RChoiceType choice) {
+                attrType = choice.asRDataType();
             }
             try {
                 RDataType attrDataType = (RDataType) attrType;

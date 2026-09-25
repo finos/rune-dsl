@@ -70,7 +70,7 @@ import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta;
 import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface;
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta;
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue;
-import com.regnosys.rosetta.generator.java.util.ImportManagerExtension;
+import com.regnosys.rosetta.generator.java.util.FluentImportManager;
 import com.regnosys.rosetta.generator.java.util.PreferWildcardImportMethod;
 import com.regnosys.rosetta.generator.java.util.RecordJavaUtil;
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs;
@@ -232,7 +232,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 	@Inject
 	private RosettaEcoreUtil ecoreUtil;
 	@Inject
-	private ImportManagerExtension importManager;
+	private FluentImportManager importManager;
 	@Inject
 	private ExpressionHelper exprHelper;
 	@Inject
@@ -277,7 +277,7 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 	}
 
 	private PreferWildcardImportMethod runtimeMethod(String methodName) {
-		return importManager.importWildcard(importManager.method(ExpressionOperatorsNullSafe.class, methodName));
+		return importManager.wildcardMethod(ExpressionOperatorsNullSafe.class, methodName);
 	}
 
 	private JavaStatementBuilder applyRuntimeMethod(JavaStatementBuilder expr, String methodName, JavaType resultType) {
@@ -759,17 +759,14 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 	@Override
 	protected JavaStatementBuilder caseFeatureCall(RosettaFeatureCall expr, Context context) {
 		RosettaFeature feature = expr.getFeature();
-		if (feature instanceof RosettaEnumValue enumValue) {
-			return enumCall(enumValue, context.expectedType);
-		} else if (feature instanceof Attribute attribute) {
-			return attributeCall(javaCode(expr.getReceiver(), context.withExpected(typeUtil.wrapExtendsWithoutMeta(typeUtil.MAPPER, expr.getReceiver()))), typeProvider.getRMetaAnnotatedType(expr.getReceiver()), rObjectFactory.buildRAttribute(attribute), false, context.expectedType, context.scope);
-		} else if (feature instanceof RosettaMetaType metaType) {
-			return metaCall(javaCode(expr.getReceiver(), context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER, expr.getReceiver()))), typeProvider.getRMetaAnnotatedType(expr.getReceiver()), metaType, false, context.scope);
-		} else if (feature instanceof RosettaRecordFeature recordFeature) {
-			return recordCall(javaCode(expr.getReceiver(), context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER, expr.getReceiver()))), typeProvider.getRMetaAnnotatedType(expr.getReceiver()), recordFeature, context.scope);
-		} else {
-			throw new UnsupportedOperationException("Unsupported feature type of " + (feature == null ? null : feature.getClass().getName()));
-		}
+		return switch (feature) {
+			case RosettaEnumValue enumValue -> enumCall(enumValue, context.expectedType);
+			case Attribute attribute -> attributeCall(javaCode(expr.getReceiver(), context.withExpected(typeUtil.wrapExtendsWithoutMeta(typeUtil.MAPPER, expr.getReceiver()))), typeProvider.getRMetaAnnotatedType(expr.getReceiver()), rObjectFactory.buildRAttribute(attribute), false, context.expectedType, context.scope);
+			case RosettaMetaType metaType -> metaCall(javaCode(expr.getReceiver(), context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER, expr.getReceiver()))), typeProvider.getRMetaAnnotatedType(expr.getReceiver()), metaType, false, context.scope);
+			case RosettaRecordFeature recordFeature -> recordCall(javaCode(expr.getReceiver(), context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER, expr.getReceiver()))), typeProvider.getRMetaAnnotatedType(expr.getReceiver()), recordFeature, context.scope);
+			case null -> throw new UnsupportedOperationException("Unsupported feature type of null");
+			default -> throw new UnsupportedOperationException("Unsupported feature type of " + feature.getClass().getName());
+		};
 	}
 
 	@Override

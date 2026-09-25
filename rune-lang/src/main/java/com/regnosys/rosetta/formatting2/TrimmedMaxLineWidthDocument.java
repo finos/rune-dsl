@@ -82,8 +82,8 @@ public class TrimmedMaxLineWidthDocument extends SubDocument {
 	}
 
 	protected void validate(ITextReplacer replacer) throws FormattingNotApplicableException {
-		if (replacer instanceof HiddenRegionReplacer)
-			validate((HiddenRegionReplacer) replacer);
+		if (replacer instanceof HiddenRegionReplacer hiddenRegionReplacer)
+			validate(hiddenRegionReplacer);
 	}
 	
 	protected String applyTextReplacementsOnAstRegion(Iterable<ITextReplacement> replacements) {

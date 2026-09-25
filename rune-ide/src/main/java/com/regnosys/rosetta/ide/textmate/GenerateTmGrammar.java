@@ -96,9 +96,9 @@ public class GenerateTmGrammar {
 		if (input instanceof Map) {
 			Map<Object, Object> inputMap = (Map<Object, Object>)input;
 			Object rawInclude = inputMap.get("include");
-			if (rawInclude != null && rawInclude instanceof String && inputMap.containsKey("arguments")) {
+			if (rawInclude instanceof String rawIncludeString && inputMap.containsKey("arguments")) {
 				Map<String, String> argumentMap = readStringMap(inputMap.get("arguments"), "argument");
-				String include = ((String)rawInclude).substring(1);
+				String include = rawIncludeString.substring(1);
 				argumentMapPerInclude.computeIfAbsent(include, a -> new LinkedHashSet<>()).add(argumentMap);
 				
 				String inlineName = toInlineName(include, argumentMap);
@@ -108,8 +108,8 @@ public class GenerateTmGrammar {
 			for (Entry<?, ?> node : inputMap.entrySet()) {
 				gatherIncludeArguments(node.getValue(), argumentMapPerInclude);
 			}
-		} else if (input instanceof List) {
-			for (Object item : (List<?>)input) {
+		} else if (input instanceof List<?> list) {
+			for (Object item : list) {
 				gatherIncludeArguments(item, argumentMapPerInclude);
 			}
 		}
@@ -117,8 +117,7 @@ public class GenerateTmGrammar {
 	
 	@SuppressWarnings("unchecked")
 	private void inlineParameterizedIncludesRecursively(Object input, Map<String, Set<Map<String, String>>> argumentMapPerInclude) {
-		if (input instanceof Map) {
-			Map<?, ?> inputMap = (Map<?, ?>)input;
+		if (input instanceof Map<?, ?> inputMap) {
 			Object rawRepo = inputMap.get("repository");
 			if (rawRepo != null && rawRepo instanceof Map<?, ?>) {
 				Map<Object, Object> repo = (Map<Object, Object>)rawRepo;
@@ -127,8 +126,7 @@ public class GenerateTmGrammar {
 				for (Entry<Object, Object> definitionEntry : repo.entrySet()) {
 					Object definitionName = definitionEntry.getKey();
 					Object rawDefinition = definitionEntry.getValue();
-					if (rawDefinition instanceof Map<?, ?>) {
-						Map<?, ?> definition = (Map<?, ?>) rawDefinition;
+					if (rawDefinition instanceof Map<?, ?> definition) {
 						if (definition.containsKey("parameters")) {
 							for (Map<String, String> argumentMap : argumentMapPerInclude.getOrDefault(definitionName, Collections.emptySet())) {
 								String inlineName = toInlineName((String)definitionName, argumentMap);
@@ -143,13 +141,13 @@ public class GenerateTmGrammar {
 					}
 				}
 				repo.putAll(inlinedDefinitions);
-				repo.entrySet().removeIf(e -> e.getValue() instanceof Map<?, ?> && ((Map<?, ?>)e.getValue()).containsKey("parameters"));
+				repo.entrySet().removeIf(e -> e.getValue() instanceof Map<?, ?> value && value.containsKey("parameters"));
 			}
 			for (Entry<?, ?> node : inputMap.entrySet()) {
 				inlineParameterizedIncludesRecursively(node.getValue(), argumentMapPerInclude);
 			}
-		} else if (input instanceof List) {
-			for (Object item : (List<?>)input) {
+		} else if (input instanceof List<?> list) {
+			for (Object item : list) {
 				inlineParameterizedIncludesRecursively(item, argumentMapPerInclude);
 			}
 		}
@@ -170,11 +168,10 @@ public class GenerateTmGrammar {
 	}
 	
 	private void ensureNoUnknownVariables(Object input) throws ConfigurationException {
-		if (input instanceof Map) {
-			Map<?, ?> inputMap = (Map<?, ?>)input;
+		if (input instanceof Map<?, ?> inputMap) {
 			for (Entry<?, ?> node : inputMap.entrySet()) {
-				if (node.getValue() instanceof String) {
-					Matcher unknownVariableMatcher = variablePattern.matcher((String)node.getValue());
+				if (node.getValue() instanceof String value) {
+					Matcher unknownVariableMatcher = variablePattern.matcher(value);
 					List<MatchResult> unknownVariables = unknownVariableMatcher.results().collect(Collectors.toList());
 					if (unknownVariables.size() > 0) {
 						throw new ConfigurationException("At " + node.getKey() + ": Unknown variable(s): " + unknownVariables.stream().map(v -> v.group(1)).collect(Collectors.joining(", ")));
@@ -183,8 +180,8 @@ public class GenerateTmGrammar {
 			    	ensureNoUnknownVariables(node.getValue());
 			    }
 			}
-		} else if (input instanceof List) {
-			for (Object item : (List<?>)input) {
+		} else if (input instanceof List<?> list) {
+			for (Object item : list) {
 				ensureNoUnknownVariables(item);
 			}
 		}
@@ -227,10 +224,7 @@ public class GenerateTmGrammar {
 		TmValue<Map<?, ?>> tmMap = pattern.asMap();
 		
 		Function<Predicate<String>, Predicate<Object>> string = pred -> (obj -> {
-			if (obj instanceof String) {
-				return pred.test((String)obj);
-			}
-			return false;
+			return obj instanceof String str && pred.test(str);
 		});
 		
 		Predicate<Object> comment = obj -> obj == null || obj instanceof String;
@@ -257,22 +251,22 @@ public class GenerateTmGrammar {
 				if (!parts.stream().allMatch(p -> p.matches("[a-z\\-]+"))) {
 					return false;
 				}
-				return parts.get(parts.size() - 1).equals("rosetta");
+				return parts.getLast().equals("rosetta");
 			});
 		}).or(v -> v == null);
 		Predicate<Object> captures = obj -> {
 			if (obj == null) {
 				return true;
 			}
-			if (!(obj instanceof Map)) {
+			if (!(obj instanceof Map<?, ?> captureMaps)) {
 				return false;
 			}
-			for (Entry<?, ?> capture: ((Map<?, ?>)obj).entrySet()) {
-				if (!(capture.getValue() instanceof Map)) {
+			for (Entry<?, ?> capture: captureMaps.entrySet()) {
+				if (!(capture.getValue() instanceof Map<?, ?> captureValue)) {
 					return false;
 				}
 				try {
-					TmValue<Map<?, ?>> captureMap = new TmValue<>((Map<?, ?>) capture.getValue(), new ArrayList<>());
+					TmValue<Map<?, ?>> captureMap = new TmValue<>(captureValue, new ArrayList<>());
 					runValidators(captureMap, Map.of("name", scopes, "patterns", patterns, "comment", comment));
 				} catch (ConfigurationException e) {
 					return false;
@@ -287,7 +281,7 @@ public class GenerateTmGrammar {
 		// - begin/while
 		// - list of patterns
 		if (tmMap.value.get("include") != null) {
-			if (!tmMap.path.get(tmMap.path.size() - 1).equals("patterns")) {
+			if (!tmMap.path.getLast().equals("patterns")) {
 				// Note: this check is only necessary for Monaco. See https://github.com/zikaari/monaco-textmate/issues/13.
 				// VS Code supports direct includes.
 				throw new ConfigurationException("Validation failed on include: may only be used inside 'patterns'. " + tmMap.getPath());
@@ -324,16 +318,15 @@ public class GenerateTmGrammar {
 	
 	private Map<Object, Object> findNamedPatterns(Object input) {
 		Map<Object, Object> result = new LinkedHashMap<>();
-		if (input instanceof Map) {
-			Map<?, ?> inputMap = (Map<?, ?>)input;
+		if (input instanceof Map<?, ?> inputMap) {
 			for (Entry<?, ?> node : inputMap.entrySet()) {
 			    if (node.getKey().equals("repository")) {
 			    	result.putAll((Map<?, ?>) node.getValue());
 			    }
 			    result.putAll(findNamedPatterns(node.getValue()));
 			}
-		} else if (input instanceof List) {
-			for (Object item : (List<?>)input) {
+		} else if (input instanceof List<?> list) {
+			for (Object item : list) {
 				result.putAll(findNamedPatterns(item));
 			}
 		}
@@ -342,8 +335,7 @@ public class GenerateTmGrammar {
 	
 	private List<TmValue<Object>> findAllPatterns(Object input, List<String> path) {
 		List<TmValue<Object>> result = new ArrayList<>();
-		if (input instanceof Map) {
-			Map<?, ?> inputMap = (Map<?, ?>)input;
+		if (input instanceof Map<?, ?> inputMap) {
 			for (Entry<?, ?> node : inputMap.entrySet()) {
 				path.add(node.getKey().toString());
 				if (node.getKey().equals("patterns")) {
@@ -354,14 +346,14 @@ public class GenerateTmGrammar {
 			    	for (Entry<?, ?> p: ((Map<?, ?>)node.getValue()).entrySet()) {
 						path.add((String)p.getKey());
 			    		result.add(new TmValue<>(p.getValue(), path));
-			    		path.remove(path.size() - 1);
+			    		path.removeLast();
 					}
 			    }
 			    result.addAll(findAllPatterns(node.getValue(), path));
-			    path.remove(path.size() - 1);
+			    path.removeLast();
 			}
-		} else if (input instanceof List) {
-			for (Object item : (List<?>)input) {
+		} else if (input instanceof List<?> list) {
+			for (Object item : list) {
 				result.addAll(findAllPatterns(item, path));
 			}
 		}
@@ -370,16 +362,15 @@ public class GenerateTmGrammar {
 	
 	private List<Pattern> findAllRegexes(Object input) {
 		List<Pattern> result = new ArrayList<>();
-		if (input instanceof Map) {
-			Map<?, ?> inputMap = (Map<?, ?>)input;
+		if (input instanceof Map<?, ?> inputMap) {
 			for (Entry<?, ?> node : inputMap.entrySet()) {
 				if (regexKeys.contains(node.getKey())) {
 					result.add(Pattern.compile(node.getValue().toString()));
 				}
 			    result.addAll(findAllRegexes(node.getValue()));
 			}
-		} else if (input instanceof List) {
-			for (Object item : (List<?>)input) {
+		} else if (input instanceof List<?> list) {
+			for (Object item : list) {
 				result.addAll(findAllRegexes(item));
 			}
 		}
@@ -407,14 +398,12 @@ public class GenerateTmGrammar {
 		return readStringMap(rawVariables, "variable");
 	}
 	private Map<String, String> readStringMap(Object raw, String errorVarName) {
-		if (!(raw instanceof Map)) {
+		if (!(raw instanceof Map<?, ?> variables)) {
 			return Collections.emptyMap();
 		}
-		Map<?, ?> variables = (Map<?, ?>)raw;
 		LinkedHashMap<String, String> result = new LinkedHashMap<>(variables.size());
 		for (Entry<?, ?> variable : variables.entrySet()) {
-		    if (variable.getValue() instanceof String) {
-		    	String rawValue = (String)variable.getValue();
+		    if (variable.getValue() instanceof String rawValue) {
 				result.put((String)variable.getKey(), applyVariables(rawValue, result));
 		    }
 		}
@@ -434,17 +423,16 @@ public class GenerateTmGrammar {
 	
 	@SuppressWarnings("unchecked")
 	private void applyVariablesRecursively(Object input, Map<String, String> variables) {
-		if (input instanceof Map) {
-			Map<?, ?> inputMap = (Map<?, ?>)input;
+		if (input instanceof Map<?, ?> inputMap) {
 			for (Entry<?, ?> node : inputMap.entrySet()) {
-				if (node.getValue() instanceof String) {
-					((Entry<?, String>)node).setValue(applyVariables((String)node.getValue(), variables));
+				if (node.getValue() instanceof String value) {
+					((Entry<?, String>)node).setValue(applyVariables(value, variables));
 			    } else {
 			    	applyVariablesRecursively(node.getValue(), variables);
 			    }
 			}
-		} else if (input instanceof List) {
-			for (Object item : (List<?>)input) {
+		} else if (input instanceof List<?> list) {
+			for (Object item : list) {
 				applyVariablesRecursively(item, variables);
 			}
 		}

@@ -58,10 +58,10 @@ public class RosettaTransientValueService extends DefaultTransientValueService {
 			return true;
 		}
 		Object value = owner.eGet(feature);
-		if (index >= 0 && value instanceof List<?>) {
-			value = ((List<?>) value).get(index);
+		if (index >= 0 && value instanceof List<?> list) {
+			value = list.get(index);
 		}
-		if (value instanceof RosettaExpression && ((RosettaExpression) value).isGenerated()) {
+		if (value instanceof RosettaExpression expression && expression.isGenerated()) {
 			return true;
 		}
 		return false;

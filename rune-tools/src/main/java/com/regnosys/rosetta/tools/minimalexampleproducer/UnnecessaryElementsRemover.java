@@ -76,8 +76,8 @@ public class UnnecessaryElementsRemover {
 			eclass.getEAllStructuralFeatures().stream()
 				.filter(f -> {
 					EClassifier featureClass = f.getEType();
-					if (featureClass instanceof EClass) {
-						if (removableClasses.stream().anyMatch(removableClass -> removableClass.isSuperTypeOf((EClass) featureClass))) {
+					if (featureClass instanceof EClass eClass) {
+						if (removableClasses.stream().anyMatch(removableClass -> removableClass.isSuperTypeOf(eClass))) {
 							return true;
 						}
 					}
@@ -131,9 +131,9 @@ public class UnnecessaryElementsRemover {
 					}
 				} else {
 					Object value = parent.eGet(f);
-					if (value instanceof EObject) {
+					if (value instanceof EObject child) {
 						if (necessary.contains(value)) {
-							removeUnnecessaryChildren((EObject) value, necessary);
+							removeUnnecessaryChildren(child, necessary);
 						} else {
 							parent.eUnset(f);
 						}
@@ -189,12 +189,12 @@ public class UnnecessaryElementsRemover {
 			}
 			necessaryRefs.forEach(f -> {
 				Object value = element.eGet(f);
-				if (value instanceof EObject) {
-					addNecessaryElements((EObject) value, found);
+				if (value instanceof EObject child) {
+					addNecessaryElements(child, found);
 				} else if (value instanceof EList<?>) {
 					((EList<?>)value).forEach(item -> {
-						if (item instanceof EObject) {
-							addNecessaryElements((EObject) item, found);
+						if (item instanceof EObject child) {
+							addNecessaryElements(child, found);
 						}
 					});
 				}

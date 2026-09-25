@@ -57,10 +57,7 @@ public class CodeGeneratorTestHelper {
 		Map<String, String> generatedCode = new LinkedHashMap<>();
 		fsa.getGeneratedFiles().forEach(it -> {
 			if (it.getJavaClassName() != null) {
-				// Xtend templates emit the platform line separator at runtime; normalise
-				// to "\n" so tests can compare against text blocks and LF fixtures on
-				// every platform without ad-hoc normalisation at each call site
-				generatedCode.put(it.getJavaClassName(), it.getContents().toString().replace("\r\n", "\n"));
+				generatedCode.put(it.getJavaClassName(), it.getContents().toString());
 			}
 		});
 

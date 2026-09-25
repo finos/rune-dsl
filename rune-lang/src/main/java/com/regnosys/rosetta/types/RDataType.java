@@ -194,8 +194,8 @@ public class RDataType extends RType implements RObject {
 		if (choiceType != null) {
 			return Optional.of(choiceType);
 		}
-		if (data instanceof Choice) {
-			choiceType = objectFactory.buildRChoiceType((Choice) data);
+		if (data instanceof Choice choice) {
+			choiceType = objectFactory.buildRChoiceType(choice);
 			return Optional.of(choiceType);
 		}
 		return Optional.empty();

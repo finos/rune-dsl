@@ -19,10 +19,6 @@ package com.regnosys.rosetta.generator.java.statement.builder;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.eclipse.xtend2.lib.StringConcatenation;
-import org.eclipse.xtend2.lib.StringConcatenationClient;
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
-
 import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
@@ -70,8 +66,8 @@ public class JavaConditionalExpression extends JavaStatementBuilder implements J
 	public JavaStatementBuilder mapExpression(Function<JavaExpression, ? extends JavaStatementBuilder> mapper) {
 		JavaStatementBuilder newThenBranch = mapper.apply(thenBranch);
 		JavaStatementBuilder newElseBranch = mapper.apply(elseBranch);
-		if (newThenBranch instanceof JavaExpression && newElseBranch instanceof JavaExpression) {
-			return new JavaConditionalExpression(condition, (JavaExpression)newThenBranch, (JavaExpression)newElseBranch, typeUtil);
+		if (newThenBranch instanceof JavaExpression newThenExpression && newElseBranch instanceof JavaExpression newElseExpression) {
+			return new JavaConditionalExpression(condition, newThenExpression, newElseExpression, typeUtil);
 		} else {
 			return new JavaIfThenElseBuilder(condition, newThenBranch, newElseBranch, typeUtil);
 		}
@@ -119,15 +115,6 @@ public class JavaConditionalExpression extends JavaStatementBuilder implements J
 	}
 
 	@Override
-	public void appendTo(TargetStringConcatenation target) {
-		target.append(condition);
-		target.append(" ? ");
-		target.append(thenBranch);
-		target.append(" : ");
-		target.append(elseBranch);
-	}
-
-	@Override
 	public void render(CodeWriter out) {
 		out.write(condition, " ? ", thenBranch, " : ", elseBranch);
 	}
@@ -138,12 +125,6 @@ public class JavaConditionalExpression extends JavaStatementBuilder implements J
 	
 	@Override
 	public String toString() {
-		StringConcatenation repr = new StringConcatenation();
-		repr.append(new StringConcatenationClient() {
-			protected void appendTo(TargetStringConcatenation target) {
-				JavaConditionalExpression.this.appendTo(target);
-			}
-		});
-		return repr.toString();
+		return condition + " ? " + thenBranch + " : " + elseBranch;
 	}
 }

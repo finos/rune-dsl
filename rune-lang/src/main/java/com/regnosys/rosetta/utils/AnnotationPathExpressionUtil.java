@@ -47,15 +47,12 @@ public class AnnotationPathExpressionUtil {
 			Function<AnnotationPath, T> casePath,
 			Function<AnnotationDeepPath, T> caseDeepPath
 	) {
-		if (expr instanceof AnnotationPathAttributeReference) {
-			return caseAttributeReference.apply((AnnotationPathAttributeReference) expr);
-		} else if (expr instanceof RosettaImplicitVariable) {
-			return caseImplicitVariable.apply((RosettaImplicitVariable) expr);
-		} else if (expr instanceof AnnotationPath) {
-			return casePath.apply((AnnotationPath) expr);
-		} else if (expr instanceof AnnotationDeepPath) {
-			return caseDeepPath.apply((AnnotationDeepPath) expr);
-		}
-		throw new IllegalArgumentException("Path expression " + expr + " not supported");
+		return switch (expr) {
+			case AnnotationPathAttributeReference reference -> caseAttributeReference.apply(reference);
+			case RosettaImplicitVariable implicitVariable -> caseImplicitVariable.apply(implicitVariable);
+			case AnnotationPath path -> casePath.apply(path);
+			case AnnotationDeepPath deepPath -> caseDeepPath.apply(deepPath);
+			case null, default -> throw new IllegalArgumentException("Path expression " + expr + " not supported");
+		};
 	}
 }

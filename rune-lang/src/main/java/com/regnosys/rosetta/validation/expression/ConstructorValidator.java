@@ -37,8 +37,8 @@ public class ConstructorValidator extends AbstractExpressionValidator {
 		RType rType = typeProvider.getRMetaAnnotatedType(ele).getRType();
 			
 		RType baseRType = typeSystem.stripFromTypeAliases(rType);
-		if (baseRType instanceof RChoiceType) {
-			baseRType = ((RChoiceType) baseRType).asRDataType();
+		if (baseRType instanceof RChoiceType choiceType) {
+			baseRType = choiceType.asRDataType();
 		}
 		if (!(baseRType instanceof RDataType || baseRType instanceof RRecordType || baseRType.equals(builtins.NOTHING))) {
 			error("Cannot construct an instance of type `" + rType + "`", ele, ROSETTA_TYPED__TYPE_CALL);

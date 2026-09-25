@@ -12,7 +12,6 @@ import org.eclipse.xtext.formatting2.IHiddenRegionFormatter;
 import org.eclipse.xtext.formatting2.IHiddenRegionFormatting;
 import org.eclipse.xtext.formatting2.ITextReplacer;
 import org.eclipse.xtext.formatting2.regionaccess.ISemanticRegion;
-import org.eclipse.xtext.xbase.lib.Procedures.Procedure1;
 
 import com.regnosys.rosetta.rosetta.Import;
 import com.regnosys.rosetta.rosetta.ParametrizedRosettaType;
@@ -29,9 +28,11 @@ import com.regnosys.rosetta.rosetta.RosettaExternalClass;
 import com.regnosys.rosetta.rosetta.RosettaExternalFunction;
 import com.regnosys.rosetta.rosetta.RosettaExternalRegularAttribute;
 import com.regnosys.rosetta.rosetta.RosettaExternalRuleSource;
+import com.regnosys.rosetta.rosetta.RosettaMetaType;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.RosettaPackage;
 import com.regnosys.rosetta.rosetta.RosettaParameter;
+import com.regnosys.rosetta.rosetta.RosettaRecordType;
 import com.regnosys.rosetta.rosetta.RosettaRootElement;
 import com.regnosys.rosetta.rosetta.RosettaRule;
 import com.regnosys.rosetta.rosetta.RosettaScope;
@@ -63,9 +64,6 @@ import com.regnosys.rosetta.services.RosettaGrammarAccess;
 import jakarta.inject.Inject;
 
 public class RosettaFormatter extends AbstractRosettaFormatter2 {
-
-	private static final Procedure1<? super IHiddenRegionFormatter> NO_SPACE = IHiddenRegionFormatter::noSpace;
-	private static final Procedure1<? super IHiddenRegionFormatter> ONE_SPACE = IHiddenRegionFormatter::oneSpace;
 
 	@Inject
 	private RosettaGrammarAccess grammarAccess;
@@ -115,13 +113,13 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 		});
 
 		List<Class<? extends RosettaRootElement>> groupedElementTypes = List.of(
-				com.regnosys.rosetta.rosetta.RosettaBody.class,
-				com.regnosys.rosetta.rosetta.RosettaCorpus.class,
-				com.regnosys.rosetta.rosetta.RosettaSegment.class,
-				com.regnosys.rosetta.rosetta.RosettaBasicType.class,
-				com.regnosys.rosetta.rosetta.RosettaRecordType.class,
-				com.regnosys.rosetta.rosetta.RosettaExternalFunction.class,
-				com.regnosys.rosetta.rosetta.RosettaMetaType.class);
+				RosettaBody.class,
+				RosettaCorpus.class,
+				RosettaSegment.class,
+				RosettaBasicType.class,
+				RosettaRecordType.class,
+				RosettaExternalFunction.class,
+				RosettaMetaType.class);
 		Class<? extends RosettaRootElement> lastType = null;
 		for (RosettaRootElement elem : rosettaModel.getElements()) {
 			// Root elements are separated by an empty lines, except
@@ -430,18 +428,18 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 
 	private void format(AnnotationRef ele, IFormattableDocument document) {
 		RosettaGrammarAccess.AnnotationRefElements annotationRefGrammarAccess = grammarAccess.getAnnotationRefAccess();
-		document.append(regionFor(ele).keyword(annotationRefGrammarAccess.getLeftSquareBracketKeyword_0()), NO_SPACE);
-		document.prepend(regionFor(ele).keyword(annotationRefGrammarAccess.getRightSquareBracketKeyword_3()), NO_SPACE);
-		document.prepend(regionFor(ele).assignment(annotationRefGrammarAccess.getAttributeAssignment_2_0()), ONE_SPACE);
+		document.append(regionFor(ele).keyword(annotationRefGrammarAccess.getLeftSquareBracketKeyword_0()), IHiddenRegionFormatter::noSpace);
+		document.prepend(regionFor(ele).keyword(annotationRefGrammarAccess.getRightSquareBracketKeyword_3()), IHiddenRegionFormatter::noSpace);
+		document.prepend(regionFor(ele).assignment(annotationRefGrammarAccess.getAttributeAssignment_2_0()), IHiddenRegionFormatter::oneSpace);
 		ele.getQualifiers().forEach(qualifier -> {
-			document.prepend(qualifier, ONE_SPACE);
+			document.prepend(qualifier, IHiddenRegionFormatter::oneSpace);
 			document.format(qualifier);
 		});
 	}
 
 	private void format(AnnotationQualifier ele, IFormattableDocument document) {
-		document.surround(regionFor(ele).keyword("="), NO_SPACE);
-		allRegionsFor(ele).keywords("->").forEach(arrow -> document.surround(arrow, NO_SPACE));
+		document.surround(regionFor(ele).keyword("="), IHiddenRegionFormatter::noSpace);
+		allRegionsFor(ele).keywords("->").forEach(arrow -> document.surround(arrow, IHiddenRegionFormatter::noSpace));
 	}
 
 	private void format(LabelAnnotation ele, IFormattableDocument document) {
@@ -463,8 +461,8 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 	private void formatSingleLineAnnotation(EObject ele, IFormattableDocument document) {
 		ISemanticRegion open = regionFor(ele).keyword("[");
 		ISemanticRegion close = regionFor(ele).keyword("]");
-		document.append(open, NO_SPACE);
-		document.prepend(close, NO_SPACE);
+		document.append(open, IHiddenRegionFormatter::noSpace);
+		document.prepend(close, IHiddenRegionFormatter::noSpace);
 		formattingUtil.singleSpacesUntil(document, open.getNextHiddenRegion().getNextHiddenRegion(),
 				close.getPreviousHiddenRegion());
 	}
@@ -739,7 +737,7 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 	}
 
 	private static <T> T headOrNull(List<T> list) {
-		return list.isEmpty() ? null : list.get(0);
+		return list.isEmpty() ? null : list.getFirst();
 	}
 
 	private static <T> List<T> tail(List<T> list) {
@@ -747,6 +745,6 @@ public class RosettaFormatter extends AbstractRosettaFormatter2 {
 	}
 
 	private static <T> T lastOrNull(List<T> list) {
-		return list.isEmpty() ? null : list.get(list.size() - 1);
+		return list.isEmpty() ? null : list.getLast();
 	}
 }

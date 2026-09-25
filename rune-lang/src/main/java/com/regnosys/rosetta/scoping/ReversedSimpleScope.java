@@ -92,12 +92,7 @@ public class ReversedSimpleScope extends SimpleScope {
 	@Override
 	public Iterable<IEObjectDescription> getAllElements() {
 		Iterable<IEObjectDescription> parentElements = getParent().getAllElements();
-		Iterable<IEObjectDescription> localElements = getLocalElements(new Provider<Iterable<IEObjectDescription>>() {
-			@Override
-			public Iterable<IEObjectDescription> get() {
-				return getAllLocalElements();
-			}
-		});
+		Iterable<IEObjectDescription> localElements = getLocalElements(this::getAllLocalElements);
 		Iterable<IEObjectDescription> result = Iterables.concat(parentElements, localElements);
 		return result;
 	}
@@ -109,12 +104,7 @@ public class ReversedSimpleScope extends SimpleScope {
 			if (((Collection<?>) parentElements).isEmpty())
 				return getLocalElementsByName(name);
 		}
-		Iterable<IEObjectDescription> localElements = getLocalElements(new Provider<Iterable<IEObjectDescription>>() {
-			@Override
-			public Iterable<IEObjectDescription> get() {
-				return getLocalElementsByName(name);
-			}
-		});
+		Iterable<IEObjectDescription> localElements = getLocalElements(() -> getLocalElementsByName(name));
 		Iterable<IEObjectDescription> result = Iterables.concat(parentElements, localElements);
 		return result;
 	}
@@ -122,12 +112,7 @@ public class ReversedSimpleScope extends SimpleScope {
 	@Override
 	public Iterable<IEObjectDescription> getElements(final EObject object) {
 		final URI uri = EcoreUtil2.getPlatformResourceOrNormalizedURI(object);
-		Iterable<IEObjectDescription> localElements = getLocalElements(new Provider<Iterable<IEObjectDescription>>() {
-			@Override
-			public Iterable<IEObjectDescription> get() {
-				return getLocalElementsByEObject(object, uri);
-			}
-		});
+		Iterable<IEObjectDescription> localElements = getLocalElements(() -> getLocalElementsByEObject(object, uri));
 		Iterable<IEObjectDescription> parentElements = getParent().getElements(object);
 		// Object lookup is used by the serializer. Prefer local names there without changing textual lookup.
 		Iterable<IEObjectDescription> result = Iterables.concat(localElements, parentElements);

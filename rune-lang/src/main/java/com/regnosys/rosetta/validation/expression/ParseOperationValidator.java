@@ -30,8 +30,8 @@ public class ParseOperationValidator extends ExpressionValidator {
                 if (argumentRType.equals(builtins.NOTHING)) {
                     return;
                 }
-                if (arg instanceof ToStringOperation) {
-                    var toStringArgument = ((ToStringOperation) arg).getArgument();
+                if (arg instanceof ToStringOperation toStringOperation) {
+                    var toStringArgument = toStringOperation.getArgument();
                     RType toStringArgumnetRType = typeSystem.stripFromTypeAliases(typeProvider.getRMetaAnnotatedType(toStringArgument).getRType());
                     if (toStringArgumnetRType instanceof REnumType) {
                         warning("Using to-string on enumeration to convert to another enum is not required", ROSETTA_UNARY_OPERATION__ARGUMENT);

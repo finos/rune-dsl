@@ -128,11 +128,11 @@ public abstract class AbstractDeclarativeRosettaValidator extends AbstractDeclar
 	protected INode findDirectKeyword(ICompositeNode node, String keyword) {
 		for (INode n : node.getChildren()) {
 			EObject ge = n.getGrammarElement();
-			if (ge instanceof Keyword && ((Keyword)ge).getValue().equals(keyword)) { // I compare the keywords by value instead of directly by reference because of an issue that sometimes arises when running multiple tests consecutively. I'm not sure what the issue is.
+			if (ge instanceof Keyword kw && kw.getValue().equals(keyword)) { // I compare the keywords by value instead of directly by reference because of an issue that sometimes arises when running multiple tests consecutively. I'm not sure what the issue is.
 				return n;
 			}
-			if ((ge instanceof RuleCall || ge instanceof Action) && n instanceof ICompositeNode && !(ge.eContainer() instanceof Assignment)) {
-				INode keywordInFragment = findDirectKeyword((ICompositeNode)n, keyword);
+			if ((ge instanceof RuleCall || ge instanceof Action) && n instanceof ICompositeNode compositeNode && !(ge.eContainer() instanceof Assignment)) {
+				INode keywordInFragment = findDirectKeyword(compositeNode, keyword);
 				if (keywordInFragment != null) {
 					return keywordInFragment;
 				}
@@ -144,15 +144,15 @@ public abstract class AbstractDeclarativeRosettaValidator extends AbstractDeclar
 	protected void checkDeprecatedAnnotation(Annotated annotated, EObject owner, EStructuralFeature ref, int index) {
 		if (annotated.getAnnotations().stream().anyMatch(ann -> ecoreUtil.isResolved(ann.getAnnotation()) && "deprecated".equals(ann.getAnnotation().getName()))) {
 			String msg;
-			if (annotated instanceof RosettaNamed) {
-				msg = ((RosettaNamed)annotated).getName() + " is deprecated";
+			if (annotated instanceof RosettaNamed named) {
+				msg = named.getName() + " is deprecated";
 			} else {
 				msg = "Deprecated";
 			}
 			info(msg, owner, ref, index);
-		} else if (annotated instanceof Attribute) {
+		} else if (annotated instanceof Attribute attribute) {
 			// Check if deprecated annotation is inherited
-			Attribute parent = ecoreUtil.getParentAttribute((Attribute) annotated);
+			Attribute parent = ecoreUtil.getParentAttribute(attribute);
 			if (parent != null) {
 				checkDeprecatedAnnotation(parent, owner, ref, index);
 			}

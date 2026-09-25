@@ -35,10 +35,9 @@ public class RosettaValueHelper {
 		return Optional.empty();
 	}
 	public RosettaValue toValue(Object obj) {
-		if (obj instanceof RosettaValue) {
-			return (RosettaValue)obj;
-		} else if (obj instanceof List<?>) {
-			List<?> list = (List<?>)obj;
+		if (obj instanceof RosettaValue value) {
+			return value;
+		} else if (obj instanceof List<?> list) {
 			if (list.isEmpty()) {
 				return RosettaValue.empty();
 			} else {

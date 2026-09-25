@@ -60,8 +60,8 @@ public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
 		Map<RMetaAnnotatedType, RChoiceOption> includedOptions = new HashMap<>();
 		for (RChoiceOption opt: t.getOwnOptions()) {
 			RType optType = typeSystem.stripFromTypeAliases(opt.getType().getRType());
-			if (optType instanceof RChoiceType) {
-				((RChoiceType) optType).getAllOptions().forEach(o -> includedOptions.put(o.getType(), opt));
+			if (optType instanceof RChoiceType optChoice) {
+				optChoice.getAllOptions().forEach(o -> includedOptions.put(o.getType(), opt));
 			}
 		}
 		for (RChoiceOption opt: t.getOwnOptions()) {

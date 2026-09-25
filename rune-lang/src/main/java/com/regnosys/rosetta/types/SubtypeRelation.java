@@ -54,11 +54,11 @@ public class SubtypeRelation {
 	}
 	public boolean isSubtypeOf(RType t1, RType t2, boolean treatChoiceTypesAsDataTypes, Stack<RType> visited) {
 		if (treatChoiceTypesAsDataTypes) {
-			if (t1 instanceof RChoiceType) {
-				t1 = ((RChoiceType) t1).asRDataType();
+			if (t1 instanceof RChoiceType choice1) {
+				t1 = choice1.asRDataType();
 			}
-			if (t2 instanceof RChoiceType) {
-				t2 = ((RChoiceType) t2).asRDataType();
+			if (t2 instanceof RChoiceType choice2) {
+				t2 = choice2.asRDataType();
 			}
 		}
 		
@@ -70,20 +70,18 @@ public class SubtypeRelation {
 			return true;
 		} else if (t1 instanceof RStringType && t2 instanceof RStringType) {
 			return true;
-		} else if (t1 instanceof RChoiceType) {
-			RType t1_ = t1;
+		} else if (t1 instanceof RChoiceType choice1) {
 			RType t2_ = t2;
-			return ((RChoiceType)t1).getOwnOptions().stream().allMatch(t -> safeIsSubtypeOf(t.getType().getRType(), t2_, false, t1_, visited));
-		} else if (t2 instanceof RChoiceType) {
+			return choice1.getOwnOptions().stream().allMatch(t -> safeIsSubtypeOf(t.getType().getRType(), t2_, false, choice1, visited));
+		} else if (t2 instanceof RChoiceType choice2) {
 			RType t1_ = t1;
-			RType t2_ = t2;
-			return ((RChoiceType)t2).getOwnOptions().stream().anyMatch(t -> safeIsSubtypeOf(t1_, t.getType().getRType(), false, t2_, visited));
-		} else if (t1 instanceof RAliasType) {
-			return safeIsSubtypeOf(((RAliasType)t1).getRefersTo(), t2, treatChoiceTypesAsDataTypes, t1, visited);
-		} else if (t2 instanceof RAliasType) {
-			return safeIsSubtypeOf(t1, ((RAliasType)t2).getRefersTo(), treatChoiceTypesAsDataTypes, t2, visited);
-		} else if (t1 instanceof RDataType) {
-			RType st = ((RDataType)t1).getSuperType();
+			return choice2.getOwnOptions().stream().anyMatch(t -> safeIsSubtypeOf(t1_, t.getType().getRType(), false, choice2, visited));
+		} else if (t1 instanceof RAliasType alias1) {
+			return safeIsSubtypeOf(alias1.getRefersTo(), t2, treatChoiceTypesAsDataTypes, t1, visited);
+		} else if (t2 instanceof RAliasType alias2) {
+			return safeIsSubtypeOf(t1, alias2.getRefersTo(), treatChoiceTypesAsDataTypes, t2, visited);
+		} else if (t1 instanceof RDataType data1) {
+			RType st = data1.getSuperType();
 			if (st == null) {
 				return false;
 			}
@@ -122,29 +120,29 @@ public class SubtypeRelation {
 	}
 	
 	public RType join(RType t1, RType t2) {
-		if (t1 instanceof RChoiceType) {
-			t1 = ((RChoiceType) t1).asRDataType();
+		if (t1 instanceof RChoiceType choice1) {
+			t1 = choice1.asRDataType();
 		}
-		if (t2 instanceof RChoiceType) {
-			t2 = ((RChoiceType) t2).asRDataType();
+		if (t2 instanceof RChoiceType choice2) {
+			t2 = choice2.asRDataType();
 		}
 		
 		if (t1.equals(t2) || t2.equals(builtins.NOTHING)) {
 			return t1;
 		} else if (t1.equals(builtins.NOTHING)) {
 			return t2;
-		} else if (t1 instanceof RNumberType && t2 instanceof RNumberType) {
-			return join((RNumberType)t1, (RNumberType)t2);
-		} else if (t1 instanceof RStringType && t2 instanceof RStringType) {
-			return join((RStringType)t1, (RStringType)t2);
-		} else if (t1 instanceof RDataType && t2 instanceof RDataType) {
-			return join((RDataType)t1, (RDataType)t2);
-		} else if (t1 instanceof RAliasType && t2 instanceof RAliasType) {
-			return join((RAliasType)t1, (RAliasType)t2);
-		} else if (t1 instanceof RAliasType) {
-			return join(((RAliasType)t1).getRefersTo(), t2);
-		} else if (t2 instanceof RAliasType) {
-			return join(t1, ((RAliasType)t2).getRefersTo());
+		} else if (t1 instanceof RNumberType number1 && t2 instanceof RNumberType number2) {
+			return join(number1, number2);
+		} else if (t1 instanceof RStringType string1 && t2 instanceof RStringType string2) {
+			return join(string1, string2);
+		} else if (t1 instanceof RDataType data1 && t2 instanceof RDataType data2) {
+			return join(data1, data2);
+		} else if (t1 instanceof RAliasType alias1 && t2 instanceof RAliasType alias2) {
+			return join(alias1, alias2);
+		} else if (t1 instanceof RAliasType alias1) {
+			return join(alias1.getRefersTo(), t2);
+		} else if (t2 instanceof RAliasType alias2) {
+			return join(t1, alias2.getRefersTo());
 		}
 		return builtins.ANY;
 	}
@@ -183,12 +181,10 @@ public class SubtypeRelation {
 		List<RAliasType> aliasAncestors = new ArrayList<>();
 		RType curr1 = t1;
 		while (true) {
-			if (curr1 instanceof RDataType) {
-				RDataType currData = (RDataType) curr1;
+			if (curr1 instanceof RDataType currData) {
 				dataAncestors.add(currData);
 				curr1 = currData.getSuperType();
-			} else if (curr1 instanceof RAliasType) {
-				RAliasType currAlias = (RAliasType) curr1;
+			} else if (curr1 instanceof RAliasType currAlias) {
 				aliasAncestors.add(currAlias);
 				curr1 = currAlias.getRefersTo();
 			} else {
@@ -199,14 +195,12 @@ public class SubtypeRelation {
 		// If there is, join those types. If not, join their top (basic) types, if they extend one.
 		RType curr2 = t2;
 		while (true) {
-			if (curr2 instanceof RDataType) {
-				RDataType currData = (RDataType) curr2;
+			if (curr2 instanceof RDataType currData) {
 				if (dataAncestors.contains(currData)) {
 					return curr2;
 				}
 				curr2 = currData.getSuperType();
-			} else if (curr2 instanceof RAliasType) {
-				RAliasType currAlias = (RAliasType) curr2;
+			} else if (curr2 instanceof RAliasType currAlias) {
 				RTypeFunction tf = currAlias.getTypeFunction();
 				RAliasType match = aliasAncestors.stream().filter(a -> tf.equals(a.getTypeFunction())).findFirst().orElse(null);
 				if (match != null) {

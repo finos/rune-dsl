@@ -53,8 +53,8 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 	public void formatCollection(Collection<Resource> resources, ITypedPreferenceValues preferences,
 			IFormattedResourceAcceptor acceptor) {
 		resources.stream().forEach(resource -> {
-			if (resource instanceof XtextResource) {
-				String formattedContents = formatXtextResource((XtextResource) resource, preferences);
+			if (resource instanceof XtextResource xtextResource) {
+				String formattedContents = formatXtextResource(xtextResource, preferences);
 				if (formattedContents != null) {
 					acceptor.accept(resource, formattedContents);
 				}
@@ -170,7 +170,7 @@ public class XtextResourceFormatter implements ResourceFormatterService {
 		}
 
 		Import firstImport = imports.get(0);
-		Import lastImport = imports.get(imports.size() - 1);
+		Import lastImport = imports.getLast();
 		ITextRegion firstRegion = NodeModelUtils.getNode(firstImport).getTextRegion();
 		ITextRegion lastRegion = NodeModelUtils.getNode(lastImport).getTextRegion();
 

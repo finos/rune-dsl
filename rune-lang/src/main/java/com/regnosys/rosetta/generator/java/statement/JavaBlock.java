@@ -16,8 +16,6 @@
 
 package com.regnosys.rosetta.generator.java.statement;
 
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
-
 import com.regnosys.rosetta.codegen.api.CodeWriter;
 
 /**
@@ -44,16 +42,6 @@ public class JavaBlock extends JavaStatement implements JavaLambdaBody {
 	}
 
 	@Override
-	public void appendTo(TargetStringConcatenation target) {
-		target.append('{');
-		target.newLine();
-		target.append("\t");
-		target.append(statements, "\t");
-		target.newLine();
-		target.append('}');
-	}
-
-	@Override
 	public void render(CodeWriter out) {
 		out.write("{");
 		out.newline();
@@ -74,8 +62,8 @@ public class JavaBlock extends JavaStatement implements JavaLambdaBody {
 	
 	@Override
 	public JavaBlock prepend(JavaStatement other) {
-		if (other instanceof JavaBlock) {
-			return ((JavaBlock) other).append(this);
+		if (other instanceof JavaBlock otherBlock) {
+			return otherBlock.append(this);
 		}
 		JavaStatementList newStatements = new JavaStatementList();
 		newStatements.add(other);
@@ -84,8 +72,8 @@ public class JavaBlock extends JavaStatement implements JavaLambdaBody {
 	}
 	@Override
 	public JavaBlock append(JavaStatement other) {
-		if (other instanceof JavaBlock) {
-			return this.append((JavaBlock)other);
+		if (other instanceof JavaBlock otherBlock) {
+			return this.append(otherBlock);
 		}
 		JavaStatementList newStatements = new JavaStatementList();
 		newStatements.addAll(this.statements);

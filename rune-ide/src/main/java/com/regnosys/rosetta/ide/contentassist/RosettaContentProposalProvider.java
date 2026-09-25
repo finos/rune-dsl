@@ -92,8 +92,7 @@ public class RosettaContentProposalProvider extends IdeContentProposalProvider {
 	private void createProposalsForAttributeName(Attribute attr, ContentAssistContext context, IIdeContentProposalAcceptor acceptor) {
 		if (attr.isOverride()) {
 			EObject container = attr.eContainer();
-			if (container instanceof Data) {
-				Data data = (Data) container;
+			if (container instanceof Data data) {
 				if (data.getSuperType() != null) {
 					ecoreUtil.getAllAttributes(data.getSuperType())
 						.forEach((superAttr) -> {
