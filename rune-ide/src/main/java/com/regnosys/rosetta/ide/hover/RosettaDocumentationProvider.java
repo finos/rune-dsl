@@ -35,16 +35,14 @@ public class RosettaDocumentationProvider implements IEObjectDocumentationProvid
 
 	public List<String> getDocumentationFromReference(EObject o) {
 		List<String> docs = new ArrayList<>();
-		if (o instanceof RosettaSymbol) {
-			RosettaSymbol symbol = (RosettaSymbol)o;
+		if (o instanceof RosettaSymbol symbol) {
 			boolean isMulti = cardinalityProvider.isSymbolMulti(symbol);
 			
 			if (isMulti) {
 				docs.add("**Multi cardinality.**");
 			}
 		} 
-		if (o instanceof RosettaDefinable) {
-			RosettaDefinable objectWithDocs = (RosettaDefinable)o;
+		if (o instanceof RosettaDefinable objectWithDocs) {
 			if (objectWithDocs.getDefinition() != null) {
 				docs.add(objectWithDocs.getDefinition());
 			}
@@ -54,8 +52,8 @@ public class RosettaDocumentationProvider implements IEObjectDocumentationProvid
 
 	public List<String> getDocumentationFromOwner(EObject o) {
 		List<String> docs = new ArrayList<>();
-		if (o instanceof RosettaSymbolReference) {
-			RosettaSymbol symbol = ((RosettaSymbolReference)o).getSymbol();
+		if (o instanceof RosettaSymbolReference reference) {
+			RosettaSymbol symbol = reference.getSymbol();
 			if (symbol instanceof RosettaEnumValue) {
 				RType t = expectedTypeProvider.getExpectedTypeFromContainer(o).getRType();
 				docs.add(t.toString());

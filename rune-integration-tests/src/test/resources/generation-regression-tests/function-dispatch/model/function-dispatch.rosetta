@@ -1,0 +1,20 @@
+namespace test.functiondispatch
+
+enum Operation:
+    INCREMENT
+    DECREMENT
+
+// Dispatching functions leave the base function without a body, so it needs this annotation to avoid a warning.
+func Apply:
+    [codeImplementation]
+    inputs:
+        operation Operation (1..1)
+        value int (1..1)
+    output:
+        result int (1..1)
+
+func Apply(operation: Operation -> INCREMENT):
+    set result: value + 1
+
+func Apply(operation: Operation -> DECREMENT):
+    set result: value - 1

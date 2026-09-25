@@ -80,194 +80,135 @@ import com.regnosys.rosetta.rosetta.expression.WithMetaOperation;
 public abstract class RosettaExpressionSwitch<Return, Context> {
 
 	protected Return doSwitch(RosettaExpression expr, Context context) {
-		if (expr instanceof RosettaConstructorExpression) {
-			return caseConstructorExpression((RosettaConstructorExpression)expr, context);
-		} else if (expr instanceof ListLiteral) {
-			return caseListLiteral((ListLiteral)expr, context);
-		} else if (expr instanceof RosettaConditionalExpression) {
-			return caseConditionalExpression((RosettaConditionalExpression)expr, context);
-		} else if (expr instanceof RosettaFeatureCall) {
-			return caseFeatureCall((RosettaFeatureCall)expr, context);
-		} else if (expr instanceof RosettaDeepFeatureCall) {
-			return caseDeepFeatureCall((RosettaDeepFeatureCall)expr, context);
-		} else if (expr instanceof RosettaLiteral) {
-			return doSwitch((RosettaLiteral)expr, context);
-		} else if (expr instanceof RosettaOnlyExistsExpression) {
-			return caseOnlyExists((RosettaOnlyExistsExpression)expr, context);
-		} else if (expr instanceof RosettaImplicitVariable) {
-			return caseImplicitVariable((RosettaImplicitVariable)expr, context);
-		} else if (expr instanceof RosettaCallableReference) {
-			return doSwitch((RosettaCallableReference)expr, context);
-		} else if (expr instanceof RosettaOperation) {
-			return doSwitch((RosettaOperation)expr, context);
-		}
-		throw errorMissedCase(expr);
+		return switch (expr) {
+			case RosettaConstructorExpression e -> caseConstructorExpression(e, context);
+			case ListLiteral e -> caseListLiteral(e, context);
+			case RosettaConditionalExpression e -> caseConditionalExpression(e, context);
+			case RosettaFeatureCall e -> caseFeatureCall(e, context);
+			case RosettaDeepFeatureCall e -> caseDeepFeatureCall(e, context);
+			case RosettaLiteral e -> doSwitch(e, context);
+			case RosettaOnlyExistsExpression e -> caseOnlyExists(e, context);
+			case RosettaImplicitVariable e -> caseImplicitVariable(e, context);
+			case RosettaCallableReference e -> doSwitch(e, context);
+			case RosettaOperation e -> doSwitch(e, context);
+			case null, default -> throw errorMissedCase(expr);
+		};
 	}
 	protected Return doSwitch(RosettaLiteral expr, Context context) {
-		if (expr instanceof RosettaBooleanLiteral) {
-			return caseBooleanLiteral((RosettaBooleanLiteral)expr, context);
-		} else if (expr instanceof RosettaIntLiteral) {
-			return caseIntLiteral((RosettaIntLiteral)expr, context);
-		} else if (expr instanceof RosettaNumberLiteral) {
-			return caseNumberLiteral((RosettaNumberLiteral)expr, context);
-		} else if (expr instanceof RosettaStringLiteral) {
-			return caseStringLiteral((RosettaStringLiteral)expr, context);
-		}
-		throw errorMissedCase(expr);
+		return switch (expr) {
+			case RosettaBooleanLiteral e -> caseBooleanLiteral(e, context);
+			case RosettaIntLiteral e -> caseIntLiteral(e, context);
+			case RosettaNumberLiteral e -> caseNumberLiteral(e, context);
+			case RosettaStringLiteral e -> caseStringLiteral(e, context);
+			case null, default -> throw errorMissedCase(expr);
+		};
 	}
 	protected Return doSwitch(RosettaCallableReference expr, Context context) {
-		if (expr instanceof RosettaSuperCall) {
-			return caseSuperCall((RosettaSuperCall)expr, context);
-		} else if (expr instanceof RosettaSymbolReference) {
-			return caseSymbolReference((RosettaSymbolReference)expr, context);
-		}
-		throw errorMissedCase(expr);
+		return switch (expr) {
+			case RosettaSuperCall e -> caseSuperCall(e, context);
+			case RosettaSymbolReference e -> caseSymbolReference(e, context);
+			case null, default -> throw errorMissedCase(expr);
+		};
 	}
 	protected Return doSwitch(RosettaOperation expr, Context context) {
-		if (expr instanceof RosettaBinaryOperation) {
-			return doSwitch((RosettaBinaryOperation)expr, context);
-		} else if (expr instanceof RosettaUnaryOperation) {
-			return doSwitch((RosettaUnaryOperation)expr, context);
-		}
-		throw errorMissedCase(expr);
+		return switch (expr) {
+			case RosettaBinaryOperation e -> doSwitch(e, context);
+			case RosettaUnaryOperation e -> doSwitch(e, context);
+			case null, default -> throw errorMissedCase(expr);
+		};
 	}
 	protected Return doSwitch(RosettaBinaryOperation expr, Context context) {
-		if (expr instanceof ArithmeticOperation) {
-			return doSwitch((ArithmeticOperation)expr, context);
-		} else if (expr instanceof JoinOperation) {
-			return caseJoinOperation((JoinOperation)expr, context);
-		} else if (expr instanceof LogicalOperation) {
-			return doSwitch((LogicalOperation)expr, context);
-		} else if (expr instanceof ModifiableBinaryOperation) {
-			return doSwitch((ModifiableBinaryOperation)expr, context);
-		} else if (expr instanceof RosettaContainsExpression) {
-			return caseContainsOperation((RosettaContainsExpression)expr, context);
-		} else if (expr instanceof RosettaDisjointExpression) {
-			return caseDisjointOperation((RosettaDisjointExpression)expr, context);
-		} else if (expr instanceof DefaultOperation) {
-			return caseDefaultOperation((DefaultOperation)expr, context);
-		}
-		throw errorMissedCase(expr);
+		return switch (expr) {
+			case ArithmeticOperation e -> doSwitch(e, context);
+			case JoinOperation e -> caseJoinOperation(e, context);
+			case LogicalOperation e -> doSwitch(e, context);
+			case ModifiableBinaryOperation e -> doSwitch(e, context);
+			case RosettaContainsExpression e -> caseContainsOperation(e, context);
+			case RosettaDisjointExpression e -> caseDisjointOperation(e, context);
+			case DefaultOperation e -> caseDefaultOperation(e, context);
+			case null, default -> throw errorMissedCase(expr);
+		};
 	}
 	protected Return doSwitch(ArithmeticOperation expr, Context context) {
-		if (expr.getOperator().equals("+")) {
-			return caseAddOperation(expr, context);
-		} else if (expr.getOperator().equals("-")) {
-			return caseSubtractOperation(expr, context);
-		} else if (expr.getOperator().equals("*")) {
-			return caseMultiplyOperation(expr, context);
-		} else if (expr.getOperator().equals("/")) {
-			return caseDivideOperation(expr, context);
-		}
-		throw errorMissedCase(expr);
+		return switch (expr.getOperator()) {
+			case "+" -> caseAddOperation(expr, context);
+			case "-" -> caseSubtractOperation(expr, context);
+			case "*" -> caseMultiplyOperation(expr, context);
+			case "/" -> caseDivideOperation(expr, context);
+			default -> throw errorMissedCase(expr);
+		};
 	}
 	protected Return doSwitch(LogicalOperation expr, Context context) {
-		if (expr.getOperator().equals("and")) {
-			return caseAndOperation(expr, context);
-		} else if (expr.getOperator().equals("or")) {
-			return caseOrOperation(expr, context);
-		}
-		throw errorMissedCase(expr);
+		return switch (expr.getOperator()) {
+			case "and" -> caseAndOperation(expr, context);
+			case "or" -> caseOrOperation(expr, context);
+			default -> throw errorMissedCase(expr);
+		};
 	}
 	protected Return doSwitch(ModifiableBinaryOperation expr, Context context) {
-		if (expr instanceof ComparisonOperation) {
-			return doSwitch((ComparisonOperation)expr, context);
-		} else if (expr instanceof EqualityOperation) {
-			return doSwitch((EqualityOperation)expr, context);
-		}
-		throw errorMissedCase(expr);
+		return switch (expr) {
+			case ComparisonOperation e -> doSwitch(e, context);
+			case EqualityOperation e -> doSwitch(e, context);
+			case null, default -> throw errorMissedCase(expr);
+		};
 	}
 	protected Return doSwitch(ComparisonOperation expr, Context context) {
-		if (expr.getOperator().equals("<")) {
-			return caseLessThanOperation(expr, context);
-		} else if (expr.getOperator().equals("<=")) {
-			return caseLessThanOrEqualOperation(expr, context);
-		} else if (expr.getOperator().equals(">")) {
-			return caseGreaterThanOperation(expr, context);
-		} else if (expr.getOperator().equals(">=")) {
-			return caseGreaterThanOrEqualOperation(expr, context);
-		}
-		throw errorMissedCase(expr);
+		return switch (expr.getOperator()) {
+			case "<" -> caseLessThanOperation(expr, context);
+			case "<=" -> caseLessThanOrEqualOperation(expr, context);
+			case ">" -> caseGreaterThanOperation(expr, context);
+			case ">=" -> caseGreaterThanOrEqualOperation(expr, context);
+			default -> throw errorMissedCase(expr);
+		};
 	}
 	protected Return doSwitch(EqualityOperation expr, Context context) {
-		if (expr.getOperator().equals("=")) {
-			return caseEqualsOperation(expr, context);
-		} else if (expr.getOperator().equals("<>")) {
-			return caseNotEqualsOperation(expr, context);
-		}
-		throw errorMissedCase(expr);
+		return switch (expr.getOperator()) {
+			case "=" -> caseEqualsOperation(expr, context);
+			case "<>" -> caseNotEqualsOperation(expr, context);
+			default -> throw errorMissedCase(expr);
+		};
 	}
 	protected Return doSwitch(RosettaUnaryOperation expr, Context context) {
-		if (expr instanceof AsKeyOperation) {
-			return caseAsKeyOperation((AsKeyOperation)expr, context);
-		} else if (expr instanceof ChoiceOperation) {
-			return caseChoiceOperation((ChoiceOperation)expr, context);
-		} else if (expr instanceof OneOfOperation) {
-			return caseOneOfOperation((OneOfOperation)expr, context);
-		} else if (expr instanceof RosettaAbsentExpression) {
-			return caseAbsentOperation((RosettaAbsentExpression)expr, context);
-		} else if (expr instanceof RosettaCountOperation) {
-			return caseCountOperation((RosettaCountOperation)expr, context);
-		} else if (expr instanceof RosettaExistsExpression) {
-			return caseExistsOperation((RosettaExistsExpression)expr, context);
-		} else if (expr instanceof DistinctOperation) {
-			return caseDistinctOperation((DistinctOperation)expr, context);
-		} else if (expr instanceof FirstOperation) {
-			return caseFirstOperation((FirstOperation)expr, context);
-		} else if (expr instanceof FlattenOperation) {
-			return caseFlattenOperation((FlattenOperation)expr, context);
-		} else if (expr instanceof LastOperation) {
-			return caseLastOperation((LastOperation)expr, context);
-		} else if (expr instanceof ReverseOperation) {
-			return caseReverseOperation((ReverseOperation)expr, context);
-		} else if (expr instanceof RosettaOnlyElement) {
-			return caseOnlyElementOperation((RosettaOnlyElement)expr, context);
-		} else if (expr instanceof SumOperation) {
-			return caseSumOperation((SumOperation)expr, context);
-		} else if (expr instanceof ToStringOperation) {
-			return caseToStringOperation((ToStringOperation)expr, context);
-		} else if (expr instanceof ToNumberOperation) {
-			return caseToNumberOperation((ToNumberOperation)expr, context);
-		} else if (expr instanceof ToIntOperation) {
-			return caseToIntOperation((ToIntOperation)expr, context);
-		} else if (expr instanceof ToTimeOperation) {
-			return caseToTimeOperation((ToTimeOperation)expr, context);
-		} else if (expr instanceof ToEnumOperation) {
-			return caseToEnumOperation((ToEnumOperation)expr, context);
-		} else if (expr instanceof AsOperation) {
-			return caseAsOperation((AsOperation)expr, context);
-		} else if (expr instanceof ToDateOperation) {
-			return caseToDateOperation((ToDateOperation)expr, context);
-		} else if (expr instanceof ToDateTimeOperation) {
-			return caseToDateTimeOperation((ToDateTimeOperation)expr, context);
-		} else if (expr instanceof ToZonedDateTimeOperation) {
-			return caseToZonedDateTimeOperation((ToZonedDateTimeOperation)expr, context);
-		}  else if (expr instanceof SwitchOperation) {
- 			return caseSwitchOperation((SwitchOperation)expr, context);
- 		} else if (expr instanceof WithMetaOperation) {
- 			return caseWithMetaOperation((WithMetaOperation)expr, context);
- 		} else if (expr instanceof RosettaFunctionalOperation) {
-			return doSwitch((RosettaFunctionalOperation)expr, context);
-		}
-		throw errorMissedCase(expr);
+		return switch (expr) {
+			case AsKeyOperation e -> caseAsKeyOperation(e, context);
+			case ChoiceOperation e -> caseChoiceOperation(e, context);
+			case OneOfOperation e -> caseOneOfOperation(e, context);
+			case RosettaAbsentExpression e -> caseAbsentOperation(e, context);
+			case RosettaCountOperation e -> caseCountOperation(e, context);
+			case RosettaExistsExpression e -> caseExistsOperation(e, context);
+			case DistinctOperation e -> caseDistinctOperation(e, context);
+			case FirstOperation e -> caseFirstOperation(e, context);
+			case FlattenOperation e -> caseFlattenOperation(e, context);
+			case LastOperation e -> caseLastOperation(e, context);
+			case ReverseOperation e -> caseReverseOperation(e, context);
+			case RosettaOnlyElement e -> caseOnlyElementOperation(e, context);
+			case SumOperation e -> caseSumOperation(e, context);
+			case ToStringOperation e -> caseToStringOperation(e, context);
+			case ToNumberOperation e -> caseToNumberOperation(e, context);
+			case ToIntOperation e -> caseToIntOperation(e, context);
+			case ToTimeOperation e -> caseToTimeOperation(e, context);
+			case ToEnumOperation e -> caseToEnumOperation(e, context);
+			case AsOperation e -> caseAsOperation(e, context);
+			case ToDateOperation e -> caseToDateOperation(e, context);
+			case ToDateTimeOperation e -> caseToDateTimeOperation(e, context);
+			case ToZonedDateTimeOperation e -> caseToZonedDateTimeOperation(e, context);
+			case SwitchOperation e -> caseSwitchOperation(e, context);
+			case WithMetaOperation e -> caseWithMetaOperation(e, context);
+			case RosettaFunctionalOperation e -> doSwitch(e, context);
+			case null, default -> throw errorMissedCase(expr);
+		};
 	}
 	protected Return doSwitch(RosettaFunctionalOperation expr, Context context) {
-		if (expr instanceof FilterOperation) {
-			return caseFilterOperation((FilterOperation)expr, context);
-		} else if (expr instanceof MapOperation) {
-			return caseMapOperation((MapOperation)expr, context);
-		} else if (expr instanceof MaxOperation) {
-			return caseMaxOperation((MaxOperation)expr, context);
-		} else if (expr instanceof MinOperation) {
-			return caseMinOperation((MinOperation)expr, context);
-		} else if (expr instanceof ReduceOperation) {
-			return caseReduceOperation((ReduceOperation)expr, context);
-		} else if (expr instanceof SortOperation) {
-			return caseSortOperation((SortOperation)expr, context);
-		} else if (expr instanceof ThenOperation) {
-			return caseThenOperation((ThenOperation)expr, context);
-		}
-		throw errorMissedCase(expr);
+		return switch (expr) {
+			case FilterOperation e -> caseFilterOperation(e, context);
+			case MapOperation e -> caseMapOperation(e, context);
+			case MaxOperation e -> caseMaxOperation(e, context);
+			case MinOperation e -> caseMinOperation(e, context);
+			case ReduceOperation e -> caseReduceOperation(e, context);
+			case SortOperation e -> caseSortOperation(e, context);
+			case ThenOperation e -> caseThenOperation(e, context);
+			case null, default -> throw errorMissedCase(expr);
+		};
 	}
 	private UnsupportedOperationException errorMissedCase(RosettaExpression expr) {
 		String className = expr == null ? "null" : expr.getClass().getCanonicalName();

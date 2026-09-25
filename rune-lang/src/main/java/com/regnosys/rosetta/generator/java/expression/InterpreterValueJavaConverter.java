@@ -12,8 +12,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.eclipse.xtend2.lib.StringConcatenationClient;
-
 import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
 import com.regnosys.rosetta.generator.java.types.JavaTypeUtil;
@@ -38,22 +36,16 @@ public class InterpreterValueJavaConverter {
 		if (value.size() == 0) {
 			return JavaLiteral.NULL;
 		}
-		if (value instanceof RosettaBooleanValue) {
-			return toJavaListIfNecessary(((RosettaBooleanValue) value).getItems(), this::convertBooleanValueToJava);
-		} else if (value instanceof RosettaDateTimeValue) {
-			return toJavaListIfNecessary(((RosettaDateTimeValue) value).getItems(), this::convertDateTimeValueToJava);
-		} else if (value instanceof RosettaDateValue) {
-			return toJavaListIfNecessary(((RosettaDateValue) value).getItems(), this::convertDateValueToJava);
-		} else if (value instanceof RosettaNumberValue) {
-			return toJavaListIfNecessary(((RosettaNumberValue) value).getItems(), this::convertNumberValueToJava);
-		} else if (value instanceof RosettaStringValue) {
-			return toJavaListIfNecessary(((RosettaStringValue) value).getItems(), this::convertStringValueToJava);
-		} else if (value instanceof RosettaTimeValue) {
-			return toJavaListIfNecessary(((RosettaTimeValue) value).getItems(), this::convertTimeValueToJava);
-		} else if (value instanceof RosettaZonedDateTimeValue) {
-			return toJavaListIfNecessary(((RosettaZonedDateTimeValue) value).getItems(), this::convertZonedDateTimeValueToJava);
-		}
-		throw new UnsupportedOperationException("Cannot convert " + value + " to Java code");
+		return switch (value) {
+			case RosettaBooleanValue booleanValue -> toJavaListIfNecessary(booleanValue.getItems(), this::convertBooleanValueToJava);
+			case RosettaDateTimeValue dateTimeValue -> toJavaListIfNecessary(dateTimeValue.getItems(), this::convertDateTimeValueToJava);
+			case RosettaDateValue dateValue -> toJavaListIfNecessary(dateValue.getItems(), this::convertDateValueToJava);
+			case RosettaNumberValue numberValue -> toJavaListIfNecessary(numberValue.getItems(), this::convertNumberValueToJava);
+			case RosettaStringValue stringValue -> toJavaListIfNecessary(stringValue.getItems(), this::convertStringValueToJava);
+			case RosettaTimeValue timeValue -> toJavaListIfNecessary(timeValue.getItems(), this::convertTimeValueToJava);
+			case RosettaZonedDateTimeValue zonedDateTimeValue -> toJavaListIfNecessary(zonedDateTimeValue.getItems(), this::convertZonedDateTimeValueToJava);
+			default -> throw new UnsupportedOperationException("Cannot convert " + value + " to Java code");
+		};
 	}
 	
 	private <T> JavaExpression toJavaListIfNecessary(List<T> items, Function<T, JavaExpression> handler) {
@@ -61,19 +53,10 @@ public class InterpreterValueJavaConverter {
 			return handler.apply(items.get(0));
 		} else {
 			List<JavaExpression> expressions = items.stream().map(handler).collect(Collectors.toList());
-			return JavaExpression.from(new StringConcatenationClient() {
-				@Override
-				protected void appendTo(TargetStringConcatenation target) {
-					target.append(Arrays.class);
-					target.append(".asList(");
-					for (int i=0; i<expressions.size(); i++) {
-						target.append(expressions.get(i));
-						if (i != expressions.size() - 1) {
-							target.append(", ");
-						}
-					}
-					target.append(")");
-				}
+			return JavaExpression.from(out -> {
+				out.write(Arrays.class, ".asList(");
+				out.join(expressions, ", ");
+				out.write(")");
 			}, typeUtil.wrap(typeUtil.LIST, expressions.get(0).getExpressionType()));
 		}
 	}
@@ -85,42 +68,13 @@ public class InterpreterValueJavaConverter {
 		return JavaLiteral.FALSE;
 	}
 	private JavaExpression convertDateTimeValueToJava(LocalDateTime value) {
-		return JavaExpression.from(new StringConcatenationClient() {
-			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				target.append(LocalDateTime.class);
-				target.append(".of(");
-				target.append(value.getYear());
-				target.append(", ");
-				target.append(value.getMonthValue());
-				target.append(", ");
-				target.append(value.getDayOfMonth());
-				target.append(", ");
-				target.append(value.getHour());
-				target.append(", ");
-				target.append(value.getMinute());
-				target.append(", ");
-				target.append(value.getSecond());
-				target.append(", ");
-				target.append(value.getNano());
-				target.append(")");
-			}
-		}, typeUtil.LOCAL_DATE_TIME);
+		return JavaExpression.from(out -> out.write(LocalDateTime.class, ".of(",
+				value.getYear(), ", ", value.getMonthValue(), ", ", value.getDayOfMonth(), ", ",
+				value.getHour(), ", ", value.getMinute(), ", ", value.getSecond(), ", ", value.getNano(), ")"), typeUtil.LOCAL_DATE_TIME);
 	}
 	private JavaExpression convertDateValueToJava(LocalDate value) {
-		return JavaExpression.from(new StringConcatenationClient() {
-			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				target.append(Date.class);
-				target.append(".of(");
-				target.append(value.getYear());
-				target.append(", ");
-				target.append(value.getMonthValue());
-				target.append(", ");
-				target.append(value.getDayOfMonth());
-				target.append(")");
-			}
-		}, typeUtil.DATE);
+		return JavaExpression.from(out -> out.write(Date.class, ".of(",
+				value.getYear(), ", ", value.getMonthValue(), ", ", value.getDayOfMonth(), ")"), typeUtil.DATE);
 	}
 	private JavaExpression convertNumberValueToJava(RosettaNumber value) {
 		int intValue = value.intValue();
@@ -136,73 +90,22 @@ public class InterpreterValueJavaConverter {
 		BigInteger bigIntegerValue = value.bigIntegerValue();
 		if (value.equals(RosettaNumber.valueOf(bigIntegerValue))) {
 			// Value fits in a big integer
-			return JavaExpression.from(new StringConcatenationClient() {
-				@Override
-				protected void appendTo(TargetStringConcatenation target) {
-					target.append("new ");
-					target.append(BigInteger.class);
-					target.append("(\"");
-					target.append(bigIntegerValue);
-					target.append("\")");
-				}
-			}, typeUtil.BIG_INTEGER);
+			return JavaExpression.from(out -> out.write("new ", BigInteger.class, "(\"", bigIntegerValue, "\")"), typeUtil.BIG_INTEGER);
 		}
 		// Default: value fits in a big decimal
-		return JavaExpression.from(new StringConcatenationClient() {
-			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				target.append("new ");
-				target.append(BigDecimal.class);
-				target.append("(\"");
-				target.append(value);
-				target.append("\")");
-			}
-		}, typeUtil.BIG_DECIMAL);
+		return JavaExpression.from(out -> out.write("new ", BigDecimal.class, "(\"", value, "\")"), typeUtil.BIG_DECIMAL);
 	}
 	private JavaExpression convertStringValueToJava(String value) {
 		return JavaLiteral.STRING(value);
 	}
 	private JavaExpression convertTimeValueToJava(LocalTime value) {
-		return JavaExpression.from(new StringConcatenationClient() {
-			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				target.append(LocalTime.class);
-				target.append(value.getHour());
-				target.append(", ");
-				target.append(value.getMinute());
-				target.append(", ");
-				target.append(value.getSecond());
-				target.append(", ");
-				target.append(value.getNano());
-				target.append(")");
-			}
-		}, typeUtil.LOCAL_TIME);
+		return JavaExpression.from(out -> out.write(LocalTime.class, ".of(",
+				value.getHour(), ", ", value.getMinute(), ", ", value.getSecond(), ", ", value.getNano(), ")"), typeUtil.LOCAL_TIME);
 	}
 	private JavaExpression convertZonedDateTimeValueToJava(ZonedDateTime value) {
-		return JavaExpression.from(new StringConcatenationClient() {
-			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				target.append(ZonedDateTime.class);
-				target.append(".of(");
-				target.append(value.getYear());
-				target.append(", ");
-				target.append(value.getMonthValue());
-				target.append(", ");
-				target.append(value.getDayOfMonth());
-				target.append(", ");
-				target.append(value.getHour());
-				target.append(", ");
-				target.append(value.getMinute());
-				target.append(", ");
-				target.append(value.getSecond());
-				target.append(", ");
-				target.append(value.getNano());
-				target.append(", ");
-				target.append(ZoneId.class);
-				target.append(".of(");
-				target.append(JavaLiteral.STRING(value.getZone().getId()));
-				target.append("))");
-			}
-		}, typeUtil.ZONED_DATE_TIME);
+		return JavaExpression.from(out -> out.write(ZonedDateTime.class, ".of(",
+				value.getYear(), ", ", value.getMonthValue(), ", ", value.getDayOfMonth(), ", ",
+				value.getHour(), ", ", value.getMinute(), ", ", value.getSecond(), ", ", value.getNano(), ", ",
+				ZoneId.class, ".of(", JavaLiteral.STRING(value.getZone().getId()), "))"), typeUtil.ZONED_DATE_TIME);
 	}
 }

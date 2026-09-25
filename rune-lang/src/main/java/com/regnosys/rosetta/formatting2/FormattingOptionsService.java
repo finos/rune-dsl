@@ -58,12 +58,12 @@ public class FormattingOptionsService {
 			String key = (String) entry.getKey();
 			Object value = entry.getValue();
 
-			if (value instanceof String) {
-				formattingOptions.putString(key, (String) value);
-			} else if (value instanceof Number) {
-				formattingOptions.putNumber(key, (Number) value);
-			} else if (value instanceof Boolean) {
-				formattingOptions.putBoolean(key, (Boolean) value);
+			if (value instanceof String string) {
+				formattingOptions.putString(key, string);
+			} else if (value instanceof Number number) {
+				formattingOptions.putNumber(key, number);
+			} else if (value instanceof Boolean bool) {
+				formattingOptions.putBoolean(key, bool);
 			} else {
 				throw new IllegalArgumentException("Unsupported value type for key: " + key);
 			}

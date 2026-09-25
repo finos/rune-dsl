@@ -3,10 +3,10 @@ package com.regnosys.rosetta.tests.util;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.xtend2.lib.StringConcatenationClient;
 import org.eclipse.xtext.testing.validation.ValidationTestHelper;
 
 import com.google.inject.Injector;
+import com.regnosys.rosetta.codegen.api.CodeRenderer;
 import com.regnosys.rosetta.generator.java.expression.ExpressionGenerator;
 import com.regnosys.rosetta.generator.java.expression.JavaDependencyProvider;
 import com.regnosys.rosetta.generator.java.object.MetaFieldGenerator;
@@ -17,7 +17,7 @@ import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder;
 import com.regnosys.rosetta.generator.java.types.RGeneratedJavaClass;
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue;
-import com.regnosys.rosetta.generator.java.util.ImportManagerExtension;
+import com.regnosys.rosetta.generator.java.util.FluentImportManager;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.regnosys.rosetta.rosetta.expression.RosettaExpression;
 import com.regnosys.rosetta.tests.compiler.CompilationException;
@@ -44,7 +44,7 @@ public class ExpressionJavaEvaluatorService {
 	@Inject
 	private Injector injector;
 	@Inject
-	private ImportManagerExtension importManagerExtension;
+	private FluentImportManager fluentImportManager;
 
 	public Object evaluate(CharSequence rosettaExpression, RosettaModel context, JavaType expectedType,
 			ClassLoader classLoader) {
@@ -69,39 +69,21 @@ public class ExpressionJavaEvaluatorService {
 				StringUtils.uncapitalize(dep.getSimpleName())));
 
 		JavaStatementBuilder javaCode = expressionGenerator.javaCode(expr, expectedType, evaluateBodyScope);
-		StringConcatenationClient content = new StringConcatenationClient() {
-			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				target.append("public class ");
-				target.append(className);
-				target.append(" {");
-				target.newLine();
+		CodeRenderer content = out -> {
+			out.writeln("public class ", className, " {");
+			out.indented(() -> {
 				for (JavaClass<?> dep : dependencies) {
-					target.append("\t@");
-					target.append(Inject.class);
-					target.newLine();
-					target.append("\tprivate ");
-					target.append(dep);
-					target.append(" ");
-					target.append(classScope.getIdentifierOrThrow(
-							javaIdentifierRepresentationService.toDependencyInstance(dep)));
-					target.append(";");
-					target.newLine();
+					out.writeln("@", Inject.class);
+					out.writeln("private ", dep, " ", classScope.getIdentifierOrThrow(
+							javaIdentifierRepresentationService.toDependencyInstance(dep)), ";");
 				}
-				target.newLine();
-				target.append("\tpublic ");
-				target.append(expectedType);
-				target.append(" ");
-				target.append(methodName);
-				target.append("() ");
-				target.append(javaCode.completeAsReturn().toBlock(), "\t");
-				target.newLine();
-				target.append("}");
-				target.newLine();
-			}
+				out.newline();
+				out.writeln("public ", expectedType, " ", methodName, "() ", javaCode.completeAsReturn().toBlock());
+			});
+			out.writeln("}");
 		};
 
-		String sourceCode = importManagerExtension.buildClass(packageName, content, classScope.getFileScope());
+		String sourceCode = fluentImportManager.buildClass(packageName, content, classScope.getFileScope());
 		InMemoryJavacCompiler expressionCompiler = InMemoryJavacCompiler
 				.newInstance()
 				.useParentClassLoader(classLoader)
@@ -126,9 +108,8 @@ public class ExpressionJavaEvaluatorService {
 		metaFieldGenerator.streamObjects(expr).forEach(object -> {
 			RJavaWithMetaValue typeRepresentation = metaFieldGenerator.createTypeRepresentation(object);
 			JavaClassScope classScope = JavaClassScope.createAndRegisterIdentifier(typeRepresentation);
-			StringConcatenationClient classCode = metaFieldGenerator.generateClass(object, typeRepresentation, "0",
-					classScope);
-			String javaFileCode = importManagerExtension.buildClass(typeRepresentation.getPackageName(), classCode,
+			CodeRenderer classCode = metaFieldGenerator.generateClass(object, typeRepresentation, "0", classScope);
+			String javaFileCode = fluentImportManager.buildClass(typeRepresentation.getPackageName(), classCode,
 					classScope.getFileScope());
 			compiler.addSource(typeRepresentation.getCanonicalName().withDots(), javaFileCode);
 		});

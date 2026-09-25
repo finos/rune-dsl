@@ -63,10 +63,10 @@ public class JavaConditionInterface extends RGeneratedJavaClass<Object> {
 	public Map<String, JavaType> getParameters() {
 		if (parameters == null) {
 			RosettaTypeWithConditions enclosingType = condition.getEnclosingType();
-			if (enclosingType instanceof ParametrizedRosettaType) {
+			if (enclosingType instanceof ParametrizedRosettaType parametrizedType) {
 				Set<RosettaSymbol> usedSymbols = EcoreUtil2.eAllOfType(condition.getExpression(), RosettaSymbolReference.class).stream().map(ref -> ref.getSymbol()).collect(Collectors.toSet());
 				parameters = new LinkedHashMap<>();
-				((ParametrizedRosettaType) enclosingType).getParameters().forEach(param -> {
+				parametrizedType.getParameters().forEach(param -> {
 					if (usedSymbols.contains(param)) {
 						JavaType paramType = typeTranslator.toJavaReferenceType(typeProvider.getRTypeOfSymbol(param));
 						parameters.put(param.getName(), paramType);

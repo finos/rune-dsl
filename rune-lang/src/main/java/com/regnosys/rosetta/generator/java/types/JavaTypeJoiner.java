@@ -116,8 +116,7 @@ public class JavaTypeJoiner extends BinaryCommunicativeJavaTypeVisitor<JavaType>
 			return left;
 		}
 		JavaTypeDeclaration<?> joinedDeclaration = joinTypeDeclarations(leftDecl, rightDecl);
-		if (joinedDeclaration instanceof JavaGenericTypeDeclaration<?>) {
-			JavaGenericTypeDeclaration<?> genericSuperDeclaration = (JavaGenericTypeDeclaration<?>) joinedDeclaration;
+		if (joinedDeclaration instanceof JavaGenericTypeDeclaration<?> genericSuperDeclaration) {
 			Map<JavaTypeVariable, JavaTypeArgument> subLeft = getSubstitution(genericSuperDeclaration, left);
 			Map<JavaTypeVariable, JavaTypeArgument> subRight = getSubstitution(genericSuperDeclaration, right);
 			
@@ -163,8 +162,8 @@ public class JavaTypeJoiner extends BinaryCommunicativeJavaTypeVisitor<JavaType>
 			return right;
 		} else if (right == JavaReferenceType.NULL_TYPE) {
 			return left;
-		} else if (left instanceof JavaReferenceType && right instanceof JavaReferenceType) {
-			JavaReferenceType join = visitTypes((JavaReferenceType)left, (JavaReferenceType)right);
+		} else if (left instanceof JavaReferenceType leftRef && right instanceof JavaReferenceType rightRef) {
+			JavaReferenceType join = visitTypes(leftRef, rightRef);
 			if (join.equals(typeUtil.OBJECT)) {
 				return JavaWildcardTypeArgument.unbounded();
 			}

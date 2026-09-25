@@ -24,41 +24,41 @@ import test.pojo.validation.exists.Foo2OnlyExistsValidator;
 @RosettaMeta(model=Foo2.class)
 public class Foo2Meta implements RosettaMetaData<Foo2> {
 
-	@Override
-	public List<Validator<? super Foo2>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super Foo2, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super Foo2> validator(ValidatorFactory factory) {
-		return factory.<Foo2>create(Foo2Validator.class);
-	}
+    @Override
+    public List<Validator<? super Foo2>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super Foo2> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<Foo2>create(Foo2TypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super Foo2, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super Foo2> validator() {
-		return new Foo2Validator();
-	}
+    @Override
+    public Validator<? super Foo2> validator(ValidatorFactory factory) {
+        return factory.<Foo2>create(Foo2Validator.class);
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super Foo2> typeFormatValidator() {
-		return new Foo2TypeFormatValidator();
-	}
-	
-	@Override
-	public ValidatorWithArg<? super Foo2, Set<String>> onlyExistsValidator() {
-		return new Foo2OnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super Foo2> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<Foo2>create(Foo2TypeFormatValidator.class);
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super Foo2> validator() {
+        return new Foo2Validator();
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super Foo2> typeFormatValidator() {
+        return new Foo2TypeFormatValidator();
+    }
+
+    @Override
+    public ValidatorWithArg<? super Foo2, Set<String>> onlyExistsValidator() {
+        return new Foo2OnlyExistsValidator();
+    }
 }

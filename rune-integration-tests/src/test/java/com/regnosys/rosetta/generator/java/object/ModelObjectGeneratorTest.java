@@ -30,6 +30,8 @@ import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.CodeGeneratorTestHelper;
 import com.regnosys.rosetta.tests.util.ModelHelper;
 import com.rosetta.model.lib.RosettaModelObject;
+import com.rosetta.model.lib.annotations.RosettaDataType;
+import com.rosetta.model.lib.annotations.RuneDataType;
 import com.rosetta.model.lib.annotations.RuneLabelProvider;
 import com.rosetta.model.lib.records.Date;
 import com.rosetta.util.DottedPath;
@@ -79,6 +81,22 @@ class ModelObjectGeneratorTest {
 		RuneLabelProvider annotation = fooClass.getAnnotation(RuneLabelProvider.class);
 		assertNotNull(annotation);
 		assertEquals(modelHelper.rootPackage() + ".labels.types.FooLabelProvider", annotation.labelProvider().getName());
+	}
+
+	@Test
+	void shouldKeepModelVersionThatNeedsEscapingInJava() throws Exception {
+		Map<String, Class<?>> classes = generatorTestHelper.compileJava8("""
+				namespace test.version
+				version "1.0 \\"beta\\" C:\\\\users"
+
+				type Foo:
+					attr string (1..1)
+				""");
+
+		Class<?> fooClass = classes.get("test.version.Foo");
+		String expected = "1.0 \"beta\" C:\\users";
+		assertEquals(expected, fooClass.getAnnotation(RosettaDataType.class).version());
+		assertEquals(expected, fooClass.getAnnotation(RuneDataType.class).version());
 	}
 
 	@Test

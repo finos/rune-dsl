@@ -18,9 +18,8 @@ package com.regnosys.rosetta.generator.java.statement.builder;
 
 import java.util.function.BiFunction;
 import java.util.function.Function;
-
-import org.eclipse.xtend2.lib.StringConcatenation;
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
@@ -68,16 +67,15 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 	
 	@Override
 	public JavaBlockBuilder then(JavaStatementBuilder after, BiFunction<JavaExpression, JavaExpression, JavaStatementBuilder> combineExpressions, JavaStatementScope scope) {
-		if (after instanceof JavaBlockBuilder) {
-			return this.then((JavaBlockBuilder)after, combineExpressions, scope);
+		if (after instanceof JavaBlockBuilder afterBlock) {
+			return this.then(afterBlock, combineExpressions, scope);
 		}
 		
 		JavaStatementList result = new JavaStatementList();
 		result.addAll(this.statements);
 		
 		JavaStatementBuilder combined = this.lastStatement.then(after, combineExpressions, scope);
-		if (combined instanceof JavaBlockBuilder) {
-			JavaBlockBuilder combinedBlock = (JavaBlockBuilder)combined;
+		if (combined instanceof JavaBlockBuilder combinedBlock) {
 			result.addAll(combinedBlock.statements);
 			return new JavaBlockBuilder(result, combinedBlock.lastStatement);
 		}
@@ -89,8 +87,7 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 		result.addAll(after.statements);
 		
 		JavaStatementBuilder combined = this.lastStatement.then(after.lastStatement, combineExpressions, scope);
-		if (combined instanceof JavaBlockBuilder) {
-			JavaBlockBuilder combinedBlock = (JavaBlockBuilder)combined;
+		if (combined instanceof JavaBlockBuilder combinedBlock) {
 			result.addAll(combinedBlock.statements);
 			return new JavaBlockBuilder(result, combinedBlock.lastStatement);
 		}
@@ -123,8 +120,7 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 		result.addAll(this.statements);
 		JavaStatementBuilder declaration = this.lastStatement.declareAsVariable(isFinal, variableId, scope);
 		scope.createKeySynonym(this, this.lastStatement);
-		if (declaration instanceof JavaBlockBuilder) {
-			JavaBlockBuilder declarationBlock = (JavaBlockBuilder)declaration;
+		if (declaration instanceof JavaBlockBuilder declarationBlock) {
 			result.addAll(declarationBlock.statements);
 			return new JavaBlockBuilder(result, declarationBlock.lastStatement);
 		}
@@ -136,8 +132,7 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 		JavaStatementList result = new JavaStatementList();
 		result.addAll(this.statements);
 		JavaStatementBuilder collapsed = this.lastStatement.collapseToSingleExpression(scope);
-		if (collapsed instanceof JavaBlockBuilder) {
-			JavaBlockBuilder collapsedBlock = (JavaBlockBuilder)collapsed;
+		if (collapsed instanceof JavaBlockBuilder collapsedBlock) {
 			result.addAll(collapsedBlock.statements);
 			return new JavaBlockBuilder(result, collapsedBlock.lastStatement);
 		}
@@ -151,18 +146,8 @@ public class JavaBlockBuilder extends JavaStatementBuilder {
 	
 	@Override
 	public String toString() {
-		StringConcatenation result = new StringConcatenation();
-		result.append("{");
-		result.newLine();
-		result.append("\t");
-		statements.forEach(stat -> {
-			result.append(stat, "\t");
-			result.newLine();
-			result.append("\t");
-		});
-		result.append(lastStatement, "\t");
-		result.newLine();
-		result.append('}');
-		return result.toString();
+		return Stream.concat(statements.stream(), Stream.of(lastStatement))
+				.map(statement -> "\t" + String.valueOf(statement).replace("\n", "\n\t"))
+				.collect(Collectors.joining("\n", "{\n", "\n}"));
 	}
 }

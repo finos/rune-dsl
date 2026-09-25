@@ -35,13 +35,13 @@ public class DeepFeatureCallUtil {
 				() -> {
 					allAttrs.forEach(a -> {
 						RType attrType = a.getRMetaAnnotatedType().getRType();
-						if (attrType instanceof RChoiceType) {
-							attrType = ((RChoiceType) attrType).asRDataType();
+						if (attrType instanceof RChoiceType choice) {
+							attrType = choice.asRDataType();
 						}
-						if (attrType instanceof RDataType) {
+						if (attrType instanceof RDataType data) {
 							List<RAttribute> newPath = new ArrayList<>(currentPath);
 							newPath.add(a);
-							findDeepFeaturePaths((RDataType) attrType, newPath, deepFeature, paths);
+							findDeepFeaturePaths(data, newPath, deepFeature, paths);
 						}
 					});
 				});
@@ -65,12 +65,11 @@ public class DeepFeatureCallUtil {
 		for (RAttribute attr : allAttributes) {
 
 			RType attrType = attr.getRMetaAnnotatedType().getRType();
-			if (attrType instanceof RChoiceType) {
-				attrType = ((RChoiceType) attrType).asRDataType();
+			if (attrType instanceof RChoiceType choice) {
+				attrType = choice.asRDataType();
 			}
 			Map<String, RAttribute> attrDeepFeatureMap;
-			if (attrType instanceof RDataType) {
-				RDataType attrDataType = (RDataType)attrType;
+			if (attrType instanceof RDataType attrDataType) {
 				attrDeepFeatureMap = findDeepFeatureMap(attrDataType);
 				for (RAttribute attrFeature : attrDataType.getAllAttributes()) {
 					attrDeepFeatureMap.put(attrFeature.getName(), attrFeature);
@@ -160,12 +159,7 @@ public class DeepFeatureCallUtil {
 		return false;
 	}
 	private boolean isOneOfItem(RosettaExpression expr) {
-		if (expr instanceof OneOfOperation) {
-			if (((OneOfOperation) expr).getArgument() instanceof RosettaImplicitVariable) {
-				return true;
-			}
-		}
-		return false;
+		return expr instanceof OneOfOperation oneOf && oneOf.getArgument() instanceof RosettaImplicitVariable;
 	}
 	private boolean isSingularOptional(RCardinality card) {
 		return card.equals(RCardinality.OPTIONAL);

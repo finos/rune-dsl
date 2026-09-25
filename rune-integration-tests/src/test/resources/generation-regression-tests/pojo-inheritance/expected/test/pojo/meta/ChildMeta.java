@@ -24,41 +24,41 @@ import test.pojo.validation.exists.ChildOnlyExistsValidator;
 @RosettaMeta(model=Child.class)
 public class ChildMeta implements RosettaMetaData<Child> {
 
-	@Override
-	public List<Validator<? super Child>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-		);
-	}
-	
-	@Override
-	public List<Function<? super Child, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super Child> validator(ValidatorFactory factory) {
-		return factory.<Child>create(ChildValidator.class);
-	}
+    @Override
+    public List<Validator<? super Child>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+        );
+    }
 
-	@Override
-	public Validator<? super Child> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<Child>create(ChildTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super Child, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super Child> validator() {
-		return new ChildValidator();
-	}
+    @Override
+    public Validator<? super Child> validator(ValidatorFactory factory) {
+        return factory.<Child>create(ChildValidator.class);
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super Child> typeFormatValidator() {
-		return new ChildTypeFormatValidator();
-	}
-	
-	@Override
-	public ValidatorWithArg<? super Child, Set<String>> onlyExistsValidator() {
-		return new ChildOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super Child> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<Child>create(ChildTypeFormatValidator.class);
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super Child> validator() {
+        return new ChildValidator();
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super Child> typeFormatValidator() {
+        return new ChildTypeFormatValidator();
+    }
+
+    @Override
+    public ValidatorWithArg<? super Child, Set<String>> onlyExistsValidator() {
+        return new ChildOnlyExistsValidator();
+    }
 }

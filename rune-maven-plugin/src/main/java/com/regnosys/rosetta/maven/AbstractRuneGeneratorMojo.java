@@ -34,7 +34,6 @@ import org.eclipse.xtext.generator.OutputConfiguration;
 import org.eclipse.xtext.maven.AbstractXtextGeneratorMojo;
 import org.eclipse.xtext.maven.ClusteringConfig;
 import org.eclipse.xtext.maven.Language;
-import org.eclipse.xtext.xbase.lib.IterableExtensions;
 
 import java.io.File;
 import java.io.IOException;
@@ -379,9 +378,9 @@ public abstract class AbstractRuneGeneratorMojo extends AbstractXtextGeneratorMo
         getLog().info("Compiler source level: " + compilerSourceLevel);
         getLog().info("Compiler target level: " + compilerTargetLevel);
         if (getLog().isDebugEnabled()) {
-            getLog().debug("Source dirs: " + IterableExtensions.join(getSourceRoots(), ", "));
-            getLog().debug("Java source dirs: " + IterableExtensions.join(javaSourceRoots, ", "));
-            getLog().debug("Classpath entries: " + IterableExtensions.join(getClasspathEntries(), ", "));
+            getLog().debug("Source dirs: " + String.join(", ", getSourceRoots()));
+            getLog().debug("Java source dirs: " + String.join(", ", javaSourceRoots));
+            getLog().debug("Classpath entries: " + String.join(", ", getClasspathEntries()));
         }
     }
 

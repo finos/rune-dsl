@@ -214,30 +214,26 @@ public class TypeSystem {
 		return typeCallToRType(type, Collections.emptyMap(), new RosettaInterpreterContext());
 	}
 	private RType typeCallToRType(RosettaType type, Map<String, RosettaValue> arguments, RosettaInterpreterContext context) {
-		if (type instanceof Choice) {
-			return factory.buildRChoiceType((Choice) type);
-		} else if (type instanceof Data) {
-			return factory.buildRDataType((Data) type);
-		} else if (type instanceof RosettaEnumeration) {
-			return factory.buildREnumType((RosettaEnumeration) type);
-		} else if (type instanceof RosettaBuiltinType) {
-			return builtins.getType(type, arguments).orElse(builtins.NOTHING);
-		} else if (type instanceof RosettaMetaType) {
-			return builtins.getType(type, arguments)
-					.orElseGet(() -> typeCallToRType(((RosettaMetaType) type).getTypeCall(), context));
-		} else if (type instanceof RosettaTypeAlias) {
-			RosettaTypeAlias alias = (RosettaTypeAlias) type;
-			LinkedHashMap<String, RosettaValue> args = new LinkedHashMap<>(arguments);
-			((RosettaTypeAlias) type).getParameters().forEach(param -> {
-				if (!arguments.containsKey(param.getName())) {
-					args.put(param.getName(), RosettaValue.empty());
-				}
-			});
-			RType refersTo = typeCallToRType(alias.getTypeCall(), RosettaInterpreterContext.of(args));
-			List<Condition> conditions = alias.getConditions();
-			return new RAliasType(typeFunctionOfTypeAlias(alias), args, refersTo, conditions);
-		}
-		return builtins.NOTHING;
+		return switch (type) {
+			case Choice choice -> factory.buildRChoiceType(choice);
+			case Data data -> factory.buildRDataType(data);
+			case RosettaEnumeration enumeration -> factory.buildREnumType(enumeration);
+			case RosettaBuiltinType builtinType -> builtins.getType(type, arguments).orElse(builtins.NOTHING);
+			case RosettaMetaType metaType -> builtins.getType(type, arguments)
+					.orElseGet(() -> typeCallToRType(metaType.getTypeCall(), context));
+			case RosettaTypeAlias alias -> {
+				LinkedHashMap<String, RosettaValue> args = new LinkedHashMap<>(arguments);
+				alias.getParameters().forEach(param -> {
+					if (!arguments.containsKey(param.getName())) {
+						args.put(param.getName(), RosettaValue.empty());
+					}
+				});
+				RType refersTo = typeCallToRType(alias.getTypeCall(), RosettaInterpreterContext.of(args));
+				List<Condition> conditions = alias.getConditions();
+				yield new RAliasType(typeFunctionOfTypeAlias(alias), args, refersTo, conditions);
+			}
+			case null, default -> builtins.NOTHING;
+		};
 	}
 	
 	private RTypeFunction typeFunctionOfTypeAlias(RosettaTypeAlias typeAlias) {
@@ -260,10 +256,10 @@ public class TypeSystem {
 				}
 				@Override
 				public Optional<LinkedHashMap<String, RosettaValue>> reverse(RType type) {
-					if (!(type instanceof RParametrizedType)) {
+					if (!(type instanceof RParametrizedType parametrizedType)) {
 						return Optional.empty();
 					}			
-					RosettaInterpreterContext context = RosettaInterpreterContext.of(((RParametrizedType)type).getArguments());
+					RosettaInterpreterContext context = RosettaInterpreterContext.of(parametrizedType.getArguments());
 					return solutionSet.getSolution(context).map(solution -> {
 						LinkedHashMap<String, RosettaValue> newArgs = new LinkedHashMap<>();
 						typeAlias.getParameters().forEach(p -> newArgs.put(p.getName(), solution.get(p)));
@@ -296,9 +292,7 @@ public class TypeSystem {
 		Objects.requireNonNull(t2);
 		Objects.requireNonNull(combineUnderlyingTypes);
 		
-		if (t1 instanceof RAliasType && t2 instanceof RAliasType) {
-			RAliasType alias1 = (RAliasType) t1;
-			RAliasType alias2 = (RAliasType) t2;
+		if (t1 instanceof RAliasType alias1 && t2 instanceof RAliasType alias2) {
 			if (alias1.getTypeFunction().equals(alias2.getTypeFunction())) {
 				RTypeFunction typeFunc = alias1.getTypeFunction();
 				RType underlier = keepTypeAliasIfPossible(alias1.getRefersTo(), alias2.getRefersTo(), combineUnderlyingTypes);
@@ -310,8 +304,8 @@ public class TypeSystem {
 				List<RAliasType> superAliases = new ArrayList<>();
 				RAliasType curr = alias1;
 				superAliases.add(curr);
-				while (curr.getRefersTo() instanceof RAliasType) {
-					curr = (RAliasType) curr.getRefersTo();
+				while (curr.getRefersTo() instanceof RAliasType superAlias) {
+					curr = superAlias;
 					superAliases.add(curr);
 				}
 				curr = alias2;
@@ -320,8 +314,8 @@ public class TypeSystem {
 				if (match.isPresent()) {
 					return keepTypeAliasIfPossible(match.get(), curr, combineUnderlyingTypes);
 				}
-				while (curr.getRefersTo() instanceof RAliasType) {
-					curr = (RAliasType) curr.getRefersTo();
+				while (curr.getRefersTo() instanceof RAliasType superAlias) {
+					curr = superAlias;
 					RTypeFunction tf2 = curr.getTypeFunction();
 					match = superAliases.stream().filter(a -> tf2.equals(a.getTypeFunction())).findFirst();
 					if (match.isPresent()) {
@@ -330,17 +324,17 @@ public class TypeSystem {
 				}
 				return keepTypeAliasIfPossible(alias1.getRefersTo(), alias2.getRefersTo(), combineUnderlyingTypes);
 			}
-		} else if (t1 instanceof RAliasType) {
-			return keepTypeAliasIfPossible(((RAliasType) t1).getRefersTo(), t2, combineUnderlyingTypes);
-		} else if (t2 instanceof RAliasType) {
-			return keepTypeAliasIfPossible(t1, ((RAliasType) t2).getRefersTo(), combineUnderlyingTypes);
+		} else if (t1 instanceof RAliasType alias1) {
+			return keepTypeAliasIfPossible(alias1.getRefersTo(), t2, combineUnderlyingTypes);
+		} else if (t2 instanceof RAliasType alias2) {
+			return keepTypeAliasIfPossible(t1, alias2.getRefersTo(), combineUnderlyingTypes);
 		}
 		return combineUnderlyingTypes.apply(t1, t2);
 	}
 
 	public RType stripFromTypeAliases(RType t) {
-		while (t instanceof RAliasType) {
-			t = ((RAliasType)t).getRefersTo();
+		while (t instanceof RAliasType alias) {
+			t = alias.getRefersTo();
 		}
 		return t;
 	}
@@ -369,10 +363,10 @@ public class TypeSystem {
 			// Descend check: strip to resolve alias-of-choice options, then test subtypehood so we
 			// only recurse into a nested choice that could actually contain the target.
 			RType strippedOptionType = stripFromTypeAliases(optionType);
-			if (strippedOptionType instanceof RChoiceType && isSubtypeOf(target, strippedOptionType, false)) {
+			if (strippedOptionType instanceof RChoiceType nestedChoice && isSubtypeOf(target, strippedOptionType, false)) {
 				List<RChoiceOption> extendedPrefix = new ArrayList<>(prefix);
 				extendedPrefix.add(option);
-				List<RChoiceOption> result = findChoiceOptionPath((RChoiceType) strippedOptionType, target, extendedPrefix);
+				List<RChoiceOption> result = findChoiceOptionPath(nestedChoice, target, extendedPrefix);
 				if (result != null) {
 					return result;
 				}
@@ -384,8 +378,7 @@ public class TypeSystem {
 	public AliasHierarchy computeAliasHierarchy(RType t) {
 		List<RAliasType> aliasHierarchy = new ArrayList<>();
 		RType underlyingType = t;
-		while (underlyingType instanceof RAliasType) {
-			RAliasType alias = (RAliasType)underlyingType;
+		while (underlyingType instanceof RAliasType alias) {
 			aliasHierarchy.add(alias);
 			underlyingType = alias.getRefersTo();
 		}

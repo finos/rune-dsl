@@ -167,8 +167,8 @@ public class RosettaScopeProvider extends ImportedNamespaceAwareLocalScopeProvid
 					var features = ecoreUtil.allFeaturesExcludingEnumValues(receiverType, context);
 					
 					// We also want to allow the scope provider to return the meta for the type of the attribute (e.g., metadata key)
-					if (receiverType.getRType() instanceof RDataType) {
-						features = Iterables.concat(features, ecoreUtil.getMetaDescriptions(((RDataType)receiverType.getRType()).getMetaAttributes(), context));
+					if (receiverType.getRType() instanceof RDataType data) {
+						features = Iterables.concat(features, ecoreUtil.getMetaDescriptions(data.getMetaAttributes(), context));
 					}
 					
 					return Scopes.scopeFor(features);

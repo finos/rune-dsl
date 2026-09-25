@@ -171,8 +171,8 @@ public class RosettaSimpleSystemSolver {
 		return true;
 	}
 	private boolean isVariable(RosettaExpression expr) {
-		return expr instanceof RosettaSymbolReference 
-				&& !(((RosettaSymbolReference)expr).getSymbol() instanceof RosettaCallableWithArgs);
+		return expr instanceof RosettaSymbolReference reference
+				&& !(reference.getSymbol() instanceof RosettaCallableWithArgs);
 	}
 	private boolean isLiteral(RosettaExpression expr) {
 		return expr instanceof RosettaLiteral;

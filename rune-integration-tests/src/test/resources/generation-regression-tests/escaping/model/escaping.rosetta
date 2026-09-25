@@ -1,0 +1,26 @@
+namespace test.escaping : <"A namespace stored in C:\\users, which */ ends a comment.">
+version "1.0 \"beta\" C:\\users"
+
+body Organisation Org1 <"A body in C:\\users */">
+corpus Agreement Org1 "Agreement in C:\\users */" Agr1 <"A corpus in C:\\users */">
+
+segment name
+
+synonym source FpML
+
+enum DocumentedEnum: <"An enum stored in C:\\users, which */ ends a comment.">
+    [docReference Org1 Agr1 name "C:\\users */" provision "A provision in C:\\users */"]
+    VALUE <"A value stored in C:\\users, which */ ends a comment.">
+        [synonym FpML value "C:\\users \"quoted\""]
+
+func DocumentedFunction: <"A function stored in C:\\users, which */ ends a comment.">
+    [docReference Org1 Agr1 name "C:\\users */" provision "A provision in C:\\users */"]
+    inputs:
+        input string (1..1) <"An input stored in C:\\users, which */ ends a comment.">
+    output:
+        result string (1..1) <"An output stored in C:\\users, which */ ends a comment.">
+
+    condition InputIsSet: <"A condition stored in C:\\users, which is \"quoted\".">
+        input exists
+
+    set result: input

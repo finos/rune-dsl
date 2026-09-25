@@ -4,14 +4,9 @@ import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.xtend2.lib.StringConcatenationClient;
-import org.eclipse.xtend2.lib.StringConcatenationClient.TargetStringConcatenation;
-
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.regnosys.rosetta.codegen.api.CodeWriter;
-import com.regnosys.rosetta.generator.TargetLanguageRepresentation;
+import com.regnosys.rosetta.codegen.api.TargetLanguageRepresentation;
 import com.regnosys.rosetta.generator.java.scoping.JavaPackageName;
-import com.regnosys.rosetta.generator.java.util.TargetStringConcatenationCodeWriter;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
 import com.rosetta.util.types.JavaParameterizedType;
@@ -51,42 +46,26 @@ public abstract class RGeneratedJavaClass<T> extends JavaClass<T> {
 	}
 	
 	public TargetLanguageRepresentation asClassDeclaration() {
-		return new TargetLanguageRepresentation() {
-			@Override
-			public void render(CodeWriter out) {
-				out.write("class ", RGeneratedJavaClass.this.getSimpleName());
-				JavaClass<?> superclass = RGeneratedJavaClass.this.getSuperclass();
-				if (!JavaClass.OBJECT.equals(superclass)) {
-					out.write(" extends ", superclass);
-				}
-				List<JavaClass<?>> interfaces = RGeneratedJavaClass.this.getInterfaces();
-				if (!interfaces.isEmpty()) {
-					out.write(" implements ");
-					out.join(interfaces, ", ");
-				}
+		return out -> {
+			out.write("class ", getSimpleName());
+			JavaClass<?> superclass = getSuperclass();
+			if (!JavaClass.OBJECT.equals(superclass)) {
+				out.write(" extends ", superclass);
 			}
-
-			@Override
-			public void appendTo(TargetStringConcatenation target) {
-				render(new TargetStringConcatenationCodeWriter(target));
+			List<JavaClass<?>> interfaces = getInterfaces();
+			if (!interfaces.isEmpty()) {
+				out.write(" implements ");
+				out.join(interfaces, ", ");
 			}
 		};
 	}
-	public StringConcatenationClient asInterfaceDeclaration() {
-		return new StringConcatenationClient() {
-			@Override
-			protected void appendTo(TargetStringConcatenation target) {
-				target.append("interface ");
-				target.append(RGeneratedJavaClass.this.getSimpleName());
-				List<JavaClass<?>> interfaces = RGeneratedJavaClass.this.getInterfaces();
-				if (!interfaces.isEmpty()) {
-					target.append(" extends ");
-					target.append(interfaces.get(0));
-					for (int i=1; i<interfaces.size(); i++) {
-						target.append(", ");
-						target.append(interfaces.get(i));
-					}
-				}
+	public TargetLanguageRepresentation asInterfaceDeclaration() {
+		return out -> {
+			out.write("interface ", getSimpleName());
+			List<JavaClass<?>> interfaces = getInterfaces();
+			if (!interfaces.isEmpty()) {
+				out.write(" extends ");
+				out.join(interfaces, ", ");
 			}
 		};
 	}

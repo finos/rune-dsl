@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024 REGnosys
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.regnosys.rosetta.generator.java.function;
 
 import static com.regnosys.rosetta.generator.java.enums.EnumHelper.formatEnumName;
@@ -6,9 +22,12 @@ import static org.apache.commons.lang3.StringUtils.uncapitalize;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,6 +48,7 @@ import com.regnosys.rosetta.generator.java.scoping.JavaMethodScope;
 import com.regnosys.rosetta.generator.java.scoping.JavaStatementScope;
 import com.regnosys.rosetta.generator.java.statement.JavaStatement;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaExpression;
+import com.regnosys.rosetta.generator.java.statement.builder.JavaLiteral;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaStatementBuilder;
 import com.regnosys.rosetta.generator.java.statement.builder.JavaVariable;
 import com.regnosys.rosetta.generator.java.types.JavaPojoInterface;
@@ -41,7 +61,6 @@ import com.regnosys.rosetta.generator.java.types.RJavaFieldWithMeta;
 import com.regnosys.rosetta.generator.java.types.RJavaPojoInterface;
 import com.regnosys.rosetta.generator.java.types.RJavaReferenceWithMeta;
 import com.regnosys.rosetta.generator.java.types.RJavaWithMetaValue;
-import com.regnosys.rosetta.generator.java.util.CodeWriterTargetStringConcatenation;
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil;
 import com.regnosys.rosetta.generator.util.RosettaFunctionExtensions;
 import com.regnosys.rosetta.rosetta.RosettaCallableWithArgs;
@@ -188,7 +207,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 				out.write("format = ", SerializationFormat.class, ".", format.name());
 			}
 			if (configPath != null) {
-				out.write(", configPath = \"", configPath, "\"");
+				out.write(", configPath = ", JavaLiteral.STRING(configPath));
 			}
 		});
 	}
@@ -264,8 +283,8 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 					.forEach(v -> assignOutputScope.createKeySynonym(v, inputs.get(0)));
 			JavaStatementScope assignOutputBodyScope = assignOutputScope.getBodyScope();
 
-			Map<RShortcut, JavaMethodScope> aliasScopes = new java.util.HashMap<>();
-			Map<RShortcut, JavaMethodScope> defaultClassAliasScopes = new java.util.HashMap<>();
+			Map<RShortcut, JavaMethodScope> aliasScopes = new HashMap<>();
+			Map<RShortcut, JavaMethodScope> defaultClassAliasScopes = new HashMap<>();
 			shortcuts.forEach(alias -> {
 				classScope.createIdentifier(alias, alias.getName());
 
@@ -298,6 +317,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 			}
 			out.writeln(" {");
 			out.indented(() -> {
+				// javax.inject.Inject is fully qualified throughout: it clashes with the imported jakarta.inject.Inject.
 				if (!preConditions.isEmpty() || !postConditions.isEmpty()) {
 					out.newline();
 					out.writeln("@", javax.inject.Inject.class, " protected ", ConditionValidator.class, " ", conditionValidatorId, ";");
@@ -374,7 +394,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 					JavaMethodScope aliasScope = aliasScopes.get(alias);
 					out.newline();
 					out.write("protected abstract ", aliasUtil.getReturnType(alias), " ", classScope.getIdentifierOrThrow(alias), "(");
-					out.write(CodeWriterTargetStringConcatenation.asCodeRenderer(aliasUtil.getParameters(alias, aliasScope)));
+					out.write(aliasUtil.getParameters(alias, aliasScope));
 					out.writeln(");");
 				});
 				out.newline();
@@ -449,7 +469,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 						out.newline();
 						out.writeln("@Override");
 						out.write("protected ", returnType, " ", defaultClassScope.getIdentifierOrThrow(alias), "(");
-						out.write(CodeWriterTargetStringConcatenation.asCodeRenderer(aliasUtil.getParameters(alias, aliasScope)));
+						out.write(aliasUtil.getParameters(alias, aliasScope));
 						out.write(") ");
 						out.writeln(safeBody.completeAsReturn().toBlock());
 					});
@@ -473,7 +493,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 			RFunction rfunc = rObjectFactory.buildRFunction(function);
 			List<FunctionDispatch> dispatchingFuncs = new ArrayList<>();
 			functionExtensions.getDispatchingFunctions(function).forEach(dispatchingFuncs::add);
-			dispatchingFuncs.sort(java.util.Comparator.comparing(FunctionDispatch::getName));
+			dispatchingFuncs.sort(Comparator.comparing(FunctionDispatch::getName));
 			String enumParam = function.getInputs().stream()
 					.filter(i -> i.getTypeCall().getType() instanceof RosettaEnumeration)
 					.findFirst().orElseThrow().getName();
@@ -481,9 +501,9 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 
 			dispatchingFuncs.forEach(f -> classScope.createIdentifier(f, uncapitalize(function.getName() + capitalize(f.getValue().getValue().getName()))));
 
-			Map<FunctionDispatch, RFunction> enumFuncToRFunc = new java.util.HashMap<>();
-			Map<FunctionDispatch, RGeneratedJavaClass<? extends RosettaFunction>> enumFuncToClass = new java.util.HashMap<>();
-			Map<FunctionDispatch, JavaClassScope> enumFuncToScope = new java.util.HashMap<>();
+			Map<FunctionDispatch, RFunction> enumFuncToRFunc = new HashMap<>();
+			Map<FunctionDispatch, RGeneratedJavaClass<? extends RosettaFunction>> enumFuncToClass = new HashMap<>();
+			Map<FunctionDispatch, JavaClassScope> enumFuncToScope = new HashMap<>();
 			dispatchingFuncs.forEach(enumFunc -> {
 				List<RShortcut> allShortcuts = new ArrayList<>();
 				function.getShortcuts().forEach(s -> allShortcuts.add(rObjectFactory.buildRShortcut(s)));
@@ -539,13 +559,14 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 					out.writeln("}");
 				});
 				out.writeln("}");
+				out.newline();
 
 				dispatchingFuncs.forEach(enumFunc -> {
 					RFunction rFunction = enumFuncToRFunc.get(enumFunc);
 					RGeneratedJavaClass<? extends RosettaFunction> nestedClass = enumFuncToClass.get(enumFunc);
 					JavaClassScope scope = enumFuncToScope.get(enumFunc);
-					out.newline();
 					out.write(rBuildClass(rFunction, nestedClass, true, List.of(JavaClass.from(RosettaFunction.class)), Collections.emptyMap(), false, scope));
+					out.newline();
 				});
 			});
 			out.write("}");
@@ -586,7 +607,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 					JavaStatementBuilder coerced = coercionService.addCoercions(javaExpr, attribute.isMulti() ? typeUtil.wrapExtends(typeUtil.LIST, toBuilderItemType(attribute)) : toBuilderItemType(attribute), scope);
 					return coerced
 							.mapExpression(it -> JavaExpression.from(
-									o -> { o.write(assignTarget(op, function, outs, scope)); o.write(".addAll(", it, ")"); },
+									o -> { o.write(assignTarget(op, outs, scope)); o.write(".addAll(", it, ")"); },
 									JavaPrimitiveType.VOID))
 							.completeAsExpressionStatement();
 				}
@@ -594,7 +615,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 					JavaStatementBuilder coerced = coercionService.addCoercions(javaExpr, toBuilderType(attribute), scope);
 					return coerced
 							.mapExpression(it -> JavaExpression.from(
-									o -> { o.write(assignTarget(op, function, outs, scope)); o.write(" = ", it); },
+									o -> { o.write(assignTarget(op, outs, scope)); o.write(" = ", it); },
 									JavaPrimitiveType.VOID))
 							.completeAsExpressionStatement();
 				}
@@ -606,7 +627,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 		return assignValue(scope, op, assignAsKey(op))
 				.collapseToSingleExpression(scope)
 				.mapExpression(it -> {
-					JavaExpression expr = assignTarget(op, function, outs, scope);
+					JavaExpression expr = assignTarget(op, outs, scope);
 
 					// path intermediary
 					int intermediarySegmentSize = op.getPathTail().size() - 1;
@@ -629,7 +650,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 					}
 
 					// end of path
-					RFeature seg = op.getPathTail().get(op.getPathTail().size() - 1);
+					RFeature seg = op.getPathTail().getLast();
 					JavaExpression oldExpr = expr;
 					JavaType outputExpressionType = typeUtil.getItemType(expr.getExpressionType());
 					JavaPojoProperty prop = getPojoProperty(seg, outputExpressionType);
@@ -776,23 +797,23 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 		return op.getPathTail().stream().map(f -> capitalize(f.getName())).collect(Collectors.joining());
 	}
 
-	private JavaExpression assignTarget(ROperation operation, RFunction function, Map<RShortcut, Boolean> outs, JavaStatementScope scope) {
+	private JavaExpression assignTarget(ROperation operation, Map<RShortcut, Boolean> outs, JavaStatementScope scope) {
 		Object root = operation.getPathHead();
 		if (root instanceof RAttribute attr) {
 			return new JavaVariable(scope.getIdentifierOrThrow(attr), typeTranslator.toJavaReferenceType(attr.getRMetaAnnotatedType()));
 		}
 		if (root instanceof RShortcut shortcut) {
-			return unfoldLHSShortcut(shortcut, function, scope);
+			return unfoldLHSShortcut(shortcut, scope);
 		}
 		throw new IllegalStateException("Unexpected assign target: " + root);
 	}
 
-	private JavaExpression unfoldLHSShortcut(RShortcut shortcut, RFunction function, JavaStatementScope scope) {
+	private JavaExpression unfoldLHSShortcut(RShortcut shortcut, JavaStatementScope scope) {
 		RosettaExpression e = shortcut.getExpression();
 		if (e instanceof RosettaSymbolReference ref && ref.getSymbol() instanceof RosettaCallableWithArgs) {
 			// assign-output for an alias
 			return JavaExpression.from(
-					o -> { o.write(scope.getIdentifierOrThrow(shortcut), "("); o.write(CodeWriterTargetStringConcatenation.asCodeRenderer(expressionGenerator.aliasCallArgs(shortcut, function, scope))); o.write(")"); },
+					o -> o.write(scope.getIdentifierOrThrow(shortcut), "(", aliasUtil.getArguments(shortcut, scope), ")"),
 					shortcutExpressionJavaType(shortcut));
 		}
 		return lhsExpand(e, scope);
@@ -832,7 +853,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 	private void renderContributeCondition(CodeWriter out, Condition condition, GeneratedIdentifier conditionValidator, JavaStatementScope scope) {
 		JavaStatementBuilder conditionBody = expressionGenerator.javaCode(condition.getExpression(), typeUtil.COMPARISON_RESULT, scope.lambdaScope());
 		out.writeln(conditionValidator, ".validate(() -> ", conditionBody.toLambdaBody(), ",");
-		out.writeln("    \"", condition.getDefinition(), "\");");
+		out.writeln("    ", JavaLiteral.STRING(Objects.requireNonNullElse(condition.getDefinition(), "")), ");");
 	}
 
 	private JavaType outputTypeOrVoid(Function function) {

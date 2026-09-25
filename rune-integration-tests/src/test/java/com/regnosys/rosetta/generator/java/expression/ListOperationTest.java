@@ -107,7 +107,7 @@ public class ListOperationTest {
 
                         protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
                             filteredFoos = toBuilder(MapperC.<Foo>of(foos)
-                            	.filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).get()).getMulti());
+                                .filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).get()).getMulti());
                             return Optional.ofNullable(filteredFoos)
                                 .map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
                                 .orElse(null);
@@ -206,7 +206,7 @@ public class ListOperationTest {
 
                         protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> filteredFoos, List<? extends Foo> foos) {
                             filteredFoos = toBuilder(MapperC.<Foo>of(foos)
-                            	.filterItemNullSafe(fooItem -> areEqual(fooItem.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).get()).getMulti());
+                                .filterItemNullSafe(fooItem -> areEqual(fooItem.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).get()).getMulti());
                             return Optional.ofNullable(filteredFoos)
                                 .map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
                                 .orElse(null);
@@ -343,9 +343,9 @@ public class ListOperationTest {
 
                         protected List<Foo2.Foo2Builder> assignOutput(List<Foo2.Foo2Builder> filteredFoos, List<? extends Foo2> foos) {
                             final MapperC<Foo2> thenArg = MapperC.<Foo2>of(foos)
-                            	.filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude", foo2 -> foo2.getInclude()), MapperS.of(true), CardinalityOperator.All).get());
+                                .filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude", foo2 -> foo2.getInclude()), MapperS.of(true), CardinalityOperator.All).get());
                             filteredFoos = toBuilder(thenArg
-                            	.filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude2", foo2 -> foo2.getInclude2()), MapperS.of(true), CardinalityOperator.All).get()).getMulti());
+                                .filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude2", foo2 -> foo2.getInclude2()), MapperS.of(true), CardinalityOperator.All).get()).getMulti());
                             return Optional.ofNullable(filteredFoos)
                                 .map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
                                 .orElse(null);
@@ -445,7 +445,7 @@ public class ListOperationTest {
 
                         protected List<FooWithScheme.FooWithSchemeBuilder> assignOutput(List<FooWithScheme.FooWithSchemeBuilder> filteredFoos, List<? extends FooWithScheme> foos) {
                             filteredFoos = toBuilder(MapperC.<FooWithScheme>of(foos)
-                            	.filterItemNullSafe(item -> areEqual(item.<FieldWithMetaString>map("getAttr", fooWithScheme -> fooWithScheme.getAttr()).map("getMeta", a->a.getMeta()).map("getScheme", a->a.getScheme()), MapperS.of("foo-scheme"), CardinalityOperator.All).get()).getMulti());
+                                .filterItemNullSafe(item -> areEqual(item.<FieldWithMetaString>map("getAttr", fooWithScheme -> fooWithScheme.getAttr()).map("getMeta", a->a.getMeta()).map("getScheme", a->a.getScheme()), MapperS.of("foo-scheme"), CardinalityOperator.All).get()).getMulti());
                             return Optional.ofNullable(filteredFoos)
                                 .map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
                                 .orElse(null);
@@ -609,7 +609,7 @@ public class ListOperationTest {
 
                         protected List<Boolean> assignOutput(List<Boolean> filteredFoos, List<Boolean> foos) {
                             filteredFoos = MapperC.<Boolean>of(foos)
-                            	.filterItemNullSafe(item -> areEqual(item, MapperS.of(true), CardinalityOperator.All).get()).getMulti();
+                                .filterItemNullSafe(item -> areEqual(item, MapperS.of(true), CardinalityOperator.All).get()).getMulti();
                             return filteredFoos;
                         }
                     }
@@ -990,15 +990,15 @@ public class ListOperationTest {
 
                         protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, Bar bar) {
                             foos = toBuilder(MapperS.of(bar).<Foo>mapC("getFoos", _bar -> _bar.getFoos())
-                            	.mapItem(item -> {
-                                if (areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
-                                    return MapperS.of(Foo.builder()
-                                    	.setInclude(item.<Boolean>map("getInclude", foo -> foo.getInclude()).get())
-                                    .setAttr(MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_bar")).get())
-                                    	.build());
-                                }
-                                return item;
-                            }).getMulti());
+                                .mapItem(item -> {
+                                    if (areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).getOrDefault(false)) {
+                                        return MapperS.of(Foo.builder()
+                                            .setInclude(item.<Boolean>map("getInclude", foo -> foo.getInclude()).get())
+                                            .setAttr(MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_bar")).get())
+                                            .build());
+                                    }
+                                    return item;
+                                }).getMulti());
                             return Optional.ofNullable(foos)
                                 .map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
                                 .orElse(null);
@@ -1288,7 +1288,7 @@ public class ListOperationTest {
 
                         protected List<String> assignOutput(List<String> strings, List<? extends Foo> foos) {
                             strings = MapperC.<Foo>of(foos)
-                            	.mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
+                                .mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
                             return strings;
                         }
                     }
@@ -1408,9 +1408,9 @@ public class ListOperationTest {
 
                         protected List<Integer> assignOutput(List<Integer> fooCounts, List<? extends Bar> bars) {
                             final MapperListOfLists<Foo> thenArg = MapperC.<Bar>of(bars)
-                            	.mapItemToList(bar -> bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()));
+                                .mapItemToList(bar -> bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()));
                             fooCounts = thenArg
-                            	.mapListToItem(fooListItem -> MapperS.of(fooListItem.resultCount())).getMulti();
+                                .mapListToItem(fooListItem -> MapperS.of(fooListItem.resultCount())).getMulti();
                             return fooCounts;
                         }
                     }
@@ -1621,9 +1621,9 @@ public class ListOperationTest {
 
                         protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> foos, List<? extends Bar> bars) {
                             final MapperListOfLists<Foo> thenArg = MapperC.<Bar>of(bars)
-                            	.mapItemToList(bar -> bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()));
+                                .mapItemToList(bar -> bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos()));
                             foos = toBuilder(thenArg
-                            	.flattenList().getMulti());
+                                .flattenList().getMulti());
                             return Optional.ofNullable(foos)
                                 .map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
                                 .orElse(null);
@@ -1753,11 +1753,11 @@ public class ListOperationTest {
 
                         protected List<String> assignOutput(List<String> attrs, List<? extends Bar> bars) {
                             final MapperListOfLists<Foo> thenArg0 = MapperC.<Bar>of(bars)
-                            	.mapItemToList(item -> item.<Foo>mapC("getFoos", bar -> bar.getFoos()));
+                                .mapItemToList(item -> item.<Foo>mapC("getFoos", bar -> bar.getFoos()));
                             final MapperC<Foo> thenArg1 = thenArg0
-                            	.flattenList();
+                                .flattenList();
                             attrs = thenArg1
-                            	.mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
+                                .mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
                             return attrs;
                         }
                     }
@@ -1957,10 +1957,10 @@ public class ListOperationTest {
 
                         protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> updatedBars, List<? extends Bar> bars) {
                             final MapperListOfLists<Foo> thenArg = MapperC.<Bar>of(bars)
-                            	.mapItemToList(bar -> bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
-                            	.mapItem(foo -> MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))));
+                                .mapItemToList(bar -> bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
+                                    .mapItem(foo -> MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))));
                             updatedBars = toBuilder(thenArg
-                            	.mapListToItem(updatedFoos -> MapperS.of(newBar.evaluate(updatedFoos.getMulti()))).getMulti());
+                                .mapListToItem(updatedFoos -> MapperS.of(newBar.evaluate(updatedFoos.getMulti()))).getMulti());
                             return Optional.ofNullable(updatedBars)
                                 .map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
                                 .orElse(null);
@@ -2095,8 +2095,8 @@ public class ListOperationTest {
 
                         protected List<Bar.BarBuilder> assignOutput(List<Bar.BarBuilder> updatedBars, List<? extends Bar> bars) {
                             updatedBars = toBuilder(MapperC.<Bar>of(bars)
-                            	.mapItem(bar -> MapperS.of(newBar.evaluate(bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
-                            	.mapItem(foo -> MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))).getMulti()))).getMulti());
+                                .mapItem(bar -> MapperS.of(newBar.evaluate(bar.<Foo>mapC("getFoos", _bar -> _bar.getFoos())
+                                    .mapItem(foo -> MapperS.of(newFoo.evaluate(MapperMaths.<String, String, String>add(foo.<String>map("getAttr", _foo -> _foo.getAttr()), MapperS.of("_bar")).get()))).getMulti()))).getMulti());
                             return Optional.ofNullable(updatedBars)
                                 .map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
                                 .orElse(null);
@@ -2239,9 +2239,9 @@ public class ListOperationTest {
 
                         protected List<String> assignOutput(List<String> newFoos, List<? extends Foo> foos) {
                             final MapperC<Foo> thenArg = MapperC.<Foo>of(foos)
-                            	.filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).get());
+                                .filterItemNullSafe(item -> areEqual(item.<Boolean>map("getInclude", foo -> foo.getInclude()), MapperS.of(true), CardinalityOperator.All).get());
                             newFoos = thenArg
-                            	.mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
+                                .mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
                             return newFoos;
                         }
                     }
@@ -2339,9 +2339,9 @@ public class ListOperationTest {
 
                         protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
                             final MapperC<Foo> thenArg = MapperC.<Bar>of(bars)
-                            	.mapItem(item -> MapperS.of(getFoo.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get())));
+                                .mapItem(item -> MapperS.of(getFoo.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get())));
                             strings = thenArg
-                            	.mapItem(item -> item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
+                                .mapItem(item -> item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
                             return strings;
                         }
                     }
@@ -2420,11 +2420,11 @@ public class ListOperationTest {
 
                         protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
                             final MapperListOfLists<Foo> thenArg0 = MapperC.<Bar>of(bars)
-                            	.mapItemToList(item -> item.<Foo>mapC("getFoos", bar -> bar.getFoos()));
+                                .mapItemToList(item -> item.<Foo>mapC("getFoos", bar -> bar.getFoos()));
                             final MapperC<Foo> thenArg1 = thenArg0
-                            	.flattenList();
+                                .flattenList();
                             strings = thenArg1
-                            	.mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
+                                .mapItem(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti();
                             return strings;
                         }
                     }
@@ -2514,9 +2514,9 @@ public class ListOperationTest {
 
                         protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
                             final MapperC<Foo> thenArg = MapperC.<Bar>of(bars)
-                            	.mapItem(item -> MapperS.of(getFoo.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get())));
+                                .mapItem(item -> MapperS.of(getFoo.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get())));
                             strings = thenArg
-                            	.mapItem(item -> item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
+                                .mapItem(item -> item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
                             return strings;
                         }
                     }
@@ -2617,9 +2617,9 @@ public class ListOperationTest {
 
                         protected List<String> assignOutput(List<String> strings, List<? extends Bar> bars) {
                             final MapperC<Foo> thenArg = MapperC.<Bar>of(bars)
-                            	.mapItem(item -> MapperS.of(getFoo.evaluate(getBaz.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get()))));
+                                .mapItem(item -> MapperS.of(getFoo.evaluate(getBaz.evaluate(item.<String>map("getBarAttr", bar -> bar.getBarAttr()).get()))));
                             strings = thenArg
-                            	.mapItem(item -> item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
+                                .mapItem(item -> item.<String>map("getFooAttr", foo -> foo.getFooAttr())).getMulti();
                             return strings;
                         }
                     }
@@ -2696,13 +2696,13 @@ public class ListOperationTest {
                         protected List<String> assignOutput(List<String> strings, List<? extends Foo> foos, String test) {
                             if (areEqual(MapperS.of(test), MapperS.of("a"), CardinalityOperator.All).getOrDefault(false)) {
                                 strings = MapperC.<Foo>of(foos)
-                                	.mapItem(item -> MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_a"))).getMulti();
+                                    .mapItem(item -> MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_a"))).getMulti();
                             } else if (areEqual(MapperS.of(test), MapperS.of("b"), CardinalityOperator.All).getOrDefault(false)) {
                                 strings = MapperC.<Foo>of(foos)
-                                	.mapItem(item -> MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_b"))).getMulti();
+                                    .mapItem(item -> MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_b"))).getMulti();
                             } else if (areEqual(MapperS.of(test), MapperS.of("c"), CardinalityOperator.All).getOrDefault(false)) {
                                 strings = MapperC.<Foo>of(foos)
-                                	.mapItem(item -> MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_c"))).getMulti();
+                                    .mapItem(item -> MapperMaths.<String, String, String>add(item.<String>map("getAttr", foo -> foo.getAttr()), MapperS.of("_c"))).getMulti();
                             } else {
                                 strings = Collections.<String>emptyList();
                             }
@@ -2836,7 +2836,7 @@ public class ListOperationTest {
 
                         protected String assignOutput(String concatenatedString, List<String> stringList) {
                             concatenatedString = MapperC.<String>of(stringList)
-                            	.<String>reduce((a, b) -> MapperMaths.<String, String, String>add(a, b)).get();
+                                .<String>reduce((a, b) -> MapperMaths.<String, String, String>add(a, b)).get();
                             return concatenatedString;
                         }
                     }
@@ -3327,7 +3327,7 @@ public class ListOperationTest {
 
                         protected Foo.FooBuilder assignOutput(Foo.FooBuilder foo, List<? extends Foo> foos) {
                             foo = toBuilder(MapperC.<Foo>of(foos)
-                            	.<Foo>reduce((foo1, foo2) -> MapperS.of(create_Foo.evaluate(MapperMaths.<String, String, String>add(foo1.<String>map("getAttr", _foo -> _foo.getAttr()), foo2.<String>map("getAttr", _foo -> _foo.getAttr())).get()))).get());
+                                .<Foo>reduce((foo1, foo2) -> MapperS.of(create_Foo.evaluate(MapperMaths.<String, String, String>add(foo1.<String>map("getAttr", _foo -> _foo.getAttr()), foo2.<String>map("getAttr", _foo -> _foo.getAttr())).get()))).get());
                             return Optional.ofNullable(foo)
                                 .map(o -> o.prune())
                                 .orElse(null);
@@ -3624,7 +3624,7 @@ public class ListOperationTest {
 
                         protected List<Integer> assignOutput(List<Integer> sortedNumbers, List<Integer> numbers) {
                             sortedNumbers = MapperC.<Integer>of(numbers)
-                            	.sort().getMulti();
+                                .sort().getMulti();
                             return sortedNumbers;
                         }
                     }
@@ -3756,7 +3756,7 @@ public class ListOperationTest {
 
                         protected List<Foo.FooBuilder> assignOutput(List<Foo.FooBuilder> sortedFoos, List<? extends Foo> foos) {
                             sortedFoos = toBuilder(MapperC.<Foo>of(foos)
-                            	.sort(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti());
+                                .sort(item -> item.<String>map("getAttr", foo -> foo.getAttr())).getMulti());
                             return Optional.ofNullable(sortedFoos)
                                 .map(o -> o.stream().map(i -> i.prune()).collect(Collectors.toList()))
                                 .orElse(null);

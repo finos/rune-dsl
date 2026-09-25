@@ -37,7 +37,6 @@ import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.service.OperationCanceledManager;
 import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.util.TextRegion;
-import org.eclipse.xtext.xbase.lib.Exceptions;
 
 import com.google.common.base.Strings;
 
@@ -66,31 +65,27 @@ public class CancellableContentAssistService extends ContentAssistService {
 	@Override
 	public CompletionList createCompletionList(Document document, XtextResource resource, CompletionParams params,
 			CancelIndicator cancelIndicator) {
+		CompletionList result = new CompletionList();
+		result.setIsIncomplete(true);
+		IdeContentProposalAcceptor acceptor = proposalAcceptorProvider.get();
+		int caretOffset = document.getOffSet(params.getPosition());
+		Position caretPosition = params.getPosition();
+		TextRegion position = new TextRegion(caretOffset, 0);
 		try {
-			CompletionList result = new CompletionList();
-			result.setIsIncomplete(true);
-			IdeContentProposalAcceptor acceptor = proposalAcceptorProvider.get();
-			int caretOffset = document.getOffSet(params.getPosition());
-			Position caretPosition = params.getPosition();
-			TextRegion position = new TextRegion(caretOffset, 0);
-			try {
-				createProposals(document.getContents(), position, caretOffset, resource, acceptor, cancelIndicator);
-			} catch (Throwable t) {
-				if (!operationCanceledManager.isOperationCanceledException(t)) {
-					throw t;
-				}
+			createProposals(document.getContents(), position, caretOffset, resource, acceptor, cancelIndicator);
+		} catch (Throwable t) {
+			if (!operationCanceledManager.isOperationCanceledException(t)) {
+				throw t;
 			}
-			int idx = 0;
-			for (ContentAssistEntry it : acceptor.getEntries()) {
-				CompletionItem item = toCompletionItem(it, caretOffset, caretPosition, document);
-				item.setSortText(Strings.padStart(Integer.toString(idx), 5, '0'));
-				result.getItems().add(item);
-				idx++;
-			}
-			return result;
-		} catch (Throwable e) {
-			throw Exceptions.sneakyThrow(e);
 		}
+		int idx = 0;
+		for (ContentAssistEntry it : acceptor.getEntries()) {
+			CompletionItem item = toCompletionItem(it, caretOffset, caretPosition, document);
+			item.setSortText(Strings.padStart(Integer.toString(idx), 5, '0'));
+			result.getItems().add(item);
+			idx++;
+		}
+		return result;
 	}
 
 	// Patch of super.createProposals that accepts a `cancelIndicator`.

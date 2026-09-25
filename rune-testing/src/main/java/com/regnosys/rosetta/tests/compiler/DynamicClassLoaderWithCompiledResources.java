@@ -32,8 +32,8 @@ public class DynamicClassLoaderWithCompiledResources extends ClassLoader {
 
 	public List<CompiledCode> getCompiledCode(String packageName) {
 		List<CompiledCode> result = new ArrayList<>();
-		if (parent instanceof DynamicClassLoaderWithCompiledResources) {
-			result.addAll(((DynamicClassLoaderWithCompiledResources) parent).getCompiledCode(packageName));
+		if (parent instanceof DynamicClassLoaderWithCompiledResources compiledResourcesParent) {
+			result.addAll(compiledResourcesParent.getCompiledCode(packageName));
 		}
 		result.addAll(customCompiledCode.entrySet().stream().filter(e -> e.getKey().startsWith(packageName)).map(e -> e.getValue()).collect(Collectors.toList()));
 		return result;

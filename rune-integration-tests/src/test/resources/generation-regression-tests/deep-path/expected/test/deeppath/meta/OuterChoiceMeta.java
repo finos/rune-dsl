@@ -25,42 +25,42 @@ import test.deeppath.validation.exists.OuterChoiceOnlyExistsValidator;
 @RosettaMeta(model=OuterChoice.class)
 public class OuterChoiceMeta implements RosettaMetaData<OuterChoice> {
 
-	@Override
-	public List<Validator<? super OuterChoice>> dataRules(ValidatorFactory factory) {
-		return Arrays.asList(
-			factory.<OuterChoice>create(OuterChoiceChoice.class)
-		);
-	}
-	
-	@Override
-	public List<Function<? super OuterChoice, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
-		return Collections.emptyList();
-	}
-	
-	@Override
-	public Validator<? super OuterChoice> validator(ValidatorFactory factory) {
-		return factory.<OuterChoice>create(OuterChoiceValidator.class);
-	}
+    @Override
+    public List<Validator<? super OuterChoice>> dataRules(ValidatorFactory factory) {
+        return Arrays.asList(
+            factory.<OuterChoice>create(OuterChoiceChoice.class)
+        );
+    }
 
-	@Override
-	public Validator<? super OuterChoice> typeFormatValidator(ValidatorFactory factory) {
-		return factory.<OuterChoice>create(OuterChoiceTypeFormatValidator.class);
-	}
+    @Override
+    public List<Function<? super OuterChoice, QualifyResult>> getQualifyFunctions(QualifyFunctionFactory factory) {
+        return Collections.emptyList();
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super OuterChoice> validator() {
-		return new OuterChoiceValidator();
-	}
+    @Override
+    public Validator<? super OuterChoice> validator(ValidatorFactory factory) {
+        return factory.<OuterChoice>create(OuterChoiceValidator.class);
+    }
 
-	@Deprecated
-	@Override
-	public Validator<? super OuterChoice> typeFormatValidator() {
-		return new OuterChoiceTypeFormatValidator();
-	}
-	
-	@Override
-	public ValidatorWithArg<? super OuterChoice, Set<String>> onlyExistsValidator() {
-		return new OuterChoiceOnlyExistsValidator();
-	}
+    @Override
+    public Validator<? super OuterChoice> typeFormatValidator(ValidatorFactory factory) {
+        return factory.<OuterChoice>create(OuterChoiceTypeFormatValidator.class);
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super OuterChoice> validator() {
+        return new OuterChoiceValidator();
+    }
+
+    @Deprecated
+    @Override
+    public Validator<? super OuterChoice> typeFormatValidator() {
+        return new OuterChoiceTypeFormatValidator();
+    }
+
+    @Override
+    public ValidatorWithArg<? super OuterChoice, Set<String>> onlyExistsValidator() {
+        return new OuterChoiceOnlyExistsValidator();
+    }
 }

@@ -79,8 +79,7 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
 
             // Disallow paths on multi-cardinality attributes
             EObject container = ann.eContainer();
-            if (container instanceof Attribute) {
-                Attribute containingAttribute = (Attribute) container;
+            if (container instanceof Attribute containingAttribute) {
                 if (containingAttribute.getCard().isPlural()) {
                     error("Paths on multi-cardinality attributes are not allowed", ann, BUILTIN_ANNOTATION_WITH_PATH__PATH);
                 } else {
@@ -237,9 +236,8 @@ public class ReportValidator extends AbstractDeclarativeRosettaValidator {
         RosettaRule rule = context.getRule();
         if (objectBeingChecked.equals(container)) {
             // If the cause of the error is contained in the object being checked, we can raise a specific error.
-            if (origin instanceof RuleReferenceAnnotation) {
+            if (origin instanceof RuleReferenceAnnotation ann) {
                 // Because of a rule reference annotation
-                RuleReferenceAnnotation ann = (RuleReferenceAnnotation) origin;
                 error("Rule `" + rule.getName() + "` expects an input of type `" + inputType + "`, while previous rules expect an input of type `" + previousInputType + "`", ann, RULE_REFERENCE_ANNOTATION__REPORTING_RULE);
             } else if (origin instanceof RosettaExternalRegularAttribute) {
                 // A minus in a rule source should never cause an error, because it does not specify new rules
