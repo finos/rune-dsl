@@ -15,6 +15,9 @@
   "schedule": [
     "* 6-9 * * 1"
   ],
+  "assignees": [
+    "SimonCockx"
+  ],
   "packageRules": [
     {
       "description": "Label Maven dependency updates as Java.",
