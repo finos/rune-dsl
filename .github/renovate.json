@@ -37,12 +37,11 @@
       "enabled": false
     },
     {
-      "description": "Xtext, Jackson and Guava are kept off minor and major bumps entirely. Only patch updates are allowed through, and standalone rather than grouped. Xtend is included because it shares the xtext.version property. Replacements are blocked too: Renovate would otherwise move Xtend to the org.eclipse.xtext group at a newer minor, bumping xtext.version with it.",
+      "description": "Xtext, Jackson and Xtend are kept off minor and major bumps entirely. Only patch updates are allowed through, and standalone rather than grouped. Xtend shares the xtext.version property. Replacements are blocked too: Renovate would otherwise move Xtend to the org.eclipse.xtext group at a newer minor, bumping xtext.version with it.",
       "matchPackageNames": [
         "/^org\\.eclipse\\.xtext[.:]/",
         "/^org\\.eclipse\\.xtend[.:]/",
-        "/^com\\.fasterxml\\.jackson[.:]/",
-        "com.google.guava:guava"
+        "/^com\\.fasterxml\\.jackson[.:]/"
       ],
       "matchUpdateTypes": [
         "major",
@@ -74,8 +73,7 @@
       "groupSlug": "maven-minor-and-patch",
       "matchPackageNames": [
         "!/^org\\.eclipse\\./",
-        "!/^com\\.fasterxml\\.jackson[.:]/",
-        "!com.google.guava:guava"
+        "!/^com\\.fasterxml\\.jackson[.:]/"
       ]
     },
     {
