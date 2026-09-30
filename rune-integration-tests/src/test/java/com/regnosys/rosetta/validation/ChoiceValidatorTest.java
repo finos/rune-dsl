@@ -1,5 +1,7 @@
 package com.regnosys.rosetta.validation;
 
+import java.util.List;
+
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
@@ -120,6 +122,33 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 
 				type RightOnly:
 				""");
+	}
+
+	@Test
+	public void testNestedChoiceOptionsSharingADataTypeWrittenDifferentlyWarns() {
+		assertIssues("""
+				import other.*
+
+				choice OuterChoice:
+					LeftChoice
+					RightChoice
+
+				choice LeftChoice:
+					Amount
+
+				choice RightChoice:
+					other.Amount
+				""",
+				List.of("""
+					namespace other
+
+					type Amount:
+					"""
+				),
+				"""
+				WARNING (null) ''other.Amount' is included by both 'LeftChoice' and 'RightChoice', so deserialisation cannot tell which one it came from' at 8:2, length 11, on ChoiceOption
+				"""
+		);
 	}
 
 	@Test
