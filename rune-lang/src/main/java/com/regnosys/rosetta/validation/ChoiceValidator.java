@@ -13,6 +13,7 @@ import com.regnosys.rosetta.rosetta.simple.Attribute;
 import com.regnosys.rosetta.rosetta.simple.Choice;
 import com.regnosys.rosetta.types.RChoiceOption;
 import com.regnosys.rosetta.types.RChoiceType;
+import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RType;
 import com.regnosys.rosetta.types.RObjectFactory;
@@ -77,6 +78,35 @@ public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
 					msg = "Option '" + opt.getType() + "' is already included by option '" + alreadyIncluded.getType() + "'";
 				}
 				error(msg, opt.getEObject(), null);
+			}
+		}
+	}
+
+	@Check
+	public void checkNestedChoiceOptionsDoNotShareLeafTypes(Choice choice) {
+		RChoiceType t = rObjectFactory.buildRChoiceType(choice);
+		// Keyed by what the serialiser writes as `@type`: the type for a data type, and the option
+		// name otherwise, so aliases of one basic type are told apart while `number(digits: 3)` and
+		// `number(digits: 5)` are not.
+		Map<Object, RChoiceOption> leafOwners = new HashMap<>();
+		for (RChoiceOption opt: t.getOwnOptions()) {
+			RType optType = typeSystem.stripFromTypeAliases(opt.getType().getRType());
+			if (!(optType instanceof RChoiceType optChoice)) {
+				continue;
+			}
+			for (RChoiceOption nested: optChoice.getAllOptions()) {
+				RType leaf = typeSystem.stripFromTypeAliases(nested.getType().getRType());
+				if (leaf instanceof RChoiceType || builtins.NOTHING.equals(leaf)) {
+					continue;
+				}
+				String leafName = nested.getEObject().getName();
+				Object serialisedType = leaf instanceof RDataType ? leaf : leafName;
+				RChoiceOption owner = leafOwners.putIfAbsent(serialisedType, opt);
+				// Two options of the same type are already reported as a duplicate.
+				if (owner != null && !typeSystem.stripFromTypeAliases(owner.getType().getRType()).equals(optType)) {
+					warning("'" + leafName + "' is included by both '" + owner.getType() + "' and '" + opt.getType()
+							+ "', so deserialisation cannot tell which one it came from", opt.getEObject(), null);
+				}
 			}
 		}
 	}

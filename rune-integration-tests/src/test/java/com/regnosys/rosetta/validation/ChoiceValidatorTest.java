@@ -1,5 +1,7 @@
 package com.regnosys.rosetta.validation;
 
+import java.util.List;
+
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import org.eclipse.xtext.testing.InjectWith;
 import org.eclipse.xtext.testing.extensions.InjectionExtension;
@@ -45,6 +47,144 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 				""",
 				"""
 				ERROR (null) 'Option 'Opt1' is already included by option 'Nested'' at 5:2, length 4, on ChoiceOption
+				"""
+		);
+	}
+
+	@Test
+	public void testNestedChoiceOptionsSharingALeafTypeWarns() {
+		assertIssues("""
+				choice OuterChoice:
+					LeftChoice
+					RightChoice
+
+				choice LeftChoice:
+					Amount
+					LeftOnly
+
+				choice RightChoice:
+					Amount
+					RightOnly
+
+				type Amount:
+
+				type LeftOnly:
+
+				type RightOnly:
+				""",
+				"""
+				WARNING (null) ''Amount' is included by both 'LeftChoice' and 'RightChoice', so deserialisation cannot tell which one it came from' at 6:2, length 11, on ChoiceOption
+				"""
+		);
+	}
+
+	@Test
+	public void testDeeplyNestedChoiceOptionsSharingALeafTypeWarns() {
+		assertIssues("""
+				choice OuterChoice:
+					LeftChoice
+					RightChoice
+
+				choice LeftChoice:
+					Inner
+					LeftOnly
+
+				choice Inner:
+					Amount
+
+				choice RightChoice:
+					Amount
+
+				type Amount:
+
+				type LeftOnly:
+				""",
+				"""
+				WARNING (null) ''Amount' is included by both 'LeftChoice' and 'RightChoice', so deserialisation cannot tell which one it came from' at 6:2, length 11, on ChoiceOption
+				"""
+		);
+	}
+
+	@Test
+	public void testNestedChoiceOptionsWithDistinctLeafTypesDoNotWarn() {
+		assertNoIssues("""
+				choice OuterChoice:
+					LeftChoice
+					RightChoice
+
+				choice LeftChoice:
+					LeftOnly
+
+				choice RightChoice:
+					RightOnly
+
+				type LeftOnly:
+
+				type RightOnly:
+				""");
+	}
+
+	@Test
+	public void testNestedChoiceOptionsSharingADataTypeWrittenDifferentlyWarns() {
+		assertIssues("""
+				import other.*
+
+				choice OuterChoice:
+					LeftChoice
+					RightChoice
+
+				choice LeftChoice:
+					Amount
+
+				choice RightChoice:
+					other.Amount
+				""",
+				List.of("""
+					namespace other
+
+					type Amount:
+					"""
+				),
+				"""
+				WARNING (null) ''other.Amount' is included by both 'LeftChoice' and 'RightChoice', so deserialisation cannot tell which one it came from' at 8:2, length 11, on ChoiceOption
+				"""
+		);
+	}
+
+	@Test
+	public void testNestedChoiceOptionsWithDistinctAliasesOfTheSameTypeDoNotWarn() {
+		assertNoIssues("""
+				choice OuterChoice:
+					LeftChoice
+					RightChoice
+
+				choice LeftChoice:
+					AliasA
+
+				choice RightChoice:
+					AliasB
+
+				typeAlias AliasA: string
+
+				typeAlias AliasB: string
+				""");
+	}
+
+	@Test
+	public void testNestedChoiceOptionsSharingABasicTypeWithDifferentParametersWarns() {
+		assertIssues("""
+				choice OuterChoice:
+					LeftChoice
+					RightChoice
+
+				choice LeftChoice:
+					number(digits: 3)
+
+				choice RightChoice:
+					number(digits: 5)
+				""",
+				"""
+				WARNING (null) ''number' is included by both 'LeftChoice' and 'RightChoice', so deserialisation cannot tell which one it came from' at 6:2, length 11, on ChoiceOption
 				"""
 		);
 	}
