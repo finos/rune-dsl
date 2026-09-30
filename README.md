@@ -73,33 +73,9 @@ Start by cloning the project: `git clone https://github.com/finos/rune-dsl`
 
 Our project runs with Java 21. Make sure that your Maven also uses this version of Java by running `mvn -v`.
 
-To build the project, run `mvn clean install`.
+To build the project, run `mvn clean install`. The build also runs [Checkstyle](https://checkstyle.sourceforge.io/) against `checkstyle.xml`, and fails on any violation.
 
-### 2. Setting things up in Eclipse
-#### Install Eclipse IDE for Java and DSL Developers
-Install version `2025-06` of the "Eclipse IDE for Java and DSL Developers" using the [Eclipse Installer](https://www.eclipse.org/downloads/packages/installer). You might have to enable "Advanced Mode" in the settings of the Eclipse Installer to install a specific version.
-
-#### Configure Eclipse with the right version of Java
-The build requires Java 21. In Eclipse, go to Settings... > Java > Installed JREs and make sure the checked JRE points to a Java version of 21.
-
-#### Install the Checkstyle plugin
-We use [Checkstyle](https://checkstyle.sourceforge.io/) for enforcing good coding practices. The Eclipse plugin for Checkstyle can be found here: [https://checkstyle.org/eclipse-cs/#!/](https://checkstyle.org/eclipse-cs/#!/).
-
-#### Open the project in Eclipse
-Go to Import... > Existing Maven Project, select the right folder, click Finish.
-
-##### Troubleshooting
-Make sure you have successfully run `mvn clean install`. (see section 1 of this guide)
-
-If there is any `bin` folders in the root of any submodule, delete it. These folders might be generated if the project is not configured correctly as a Maven project.
-
-If you're seeing 1000+ errors in the "Problems" window of Eclipse, try the following.
-1. Disable auto-building. (Project > Build automatically)
-2. Close Eclipse and open it again.
-3. Update Maven dependencies again.
-4. Re-enable auto-building.
-
-### 3. Setting things up in Intellij
+### 2. Setting things up in Intellij
 Support for developing Xtext projects in Intellij is limited. It has no support for
 - editing the `Xtext` file
 - running `GenerateRosetta.mwe2`.
