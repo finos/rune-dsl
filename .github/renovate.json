@@ -37,16 +37,14 @@
       "enabled": false
     },
     {
-      "description": "Xtext, Jackson and Xtend are kept off minor and major bumps entirely. Only patch updates are allowed through, and standalone rather than grouped. Xtend shares the xtext.version property. Replacements are blocked too: Renovate would otherwise move Xtend to the org.eclipse.xtext group at a newer minor, bumping xtext.version with it.",
+      "description": "Xtext and Jackson are kept off minor and major bumps entirely. Only patch updates are allowed through, and standalone rather than grouped.",
       "matchPackageNames": [
         "/^org\\.eclipse\\.xtext[.:]/",
-        "/^org\\.eclipse\\.xtend[.:]/",
         "/^com\\.fasterxml\\.jackson[.:]/"
       ],
       "matchUpdateTypes": [
         "major",
-        "minor",
-        "replacement"
+        "minor"
       ],
       "enabled": false
     },
@@ -89,13 +87,12 @@
       "groupSlug": "npm-minor-and-patch"
     },
     {
-      "description": "Group the remaining Eclipse dependencies (EMF, Xcore, LSP4J). These often introduce breaking changes in minor version upgrades. Xtext and Xtend are excluded so their patch updates stay standalone.",
+      "description": "Group the remaining Eclipse dependencies (EMF, Xcore, LSP4J). These often introduce breaking changes in minor version upgrades. Xtext is excluded so its patch updates stay standalone.",
       "groupName": "eclipse dependencies",
       "groupSlug": "eclipse-dependencies",
       "matchPackageNames": [
         "/^org\\.eclipse\\./",
-        "!/^org\\.eclipse\\.xtext[.:]/",
-        "!/^org\\.eclipse\\.xtend[.:]/"
+        "!/^org\\.eclipse\\.xtext[.:]/"
       ]
     },
     {
@@ -157,8 +154,5 @@
       "depNameTemplate": "owasp/dependency-check",
       "datasourceTemplate": "docker"
     }
-  ],
-  "ignoreDeps": [
-    "org.eclipse.m2e:lifecycle-mapping"
   ]
 }
