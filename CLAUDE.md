@@ -49,6 +49,6 @@ The grammar lives at `rune-lang/src/main/java/com/regnosys/rosetta/Rosetta.xtext
 
 ## Notes
 
-- IntelliJ has limited Xtext support: it can't edit `.xtext` or run `GenerateRosetta.mwe2` — let Maven handle those and edit/run regular Java there. Eclipse "IDE for Java and DSL Developers" (2025-06) is the supported full IDE. See `README.md` for IDE setup and troubleshooting.
+- IntelliJ has limited Xtext support: it can't edit `.xtext` or run `GenerateRosetta.mwe2` — let Maven handle those and edit/run regular Java there. The repo carries no Eclipse project configuration. See `README.md` for IntelliJ setup and troubleshooting.
 - This is a FINOS project; contributions require a CLA and go through PRs (see `CONTRIBUTING.md`).
 - Raise pull requests from a fork: push the branch to your own fork and open the PR against `finos/rune-dsl`, never pushing a branch to this repository. `CONTRIBUTING.md` requires this of everyone, maintainers included — write access does not exempt you, and a PR whose head is this repository has to be closed and re-raised.
