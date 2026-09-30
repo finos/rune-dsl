@@ -84,7 +84,9 @@ public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
 	@Check
 	public void checkNestedChoiceOptionsDoNotShareLeafTypes(Choice choice) {
 		RChoiceType t = rObjectFactory.buildRChoiceType(choice);
-		Map<RType, RChoiceOption> leafOwners = new HashMap<>();
+		// Keyed by option name, which the serialiser writes as `@type`: aliases of the same type are
+		// told apart by it, while differently parameterised basic types such as `number` are not.
+		Map<String, RChoiceOption> leafOwners = new HashMap<>();
 		for (RChoiceOption opt: t.getOwnOptions()) {
 			RType optType = typeSystem.stripFromTypeAliases(opt.getType().getRType());
 			if (!(optType instanceof RChoiceType optChoice)) {
@@ -95,10 +97,11 @@ public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
 				if (leaf instanceof RChoiceType || builtins.NOTHING.equals(leaf)) {
 					continue;
 				}
-				RChoiceOption owner = leafOwners.putIfAbsent(leaf, opt);
+				String leafName = nested.getEObject().getName();
+				RChoiceOption owner = leafOwners.putIfAbsent(leafName, opt);
 				// Two options of the same type are already reported as a duplicate.
 				if (owner != null && !typeSystem.stripFromTypeAliases(owner.getType().getRType()).equals(optType)) {
-					warning("'" + leaf + "' is included by both '" + owner.getType() + "' and '" + opt.getType()
+					warning("'" + leafName + "' is included by both '" + owner.getType() + "' and '" + opt.getType()
 							+ "', so deserialisation cannot tell which one it came from", opt.getEObject(), null);
 				}
 			}

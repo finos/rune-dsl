@@ -123,6 +123,44 @@ public class ChoiceValidatorTest extends AbstractValidatorTest {
 	}
 
 	@Test
+	public void testNestedChoiceOptionsWithDistinctAliasesOfTheSameTypeDoNotWarn() {
+		assertNoIssues("""
+				choice OuterChoice:
+					LeftChoice
+					RightChoice
+
+				choice LeftChoice:
+					AliasA
+
+				choice RightChoice:
+					AliasB
+
+				typeAlias AliasA: string
+
+				typeAlias AliasB: string
+				""");
+	}
+
+	@Test
+	public void testNestedChoiceOptionsSharingABasicTypeWithDifferentParametersWarns() {
+		assertIssues("""
+				choice OuterChoice:
+					LeftChoice
+					RightChoice
+
+				choice LeftChoice:
+					number(digits: 3)
+
+				choice RightChoice:
+					number(digits: 5)
+				""",
+				"""
+				WARNING (null) ''number' is included by both 'LeftChoice' and 'RightChoice', so deserialisation cannot tell which one it came from' at 6:2, length 11, on ChoiceOption
+				"""
+		);
+	}
+
+	@Test
 	void checkReferenceToFullyKeyedChoiceIsValid() {
 		assertNoIssues("""
 				type A:
