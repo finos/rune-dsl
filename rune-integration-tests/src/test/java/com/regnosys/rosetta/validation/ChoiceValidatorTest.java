@@ -5,6 +5,7 @@ import com.regnosys.rosetta.rosetta.RosettaPackage;
 import com.regnosys.rosetta.rosetta.simple.SimplePackage;
 import com.regnosys.rosetta.tests.RosettaTestInjectorProvider;
 import com.regnosys.rosetta.tests.util.ModelHelper;
+import java.util.List;
 import javax.inject.Inject;
 
 import org.eclipse.xtext.diagnostics.Severity;
@@ -114,6 +115,34 @@ public class ChoiceValidatorTest implements RosettaIssueCodes {
             """);
 
         validationTestHelper.assertNoIssues(model);
+    }
+
+    @Test
+    public void testNestedChoiceOptionsSharingADataTypeWrittenDifferentlyWarns() {
+        List<RosettaModel> models = modelHelper.parseRosetta("""
+            namespace test
+            version "test"
+
+            import other.*
+
+            choice OuterChoice:
+                LeftChoice
+                RightChoice
+
+            choice LeftChoice:
+                Amount
+
+            choice RightChoice:
+                other.Amount
+            """, """
+            namespace other
+            version "test"
+
+            type Amount:
+            """);
+
+        validationTestHelper.assertWarning(models.getFirst(), SimplePackage.Literals.CHOICE_OPTION, null,
+            "'other.Amount' is included by both 'LeftChoice' and 'RightChoice', so deserialisation cannot tell which one it came from");
     }
 
     @Test

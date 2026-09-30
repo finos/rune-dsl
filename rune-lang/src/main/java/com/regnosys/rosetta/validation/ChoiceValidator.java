@@ -11,6 +11,7 @@ import org.eclipse.xtext.validation.Check;
 import com.regnosys.rosetta.rosetta.simple.Choice;
 import com.regnosys.rosetta.types.RChoiceOption;
 import com.regnosys.rosetta.types.RChoiceType;
+import com.regnosys.rosetta.types.RDataType;
 import com.regnosys.rosetta.types.RMetaAnnotatedType;
 import com.regnosys.rosetta.types.RObjectFactory;
 import com.regnosys.rosetta.types.TypeSystem;
@@ -70,9 +71,10 @@ public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
 	@Check
 	public void checkNestedChoiceOptionsDoNotShareLeafTypes(Choice choice) {
 		RChoiceType t = rObjectFactory.buildRChoiceType(choice);
-		// Keyed by option name, which the serialiser writes as `@type`: aliases of the same type are
-		// told apart by it, while differently parameterised basic types such as `number` are not.
-		Map<String, RChoiceOption> leafOwners = new HashMap<>();
+		// Keyed by what the serialiser writes as `@type`: the type for a data type, and the option
+		// name otherwise, so aliases of one basic type are told apart while `number(digits: 3)` and
+		// `number(digits: 5)` are not.
+		Map<Object, RChoiceOption> leafOwners = new HashMap<>();
 		for (RChoiceOption opt: t.getOwnOptions()) {
 			RType optType = typeSystem.stripFromTypeAliases(opt.getType().getRType());
 			if (!(optType instanceof RChoiceType optChoice)) {
@@ -84,7 +86,8 @@ public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
 					continue;
 				}
 				String leafName = nested.getEObject().getName();
-				RChoiceOption owner = leafOwners.putIfAbsent(leafName, opt);
+				Object serialisedType = leaf instanceof RDataType ? leaf : leafName;
+				RChoiceOption owner = leafOwners.putIfAbsent(serialisedType, opt);
 				// Two options of the same type are already reported as a duplicate.
 				if (owner != null && !typeSystem.stripFromTypeAliases(owner.getType().getRType()).equals(optType)) {
 					warning("'" + leafName + "' is included by both '" + owner.getType() + "' and '" + opt.getType()
