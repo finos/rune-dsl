@@ -80,4 +80,28 @@ public class ChoiceValidator  extends AbstractDeclarativeRosettaValidator {
 			}
 		}
 	}
+
+	@Check
+	public void checkNestedChoiceOptionsDoNotShareLeafTypes(Choice choice) {
+		RChoiceType t = rObjectFactory.buildRChoiceType(choice);
+		Map<RType, RChoiceOption> leafOwners = new HashMap<>();
+		for (RChoiceOption opt: t.getOwnOptions()) {
+			RType optType = typeSystem.stripFromTypeAliases(opt.getType().getRType());
+			if (!(optType instanceof RChoiceType optChoice)) {
+				continue;
+			}
+			for (RChoiceOption nested: optChoice.getAllOptions()) {
+				RType leaf = typeSystem.stripFromTypeAliases(nested.getType().getRType());
+				if (leaf instanceof RChoiceType || builtins.NOTHING.equals(leaf)) {
+					continue;
+				}
+				RChoiceOption owner = leafOwners.putIfAbsent(leaf, opt);
+				// Two options of the same type are already reported as a duplicate.
+				if (owner != null && !typeSystem.stripFromTypeAliases(owner.getType().getRType()).equals(optType)) {
+					warning("'" + leaf + "' is included by both '" + owner.getType() + "' and '" + opt.getType()
+							+ "', so deserialisation cannot tell which one it came from", opt.getEObject(), null);
+				}
+			}
+		}
+	}
 }
