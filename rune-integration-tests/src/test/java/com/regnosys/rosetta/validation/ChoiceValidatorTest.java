@@ -44,6 +44,79 @@ public class ChoiceValidatorTest implements RosettaIssueCodes {
     }
 
     @Test
+    public void testNestedChoiceOptionsSharingALeafTypeWarns() {
+        RosettaModel model = modelHelper.parseRosetta("""
+            choice OuterChoice:
+                LeftChoice
+                RightChoice
+
+            choice LeftChoice:
+                Amount
+                LeftOnly
+
+            choice RightChoice:
+                Amount
+                RightOnly
+
+            type Amount:
+
+            type LeftOnly:
+
+            type RightOnly:
+            """);
+
+        validationTestHelper.assertWarning(model, SimplePackage.Literals.CHOICE_OPTION, null,
+            "'Amount' is included by both 'LeftChoice' and 'RightChoice', so deserialisation cannot tell which one it came from");
+    }
+
+    @Test
+    public void testDeeplyNestedChoiceOptionsSharingALeafTypeWarns() {
+        RosettaModel model = modelHelper.parseRosetta("""
+            choice OuterChoice:
+                LeftChoice
+                RightChoice
+
+            choice LeftChoice:
+                Inner
+                LeftOnly
+
+            choice Inner:
+                Amount
+
+            choice RightChoice:
+                Amount
+
+            type Amount:
+
+            type LeftOnly:
+            """);
+
+        validationTestHelper.assertWarning(model, SimplePackage.Literals.CHOICE_OPTION, null,
+            "'Amount' is included by both 'LeftChoice' and 'RightChoice', so deserialisation cannot tell which one it came from");
+    }
+
+    @Test
+    public void testNestedChoiceOptionsWithDistinctLeafTypesDoNotWarn() {
+        RosettaModel model = modelHelper.parseRosetta("""
+            choice OuterChoice:
+                LeftChoice
+                RightChoice
+
+            choice LeftChoice:
+                LeftOnly
+
+            choice RightChoice:
+                RightOnly
+
+            type LeftOnly:
+
+            type RightOnly:
+            """);
+
+        validationTestHelper.assertNoIssues(model);
+    }
+
+    @Test
     public void testNoCircularReferenceInChoiceOptions() {
         RosettaModel model = modelHelper.parseRosetta("""
             choice Foo:
