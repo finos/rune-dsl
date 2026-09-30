@@ -159,6 +159,7 @@
     }
   ],
   "ignoreDeps": [
-    "org.eclipse.m2e:lifecycle-mapping"
+    "org.eclipse.m2e:lifecycle-mapping",
+    "org.finos.rune:org.finos.rune.parent"
   ]
 }
