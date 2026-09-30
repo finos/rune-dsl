@@ -154,5 +154,8 @@
       "depNameTemplate": "owasp/dependency-check",
       "datasourceTemplate": "docker"
     }
+  ],
+  "ignoreDeps": [
+    "org.finos.rune:org.finos.rune.parent"
   ]
 }
