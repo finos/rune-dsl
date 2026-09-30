@@ -9,34 +9,109 @@
   "dependencyDashboardLabels": [
     "dependencies"
   ],
-  "prConcurrentLimit": 4,
-  "prHourlyLimit": 2,
+  "prConcurrentLimit": 6,
+  "prHourlyLimit": 0,
   "timezone": "Europe/London",
   "schedule": [
-    "before 4am on Monday"
+    "* 6-9 * * 1"
   ],
   "assignees": [
     "SimonCockx"
   ],
   "packageRules": [
     {
-      "description": "Group all Eclipse related dependencies (including Xtext). These dependencies often introduce breaking changes in minor version upgrades.",
-      "groupName": "eclipse dependencies",
-      "groupSlug": "eclipse-dependencies",
-      "matchPackageNames": [
-        "/^org\\.eclipse\\./"
+      "description": "Label Maven dependency updates as Java.",
+      "matchDatasources": [
+        "maven"
+      ],
+      "addLabels": [
+        "java"
       ]
     },
     {
-      "description": "Group all non-breaking dependency updates. A PR will be created automatically.",
+      "description": "com.regnosys and Rune artifacts are bumped deliberately as part of release coordination, not by a bot.",
+      "matchPackageNames": [
+        "/^com\\.regnosys[.:]/",
+        "/^org\\.finos\\.rune[.:]/"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Xtext and Jackson are kept off minor and major bumps entirely. Only patch updates are allowed through, and standalone rather than grouped.",
+      "matchPackageNames": [
+        "/^org\\.eclipse\\.xtext[.:]/",
+        "/^com\\.fasterxml\\.jackson[.:]/"
+      ],
+      "matchUpdateTypes": [
+        "major",
+        "minor"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Guice stays on major version 6. Minor and patch updates are fine.",
+      "matchPackageNames": [
+        "/^com\\.google\\.inject[.:]/"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "One PR for routine Maven minor/patch drift. Majors still come through individually so they get read properly.",
+      "matchDatasources": [
+        "maven"
+      ],
       "matchUpdateTypes": [
         "minor",
         "patch"
       ],
-      "groupName": "all non-breaking dependencies",
-      "groupSlug": "all-non-breaking",
+      "groupName": "maven minor and patch",
+      "groupSlug": "maven-minor-and-patch",
       "matchPackageNames": [
-        "!/^org\\.eclipse\\./"
+        "!/^org\\.eclipse\\./",
+        "!/^com\\.fasterxml\\.jackson[.:]/"
+      ]
+    },
+    {
+      "description": "One PR for routine npm minor/patch drift (VS Code plugin, website and local GitHub Actions).",
+      "matchManagers": [
+        "npm"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "groupName": "npm minor and patch",
+      "groupSlug": "npm-minor-and-patch"
+    },
+    {
+      "description": "Group the remaining Eclipse dependencies (EMF, Xcore, LSP4J). These often introduce breaking changes in minor version upgrades. Xtext is excluded so its patch updates stay standalone.",
+      "groupName": "eclipse dependencies",
+      "groupSlug": "eclipse-dependencies",
+      "matchPackageNames": [
+        "/^org\\.eclipse\\./",
+        "!/^org\\.eclipse\\.xtext[.:]/"
+      ]
+    },
+    {
+      "description": "The build requires Java 21 exactly, so the JDK used in CI stays on major version 21.",
+      "matchPackageNames": [
+        "java-jdk"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Check GitHub Actions monthly.",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "schedule": [
+        "* 6-9 1 * *"
       ]
     }
   ],
@@ -81,7 +156,6 @@
     }
   ],
   "ignoreDeps": [
-    "org.eclipse.m2e:lifecycle-mapping",
     "org.finos.rune:org.finos.rune.parent"
   ]
 }
