@@ -45,3 +45,18 @@ jobs:
           CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD_CENTRAL }}
           RUNE_GPG_PRIVATE_KEY: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
           RUNE_GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
+      # Republishes the snapshot under the legacy com.regnosys.rosetta coordinates, as the release
+      # workflow's backport-publish job does, for consumers that still depend on those. Runs in the same
+      # job so it resolves the org.finos.rune snapshot installed by the previous step.
+      - name: Deploy Rosetta backport snapshot to Central (composite action)
+        uses: ./.github/actions/maven-build
+        with:
+          working-directory: rosetta-backport
+          set-version: 0.0.0.${{ needs.prepare.outputs.normalized }}-SNAPSHOT
+          build-command: install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
+          run-tests: ${{ inputs.run-tests }}
+        env:
+          CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
+          CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
+          RUNE_GPG_PRIVATE_KEY: ${{ secrets.RUNE_GPG_PRIVATE_KEY }}
+          RUNE_GPG_PASSPHRASE: ${{ secrets.RUNE_GPG_PASSPHRASE }}
