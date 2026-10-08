@@ -37,6 +37,22 @@ public class FunctionValidatorTest extends AbstractValidatorTest {
     }
 
     @Test
+    void qualifiedEnumValueWhereNonEnumIsExpectedShouldBeTypeError() {
+        assertIssues("""
+                enum DayOfWeekEnum: MON
+
+                func MyFunc:
+                   output:
+                       result string (1..1)
+
+                    set result: DayOfWeekEnum.MON
+                """, """
+                ERROR (null) 'Expected type `string`, but got `DayOfWeekEnum` instead. Cannot assign `DayOfWeekEnum` to output `result`' at 10:17, length 17, on Operation
+                """
+        );
+    }
+
+    @Test
     void csvIngestionInputMustBeTabular() {
     	assertIssues("""
                 type Thing:
