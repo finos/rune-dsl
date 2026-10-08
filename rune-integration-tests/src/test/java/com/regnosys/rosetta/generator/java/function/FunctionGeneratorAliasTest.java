@@ -47,6 +47,39 @@ public class FunctionGeneratorAliasTest {
     }
 
 	@Test
+	void shouldSupportQualifiedEnumValueInAlias() {
+		var model = modelService.toJavaTestModel("""
+				enum DayOfWeekEnum: MON TUE WED
+
+				func WithArrow:
+					output:
+						result DayOfWeekEnum (0..*)
+					alias days: [DayOfWeekEnum -> MON, DayOfWeekEnum -> TUE]
+					set result: days
+
+				func WithDot:
+					output:
+						result DayOfWeekEnum (0..*)
+					alias days: [DayOfWeekEnum.MON, DayOfWeekEnum.TUE]
+					set result: days
+
+				func SingleWithDot:
+					output:
+						result DayOfWeekEnum (1..1)
+					alias day: DayOfWeekEnum.WED
+					set result: day
+				""").compile();
+
+		var mon = model.getEnumJavaValue("DayOfWeekEnum", "MON");
+		var tue = model.getEnumJavaValue("DayOfWeekEnum", "TUE");
+		var wed = model.getEnumJavaValue("DayOfWeekEnum", "WED");
+
+		assertEquals(List.of(mon, tue), ReflectiveInvoker.from(model.getFunctionJavaInstance("WithArrow"), "evaluate", List.class).invoke());
+		assertEquals(List.of(mon, tue), ReflectiveInvoker.from(model.getFunctionJavaInstance("WithDot"), "evaluate", List.class).invoke());
+		assertEquals(wed, ReflectiveInvoker.from(model.getFunctionJavaInstance("SingleWithDot"), "evaluate", model.getEnumJavaClass("DayOfWeekEnum")).invoke());
+	}
+
+	@Test
 	void featureCallOnAliasOfChoiceShouldNotThrow() {
 		modelService.toJavaTestModel("""
 				namespace test
