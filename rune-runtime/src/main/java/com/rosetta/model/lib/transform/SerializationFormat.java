@@ -27,5 +27,11 @@ public enum SerializationFormat {
      *             same rules.
      */
     @Deprecated
-    CSV_LABELLED
+    CSV_LABELLED,
+    /**
+     * FIX (Financial Information eXchange) tag=value messages, configured by an associated FIX configuration
+     * file that names the FIX data dictionary and maps each Rune type onto a FIX MsgType. Attributes are
+     * mapped to FIX fields through their labels.
+     */
+    FIX
 }
