@@ -38,6 +38,16 @@ runs:
       env:
         RUNE_GPG_PRIVATE_KEY: ${{ env.RUNE_GPG_PRIVATE_KEY }}
         RUNE_GPG_PASSPHRASE: ${{ env.RUNE_GPG_PASSPHRASE }}
+    # Pinned: the runner image's Maven 3.10.0 leaves maven-metadata files in the
+    # Central bundle, and Central rejects the release.
+    - name: Set up Maven 3.9.16
+      shell: bash
+      working-directory: ${{ runner.temp }}
+      run: |
+        curl -fsSL -o maven.tar.gz https://repo1.maven.org/maven2/org/apache/maven/apache-maven/3.9.16/apache-maven-3.9.16-bin.tar.gz
+        echo "831a8591fe20c8243b1dbe7d71e3244f31d1665b0804b2e825e38cbbe5ce0cafb8338851f90780735568773e0a6cd07bbec107cda0b896b008b861075358b6f6  maven.tar.gz" | sha512sum -c -
+        tar -xzf maven.tar.gz
+        echo "${{ runner.temp }}/apache-maven-3.9.16/bin" >> "$GITHUB_PATH"
     - name: Set version
       if: ${{ inputs.set-version != '' }}
       shell: bash

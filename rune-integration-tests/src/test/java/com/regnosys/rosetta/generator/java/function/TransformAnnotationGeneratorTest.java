@@ -72,4 +72,38 @@ public class TransformAnnotationGeneratorTest {
 		assertTrue(model.getFunctionJavaSource("Enricher").contains("@Enrich"),
 				"enrich should emit @Enrich");
 	}
+
+	@Test
+	void generatesFixFormatOnProjectionAndSchema() {
+		JavaTestModel model = modelService.toJavaTestModel("""
+				namespace test
+
+				schema marketAxessFix FIX
+
+				type TradeCaptureReport:
+					tradeReportID string (1..1)
+						[label "TradeReportID"]
+
+				func ProjectBareFormat:
+					[projection FIX]
+					inputs:
+						input string (1..1)
+					output:
+						result TradeCaptureReport (1..1)
+					set result: TradeCaptureReport { tradeReportID: input }
+
+				func ProjectSchema:
+					[projection marketAxessFix]
+					inputs:
+						input string (1..1)
+					output:
+						result TradeCaptureReport (1..1)
+					set result: TradeCaptureReport { tradeReportID: input }
+				""");
+
+		assertTrue(model.getFunctionJavaSource("ProjectBareFormat").contains("@Projection(format = SerializationFormat.FIX)"),
+				"bare-format projection should emit @Projection with the FIX format");
+		assertTrue(model.getFunctionJavaSource("ProjectSchema").contains("@Projection(id = \"marketAxessFix\", format = SerializationFormat.FIX)"),
+				"schema-based projection should emit @Projection with id and the FIX format");
+	}
 }

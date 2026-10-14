@@ -8,16 +8,28 @@ inputs:
 outputs:
   normalized:
     description: "Normalized branch name"
+    value: ${{ steps.normalize.outputs.normalized }}
 
 runs:
   using: "composite"
   steps:
-    - name: Install dependencies
-      run: npm install
-      shell: bash
+    # Lower-cases the branch name and replaces every run of characters other than [0-9a-z-] with a single
+    # hyphen, so the result is safe inside a Maven version. Plain bash rather than a Node action, so there
+    # are no npm dependencies to fall out of step with the runner.
     - name: Run normalization
-      using: "node12"
-      main: "index.js"
+      id: normalize
+      shell: bash
+      env:
+        INPUT_BRANCH: ${{ inputs.branch }}
+      run: |
+        branch="${INPUT_BRANCH:-${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}}"
+        branch="$(printf '%s' "$branch" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+        if [ -z "$branch" ]; then
+          echo "No branch was found." >&2
+          exit 1
+        fi
+        normalized="$(printf '%s' "$branch" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^0-9a-z-]+/-/g')"
+        echo "normalized=$normalized" >> "$GITHUB_OUTPUT"
 branding:
   icon: 'terminal'
   color: 'green'
