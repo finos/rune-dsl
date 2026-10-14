@@ -25,6 +25,7 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 import com.regnosys.rosetta.codegen.api.CodeWriter;
 import com.regnosys.rosetta.codegen.support.StringCodeWriter;
+import com.regnosys.rosetta.generator.java.scoping.JavaPackageName;
 import com.regnosys.rosetta.generator.java.util.ModelGeneratorUtil;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 
@@ -36,18 +37,18 @@ public class JavaPackageInfoGenerator {
 
 	public void generatePackageInfoClasses(IFileSystemAccess2 fsa, List<RosettaModel> elements) {
 		namespaceToDescriptionMap(elements).asMap().forEach((packageName, descriptions) ->
-				fsa.generateFile(packageName.replace('.', '/') + "/package-info.java", generatePackageInfo(packageName, descriptions)));
+				fsa.generateFile(packageName.getName().withForwardSlashes() + "/package-info.java", generatePackageInfo(packageName, descriptions)));
 	}
 
-	private Multimap<String, String> namespaceToDescriptionMap(List<RosettaModel> elements) {
-		Multimap<String, String> namespaceToDescription = LinkedHashMultimap.create();
+	private Multimap<JavaPackageName, String> namespaceToDescriptionMap(List<RosettaModel> elements) {
+		Multimap<JavaPackageName, String> namespaceToDescription = LinkedHashMultimap.create();
 		elements.stream()
 				.filter(model -> model.getDefinition() != null)
-				.forEach(model -> namespaceToDescription.put(model.getName(), model.getDefinition()));
+				.forEach(model -> namespaceToDescription.put(JavaPackageName.splitOnDotsAndEscape(model.getName()), model.getDefinition()));
 		return namespaceToDescription;
 	}
 
-	private String generatePackageInfo(String packageName, Collection<String> descriptions) {
+	private String generatePackageInfo(JavaPackageName packageName, Collection<String> descriptions) {
 		CodeWriter out = new StringCodeWriter();
 		out.writeln("/**");
 		out.writeln("*");
