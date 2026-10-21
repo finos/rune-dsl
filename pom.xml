@@ -101,7 +101,7 @@
         <org.eclipse.emf.ecore.xcore.lib.version>1.7.0</org.eclipse.emf.ecore.xcore.lib.version>
         <maven-plugin-api.version>3.9.14</maven-plugin-api.version>
         <!-- Used by maven-plugin-api - bumped from 3.6.0 to 3.6.1 for CVE -->
-        <plexus-utils.version>3.6.1</plexus-utils.version>
+        <plexus-utils.version>4.1.0</plexus-utils.version>
         <maven-core.version>3.9.14</maven-core.version>
         <maven-plugin-annotations.version>3.13.1</maven-plugin-annotations.version>
         <slf4j.version>2.0.13</slf4j.version>
