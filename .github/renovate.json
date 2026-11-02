@@ -59,6 +59,16 @@
       "enabled": false
     },
     {
+      "description": "plexus-utils stays on major version 3. Minor and patch updates are fine.",
+      "matchPackageNames": [
+        "org.codehaus.plexus:plexus-utils"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": false
+    },
+    {
       "description": "One PR for routine Maven minor/patch drift. Majors still come through individually so they get read properly.",
       "matchDatasources": [
         "maven"
