@@ -5,7 +5,6 @@ import com.regnosys.rosetta.types.*;
 import jakarta.inject.Inject;
 
 import jakarta.inject.Provider;
-import org.checkerframework.checker.units.qual.C;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.EcoreUtil2;
