@@ -132,7 +132,7 @@
     "vscode-test": "^1.6.1"
   },
   "dependencies": {
-    "@vscode/vsce": "^3.9.0",
+    "@vscode/vsce": "^4.0.0",
     "vscode-languageclient": "^10.0.0-next.21"
   },
   "scripts": {
