@@ -451,10 +451,13 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 						} else {
 							out.write("return ", Optional.class, ".ofNullable(", assignOutputBodyScope.getIdentifierOrThrow(output), ")");
 							out.newline();
+							JavaStatementScope pruneLambdaScope = assignOutputBodyScope.lambdaScope();
+							GeneratedIdentifier outputParam = pruneLambdaScope.createUniqueIdentifier("o");
 							if (output.isMulti()) {
-								out.write("    .map(o -> o.stream().map(i -> i.prune()).collect(", Collectors.class, ".toList()))");
+								GeneratedIdentifier itemParam = pruneLambdaScope.lambdaScope().createUniqueIdentifier("i");
+								out.write("    .map(", outputParam, " -> ", outputParam, ".stream().map(", itemParam, " -> ", itemParam, ".prune()).collect(", Collectors.class, ".toList()))");
 							} else {
-								out.write("    .map(o -> o.prune())");
+								out.write("    .map(", outputParam, " -> ", outputParam, ".prune())");
 							}
 							out.newline();
 							out.writeln("    .orElse(null);");

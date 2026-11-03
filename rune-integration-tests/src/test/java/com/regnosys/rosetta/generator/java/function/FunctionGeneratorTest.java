@@ -1080,6 +1080,33 @@ public class FunctionGeneratorTest {
     }
 
     @Test
+    void outputNamedOCompiles() {
+        var code = generatorTestHelper.generateCode("""
+                type Foo:
+                	attr string (0..1)
+
+                func SingleOutputNamedO:
+                	inputs: attr string (1..1)
+                	output: o Foo (1..1)
+                	set o -> attr: attr
+
+                func MultiOutputNamedO:
+                	inputs: i Foo (0..*)
+                	output: o Foo (0..*)
+                	add o: i
+                """);
+        var classes = generatorTestHelper.compileToClasses(code);
+
+        var foo = generatorTestHelper.createInstanceUsingBuilder(classes, "Foo", Map.of("attr", "value"));
+
+        var single = functionGeneratorHelper.createFunc(classes, "SingleOutputNamedO");
+        assertEquals(foo, functionGeneratorHelper.invokeFunc(single, RosettaModelObject.class, "value"));
+
+        var multi = functionGeneratorHelper.createFunc(classes, "MultiOutputNamedO");
+        assertEquals(List.of(foo), functionGeneratorHelper.invokeFunc(multi, List.class, List.of(foo)));
+    }
+
+    @Test
     void canEscapeIdentifiers() {
         var code = generatorTestHelper.generateCode("""
                 func Foo:
