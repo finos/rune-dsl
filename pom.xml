@@ -110,7 +110,7 @@
         <jackson.version>2.18.12</jackson.version>
         <guice.version>6.0.0</guice.version>
         <!-- Used by Xtext, whose xtext-dev-bom manages 33.4.0-jre - bumped to 33.7.2-jre for CVE-2026-102554 -->
-        <guava.version>33.7.2-jre</guava.version>
+        <guava.version>33.8.0-jre</guava.version>
         <!-- javax.annotation.Nullable, used by rune-ide - came through guava until 33.7, which dropped jsr305 -->
         <jsr305.version>3.0.2</jsr305.version>
 
