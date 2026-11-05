@@ -47,6 +47,20 @@ The grammar lives at `rune-lang/src/main/java/com/regnosys/rosetta/Rosetta.xtext
 - **rune-profiling** — profiling harness.
 - **rune-xcore-plugin-dependencies** — packaging module supplying Xcore plugin dependencies to the build.
 
+## Architecture decisions
+
+Architecture decision records (ADRs) are in `docs/adr/`, one per file, whatever their status.
+The index, `docs/adr/README.md`, gives each one's status.
+
+- Before changing module boundaries, a public API, the shape of generated code, a file format,
+  build or release tooling, or adding or replacing a dependency, read the index and the ADRs on
+  that area.
+- Follow the accepted ones. Superseded, deprecated and rejected ones stay in the folder as
+  history and do not bind you; follow "superseded by" to the one that replaced it.
+- If the task conflicts with an accepted ADR, stop and say which ADR and why; do not work around
+  it. A changed decision is a new ADR that supersedes the old one, in the same PR as the code.
+- Never edit the body of an accepted ADR.
+
 ## Notes
 
 - IntelliJ has limited Xtext support: it can't edit `.xtext` or run `GenerateRosetta.mwe2` — let Maven handle those and edit/run regular Java there. The repo carries no Eclipse project configuration. See `README.md` for IntelliJ setup and troubleshooting.
