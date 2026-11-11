@@ -196,12 +196,17 @@ public class RosettaTypeProvider extends RosettaExpressionSwitch<RMetaAnnotatedT
                     typeSystem.typeCallToRType(tf.getTypeCall()),
                     getRMetaAttributesOfFeature(feature)
             );
-        } else if (feature instanceof RosettaEnumValue) {
+        } else if (feature instanceof RosettaEnumValue enumValue) {
             if (context instanceof RosettaFeatureCall fc) {
                 return safeRType(fc.getReceiver(), cycleTracker);
             } else {
-                RMetaAnnotatedType fromContainer = expectedTypeProvider.getExpectedTypeFromContainer(context);
-                return fromContainer != null ? fromContainer : builtins.NOTHING_WITH_ANY_META;
+                RMetaAnnotatedType fromContainer = context != null ? expectedTypeProvider.getExpectedTypeFromContainer(context) : null;
+                if (fromContainer != null
+                        && fromContainer.getRType() instanceof REnumType expectedEnum
+                        && expectedEnum.getAllEnumValues().contains(enumValue)) {
+                    return fromContainer;
+                }
+                return RMetaAnnotatedType.withNoMeta(rObjectFactory.buildREnumType(enumValue.getEnumeration()));
             }
         }
         return builtins.NOTHING_WITH_ANY_META;

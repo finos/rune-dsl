@@ -126,4 +126,64 @@ public class EnumValidatorTest implements RosettaIssueCodes {
 
         validationTestHelper.assertIssue(model, ExpressionPackage.Literals.ROSETTA_FEATURE_CALL, null, Severity.INFO, "ONE is deprecated");
     }
+
+    @Test
+    public void testDottedEnumValueSyntaxIsRejected() {
+        RosettaModel model = modelHelper.parseRosetta("""
+            enum DayOfWeekEnum:
+                MON
+                TUE
+
+            func Foo:
+                output:
+                    result string (1..1)
+
+                set result:
+                    DayOfWeekEnum.MON
+            """);
+
+        validationTestHelper.assertError(model, ExpressionPackage.Literals.ROSETTA_SYMBOL_REFERENCE, null,
+            "Couldn't resolve reference to RosettaSymbol 'DayOfWeekEnum.MON'.");
+    }
+
+    @Test
+    public void testDottedEnumValueSyntaxInAliasIsRejected() {
+        RosettaModel model = modelHelper.parseRosetta("""
+            enum DayOfWeekEnum:
+                MON
+                TUE
+
+            func Foo:
+                output:
+                    result DayOfWeekEnum (1..1)
+
+                alias a:
+                    DayOfWeekEnum.MON
+
+                set result:
+                    DayOfWeekEnum -> MON
+            """);
+
+        validationTestHelper.assertError(model, ExpressionPackage.Literals.ROSETTA_SYMBOL_REFERENCE, null,
+            "Couldn't resolve reference to RosettaSymbol 'DayOfWeekEnum.MON'.");
+    }
+
+    @Test
+    public void testDottedEnumValueSyntaxInEnumContextIsRejected() {
+        RosettaModel model = modelHelper.parseRosetta("""
+            enum DayOfWeekEnum:
+                MON
+                TUE
+
+            func Foo:
+                output:
+                    result DayOfWeekEnum (1..1)
+
+                set result:
+                    DayOfWeekEnum.MON
+            """);
+
+        validationTestHelper.assertError(model, ExpressionPackage.Literals.ROSETTA_SYMBOL_REFERENCE, null,
+            "Couldn't resolve reference to RosettaSymbol 'DayOfWeekEnum.MON'.");
+    }
 }
