@@ -20,9 +20,11 @@ import com.regnosys.rosetta.generator.java.object.validators.OnlyExistsValidator
 import com.regnosys.rosetta.generator.java.object.validators.TypeFormatValidatorGenerator;
 import com.regnosys.rosetta.generator.java.reports.ReportGenerator;
 import com.regnosys.rosetta.generator.java.reports.RuleGenerator;
+import com.regnosys.rosetta.generator.java.scoping.JavaPackageName;
 import com.regnosys.rosetta.generator.resourcefsa.ResourceAwareFSAFactory;
 import com.regnosys.rosetta.rosetta.RosettaModel;
 import com.rosetta.util.DemandableLock;
+import com.rosetta.util.DottedPath;
 import jakarta.inject.Inject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -32,7 +34,9 @@ import org.eclipse.xtext.generator.IGeneratorContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -181,9 +185,13 @@ public class RosettaGenerator implements IGenerator2 {
 					enumGenerator,
 					metaFieldGenerator
 				);
-				List<GenerationException> aggregatedGenerationExceptions = javaGenerators.stream()
-					.flatMap(generator -> generator.generateClasses(model, version, fsa2, context.getCancelIndicator()).stream())
+				Map<DottedPath, Set<String>> packageTypeNames = new HashMap<>();
+				collectSiblingPackageTypeNames(resource, model, javaGenerators, packageTypeNames);
+				List<GenerationException> aggregatedGenerationExceptions = new ArrayList<>();
+				List<Runnable> pendingGenerations = javaGenerators.stream()
+					.map(generator -> generator.prepareGeneration(model, version, fsa2, context.getCancelIndicator(), packageTypeNames, aggregatedGenerationExceptions))
 					.collect(Collectors.toList());
+				pendingGenerations.forEach(Runnable::run);
 
 				if (!aggregatedGenerationExceptions.isEmpty()) {
 					if (aggregatedGenerationExceptions.size() == 1) {
@@ -275,6 +283,67 @@ public class RosettaGenerator implements IGenerator2 {
 		} finally {
 			lock.releaseWriteLock();
 		}
+	}
+
+	private void collectSiblingPackageTypeNames(
+			Resource resource,
+			RosettaModel model,
+			List<JavaClassGenerator<?, ?>> javaGenerators,
+			Map<DottedPath, Set<String>> packageTypeNames) {
+		ResourceSet resourceSet = resource.getResourceSet();
+		if (resourceSet == null || model.getName() == null) {
+			return;
+		}
+		String modelPkg = safeEscapedNamespace(model.getName());
+		if (modelPkg == null) {
+			return;
+		}
+		boolean modelIsMetafields = modelPkg.equals("metafields") || modelPkg.endsWith(".metafields");
+		for (Resource otherResource : resourceSet.getResources()) {
+			if (otherResource == resource || isIgnoredFile(otherResource) || otherResource.getContents().isEmpty()) {
+				continue;
+			}
+			if (!(otherResource.getContents().get(0) instanceof RosettaModel otherModel) || otherModel.getName() == null) {
+				continue;
+			}
+			String otherPkg = safeEscapedNamespace(otherModel.getName());
+			if (otherPkg == null) {
+				continue;
+			}
+			boolean namespacesOverlap = packagesMayOverlap(modelPkg, otherPkg);
+			boolean otherIsMetafields = otherPkg.equals("metafields") || otherPkg.endsWith(".metafields");
+			if (!namespacesOverlap && !modelIsMetafields && !otherIsMetafields) {
+				continue;
+			}
+			for (JavaClassGenerator<?, ?> generator : javaGenerators) {
+				if (generator == metaFieldGenerator && !modelIsMetafields) {
+					continue;
+				}
+				if (generator != metaFieldGenerator && !namespacesOverlap && !otherIsMetafields) {
+					continue;
+				}
+				try {
+					generator.streamTypeRepresentations(otherModel).forEach(typeRepresentation ->
+							packageTypeNames
+									.computeIfAbsent(typeRepresentation.getPackageName(), k -> new HashSet<>())
+									.add(typeRepresentation.getSimpleName()));
+				} catch (Exception ignored) {
+					// Ignore broken sibling models while collecting package-level names
+				}
+			}
+		}
+	}
+
+	private String safeEscapedNamespace(String namespace) {
+		try {
+			return JavaPackageName.splitOnDotsAndEscape(namespace).toString();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	private boolean packagesMayOverlap(String pkgA, String pkgB) {
+		return pkgA.equals(pkgB) || pkgA.startsWith(pkgB + ".") || pkgB.startsWith(pkgA + ".");
 	}
 
 	private boolean shouldGenerate(RosettaModel model) {
