@@ -295,7 +295,7 @@ public class TypeCoercionService {
 				return Optional.of(it -> JavaExpression.from(out -> out.write(it, ".asMapper()"), typeUtil.wrap(typeUtil.MAPPER_S, typeUtil.BOOLEAN)));
 			} else if (typeUtil.isMapperC(expected)) {
 				// Case ComparisonResult to MapperC
-				// Not handled
+				return Optional.of(it -> JavaExpression.from(out -> out.write(MapperC.class, ".of(", it, ".asMapper())"), typeUtil.wrap(typeUtil.MAPPER_C, typeUtil.BOOLEAN)));
 			} else if (typeUtil.isMapperListOfLists(expected)) {
 				// Case ComparisonResult to MapperListOfLists
 				// Not handled
