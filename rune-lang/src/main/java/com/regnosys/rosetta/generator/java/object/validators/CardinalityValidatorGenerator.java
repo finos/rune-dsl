@@ -107,7 +107,7 @@ public class CardinalityValidatorGenerator extends FluentRObjectJavaClassGenerat
 				});
 				out.writeln("}");
 				out.newline();
-				out.writeln("@Override");
+				out.writeln("@", Override.class);
 				out.writeln("public ", List.class, "<", ValidationResult.class, "<?>> getValidationResults(", RosettaPath.class, " path, ", pojo, " o) {");
 				out.indented(() -> {
 					out.writeln("return getComparisonResults(o)");

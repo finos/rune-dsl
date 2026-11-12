@@ -201,7 +201,7 @@ public class TypeFormatValidatorGenerator extends FluentRObjectJavaClassGenerato
 					out.writeln("}");
 				}
 				out.newline();
-				out.writeln("@Override");
+				out.writeln("@", Override.class);
 				out.writeln("public ", List.class, "<", ValidationResult.class, "<?>> getValidationResults(", RosettaPath.class, " ", pathId, ", ", javaType, " o) {");
 				out.indented(() -> {
 					if (conditionDependencies.isEmpty()) {

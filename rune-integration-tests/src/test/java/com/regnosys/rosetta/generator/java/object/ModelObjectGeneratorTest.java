@@ -3,8 +3,10 @@ package com.regnosys.rosetta.generator.java.object;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -545,6 +547,106 @@ class ModelObjectGeneratorTest {
 		List<String> bar = createObjectWithListThenPruneAndReturnList(ImmutableList.of("a", "b"));
 		assertNotNull(bar);
 		assertEquals(2, bar.size());
+	}
+
+	@Test
+	void shouldCompileAndRunWhenTypeShadowsJavaLangObject() throws Exception {
+		Map<String, Class<?>> classes = generatorTestHelper.compileJava8("""
+				type Object:
+					val string (0..1)
+
+				type Foo:
+					obj Object (0..1)
+				""");
+
+		Class<?> objectClass = classes.get(modelHelper.rootPackage() + ".Object");
+		Class<?> fooClass = classes.get(modelHelper.rootPackage() + ".Foo");
+
+		Object objBuilder1 = objectClass.getMethod("builder").invoke(null);
+		invoke(objBuilder1, "setVal", "hello");
+		Object obj1 = invoke(objBuilder1, "build");
+
+		Object objBuilder2 = objectClass.getMethod("builder").invoke(null);
+		invoke(objBuilder2, "setVal", "hello");
+		Object obj2 = invoke(objBuilder2, "build");
+
+		Object fooBuilder1 = fooClass.getMethod("builder").invoke(null);
+		fooBuilder1.getClass().getMethod("setObj", objectClass).invoke(fooBuilder1, obj1);
+		Object foo1 = invoke(fooBuilder1, "build");
+
+		Object fooBuilder2 = fooClass.getMethod("builder").invoke(null);
+		fooBuilder2.getClass().getMethod("setObj", objectClass).invoke(fooBuilder2, obj2);
+		Object foo2 = invoke(fooBuilder2, "build");
+
+		assertEquals(obj1, invoke(foo1, "getObj"));
+		assertTrue(foo1.equals(foo2));
+		assertFalse(foo1.equals("not a Foo"));
+		assertEquals(foo1.hashCode(), foo2.hashCode());
+	}
+
+	@Test
+	void shouldCompileWhenJavaLangObjectShadowedAcrossSeparateResourcesInSameNamespace() {
+		Map<String, String> code = generatorTestHelper.generateCode(
+				"""
+				namespace test.ns.multiresource
+				version "test"
+
+				type Object:
+				""",
+				"""
+				namespace test.ns.multiresource
+				version "test"
+
+				type Foo:
+				""");
+		Map<String, Class<?>> classes = generatorTestHelper.compileToClasses(code);
+		assertNotNull(classes.get("test.ns.multiresource.Object"));
+		assertNotNull(classes.get("test.ns.multiresource.Foo"));
+	}
+
+	@Test
+	void shouldCompileWhenTypesShadowOtherJavaLangAndWildcardClasses() {
+		Map<String, Class<?>> classes = generatorTestHelper.compileJava8("""
+				type String:
+					flag boolean (0..1)
+
+				type Class:
+					items String (0..*)
+
+				type Override:
+					cls Class (0..1)
+
+				type SuppressWarnings:
+					ovr Override (0..1)
+
+				enum Kind:
+					ALPHA
+					BETA
+
+				func MapperS:
+					inputs:
+						x int (1..1)
+					output:
+						result int (1..1)
+					set result:
+						x + 1
+
+				func Caller:
+					inputs:
+						xs int (0..*)
+					output:
+						result int (1..1)
+					set result:
+						MapperS(xs count)
+				""");
+
+		assertNotNull(classes.get(modelHelper.rootPackage() + ".String"));
+		assertNotNull(classes.get(modelHelper.rootPackage() + ".Class"));
+		assertNotNull(classes.get(modelHelper.rootPackage() + ".Override"));
+		assertNotNull(classes.get(modelHelper.rootPackage() + ".SuppressWarnings"));
+		assertNotNull(classes.get(modelHelper.rootPackage() + ".Kind"));
+		assertNotNull(classes.get(modelHelper.rootPackage() + ".functions.MapperS"));
+		assertNotNull(classes.get(modelHelper.rootPackage() + ".functions.Caller"));
 	}
 
 	private List<String> createObjectWithListThenPruneAndReturnList(List<String> list) throws Exception {

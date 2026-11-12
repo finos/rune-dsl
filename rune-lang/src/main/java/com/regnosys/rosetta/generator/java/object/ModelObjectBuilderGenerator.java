@@ -97,18 +97,18 @@ public class ModelObjectBuilderGenerator {
 				renderBuilderGetters(out, properties, extendSuperImpl, scope);
 				renderSetters(out, javaType, scope);
 				out.newline();
-				out.writeln("@Override");
+				out.writeln("@", Override.class);
 				out.writeln("public ", javaType, " build() {");
 				out.indented(() -> out.writeln("return new ", javaType.toImplClass(), "(this);"));
 				out.writeln("}");
 				out.newline();
-				out.writeln("@Override");
+				out.writeln("@", Override.class);
 				out.writeln("public ", builderInterface, " toBuilder() {");
 				out.indented(() -> out.writeln("return this;"));
 				out.writeln("}");
 				out.newline();
-				out.writeln("@SuppressWarnings(\"unchecked\")");
-				out.writeln("@Override");
+				out.writeln("@", SuppressWarnings.class, "(\"unchecked\")");
+				out.writeln("@", Override.class);
 				out.writeln("public ", builderInterface, " prune() {");
 				out.indented(() -> {
 					if (extendSuperImpl) {
@@ -149,7 +149,7 @@ public class ModelObjectBuilderGenerator {
 		for (JavaPojoProperty prop : properties) {
 			JavaVariable field = new JavaVariable(scope.getIdentifierOrThrow(prop), prop.getType());
 			out.newline();
-			out.writeln("@Override");
+			out.writeln("@", Override.class);
 			out.write(boilerPlate.attributeAnnotations(prop, AccessorType.GETTER, typeUtil.isList(prop.getType())));
 			out.writeln("public ", toBuilderTypeExt(prop), " ", prop.getOperationName(GET), "() ", field.completeAsReturn().toBlock());
 			if (typeTranslator.isRosettaModelObject(prop.getType())) {
@@ -169,7 +169,7 @@ public class ModelObjectBuilderGenerator {
 	private void renderGetOrCreateSingle(CodeWriter out, JavaPojoProperty prop, JavaVariable field, JavaMethodScope getOrCreateScope) {
 		GeneratedIdentifier resultId = getOrCreateScope.getBodyScope().createUniqueIdentifier("result");
 		out.newline();
-		out.writeln("@Override");
+		out.writeln("@", Override.class);
 		out.writeln("public ", toBuilderTypeSingle(prop), " ", prop.getOperationName(GET_OR_CREATE), "() {");
 		out.indented(() -> {
 			out.writeln(toBuilderTypeSingle(prop), " ", resultId, ";");
@@ -194,7 +194,7 @@ public class ModelObjectBuilderGenerator {
 		GeneratedIdentifier indexId = getOrCreateScope.createUniqueIdentifier("index");
 		GeneratedIdentifier newObjectId = getOrCreateScope.getBodyScope().lambdaScope().createUniqueIdentifier("new" + capitalize(prop.getName()));
 		out.newline();
-		out.writeln("@Override");
+		out.writeln("@", Override.class);
 		out.writeln("public ", toBuilderTypeSingle(prop), " ", prop.getOperationName(GET_OR_CREATE), "(int ", indexId, ") {");
 		out.indented(() -> {
 			out.writeln("if (", field, "==null) {");
@@ -227,7 +227,7 @@ public class ModelObjectBuilderGenerator {
 		JavaStatementScope bodyScope = getterScope.getBodyScope();
 		return out -> {
 			out.newline();
-			out.writeln("@Override");
+			out.writeln("@", Override.class);
 			out.writeln("@", RosettaIgnore.class);
 			out.writeln("@", RuneIgnore.class);
 			JavaStatementBuilder getterBody;
@@ -258,7 +258,7 @@ public class ModelObjectBuilderGenerator {
 				if (!typeUtil.isList(parent.getType())) {
 					JavaExpression getOrCreate = JavaExpression.from(o -> o.write(originalGetOrCreateName, "()"), originalItemType);
 					out.newline();
-					out.writeln("@Override");
+					out.writeln("@", Override.class);
 					out.writeln("public ", toBuilderTypeSingle(parent), " ", getOrCreateName, "() ", coercionService.addCoercions(getOrCreate, parentItemType, getOrCreateScope.getBodyScope())
 							.mapExpressionIfNotNull(this::toBuilder)
 							.completeAsReturn()
@@ -273,7 +273,7 @@ public class ModelObjectBuilderGenerator {
 						o.write(")");
 					}, originalItemType);
 					out.newline();
-					out.writeln("@Override");
+					out.writeln("@", Override.class);
 					out.writeln("public ", toBuilderTypeSingle(parent), " ", getOrCreateName, "(int ", indexId, ") ", coercionService.addCoercions(getOrCreate, parentItemType, getOrCreateScope.getBodyScope())
 							.mapExpressionIfNotNull(this::toBuilder)
 							.completeAsReturn()
@@ -294,7 +294,7 @@ public class ModelObjectBuilderGenerator {
 	private void renderSetterMethod(CodeWriter out, JavaPojoProperty prop, JavaType mainBuilderType, JavaPojoPropertyOperationType operationType, JavaClassScope builderScope, Function<JavaMethodScope, CodeRenderer> computeParametersAndBody) {
 		String opName = prop.getOperationName(operationType);
 		JavaMethodScope scope = builderScope.createMethodScope(opName);
-		out.writeln("@Override");
+		out.writeln("@", Override.class);
 		out.write("public ", mainBuilderType, " ", opName);
 		out.writeln(computeParametersAndBody.apply(scope));
 	}
@@ -448,7 +448,7 @@ public class ModelObjectBuilderGenerator {
 									if (typeTranslator.isRosettaModelObject(propType)) {
 										o.writeln(".map(_a->_a.toBuilder())");
 									}
-									o.write(".collect(", Collectors.class, ".toCollection(()->new ArrayList<>()))");
+									o.write(".collect(", Collectors.class, ".toCollection(()->new ", ArrayList.class, "<>()))");
 								});
 							}, JavaPrimitiveType.VOID),
 							typeUtil
@@ -554,7 +554,7 @@ public class ModelObjectBuilderGenerator {
 	}
 
 	private void renderHasData(CodeWriter out, JavaPojoInterface type, Collection<JavaPojoProperty> properties, boolean extended) {
-		out.writeln("@Override");
+		out.writeln("@", Override.class);
 		out.writeln("public boolean hasData() {");
 		out.indented(() -> {
 			if (extended) {
@@ -567,7 +567,7 @@ public class ModelObjectBuilderGenerator {
 				String getter = prop.getOperationName(GET);
 				if (typeUtil.isList(prop.getType())) {
 					if (shouldPrune.mayBeEmpty(type, prop)) {
-						out.writeln("if (", getter, "()!=null && ", getter, "().stream().filter(Objects::nonNull).anyMatch(a->a.hasData())) return true;");
+						out.writeln("if (", getter, "()!=null && ", getter, "().stream().filter(", Objects.class, "::nonNull).anyMatch(a->a.hasData())) return true;");
 					} else {
 						out.writeln("if (", getter, "()!=null && !", getter, "().isEmpty()) return true;");
 					}

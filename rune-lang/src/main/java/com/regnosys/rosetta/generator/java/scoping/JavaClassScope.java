@@ -1,5 +1,7 @@
 package com.regnosys.rosetta.generator.java.scoping;
 
+import java.util.Set;
+
 import com.rosetta.util.types.JavaTypeDeclaration;
 
 public class JavaClassScope extends AbstractJavaScope<AbstractJavaScope<?>> {	
@@ -8,7 +10,11 @@ public class JavaClassScope extends AbstractJavaScope<AbstractJavaScope<?>> {
 	}
 	
 	public static JavaClassScope createAndRegisterIdentifier(JavaTypeDeclaration<?> clazz) {
-		JavaFileScope fileScope = new JavaFileScope(clazz.getSimpleName() + ".java", clazz.getPackageName());
+		return createAndRegisterIdentifier(clazz, Set.of());
+	}
+
+	public static JavaClassScope createAndRegisterIdentifier(JavaTypeDeclaration<?> clazz, Set<String> packageTypeNames) {
+		JavaFileScope fileScope = new JavaFileScope(clazz.getSimpleName() + ".java", clazz.getPackageName(), packageTypeNames);
 		fileScope.createIdentifier(clazz, clazz.getSimpleName());
 		return new JavaClassScope(clazz.getSimpleName(), fileScope);
 	}

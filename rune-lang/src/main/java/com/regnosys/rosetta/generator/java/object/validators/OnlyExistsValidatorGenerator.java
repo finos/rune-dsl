@@ -87,10 +87,10 @@ public class OnlyExistsValidatorGenerator extends FluentRObjectJavaClassGenerato
 			out.indented(() -> {
 				out.newline();
 				out.writeln("/* Casting is required to ensure types are output to ensure recompilation in Rosetta */");
-				out.writeln("@Override");
-				out.writeln("public <T2 extends ", pojo, "> ", ValidationResult.class, "<", pojo, "> validate(", RosettaPath.class, " path, T2 o, ", Set.class, "<String> fields) {");
+				out.writeln("@", Override.class);
+				out.writeln("public <T2 extends ", pojo, "> ", ValidationResult.class, "<", pojo, "> validate(", RosettaPath.class, " path, T2 o, ", Set.class, "<", String.class, "> fields) {");
 				out.indented(() -> {
-					out.writeln(Map.class, "<String, Boolean> fieldExistenceMap = ", ImmutableMap.class, ".<String, Boolean>builder()");
+					out.writeln(Map.class, "<", String.class, ", ", Boolean.class, "> fieldExistenceMap = ", ImmutableMap.class, ".<", String.class, ", ", Boolean.class, ">builder()");
 					out.indented(() -> {
 						for (RAttribute attr : attributes) {
 							JavaPojoProperty prop = pojo.findProperty(attr.getName());
@@ -101,10 +101,10 @@ public class OnlyExistsValidatorGenerator extends FluentRObjectJavaClassGenerato
 					});
 					out.newline();
 					out.writeln("// Find the fields that are set");
-					out.writeln(Set.class, "<String> setFields = fieldExistenceMap.entrySet().stream()");
+					out.writeln(Set.class, "<", String.class, "> setFields = fieldExistenceMap.entrySet().stream()");
 					out.indented(() -> {
-						out.writeln(".filter(Map.Entry::getValue)");
-						out.writeln(".map(Map.Entry::getKey)");
+						out.writeln(".filter(", Map.Entry.class, "::getValue)");
+						out.writeln(".map(", Map.Entry.class, "::getKey)");
 						out.writeln(".collect(", Collectors.class, ".toSet());");
 					});
 					out.newline();

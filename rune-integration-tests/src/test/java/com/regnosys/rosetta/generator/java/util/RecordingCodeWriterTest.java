@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,8 @@ import org.junit.jupiter.api.Test;
 import com.regnosys.rosetta.codegen.support.StringCodeWriter;
 import com.regnosys.rosetta.generator.GeneratedIdentifier;
 import com.regnosys.rosetta.generator.java.scoping.JavaFileScope;
+import com.rosetta.model.lib.mapper.MapperC;
+import com.rosetta.model.lib.mapper.MapperS;
 import com.rosetta.util.DottedPath;
 import com.rosetta.util.types.JavaClass;
 
@@ -93,5 +96,31 @@ class RecordingCodeWriterTest {
 
 		assertEquals("code", replayToString());
 		assertEquals("code", replayToString());
+	}
+
+	@Test
+	void javaLangClassIsQualifiedWhenShadowedBySamePackageType() {
+		scope = new JavaFileScope("Foo.java", DottedPath.splitOnDots("test.ns"), Set.of("Object", "Foo"));
+		out = new RecordingCodeWriter(scope);
+
+		out.write(JavaClass.from(Object.class), " ", JavaClass.from(String.class));
+
+		assertEquals("java.lang.Object String", replayToString());
+		assertEquals(List.of(), out.getImports());
+	}
+
+	@Test
+	void wildcardImportRetainsSingleTypeImportWhenShadowedBySamePackageType() {
+		scope = new JavaFileScope("Bar.java", DottedPath.splitOnDots("test.ns"), Set.of("MapperS", "Bar"));
+		out = new RecordingCodeWriter(scope);
+
+		out.write(new PreferWildcardImportClass(JavaClass.from(MapperS.class)), " ", new PreferWildcardImportClass(JavaClass.from(MapperC.class)));
+
+		assertEquals("MapperS MapperC", replayToString());
+		assertEquals(
+				List.of(
+						DottedPath.splitOnDots("com.rosetta.model.lib.mapper.*"),
+						DottedPath.splitOnDots("com.rosetta.model.lib.mapper.MapperS")),
+				out.getImports());
 	}
 }

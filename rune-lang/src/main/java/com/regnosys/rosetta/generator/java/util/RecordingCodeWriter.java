@@ -143,6 +143,9 @@ public class RecordingCodeWriter implements CodeWriter {
 	}
 
 	public GeneratedIdentifier getOrWildcardImportIdentifier(Object object, DottedPath packageName, DottedPath nestedTypeName) {
+		if (scope.isNameTakenInPackage(nestedTypeName.first()) && !packageName.equals(scope.getPackageName())) {
+			return getOrImportIdentifier(object, packageName, nestedTypeName);
+		}
 		var canonicalName = packageName.concat(nestedTypeName);
 		return scope.getIdentifier(object)
 				.map(it -> {
@@ -196,23 +199,43 @@ public class RecordingCodeWriter implements CodeWriter {
 	}
 
 	public void addImportIfNotAlreadyImported(DottedPath packageName, DottedPath canonicalName) {
-		if (needsImport(packageName)) {
+		if (needsImport(packageName, canonicalName)) {
 			imports.put(canonicalName, packageName);
 		}
 	}
 
-	private boolean needsImport(DottedPath packageName) {
-		return !packageName.equals(scope.getPackageName()) && !imports.containsKey(packageName.child("*"));
+	private boolean needsImport(DottedPath packageName, DottedPath canonicalName) {
+		if (packageName.equals(scope.getPackageName())) {
+			return false;
+		}
+		return !imports.containsKey(packageName.child("*")) || scope.isNameTakenInPackage(canonicalName.last());
 	}
 
 	public boolean isAlreadyAccessible(DottedPath packageName, DottedPath canonicalName) {
-		return !needsImport(packageName) || imports.containsKey(canonicalName);
+		if (imports.containsKey(canonicalName)) {
+			return true;
+		}
+		String simpleName = canonicalName.last();
+		if (hasConflictingSingleTypeImport(canonicalName, simpleName)) {
+			return false;
+		}
+		if (packageName.equals(scope.getPackageName())) {
+			return true;
+		}
+		return imports.containsKey(packageName.child("*")) && !scope.isNameTakenInPackage(simpleName);
+	}
+
+	private boolean hasConflictingSingleTypeImport(DottedPath canonicalName, String simpleName) {
+		return imports.keySet().stream()
+				.anyMatch(imp -> !imp.last().equals("*") && !imp.equals(canonicalName) && imp.last().equals(simpleName));
 	}
 
 	public void addWildcardImport(DottedPath packageName) {
 		var wildcard = packageName.child("*");
 		if (!packageName.equals(scope.getPackageName()) && imports.put(wildcard, packageName) == null) {
-			imports.entrySet().removeIf(imp -> !imp.getKey().equals(wildcard) && imp.getValue().equals(packageName));
+			imports.entrySet().removeIf(imp -> !imp.getKey().equals(wildcard)
+					&& imp.getValue().equals(packageName)
+					&& !scope.isNameTakenInPackage(imp.getKey().last()));
 		}
 	}
 
