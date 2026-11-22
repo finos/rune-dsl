@@ -9,6 +9,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.xtext.resource.IEObjectDescription;
 import org.eclipse.xtext.resource.ISelectable;
 import org.eclipse.xtext.validation.NamesAreUniqueValidationHelper;
@@ -49,6 +50,7 @@ public class RosettaNamesAreUniqueValidationHelper extends NamesAreUniqueValidat
             .put(RosettaPackage.eINSTANCE.getRosettaScope(), "scope")
             .put(RosettaPackage.eINSTANCE.getSchema(), "schema")
             .put(SimplePackage.eINSTANCE.getAttribute(), "attribute")
+            .put(SimplePackage.eINSTANCE.getCondition(), "condition")
             .build();
     
     private final RosettaUniqueNamesConfig config;
@@ -145,6 +147,20 @@ public class RosettaNamesAreUniqueValidationHelper extends NamesAreUniqueValidat
     
     private boolean isInOverriddenNamespace(IEObjectDescription description) {
         return "true".equals(description.getUserData(IN_OVERRIDDEN_NAMESPACE));
+    }
+
+    @Override
+    protected void createDuplicateNameError(IEObjectDescription description, EClass clusterType,
+                                             ValidationMessageAcceptor acceptor) {
+        DuplicationCluster cluster = config.getDuplicationCluster(clusterType);
+        if (cluster != null && cluster.severity() == DuplicationCluster.Severity.WARNING) {
+            EObject object = description.getEObjectOrProxy();
+            EStructuralFeature feature = getNameFeature(object);
+            acceptor.acceptWarning(getDuplicateNameErrorMessage(description, clusterType, feature), object, feature,
+                    ValidationMessageAcceptor.INSIGNIFICANT_INDEX, cluster.issueCode());
+            return;
+        }
+        super.createDuplicateNameError(description, clusterType, acceptor);
     }
 
     @Override
