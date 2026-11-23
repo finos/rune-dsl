@@ -631,6 +631,18 @@ public class TypeCoercionTest {
     }
 
     @Test
+    void testComparisonResultToMapperC() {
+        String expected = """
+                import com.rosetta.model.lib.expression.ComparisonResult;
+                import com.rosetta.model.lib.mapper.MapperC;
+
+
+                return MapperC.of(ComparisonResult.success().asMapper());
+                """;
+        assertCoercion(expected, code(ComparisonResult.class, ".success()"), typeUtil.COMPARISON_RESULT, typeUtil.wrap(typeUtil.MAPPER_C, Boolean.class));
+    }
+
+    @Test
     void testImmutableMapperSToMutableMapperS() {
         String expected = """
                 import com.rosetta.model.lib.mapper.MapperS;

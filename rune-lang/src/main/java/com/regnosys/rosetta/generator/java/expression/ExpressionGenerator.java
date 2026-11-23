@@ -513,14 +513,15 @@ public class ExpressionGenerator extends RosettaExpressionSwitch<JavaStatementBu
 				RMetaAnnotatedType rightRMetaType = typeProvider.getRMetaAnnotatedType(expr.getRight());
 				JavaType joined = typeTranslator.toJavaReferenceType(typeSystem.joinMetaAnnotatedTypes(leftRMetaType, rightRMetaType));
 
-				JavaStatementBuilder leftCode = javaCode(left, context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER, joined)));
-				if (cardinalityProvider.isMulti(left)) {
-					JavaStatementBuilder rightCode = javaCode(right, context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER, joined)));
+				if (cardinalityProvider.isMulti(expr)) {
+					JavaStatementBuilder leftCode = javaCode(left, context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER_C, joined)));
+					JavaStatementBuilder rightCode = javaCode(right, context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER_C, joined)));
 
 					return leftCode
 						.then(rightCode, (l, r) -> new JavaConditionalExpression(JavaExpression.from(out -> out.write(l, ".getMulti().isEmpty()"), JavaPrimitiveType.BOOLEAN), r, l, typeUtil), context.scope);
 				} else {
 					JavaType resultType = typeTranslator.toJavaReferenceType(typeProvider.getRMetaAnnotatedType(expr));
+					JavaStatementBuilder leftCode = javaCode(left, context.withExpected(typeUtil.wrapExtends(typeUtil.MAPPER, joined)));
 					JavaStatementBuilder rightCode = javaCode(right, context.withExpected(joined));
 
 					return leftCode
