@@ -38,7 +38,7 @@ jobs:
         uses: ./.github/actions/maven-build
         with:
           set-version: 0.0.0.${{ needs.prepare.outputs.normalized }}-SNAPSHOT
-          build-command: install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
+          build-command: install org.sonatype.central:central-publishing-maven-plugin:publish -P release
           run-tests: ${{ inputs.run-tests }}
         env:
           CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME_CENTRAL }}
