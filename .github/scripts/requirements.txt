@@ -3,4 +3,4 @@
 #
 # Pinned deliberately: check_readonly_namespaces.py fails the build in every repository that calls
 # the reusable workflow, so a bad upstream release must not be able to break them.
-PyYAML==6.0.3
+PyYAML==6.0.4
