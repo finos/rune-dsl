@@ -13,7 +13,7 @@ jobs:
         uses: ./.github/actions/maven-build
         with:
           set-version: ${{ github.event.release.tag_name }}
-          build-command: install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release
+          build-command: install org.sonatype.central:central-publishing-maven-plugin:publish -P release
         env:
           CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME_CENTRAL }}
           CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD_CENTRAL }}
