@@ -64,13 +64,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository under test
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           # Full history so HEAD can be diffed against the base ref.
           fetch-depth: 0
 
       - name: Check out the namespace checkers
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: finos/rune-dsl
           ref: ${{ inputs.checker-ref }}
