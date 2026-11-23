@@ -3,7 +3,7 @@ description: Run a Maven Build
 
 inputs:
   build-command:
-    description: The Maven goal(s)/command to run after 'clean'. E.g. 'package' or 'install org.sonatype.central:central-publishing-maven-plugin:0.7.0:publish -P release'.
+    description: The Maven goal(s)/command to run after 'clean'. E.g. 'package' or 'install org.sonatype.central:central-publishing-maven-plugin:publish -P release'.
     required: false
     default: package
   run-tests:
