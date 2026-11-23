@@ -183,11 +183,11 @@ public class ModelObjectGenerator extends FluentRObjectJavaClassGenerator<RDataT
 				JavaType builderType = builderGenerator.toBuilderTypeSingle(prop);
 				if (!typeUtil.isList(prop.getType())) {
 					out.writeln(builderType, " ", prop.getOperationName(GET_OR_CREATE), "();");
-					out.writeln("@Override");
+					out.writeln("@", Override.class);
 					out.writeln(builderType, " ", prop.getOperationName(GET), "();");
 				} else {
 					out.writeln(builderType, " ", prop.getOperationName(GET_OR_CREATE), "(int index);");
-					out.writeln("@Override");
+					out.writeln("@", Override.class);
 					out.writeln(List.class, "<? extends ", builderType, "> ", prop.getOperationName(GET), "();");
 				}
 			}
@@ -198,7 +198,7 @@ public class ModelObjectGenerator extends FluentRObjectJavaClassGenerator<RDataT
 		String opName = prop.getOperationName(operationType);
 		JavaMethodScope scope = builderScope.createMethodScope(opName);
 		if (isOverride) {
-			out.writeln("@Override");
+			out.writeln("@", Override.class);
 		}
 		out.writeln(mainBuilderType, " ", opName, "(", computeParameters.apply(scope), ");");
 	}
@@ -246,20 +246,20 @@ public class ModelObjectGenerator extends FluentRObjectJavaClassGenerator<RDataT
 	}
 
 	private void renderPojoInterfaceDefaultOverriddenMethods(CodeWriter out, JavaPojoInterface javaType, GeneratedIdentifier metaDataIdentifier) {
-		out.writeln("@Override");
+		out.writeln("@", Override.class);
 		out.writeln("default ", RosettaMetaData.class, "<? extends ", javaType, "> metaData() {");
 		out.indented(() -> out.writeln("return ", metaDataIdentifier, ";"));
 		out.writeln("}");
 		out.newline();
-		out.writeln("@Override");
+		out.writeln("@", Override.class);
 		out.writeln("@", RuneAttribute.class, "(\"@type\")");
-		out.writeln("default Class<? extends ", javaType, "> getType() {");
+		out.writeln("default ", Class.class, "<? extends ", javaType, "> getType() {");
 		out.indented(() -> out.writeln("return ", javaType, ".class;"));
 		out.writeln("}");
 		if (javaType instanceof RJavaWithMetaValue withMeta) {
 			out.newline();
-			out.writeln("@Override");
-			out.writeln("default Class<", withMeta.getValueType(), "> getValueType() {");
+			out.writeln("@", Override.class);
+			out.writeln("default ", Class.class, "<", withMeta.getValueType(), "> getValueType() {");
 			out.indented(() -> out.writeln("return ", withMeta.getValueType(), ".class;"));
 			out.writeln("}");
 		}
@@ -271,7 +271,7 @@ public class ModelObjectGenerator extends FluentRObjectJavaClassGenerator<RDataT
 		for (JavaPojoProperty prop : javaType.getOwnProperties()) {
 			out.write(prop.getJavadoc());
 			if (prop.getterOverridesParentGetter()) {
-				out.writeln("@Override");
+				out.writeln("@", Override.class);
 			}
 			out.writeln(prop.getType(), " ", prop.getOperationName(GET), "();");
 		}
@@ -308,7 +308,7 @@ public class ModelObjectGenerator extends FluentRObjectJavaClassGenerator<RDataT
 		out.newline();
 		for (JavaPojoProperty prop : properties) {
 			JavaVariable field = new JavaVariable(implScope.getIdentifierOrThrow(prop), prop.getType());
-			out.writeln("@Override");
+			out.writeln("@", Override.class);
 			out.write(boilerPlate.attributeAnnotations(prop, AccessorType.GETTER, typeUtil.isList(prop.getType())));
 			out.writeln("public ", prop.getType(), " ", prop.getOperationName(GET), "() ", field.completeAsReturn().toBlock());
 			out.newline();
@@ -316,12 +316,12 @@ public class ModelObjectGenerator extends FluentRObjectJavaClassGenerator<RDataT
 				out.write(derivedIncompatibleGettersForProperty(field, prop, implScope));
 			}
 		}
-		out.writeln("@Override");
+		out.writeln("@", Override.class);
 		out.writeln("public ", javaType, " build() {");
 		out.indented(() -> out.writeln("return this;"));
 		out.writeln("}");
 		out.newline();
-		out.writeln("@Override");
+		out.writeln("@", Override.class);
 		out.writeln("public ", builderType, " toBuilder() {");
 		out.indented(() -> {
 			out.writeln(builderType, " builder = builder();");
@@ -352,7 +352,7 @@ public class ModelObjectGenerator extends FluentRObjectJavaClassGenerator<RDataT
 		String opName = parent.getOperationName(GET);
 		JavaMethodScope getterScope = implScope.createMethodScope(opName);
 		return out -> {
-			out.writeln("@Override");
+			out.writeln("@", Override.class);
 			out.writeln("@", RosettaIgnore.class);
 			out.writeln("@", RuneIgnore.class);
 			out.writeln("public ", parent.getType(), " ", opName, "() ", coercionService.addCoercions(originalField, parent.getType(), getterScope.getBodyScope()).completeAsReturn().toBlock());

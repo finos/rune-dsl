@@ -342,7 +342,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 				renderJavadocTag(out, "@return", evaluateBodyScope.getIdentifierOrThrow(output), output.getDefinition());
 				out.writeln(" */");
 				if (overridesEvaluate) {
-					out.writeln("@Override");
+					out.writeln("@", Override.class);
 				}
 				out.write("public ", outputType, " evaluate(");
 				renderInputsAsParameters(out, inputs, evaluateScope);
@@ -405,7 +405,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 				out.write("public static ", defaultClass.asClassDeclaration());
 				out.writeln(" {");
 				out.indented(() -> {
-					out.writeln("@Override");
+					out.writeln("@", Override.class);
 					out.write("protected ", toBuilderType(output), " doEvaluate(");
 					renderInputsAsParameters(out, inputs, defaultDoEvaluateScope);
 					out.writeln(") {");
@@ -473,7 +473,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 								? body.mapExpressionIfNotNull(it -> JavaExpression.from(o -> o.write("toBuilder(", it, ")"), returnType))
 								: body;
 						out.newline();
-						out.writeln("@Override");
+						out.writeln("@", Override.class);
 						out.write("protected ", returnType, " ", defaultClassScope.getIdentifierOrThrow(alias), "(");
 						out.write(aliasUtil.getParameters(alias, aliasScope));
 						out.write(") ");
@@ -484,8 +484,8 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 
 				if (functionExtensions.isQualifierFunction(function)) {
 					out.newline();
-					out.writeln("@Override");
-					out.writeln("public String getNamePrefix() {");
+					out.writeln("@", Override.class);
+					out.writeln("public ", String.class, " getNamePrefix() {");
 					out.indented(() -> out.writeln("return \"", functionExtensions.getQualifierAnnotations(function.getAnnotations()).get(0).getAnnotation().getPrefix(), "\";"));
 					out.writeln("}");
 				}
@@ -560,7 +560,7 @@ public class FunctionGenerator extends FluentRObjectJavaClassGenerator<RFunction
 							});
 						});
 						out.writeln("default:");
-						out.indented(() -> out.writeln("throw new IllegalArgumentException(\"Enum value not implemented: \" + ", enumParam, ");"));
+						out.indented(() -> out.writeln("throw new ", IllegalArgumentException.class, "(\"Enum value not implemented: \" + ", enumParam, ");"));
 					});
 					out.writeln("}");
 				});

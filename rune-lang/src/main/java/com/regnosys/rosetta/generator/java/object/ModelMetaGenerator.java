@@ -95,7 +95,7 @@ public class ModelMetaGenerator extends FluentRObjectJavaClassGenerator<RDataTyp
 			out.writeln("public ", metaClass.asClassDeclaration(), " {");
 			out.indented(() -> {
 				out.newline();
-				out.writeln("@Override");
+				out.writeln("@", Override.class);
 				out.writeln("public ", List.class, "<", Validator.class, "<? super ", dataClass, ">> dataRules(", ValidatorFactory.class, " factory) {");
 				out.indented(() -> {
 					out.writeln("return ", Arrays.class, ".asList(");
@@ -108,7 +108,7 @@ public class ModelMetaGenerator extends FluentRObjectJavaClassGenerator<RDataTyp
 				});
 				out.writeln("}");
 				out.newline();
-				out.writeln("@Override");
+				out.writeln("@", Override.class);
 				// java.util.function.Function stays qualified: it clashes with the imported Rune Function
 				out.writeln("public ", List.class, "<", java.util.function.Function.class, "<? super ", dataClass, ", ", QualifyResult.class, ">> getQualifyFunctions(", QualifyFunctionFactory.class, " factory) {");
 				out.indented(() -> {
@@ -124,18 +124,18 @@ public class ModelMetaGenerator extends FluentRObjectJavaClassGenerator<RDataTyp
 				});
 				out.writeln("}");
 				out.newline();
-				out.writeln("@Override");
+				out.writeln("@", Override.class);
 				out.writeln("public ", Validator.class, "<? super ", dataClass, "> validator(", ValidatorFactory.class, " factory) {");
 				out.indented(() -> out.writeln("return factory.<", dataClass, ">create(", validator, ".class);"));
 				out.writeln("}");
 				out.newline();
-				out.writeln("@Override");
+				out.writeln("@", Override.class);
 				out.writeln("public ", Validator.class, "<? super ", dataClass, "> typeFormatValidator(", ValidatorFactory.class, " factory) {");
 				out.indented(() -> out.writeln("return factory.<", dataClass, ">create(", typeFormatValidator, ".class);"));
 				out.writeln("}");
 				out.newline();
-				out.writeln("@Override");
-				out.writeln("public ", ValidatorWithArg.class, "<? super ", dataClass, ", ", Set.class, "<String>> onlyExistsValidator() {");
+				out.writeln("@", Override.class);
+				out.writeln("public ", ValidatorWithArg.class, "<? super ", dataClass, ", ", Set.class, "<", String.class, ">> onlyExistsValidator() {");
 				out.indented(() -> out.writeln("return new ", onlyExistsValidator, "();"));
 				out.writeln("}");
 			});

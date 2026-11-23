@@ -149,7 +149,7 @@ public class ModelObjectBoilerPlate {
 
 	private void renderHashCode(CodeWriter out, boolean extended, Collection<JavaPojoProperty> properties, JavaClassScope scope) {
 		JavaMethodScope methodScope = scope.createMethodScope("hashCode");
-		out.writeln("@Override");
+		out.writeln("@", Override.class);
 		out.writeln("public int hashCode() {");
 		out.indented(() -> {
 			out.writeln("int _result = ", extended ? "super.hashCode()" : "0", ";");
@@ -162,7 +162,7 @@ public class ModelObjectBoilerPlate {
 
 	private void renderToString(CodeWriter out, boolean extended, Collection<JavaPojoProperty> properties, String className, JavaClassScope scope) {
 		JavaMethodScope methodScope = scope.createMethodScope("toString");
-		out.writeln("@Override");
+		out.writeln("@", Override.class);
 		out.writeln("public ", String.class, " toString() {");
 		out.indented(() -> {
 			out.writeln("return ", JavaLiteral.STRING(className + " {"), " +");
@@ -184,7 +184,7 @@ public class ModelObjectBoilerPlate {
 
 	private void renderEquals(CodeWriter out, JavaPojoInterface javaType, boolean extended, Collection<JavaPojoProperty> properties, JavaClassScope scope) {
 		JavaMethodScope methodScope = scope.createMethodScope("equals");
-		out.writeln("@Override");
+		out.writeln("@", Override.class);
 		out.writeln("public boolean equals(", Object.class, " o) {");
 		out.indented(() -> {
 			out.writeln("if (this == o) return true;");
@@ -223,7 +223,7 @@ public class ModelObjectBoilerPlate {
 	}
 
 	private void renderProcessMethod(CodeWriter out, JavaPojoInterface javaType, Class<?> processorType, Function<JavaPojoProperty, JavaType> rosettaItemType) {
-		out.writeln("@Override");
+		out.writeln("@", Override.class);
 		out.writeln("default void process(", RosettaPath.class, " path, ", processorType, " processor) {");
 		out.indented(() -> {
 			for (JavaPojoProperty prop : javaType.getAllProperties()) {

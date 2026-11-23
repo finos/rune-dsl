@@ -143,8 +143,8 @@ public class ConditionGenerator extends FluentJavaClassGenerator<Condition, Java
 			out.writeln("public ", conditionClass.asInterfaceDeclaration(), " {");
 			out.indented(() -> {
 				out.newline();
-				out.writeln("String NAME = \"", conditionClass.getSimpleName(), "\";");
-				out.write("String DEFINITION = ");
+				out.writeln(String.class, " NAME = \"", conditionClass.getSimpleName(), "\";");
+				out.write(String.class, " DEFINITION = ");
 				// A definition spanning several lines continues one level deeper
 				out.indented(() -> out.write(definition));
 				out.writeln(";");
@@ -165,7 +165,7 @@ public class ConditionGenerator extends FluentJavaClassGenerator<Condition, Java
 						out.writeln("@", javax.inject.Inject.class, " protected ", dep, " ", defaultClassScope.getIdentifierOrThrow(identifierRepresentationService.toDependencyInstance(dep)), ";");
 						out.newline();
 					}
-					out.writeln("@Override");
+					out.writeln("@", Override.class);
 					out.write("public ", List.class, "<", ValidationResult.class, "<?>> getValidationResults(", RosettaPath.class, " ", pathId, ", ", conditionClass.getInstanceClass(), " ", defaultClassInstanceId);
 					for (TypeParameter param : params.keySet()) {
 						out.write(", ", params.get(param), " ", getValidationResultsScope.getIdentifierOrThrow(param));
@@ -206,12 +206,12 @@ public class ConditionGenerator extends FluentJavaClassGenerator<Condition, Java
 				});
 				out.writeln("}");
 				out.newline();
-				out.writeln("@SuppressWarnings(\"unused\")");
+				out.writeln("@", SuppressWarnings.class, "(\"unused\")");
 				out.write(noOpClass.asClassDeclaration());
 				out.writeln(" {");
 				out.indented(() -> {
 					out.newline();
-					out.writeln("@Override");
+					out.writeln("@", Override.class);
 					out.write("public ", List.class, "<", ValidationResult.class, "<?>> getValidationResults(", RosettaPath.class, " ", pathId, ", ", conditionClass.getInstanceClass(), " ", instanceId);
 					for (TypeParameter param : params.keySet()) {
 						out.write(", ", params.get(param), " ", getValidationResultsScope.getIdentifierOrThrow(param));

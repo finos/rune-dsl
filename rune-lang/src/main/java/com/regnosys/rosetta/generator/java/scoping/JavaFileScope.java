@@ -16,14 +16,24 @@ public class JavaFileScope extends AbstractJavaScope<AbstractJavaScope<?>> {
 	private static volatile Set<String> JAVA_LANG_SIMPLE_NAMES;
 	
 	private final DottedPath packageName;
+	private final Set<String> packageTypeNames;
 
 	public JavaFileScope(String fileName, DottedPath packageName) {
+		this(fileName, packageName, Set.of());
+	}
+
+	public JavaFileScope(String fileName, DottedPath packageName, Set<String> packageTypeNames) {
 		super("File[" + fileName + "]", null);
 		this.packageName = packageName;
+		this.packageTypeNames = Set.copyOf(packageTypeNames);
 	}
 	
 	public DottedPath getPackageName() {
 		return packageName;
+	}
+
+	public boolean isNameTakenInPackage(String desiredName) {
+		return packageTypeNames.contains(desiredName);
 	}
 	
 	@Override
@@ -35,7 +45,10 @@ public class JavaFileScope extends AbstractJavaScope<AbstractJavaScope<?>> {
 	public Optional<GeneratedIdentifier> getIdentifier(Object obj) {
 		return super.getIdentifier(obj)
 				.or(() -> {
-					if (obj instanceof JavaClass<?> c && JAVA_LANG.equals(c.getPackageName()) && !isNameExplicitlyTaken(c.getSimpleName())) {
+					if (obj instanceof JavaClass<?> c
+							&& JAVA_LANG.equals(c.getPackageName())
+							&& !isNameExplicitlyTaken(c.getSimpleName())
+							&& !isNameTakenInPackage(c.getSimpleName())) {
 						return Optional.of(this.overwriteIdentifier(c, c.getSimpleName()));
 					}
 					return Optional.empty();

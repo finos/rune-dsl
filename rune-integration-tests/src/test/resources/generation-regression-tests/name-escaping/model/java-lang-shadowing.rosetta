@@ -1,0 +1,7 @@
+namespace test.escaping.javalang
+
+type Object:
+	val string (0..1)
+
+type Foo:
+	obj Object (0..1)

@@ -102,7 +102,7 @@ public class EnumGenerator extends FluentRObjectJavaClassGenerator<REnumType, RJ
 				});
 				out.writeln("}");
 				out.newline();
-				out.writeln("public static ", javaEnum, " fromDisplayName(String name) {");
+				out.writeln("public static ", javaEnum, " fromDisplayName(", String.class, " name) {");
 				out.indented(() -> {
 					out.writeln(javaEnum, " value = values.get(name);");
 					out.writeln("if (value == null) {");
@@ -112,7 +112,7 @@ public class EnumGenerator extends FluentRObjectJavaClassGenerator<REnumType, RJ
 				});
 				out.writeln("}");
 				out.newline();
-				out.writeln("@Override");
+				out.writeln("@", Override.class);
 				out.writeln("public ", String.class, " toString() {");
 				out.indented(() -> out.writeln("return toDisplayString();"));
 				out.writeln("}");
